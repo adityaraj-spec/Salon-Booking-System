@@ -22,18 +22,13 @@ const userSchema = new mongoose.Schema({
     trim: true,
     index: true
   },
-  phonenumber: { 
-    type: String, 
-    required: true, 
-    unique: true 
-  },
   password: { 
     type: String, 
     required: [true, "Password is required"] 
   },
   role: { 
     type: String, 
-    enum: ["customer","staff", "salonOwner", "admin"], 
+    enum: ["customer","staff", "salonOwner"], 
     default: "customer" 
   },
   

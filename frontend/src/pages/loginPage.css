@@ -1,0 +1,10 @@
+.login-form{
+    background-color: #f8f8fd;
+    padding: 20px;
+    border: 2px solid #8e9092;
+    border-radius: 20px;
+    box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.1);
+}
+.signup-header{
+    margin: auto;
+}
