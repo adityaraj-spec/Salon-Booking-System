@@ -12,23 +12,6 @@ export function NavBar() {
                         <input className="form-control me-2" type="search" placeholder="Search" aria-label="Search" />
                         <button className="btn btn-outline-success" type="submit">Search</button>
                     </form>
-                    <ul className="nav nav-pills">
-                        <li className="nav-item">
-                            <NavLink className="nav-link active" aria-current="page" to="/login">
-                               Login
-                            </NavLink>
-                        </li>
-                        <li className="nav-item">
-                            <NavLink className="nav-link" to="/signup">
-                                SignUp
-                            </NavLink>
-                        </li>
-                        <li className="nav-item">
-                            <NavLink className="nav-link" to="/logout">
-                                Logout
-                            </NavLink>
-                        </li>
-                    </ul>
                 </div>
             </nav> */}
             <nav className="bg-white shadow-md">
@@ -36,25 +19,35 @@ export function NavBar() {
                     <div className="flex justify-between items-center h-16">
 
                         {/* Logo */}
-                        <div className="text-2xl font-bold text-blue-600">
-                            Salon Now
-                        </div>
+                        <NavLink className="navbar-brand" to="/">
+                            <div className="text-2xl font-bold text-blue-600">
+                                Salon Now
+                            </div>
+                        </NavLink>
 
-                        {/* Menu Links */}
-                        <div className="hidden md:flex space-x-8 text-gray-700">
-                            <a href="#" className="hover:text-blue-600">Home</a>
-                            <a href="#" className="hover:text-blue-600">About</a>
-                            <a href="#" className="hover:text-blue-600">Services</a>
-                            <a href="#" className="hover:text-blue-600">Contact</a>
-                        </div>
+                        <form className="flex space-x-2" role="search">
+                            <input className="border border-gray-300 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500" type="search" placeholder="Search..." aria-label="Search" />
+                            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition" type="submit">Search</button>
+                        </form>
 
                         {/* Button */}
-                        <div>
-                            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
-                                Login
-                            </button>
-                        </div>
-
+                        <ul className=" flex space-x-4">
+                            <li className="">
+                                <NavLink className="text-black px-4 py-2 hover:text-gray-500 transition" aria-current="page" to="/login">
+                                    Login
+                                </NavLink>
+                            </li>
+                            <li className="">
+                                <NavLink className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition" to="/signup">
+                                    SignUp
+                                </NavLink>
+                            </li>
+                            <li className="">
+                                <NavLink className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition" to="/logout">
+                                    Logout
+                                </NavLink>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </nav>
