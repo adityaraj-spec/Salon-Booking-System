@@ -1,11 +1,13 @@
 import { NavBar } from '../components/navPage.jsx'
 import { Footer } from '../components/footerPage.jsx'
+import { Shops } from './shops-grid.jsx'
 
 export function HomePage() {
     return (
         <>
-            <NavBar />
-            <h1>This is the main page</h1>
+           <NavBar />
+            <Shops />
+           <Footer />
         </>
     );
 }

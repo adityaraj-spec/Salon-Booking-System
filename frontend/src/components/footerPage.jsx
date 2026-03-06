@@ -1,43 +1,62 @@
 export function Footer() {
     return (
         <>
-            <footer className="bg-dark text-light py-4 mt-auto">
-                <div className="container">
-                    <div className="row">
-                        <div className="col-md-4">
-                            <h5>Salon Now</h5>
-                            <p className="small">
+            <footer className="bg-gray-900 text-white py-8 mt-auto">
+                <div className="max-w-6xl mx-auto px-4">
+
+                    <div className="grid md:grid-cols-3 gap-8">
+
+                        {/* Column 1 */}
+                        <div>
+                            <h5 className="text-lg font-semibold mb-2">Salon Now</h5>
+                            <p className="text-sm text-gray-300">
                                 Building modern web applications using React and Bootstrap.
                             </p>
                         </div>
-                        <div className="col-md-4">
-                            <ul className="list-unstyled">
+
+                        {/* Column 2 */}
+                        <div>
+                            <ul className="space-y-2">
                                 <li>
-                                    <a href="#" className="text-light text-decoration-none">Home</a>
+                                    <a href="#" className="text-gray-300 hover:text-white transition">
+                                        Home
+                                    </a>
                                 </li>
                                 <li>
-                                    <a href="#" className="text-light text-decoration-none">About</a>
+                                    <a href="#" className="text-gray-300 hover:text-white transition">
+                                        About
+                                    </a>
                                 </li>
                                 <li>
-                                    <a href="#" className="text-light text-decoration-none">Services</a>
+                                    <a href="#" className="text-gray-300 hover:text-white transition">
+                                        Services
+                                    </a>
                                 </li>
                                 <li>
-                                    <a href="#" className="text-light text-decoration-none">Contact</a>
+                                    <a href="#" className="text-gray-300 hover:text-white transition">
+                                        Contact
+                                    </a>
                                 </li>
                             </ul>
                         </div>
-                        <div className="col-md-4">
-                            <h5>Contact</h5>
-                            <p className="small mb-1">Email: support@example.com</p>
-                            <p className="small mb-1">Phone: +91 9876543210</p>
-                            <p className="small">Location: India</p>
+
+                        {/* Column 3 */}
+                        <div>
+                            <h5 className="text-lg font-semibold mb-2">Contact</h5>
+                            <p className="text-sm text-gray-300">Email: support@example.com</p>
+                            <p className="text-sm text-gray-300">Phone: +91 9876543210</p>
+                            <p className="text-sm text-gray-300">Location: India</p>
                         </div>
 
                     </div>
-                    <hr className="border-light" />
+
+                    {/* Divider */}
+                    <hr className="border-gray-700 my-6" />
+
+                    {/* Copyright */}
                     <div className="text-center">
-                        <p className="mb-0 small">
-                            &copy;{new Date().getFullYear()} Salon Now. All rights reserved.
+                        <p className="text-sm text-gray-400">
+                            &copy; {new Date().getFullYear()} Salon Now. All rights reserved.
                         </p>
                     </div>
 
@@ -46,4 +65,3 @@ export function Footer() {
         </>
     );
 }
-  

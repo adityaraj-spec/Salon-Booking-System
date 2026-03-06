@@ -1,5 +1,6 @@
+@import "tailwindcss";
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif, poppins;
   line-height: 1.5;
   font-weight: 400;
 
@@ -15,6 +16,6 @@
 
 body {
   margin: 0;
-  padding: 0;
+  padding:0;
 }
 
