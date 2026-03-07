@@ -26,8 +26,8 @@ export function NavBar() {
                         </NavLink>
 
                         <form className="flex space-x-2" role="search">
-                            <input className="border border-gray-300 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500" type="search" placeholder="Search..." aria-label="Search" />
-                            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition" type="submit">Search</button>
+                            <input className="text-black border border-gray-300 rounded-full py-2 px-4 focus:outline-none focus:ring-2 focus:ring-black" type="search" placeholder="Search..." aria-label="Search" />
+                            <button className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition" type="submit">Search</button>
                         </form>
 
                         {/* Button */}

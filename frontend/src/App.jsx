@@ -4,6 +4,7 @@ import { Shops } from './pages/shops-grid.jsx'
 import { LoginPage } from './pages/loginPage.jsx'
 import { SignUpPage } from './pages/signupPage.jsx'
 import { Shop } from './pages/shop.jsx'
+import { BookingPage } from './pages/bookingPage.jsx'
 import './App.css'
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
           <Route path="signup" element={<SignUpPage />} />
           <Route path="shops" element={<Shops />} />
           <Route path="shops/:id" element={<Shop />} />
+          <Route path="booking" element={<BookingPage />} />
 
       </Routes>
     </BrowserRouter>

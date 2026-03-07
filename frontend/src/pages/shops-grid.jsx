@@ -8,8 +8,8 @@ import salon5 from "../assets/salon5.avif";
 export function Shops() {
     return (
         <>
-            <div className="w-full bg-white max-w-7xl mx-auto px-4 py-8">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 justify-items-center">
+            <div className="w-full bg-white mx-auto px-4 py-8">
+                <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 justify-items-center">
 
                     {/* Card 1 */}
                     <div className="w-full max-w-xs bg-white shadow-md rounded-xl overflow-hidden hover:shadow-lg transition">

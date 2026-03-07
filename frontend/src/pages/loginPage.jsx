@@ -20,7 +20,7 @@ export function LoginPage() {
                                 id="username"
                                 type="text"
                                 placeholder="Enter a valid username"
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                className="w-full border rounded-lg text-black p-2 focus:outline-none focus:ring-2 focus:ring-black"
                             />
                         </div>
 
@@ -34,7 +34,7 @@ export function LoginPage() {
                                 id="email"
                                 type="email"
                                 placeholder="Enter a valid email"
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                className="w-full border rounded-lg text-black p-2 focus:outline-none focus:ring-2 focus:ring-black"
                             />
                         </div>
 
@@ -48,7 +48,7 @@ export function LoginPage() {
                                 id="password"
                                 type="password"
                                 placeholder="Enter a valid password"
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                className="w-full border rounded-lg text-black p-2 focus:outline-none focus:ring-2 focus:ring-black"
                             />
                         </div>
 

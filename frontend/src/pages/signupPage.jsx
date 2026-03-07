@@ -19,7 +19,7 @@ export function SignUpPage() {
                                 name="username"
                                 id="username"
                                 type="text"
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                className="w-full border rounded-lg text-black p-2 focus:outline-none focus:ring-2 focus:ring-black"
                             />
                         </div>
 
@@ -32,7 +32,7 @@ export function SignUpPage() {
                                 name="email"
                                 id="email"
                                 type="email"
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                className="w-full border rounded-lg text-black p-2 focus:outline-none focus:ring-2 focus:ring-black"
                             />
                         </div>
 
@@ -45,7 +45,7 @@ export function SignUpPage() {
                                 name="fullName"
                                 id="fullName"
                                 type="text"
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                className="w-full border rounded-lg text-black p-2 focus:outline-none focus:ring-2 focus:ring-black"
                             />
                         </div>
 
@@ -58,7 +58,7 @@ export function SignUpPage() {
                                 name="avatar"
                                 id="formFile"
                                 type="file"
-                                className="w-full text-sm text-gray-500 border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                className="w-full border rounded-lg text-black p-2 focus:outline-none focus:ring-2 focus:ring-black"
                             />
                         </div>
 
@@ -71,7 +71,7 @@ export function SignUpPage() {
                                 name="password"
                                 id="password"
                                 type="password"
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                className="w-full border rounded-lg text-black p-2 focus:outline-none focus:ring-2 focus:ring-black"
                             />
                         </div>
 
@@ -83,7 +83,7 @@ export function SignUpPage() {
                             <select
                                 name="role"
                                 id="Role"
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                className="w-full border rounded-lg text-black p-2 focus:outline-none focus:ring-2 focus:ring-black"
                             >
                                 <option value="customer">Customer</option>
                                 <option value="staff">Staff</option>
