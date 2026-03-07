@@ -94,7 +94,7 @@ export function SignUpPage() {
                         {/* Submit Button */}
                         <button
                             type="submit"
-                            className="w-full bg-gray-900 text-white py-2 rounded-lg hover:bg-gray-800 transition"
+                            className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 rounded-full transition"
                         >
                             Sign Up
                         </button>

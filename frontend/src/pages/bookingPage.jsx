@@ -128,7 +128,7 @@ export function BookingPage() {
                     {/* Button */}
                     <button
                         type="submit"
-                        className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800"
+                        className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 rounded-full"
                     >
                         Confirm Booking
                     </button>

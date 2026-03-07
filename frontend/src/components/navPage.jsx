@@ -14,20 +14,32 @@ export function NavBar() {
                     </form>
                 </div>
             </nav> */}
-            <nav className="bg-white shadow-md">
+            <nav className="bg-white shadow-md sticky top-0 z-50">
                 <div className="max-w-6xl mx-auto px-4">
                     <div className="flex justify-between items-center h-16">
 
                         {/* Logo */}
                         <NavLink className="navbar-brand" to="/">
-                            <div className="text-2xl font-bold text-blue-600">
+                            <div className="text-2xl font-bold text-pink-500">
                                 Salon Now
                             </div>
                         </NavLink>
 
-                        <form className="flex space-x-2" role="search">
-                            <input className="text-black border border-gray-300 rounded-full py-2 px-4 focus:outline-none focus:ring-2 focus:ring-black" type="search" placeholder="Search..." aria-label="Search" />
-                            <button className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition" type="submit">Search</button>
+                        <form className="flex items-center border border-gray-300 rounded-full shadow-sm hover:shadow-md px-2 py-1 bg-white max-w-xl">
+
+                            <input
+                                type="search"
+                                placeholder="Search..."
+                                aria-label="Search"
+                                className="grow px-4 py-2 outline-none text-gray-700 bg-transparent"
+                            />
+
+                            <button
+                                type="submit"
+                                className="bg-pink-500 hover:bg-pink-600 text-white p-3 rounded-full flex items-center justify-center transition"
+                            >
+                            </button>
+
                         </form>
 
                         {/* Button */}
@@ -38,12 +50,12 @@ export function NavBar() {
                                 </NavLink>
                             </li>
                             <li className="">
-                                <NavLink className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition" to="/signup">
+                                <NavLink className="bg-pink-500 text-white px-4 py-2 rounded-lg hover:bg-pink-600 transition" to="/signup">
                                     SignUp
                                 </NavLink>
                             </li>
                             <li className="">
-                                <NavLink className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition" to="/logout">
+                                <NavLink className="bg-pink-500 text-white px-4 py-2 rounded-lg hover:bg-pink-600 transition" to="/logout">
                                     Logout
                                 </NavLink>
                             </li>

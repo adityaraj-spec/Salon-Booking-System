@@ -13,7 +13,7 @@ export function Shops() {
 
                     {/* Card 1 */}
                     <div className="w-full max-w-xs bg-white shadow-md rounded-xl overflow-hidden hover:shadow-lg transition">
-                        <NavLink to="/shop">
+                        <NavLink to="/shop/1">
                             <img src={salon1} className="w-full h-48 object-cover" alt="Salon" />
                             <div className="p-4">
                                 <p className="text-gray-600 text-sm">
@@ -25,7 +25,7 @@ export function Shops() {
 
                     {/* Card 2 */}
                     <div className="w-full max-w-xs bg-white shadow-md rounded-xl overflow-hidden hover:shadow-lg transition">
-                        <NavLink to="/shop">
+                        <NavLink to="/shop/2">
                             <img src={salon2} className="w-full h-48 object-cover" alt="Salon" />
                             <div className="p-4">
                                 <p className="text-gray-600 text-sm">
@@ -37,7 +37,7 @@ export function Shops() {
 
                     {/* Card 3 */}
                     <div className="w-full max-w-xs bg-white shadow-md rounded-xl overflow-hidden hover:shadow-lg transition">
-                        <NavLink to="/shop">
+                        <NavLink to="/shop/3">
                             <img src={salon3} className="w-full h-48 object-cover" alt="Salon" />
                             <div className="p-4">
                                 <p className="text-gray-600 text-sm">
@@ -49,7 +49,7 @@ export function Shops() {
 
                     {/* Card 4 */}
                     <div className="w-full max-w-xs bg-white shadow-md rounded-xl overflow-hidden hover:shadow-lg transition">
-                        <NavLink to="/shop">
+                        <NavLink to="/shop/4">
                             <img src={salon4} className="w-full h-48 object-cover" alt="Salon" />
                             <div className="p-4">
                                 <p className="text-gray-600 text-sm">
@@ -61,7 +61,7 @@ export function Shops() {
 
                     {/* Card 5 */}
                     <div className="w-full max-w-xs bg-white shadow-md rounded-xl overflow-hidden hover:shadow-lg transition">
-                        <NavLink to="/shop">
+                        <NavLink to="/shop/5">
                             <img src={salon5} className="w-full h-48 object-cover" alt="Salon" />
                             <div className="p-4">
                                 <p className="text-gray-600 text-sm">

@@ -53,7 +53,7 @@ export function LoginPage() {
                         </div>
 
                         {/* Button */}
-                        <button className="w-full bg-gray-900 text-white py-2 rounded-lg hover:bg-gray-800 transition">
+                        <button className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 rounded-full">
                             Login
                         </button>
 
