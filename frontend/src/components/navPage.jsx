@@ -13,12 +13,12 @@ export function NavBar() {
                         <button className="btn btn-outline-success" type="submit">Search</button>
                     </form>
                 </div>
-            </nav> */}
+            </nav> 
             <nav className="bg-white shadow-md sticky top-0 z-50">
                 <div className="max-w-6xl mx-auto px-4">
                     <div className="flex justify-between items-center h-16">
 
-                        {/* Logo */}
+                        
                         <NavLink className="navbar-brand" to="/">
                             <div className="text-2xl font-bold text-pink-500">
                                 Salon Now
@@ -42,7 +42,7 @@ export function NavBar() {
 
                         </form>
 
-                        {/* Button */}
+            
                         <ul className=" flex space-x-4">
                             <li className="">
                                 <NavLink className="text-black px-4 py-2 hover:text-gray-500 transition" aria-current="page" to="/login">
@@ -60,6 +60,26 @@ export function NavBar() {
                                 </NavLink>
                             </li>
                         </ul>
+                    </div>
+                </div>
+            </nav>
+        */}
+
+            <nav className="flex items-center justify-between px-12 py-6 bg-white">
+                <div className="flex items-center gap-2">
+                    <div className="text-[#D4AF37]">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2L14.5 9H22L16 14L18.5 21L12 17L5.5 21L8 14L2 9H9.5L12 2Z" />
+                        </svg>
+                    </div>
+                    <span className="text-2xl font-serif font-semibold tracking-tight">Salon Now</span>
+                </div>
+
+                <div className="flex items-center gap-8">
+                    <a href="#" className="text-[#D4AF37] font-medium text-sm tracking-widest uppercase">Discover</a>
+                    <a href="#" className="text-gray-800 font-medium text-sm tracking-widest uppercase">Dashboard</a>
+                    <div className="w-10 h-10 bg-[#C2185B] rounded-full flex items-center justify-center text-white font-bold">
+                        R
                     </div>
                 </div>
             </nav>
