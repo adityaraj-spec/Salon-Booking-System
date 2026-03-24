@@ -52,155 +52,155 @@ export function Shops() {
                     <div className="w-full max-w-xs bg-white shadow-md rounded-xl overflow-hidden hover:shadow-lg transition">
                         <NavLink to="/shop/1">
                             <img src={salon1} className="w-full h-48 object-cover hover:scale-105 transition-transform duration-500" alt="Salon" />
-                            <div className="p-8 flex flex-col grow">
-                                <div className="flex justify-between items-start mb-4">
-                                    <h3 className="text-2xl font-serif font-semibold text-gray-900">Glamour Studio</h3>
-                                    <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
-                                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                        <span className="font-bold text-sm text-gray-700">4.5</span>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-2 text-gray-400 mb-4">
-                                    <MapPin className="w-4 h-4" />
-                                    <span className="text-sm font-medium">Howrah, west Bengal</span>
-                                </div>
-                                <div className="flex items-center justify-between pt-6 border-t border-gray-100 text-gray-600">
-                                    <div className="flex items-center gap-2">
-                                        <Users className="w-4 h-4" />
-                                        <span className="text-sm font-medium">4 seats available</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <Clock className="w-4 h-4" />
-                                        <span className="text-sm font-medium">09:00 AM - 21:00 PM</span>
-                                    </div>
+                        </NavLink>
+                        <div className="p-8 flex flex-col grow">
+                            <div className="flex justify-between items-start mb-4">
+                                <h3 className="text-2xl font-serif font-semibold text-gray-900">Glamour Studio</h3>
+                                <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
+                                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                    <span className="font-bold text-sm text-gray-700">4.5</span>
                                 </div>
                             </div>
-                        </NavLink>
+
+                            <div className="flex items-center gap-2 text-gray-400 mb-4">
+                                <MapPin className="w-4 h-4" />
+                                <span className="text-sm font-medium">Howrah, west Bengal</span>
+                            </div>
+                            <div className="flex items-center justify-between pt-6 border-t border-gray-100 text-gray-600">
+                                <div className="flex items-center gap-2">
+                                    <Users className="w-4 h-4" />
+                                    <span className="text-sm font-medium">4 seats available</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Clock className="w-4 h-4" />
+                                    <span className="text-sm font-medium">09:00 AM - 21:00 PM</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Card 2 */}
                     <div className="w-full max-w-xs bg-white shadow-md rounded-xl overflow-hidden hover:shadow-lg transition">
                         <NavLink to="/shop/2">
                             <img src={salon2} className="w-full h-48 object-cover hover:scale-105 transition-transform duration-500" alt="Salon" />
-                            <div className="p-8 flex flex-col grow">
-                                <div className="flex justify-between items-start mb-4">
-                                    <h3 className="text-2xl font-serif font-semibold text-gray-900">Urban Cuts</h3>
-                                    <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
-                                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                        <span className="font-bold text-sm text-gray-700">4.5</span>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-2 text-gray-400 mb-4">
-                                    <MapPin className="w-4 h-4" />
-                                    <span className="text-sm font-medium">Howrah, west Bengal</span>
-                                </div>
-                                <div className="flex items-center justify-between pt-6 border-t border-gray-100 text-gray-600">
-                                    <div className="flex items-center gap-2">
-                                        <Users className="w-4 h-4" />
-                                        <span className="text-sm font-medium">4 seats available</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <Clock className="w-4 h-4" />
-                                        <span className="text-sm font-medium">09:00 AM - 21:00 PM</span>
-                                    </div>
+                        </NavLink>
+                        <div className="p-8 flex flex-col grow">
+                            <div className="flex justify-between items-start mb-4">
+                                <h3 className="text-2xl font-serif font-semibold text-gray-900">Urban Cuts</h3>
+                                <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
+                                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                    <span className="font-bold text-sm text-gray-700">4.5</span>
                                 </div>
                             </div>
-                        </NavLink>
+
+                            <div className="flex items-center gap-2 text-gray-400 mb-4">
+                                <MapPin className="w-4 h-4" />
+                                <span className="text-sm font-medium">Howrah, west Bengal</span>
+                            </div>
+                            <div className="flex items-center justify-between pt-6 border-t border-gray-100 text-gray-600">
+                                <div className="flex items-center gap-2">
+                                    <Users className="w-4 h-4" />
+                                    <span className="text-sm font-medium">4 seats available</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Clock className="w-4 h-4" />
+                                    <span className="text-sm font-medium">09:00 AM - 21:00 PM</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Card 3 */}
                     <div className="w-full max-w-xs bg-white shadow-md rounded-xl overflow-hidden hover:shadow-lg transition">
                         <NavLink to="/shop/3">
                             <img src={salon3} className="w-full h-48 object-cover hover:scale-105 transition-transform duration-500" alt="Salon" />
-                            <div className="p-8 flex flex-col grow">
-                                <div className="flex justify-between items-start mb-4">
-                                    <h3 className="text-2xl font-serif font-semibold text-gray-900">Serenity Spa & Salon</h3>
-                                    <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
-                                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                        <span className="font-bold text-sm text-gray-700">4.5</span>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-2 text-gray-400 mb-4">
-                                    <MapPin className="w-4 h-4" />
-                                    <span className="text-sm font-medium">Howrah, west Bengal</span>
-                                </div>
-                                <div className="flex items-center justify-between pt-6 border-t border-gray-100 text-gray-600">
-                                    <div className="flex items-center gap-2">
-                                        <Users className="w-4 h-4" />
-                                        <span className="text-sm font-medium">4 seats available</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <Clock className="w-4 h-4" />
-                                        <span className="text-sm font-medium">09:00 AM - 21:00 PM</span>
-                                    </div>
+                        </NavLink>
+                        <div className="p-8 flex flex-col grow">
+                            <div className="flex justify-between items-start mb-4">
+                                <h3 className="text-2xl font-serif font-semibold text-gray-900">Serenity Spa & Salon</h3>
+                                <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
+                                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                    <span className="font-bold text-sm text-gray-700">4.5</span>
                                 </div>
                             </div>
-                        </NavLink>
+
+                            <div className="flex items-center gap-2 text-gray-400 mb-4">
+                                <MapPin className="w-4 h-4" />
+                                <span className="text-sm font-medium">Howrah, west Bengal</span>
+                            </div>
+                            <div className="flex items-center justify-between pt-6 border-t border-gray-100 text-gray-600">
+                                <div className="flex items-center gap-2">
+                                    <Users className="w-4 h-4" />
+                                    <span className="text-sm font-medium">4 seats available</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Clock className="w-4 h-4" />
+                                    <span className="text-sm font-medium">09:00 AM - 21:00 PM</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Card 4 */}
                     <div className="w-full max-w-xs bg-white shadow-md rounded-xl overflow-hidden hover:shadow-lg transition">
                         <NavLink to="/shop/4">
                             <img src={salon4} className="w-full h-48 object-cover hover:scale-105 transition-transform duration-500" alt="Salon" />
-                            <div className="p-8 flex flex-col grow">
-                                <div className="flex justify-between items-start mb-4">
-                                    <h3 className="text-2xl font-serif font-semibold text-gray-900">Style Zone</h3>
-                                    <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
-                                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                        <span className="font-bold text-sm text-gray-700">4.5</span>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-2 text-gray-400 mb-4">
-                                    <MapPin className="w-4 h-4" />
-                                    <span className="text-sm font-medium">Kolkata, west Bengal</span>
-                                </div>
-                                <div className="flex items-center justify-between pt-6 border-t border-gray-100 text-gray-600">
-                                    <div className="flex items-center gap-2">
-                                        <Users className="w-4 h-4" />
-                                        <span className="text-sm font-medium">4 seats available</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <Clock className="w-4 h-4" />
-                                        <span className="text-sm font-medium">09:00 AM - 21:00 PM</span>
-                                    </div>
+                        </NavLink>
+                        <div className="p-8 flex flex-col grow">
+                            <div className="flex justify-between items-start mb-4">
+                                <h3 className="text-2xl font-serif font-semibold text-gray-900">Style Zone</h3>
+                                <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
+                                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                    <span className="font-bold text-sm text-gray-700">4.5</span>
                                 </div>
                             </div>
-                        </NavLink>
+
+                            <div className="flex items-center gap-2 text-gray-400 mb-4">
+                                <MapPin className="w-4 h-4" />
+                                <span className="text-sm font-medium">Kolkata, west Bengal</span>
+                            </div>
+                            <div className="flex items-center justify-between pt-6 border-t border-gray-100 text-gray-600">
+                                <div className="flex items-center gap-2">
+                                    <Users className="w-4 h-4" />
+                                    <span className="text-sm font-medium">4 seats available</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Clock className="w-4 h-4" />
+                                    <span className="text-sm font-medium">09:00 AM - 21:00 PM</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Card 5 */}
                     <div className="w-full max-w-xs bg-white shadow-md rounded-xl overflow-hidden hover:shadow-lg transition">
                         <NavLink to="/shop/5">
                             <img src={salon5} className="w-full h-48 object-cover hover:scale-105 transition-transform duration-500" alt="Salon" />
-                            <div className="p-8 flex flex-col grow">
-                                <div className="flex justify-between items-start mb-4">
-                                    <h3 className="text-2xl font-serif font-semibold text-gray-900">Royal Grooming Lounge</h3>
-                                    <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
-                                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                        <span className="font-bold text-sm text-gray-700">4.5</span>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-2 text-gray-400 mb-4">
-                                    <MapPin className="w-4 h-4" />
-                                    <span className="text-sm font-medium">Vaishali, Bihar</span>
-                                </div>
-                                <div className="flex items-center justify-between pt-6 border-t border-gray-100 text-gray-600">
-                                    <div className="flex items-center gap-2">
-                                        <Users className="w-4 h-4" />
-                                        <span className="text-sm font-medium">4 seats available</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <Clock className="w-4 h-4" />
-                                        <span className="text-sm font-medium">09:00 AM - 21:00 PM</span>
-                                    </div>
+                        </NavLink>
+                        <div className="p-8 flex flex-col grow">
+                            <div className="flex justify-between items-start mb-4">
+                                <h3 className="text-2xl font-serif font-semibold text-gray-900">Royal Grooming Lounge</h3>
+                                <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
+                                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                    <span className="font-bold text-sm text-gray-700">4.5</span>
                                 </div>
                             </div>
-                        </NavLink>
+
+                            <div className="flex items-center gap-2 text-gray-400 mb-4">
+                                <MapPin className="w-4 h-4" />
+                                <span className="text-sm font-medium">Vaishali, Bihar</span>
+                            </div>
+                            <div className="flex items-center justify-between pt-6 border-t border-gray-100 text-gray-600">
+                                <div className="flex items-center gap-2">
+                                    <Users className="w-4 h-4" />
+                                    <span className="text-sm font-medium">4 seats available</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Clock className="w-4 h-4" />
+                                    <span className="text-sm font-medium">09:00 AM - 21:00 PM</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

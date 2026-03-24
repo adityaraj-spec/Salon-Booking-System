@@ -8,9 +8,9 @@ export function Footer() {
 
                         {/* Column 1 */}
                         <div>
-                            <h5 className="text-lg font-semibold mb-2">Salon Now</h5>
+                            <h5 className="text-lg font-semibold mb-2">Salon<span className="text-[#D4AF37]">Now</span></h5>
                             <p className="text-sm text-gray-300">
-                                Building modern web applications using React and Bootstrap.
+                                We make salon booking simple, secure, and convenient.
                             </p>
                         </div>
 

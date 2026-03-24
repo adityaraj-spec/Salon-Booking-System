@@ -10,7 +10,7 @@ export function NavBar() {
                         <Scissors size={24} />
                     </div>
                 </NavLink>
-                <span className="text-2xl font-serif font-semibold tracking-tight">SalonNow</span>
+                <span className="text-2xl font-serif font-semibold tracking-tight">Salon<span className="text-[#D4AF37]">Now</span></span>
             </div>
 
             <div className="flex items-center gap-6">

@@ -16,7 +16,7 @@ export function SignUpPage() {
                         <div className="bg-[#1a1a1a] p-2 rounded-full text-white">
                             <Scissors size={24} />
                         </div>
-                        <h1 className="text-2xl font-serif font-bold text-black tracking-wide">SalonNow</h1>
+                        <h1 className="text-2xl font-serif font-bold text-black tracking-wide">Salon<span className="text-[#D4AF37]">Now</span></h1>
                     </div>
 
                     {/* Titles */}
