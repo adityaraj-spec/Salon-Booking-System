@@ -1,66 +1,92 @@
-export function LoginPage() {
-    return (
-        <>
-            <div className="bg-white flex justify-center h-screen">
-                <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-md mt-4 mb-4">
+import { useState } from "react";
+import { Scissors, Eye, EyeOff } from "lucide-react";
+import { Link } from "react-router-dom";
 
-                    <h1 className="text-black text-3xl font-bold text-center mb-6">
-                        Login
-                    </h1>
+export function LoginPage() {
+    const [showPassword, setShowPassword] = useState(false);
+
+    return (
+        <div className="min-h-screen grid md:grid-cols-2 bg-white font-sans">
+            {/* LEFT SIDE: FORM */}
+            <div className="flex flex-col justify-center items-center px-6 py-10 overflow-y-auto">
+                <div className="w-full max-w-sm">
+                    {/* Logo Section */}
+                    <div className="flex justify-center items-center space-x-2 mb-8">
+                        <div className="bg-[#1a1a1a] p-2 rounded-full text-white">
+                            <Scissors size={24} />
+                        </div>
+                        <h1 className="text-2xl font-serif font-bold text-black tracking-wide">SalonNow</h1>
+                    </div>
+
+                    {/* Titles */}
+                    <div className="text-center mb-8">
+                        <h2 className="text-3xl font-serif font-bold text-[#1a1a1a] mb-2">Welcome Back</h2>
+                        <p className="text-gray-500 text-sm">Login to your account to continue</p>
+                    </div>
 
                     <form method="POST" action="/login" className="space-y-4">
-
-                        {/* Username */}
-                        <div>
-                            <label htmlFor="username" className="block text-black text-sm font-medium mb-1">
-                                Username
-                            </label>
-                            <input
-                                name="username"
-                                id="username"
-                                type="text"
-                                placeholder="Enter a valid username"
-                                className="w-full border rounded-lg text-black p-2 focus:outline-none focus:ring-2 focus:ring-black"
-                            />
-                        </div>
-
                         {/* Email */}
                         <div>
-                            <label htmlFor="email" className="block text-black text-sm font-medium mb-1">
-                                Email
-                            </label>
+                            <label className="block text-sm text-gray-700 mb-1">Email</label>
                             <input
                                 name="email"
-                                id="email"
                                 type="email"
-                                placeholder="Enter a valid email"
-                                className="w-full border rounded-lg text-black p-2 focus:outline-none focus:ring-2 focus:ring-black"
+                                placeholder="your.email@example.com"
+                                className="w-full border border-gray-200 rounded-lg p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
                             />
                         </div>
 
                         {/* Password */}
                         <div>
-                            <label htmlFor="password" className="block text-black text-sm font-medium mb-1">
-                                Password
-                            </label>
-                            <input
-                                name="password"
-                                id="password"
-                                type="password"
-                                placeholder="Enter a valid password"
-                                className="w-full border rounded-lg text-black p-2 focus:outline-none focus:ring-2 focus:ring-black"
-                            />
+                            <label className="block text-sm text-gray-700 mb-1">Password</label>
+                            <div className="relative">
+                                <input
+                                    name="password"
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="Enter your password"
+                                    className="w-full border border-gray-200 rounded-lg p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors pr-10"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600"
+                                >
+                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                            </div>
                         </div>
 
-                        {/* Button */}
-                        <button className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 rounded-full">
+                        {/* Forgot Password */}
+                        <div className="flex justify-start pt-1 pb-2">
+                            <a href="#" className="text-sm text-[#e65c00] hover:text-[#cc5200] font-medium transition-colors">
+                                Forgot password?
+                            </a>
+                        </div>
+
+                        {/* Login Button */}
+                        <button type="submit" className="w-full bg-[#1a1a1a] hover:bg-black text-white font-medium py-3.5 rounded-full transition-colors mt-2">
                             Login
                         </button>
 
-                    </form>
+                        <div className="text-center mt-6 text-sm text-gray-500">
+                            Don't have an account? <Link to="/signup" className="text-[#e65c00] hover:text-[#cc5200] font-medium transition-colors">Sign up</Link>
+                        </div>
 
+                        <div className="text-center mt-8 text-xs text-gray-400">
+                            <Link to="/" className="hover:text-gray-600 transition-colors">&larr; Back to Home</Link>
+                        </div>
+                    </form>
                 </div>
             </div>
-        </>
+
+            {/* RIGHT SIDE: IMAGE */}
+            <div className="hidden md:block relative bg-gray-100">
+                <img
+                    src="https://images.unsplash.com/photo-1562322140-8baeececf3df?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+                    alt="Hair Styling"
+                    className="absolute inset-0 h-full w-full object-cover"
+                />
+            </div>
+        </div>
     );
 }
