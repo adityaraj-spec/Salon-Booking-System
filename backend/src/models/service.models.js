@@ -12,7 +12,7 @@ const serviceSchema = new mongoose.Schema({
   },
   category: String,
   price: Number,
-  duration: Number, // in minutes
+  duration: Number,
   description: String
 }, { timestamps: true });
 

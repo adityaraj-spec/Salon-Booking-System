@@ -6,7 +6,7 @@ import { User } from "../models/user.models.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
 
 const registerSalon = asyncHandler(async (req, res) => {
-    const { name, description, address, lat, lng, openingHours, closingHours } = req.body
+    const { name, description, address, openingHours, closingHours } = req.body
 
     if (!name || !address) {
         throw new ApiError(400, "Name and address are required")
@@ -28,10 +28,6 @@ const registerSalon = asyncHandler(async (req, res) => {
         name,
         description,
         address,
-        location: {
-            lat: parseFloat(lat) || 0,
-            lng: parseFloat(lng) || 0
-        },
         openingHours,
         closingHours,
         images: imageUrls,
