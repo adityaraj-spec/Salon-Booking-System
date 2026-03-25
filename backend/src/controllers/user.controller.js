@@ -40,25 +40,13 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(409, "User with eamil or username already exists")
     }
 
-    const avatarLocalPath = req.files?.avatar[0]?.path;
-    if (!avatarLocalPath) {
-        throw new ApiError(400, "Avatar file is required")
-    }
-
-    const avatar = uploadOnCloudinary(avatarLocalPath)
-
-    if (!avatar) {
-        throw new ApiError(400, "Avatar file is required")
-    }
-
     const user = await User.create({
         fullName,
         email,
         username: username.toLowerCase(),
         password,
         phonenumber,
-        role,
-        avatar: avatar.url
+        role
     })
 
     const createdUser = await User.findById(user._id).select('-password -refreshToken')
@@ -88,14 +76,14 @@ const loginUser = asyncHandler(async (req, res) => {
         throw new ApiError(400, "username or email is required")
     }
 
-    const user = findOne({
+    const user = await User.findOne({
         $or: [{ username }, { email }]
     })
     if (!user) {
         throw new ApiError(404, "User does not exist")
     }
 
-    const isPasswordValid = await user.isPasswordCorrect(password)
+    const isPasswordValid = await user.isPasswordcorrect(password)
     if (!isPasswordValid) {
         throw new ApiError(401, "Invalid credential")
     }
