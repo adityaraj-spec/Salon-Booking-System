@@ -15,6 +15,7 @@ export function RoleSelectionPage() {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({ role }),
+                credentials: "include",
             });
 
             if (response.ok) {

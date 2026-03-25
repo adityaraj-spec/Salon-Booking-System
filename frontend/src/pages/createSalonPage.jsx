@@ -53,6 +53,7 @@ export function CreateSalonPage() {
             const response = await fetch("http://localhost:8000/api/v1/salons/register", {
                 method: "POST",
                 body: formData,
+                credentials: "include",
                 // Do not set Content-Type header, fetch will set it correctly with boundary
             });
 

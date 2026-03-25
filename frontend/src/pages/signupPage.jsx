@@ -20,6 +20,7 @@ export function SignUpPage() {
             const response = await fetch("http://localhost:8000/api/v1/users/register", {
                 method: "POST",
                 body: formData,
+                credentials: "include",
             });
 
             const data = await response.json();

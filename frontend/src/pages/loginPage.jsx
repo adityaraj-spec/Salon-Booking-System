@@ -1,9 +1,47 @@
 import { useState } from "react";
 import { Scissors, Eye, EyeOff } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const navigate = useNavigate();
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError("");
+
+        const formData = new FormData(e.target);
+        const email = formData.get("email");
+        const password = formData.get("password");
+
+        try {
+            const response = await fetch("http://localhost:8000/api/v1/users/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ email, password }),
+                credentials: "include",
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // If user already has a role, we could redirect to home, 
+                // but let's go to role-selection to ensure consistency as requested
+                navigate("/role-selection");
+            } else {
+                setError(data.message || "Login failed");
+            }
+        } catch (err) {
+            setError("Something went wrong. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="min-h-screen grid md:grid-cols-2 bg-white font-sans">
@@ -24,13 +62,20 @@ export function LoginPage() {
                         <p className="text-gray-500 text-sm">Login to your account to continue</p>
                     </div>
 
-                    <form method="POST" action="/login" className="space-y-4">
+                    {error && (
+                        <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4">
+                            {error}
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSubmit} className="space-y-4">
                         {/* Email */}
                         <div>
                             <label className="block text-sm text-gray-700 mb-1">Email</label>
                             <input
                                 name="email"
                                 type="email"
+                                required
                                 placeholder="Enter your email"
                                 className="w-full border border-gray-200 rounded-lg p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
                             />
@@ -43,6 +88,7 @@ export function LoginPage() {
                                 <input
                                     name="password"
                                     type={showPassword ? "text" : "password"}
+                                    required
                                     placeholder="Enter your password"
                                     className="w-full border border-gray-200 rounded-lg p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors pr-10"
                                 />
@@ -64,8 +110,12 @@ export function LoginPage() {
                         </div>
 
                         {/* Login Button */}
-                        <button type="submit" className="w-full bg-[#1a1a1a] hover:bg-black text-white font-medium py-3.5 rounded-full transition-colors mt-2">
-                            Login
+                        <button 
+                            type="submit" 
+                            disabled={loading}
+                            className="w-full bg-[#1a1a1a] hover:bg-black text-white font-medium py-3.5 rounded-full transition-colors mt-2 disabled:opacity-50"
+                        >
+                            {loading ? "Logging in..." : "Login"}
                         </button>
 
                         <div className="text-center mt-6 text-sm text-gray-500">
