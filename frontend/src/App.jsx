@@ -6,6 +6,8 @@ import { LoginPage } from './pages/loginPage.jsx'
 import { SignUpPage } from './pages/signupPage.jsx'
 import { Shop } from './pages/shop.jsx'
 import { BookingPage } from './pages/bookingPage.jsx'
+import { RoleSelectionPage } from "./pages/roleSelectionPage.jsx"
+import { CreateSalonPage } from "./pages/createSalonPage.jsx"
 import './App.css'
 
 function App() {
@@ -18,6 +20,8 @@ function App() {
         <Route path="home" element={<HomePage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="signup" element={<SignUpPage />} />
+        <Route path="role-selection" element={<RoleSelectionPage />} />
+        <Route path="create-salon" element={<CreateSalonPage />} />
         <Route path="shops" element={<Shops />} />
         <Route path="shop/:id" element={<Shop />} />
         <Route path="booking" element={<BookingPage />} />

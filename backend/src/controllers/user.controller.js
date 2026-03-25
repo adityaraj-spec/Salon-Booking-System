@@ -23,11 +23,11 @@ const generateAccessAndRefreshToken = async (userId) => {
 }
 
 const registerUser = asyncHandler(async (req, res) => {
-    const { fullName, email, username, password, phonenumber, role } = req.body
-
+    const { fullName, email, username, password, phonenumber, role = "customer" } = req.body
+    
     if (
         [
-            fullName, email, username, password, phonenumber, role
+            fullName, email, username, password, phonenumber
         ].some((field) => field?.trim() === "")
     ) {
         throw new ApiError(400, "All fields are required")
@@ -66,9 +66,20 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(505, "Something went wrong registering the user")
     }
 
-    return res.status(201).json(
-        ApiResponse(200, createdUser, "User registered Successfully")
-    )
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id)
+
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
+
+    return res
+        .status(201)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
+        .json(
+            new ApiResponse(200, { user: createdUser, accessToken, refreshToken }, "User registered Successfully")
+        )
 })
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -138,8 +149,35 @@ const logoutUser = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, {}, "User logged Out Successfully"))
 })
 
+const updateUserRole = asyncHandler(async (req, res) => {
+    const { role } = req.body
+
+    if (!role || !["customer", "salonOwner"].includes(role)) {
+        throw new ApiError(400, "Invalid role")
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: {
+                role: role
+            }
+        },
+        { new: true }
+    ).select("-password -refreshToken")
+
+    if (!user) {
+        throw new ApiError(404, "User not found")
+    }
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, user, "User role updated successfully"))
+})
+
 export {
     registerUser,
     loginUser,
-    logoutUser
+    logoutUser,
+    updateUserRole
 }

@@ -1,10 +1,41 @@
 import { useState } from "react";
 import { Scissors, Eye, EyeOff } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export function SignUpPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const navigate = useNavigate();
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError("");
+
+        const formData = new FormData(e.target);
+        
+        try {
+            const response = await fetch("http://localhost:8000/api/v1/users/register", {
+                method: "POST",
+                body: formData,
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Assuming successful registration logs the user in (setting cookies)
+                navigate("/role-selection");
+            } else {
+                setError(data.message || "Registration failed");
+            }
+        } catch (err) {
+            setError("Something went wrong. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="min-h-screen grid md:grid-cols-2 bg-white font-sans">
@@ -12,6 +43,7 @@ export function SignUpPage() {
             <div className="flex flex-col justify-center items-center px-6 py-10 overflow-y-auto">
                 <div className="w-full max-w-md mt-4 mb-4">
                     {/* Logo Section */}
+                    {/* ... (existing logo section) */}
                     <div className="flex justify-center items-center space-x-2 mb-8 mt-4">
                         <div className="bg-[#1a1a1a] p-2 rounded-full text-white">
                             <Scissors size={24} />
@@ -25,9 +57,14 @@ export function SignUpPage() {
                         <p className="text-gray-500 text-sm">Join us to book your beauty appointments</p>
                     </div>
 
+                    {error && (
+                        <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4">
+                            {error}
+                        </div>
+                    )}
+
                     <form
-                        action="/signup"
-                        method="POST"
+                        onSubmit={handleSubmit}
                         className="space-y-4"
                         encType="multipart/form-data"
                     >
@@ -71,24 +108,11 @@ export function SignUpPage() {
                         <div>
                             <label className="block text-sm text-gray-700 mb-1">Phone</label>
                             <input
-                                name="phone"
+                                name="phonenumber"
                                 type="text"
                                 placeholder="+91 98765 43210"
                                 className="w-full border border-gray-200 rounded-lg p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
                             />
-                        </div>
-
-                        {/* Account Type / Role */}
-                        <div>
-                            <label className="block text-sm text-gray-700 mb-1">Account Type</label>
-                            <select
-                                name="role"
-                                className="w-full border border-gray-200 rounded-lg p-3 text-gray-800 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 bg-white transition-colors appearance-none"
-                            >
-                                <option value="customer">Customer</option>
-                                <option value="staff">Staff</option>
-                                <option value="salonOwner">Salon Owner</option>
-                            </select>
                         </div>
 
                         {/* Avatar */}
@@ -97,6 +121,7 @@ export function SignUpPage() {
                             <input
                                 name="avatar"
                                 type="file"
+                                required
                                 className="w-full border border-gray-200 rounded-lg p-2 text-gray-600 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 cursor-pointer"
                             />
                         </div>
@@ -145,9 +170,10 @@ export function SignUpPage() {
                         {/* Sign Up Button */}
                         <button
                             type="submit"
-                            className="w-full bg-[#1a1a1a] hover:bg-black text-white font-medium py-3.5 rounded-full transition-colors mt-6"
+                            disabled={loading}
+                            className="w-full bg-[#1a1a1a] hover:bg-black text-white font-medium py-3.5 rounded-full transition-colors mt-6 disabled:opacity-50"
                         >
-                            Sign Up
+                            {loading ? "Creating Account..." : "Sign Up"}
                         </button>
 
                         <div className="text-center mt-6 text-sm text-gray-500">
