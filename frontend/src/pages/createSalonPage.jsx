@@ -42,8 +42,6 @@ export function CreateSalonPage() {
         formData.append("name", formElements.name.value);
         formData.append("description", formElements.description.value);
         formData.append("address", formElements.address.value);
-        formData.append("lat", formElements.lat.value);
-        formData.append("lng", formElements.lng.value);
         formData.append("openingHours", formElements.openingHours.value);
         formData.append("closingHours", formElements.closingHours.value);
 
@@ -119,7 +117,7 @@ export function CreateSalonPage() {
                             <input
                                 name="name"
                                 type="text"
-                                placeholder="Glamour Studio"
+                                placeholder="Enter your salon name"
                                 required
                                 className="w-full border border-gray-200 rounded-xl p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
                             />
@@ -148,33 +146,10 @@ export function CreateSalonPage() {
                             <input
                                 name="address"
                                 type="text"
-                                placeholder="123 Beauty Lane, City, State"
+                                placeholder="Enter your salon address"
                                 required
                                 className="w-full border border-gray-200 rounded-xl p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
                             />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Latitude</label>
-                                <input
-                                    name="lat"
-                                    type="number"
-                                    step="any"
-                                    placeholder="28.6139"
-                                    className="w-full border border-gray-200 rounded-xl p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Longitude</label>
-                                <input
-                                    name="lng"
-                                    type="number"
-                                    step="any"
-                                    placeholder="77.2090"
-                                    className="w-full border border-gray-200 rounded-xl p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
-                                />
-                            </div>
                         </div>
                     </div>
 

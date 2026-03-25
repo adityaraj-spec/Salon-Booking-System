@@ -74,7 +74,7 @@ export function SignUpPage() {
                             <input
                                 name="fullName"
                                 type="text"
-                                placeholder="John Doe"
+                                placeholder="Enter your full name"
                                 required
                                 className="w-full border border-gray-200 rounded-lg p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
                             />
@@ -86,7 +86,7 @@ export function SignUpPage() {
                             <input
                                 name="username"
                                 type="text"
-                                placeholder="johndoe123"
+                                placeholder="Enter your username"
                                 required
                                 className="w-full border border-gray-200 rounded-lg p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
                             />
@@ -98,7 +98,7 @@ export function SignUpPage() {
                             <input
                                 name="email"
                                 type="email"
-                                placeholder="your.email@example.com"
+                                placeholder="Enter your email"
                                 required
                                 className="w-full border border-gray-200 rounded-lg p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
                             />
@@ -110,19 +110,8 @@ export function SignUpPage() {
                             <input
                                 name="phonenumber"
                                 type="text"
-                                placeholder="+91 98765 43210"
+                                placeholder="Enter your phone number"
                                 className="w-full border border-gray-200 rounded-lg p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
-                            />
-                        </div>
-
-                        {/* Avatar */}
-                        <div>
-                            <label className="block text-sm text-gray-700 mb-1">Avatar</label>
-                            <input
-                                name="avatar"
-                                type="file"
-                                required
-                                className="w-full border border-gray-200 rounded-lg p-2 text-gray-600 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 cursor-pointer"
                             />
                         </div>
 

@@ -31,7 +31,7 @@ export function LoginPage() {
                             <input
                                 name="email"
                                 type="email"
-                                placeholder="your.email@example.com"
+                                placeholder="Enter your email"
                                 className="w-full border border-gray-200 rounded-lg p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
                             />
                         </div>
