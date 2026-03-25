@@ -1,3 +1,4 @@
+import { Router } from "express";
 import { registerSalon } from "../controllers/salon.controller.js";
 import { verifyJWT } from "../middleware/auth.middleware.js";
 import { upload } from "../middleware/multer.middleware.js";
