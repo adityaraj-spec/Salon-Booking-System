@@ -3,9 +3,11 @@ import { Scissors, Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosConfig";
 import { useAuth } from "../context/AuthContext";
+import { useNotification } from "../context/NotificationContext";
 
 export function SignUpPage() {
     const { login } = useAuth();
+    const { showNotification } = useNotification();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -27,13 +29,18 @@ export function SignUpPage() {
 
             if (response.status === 200 || response.status === 201) {
                 login(response.data.data.user);
+                showNotification("Account created successfully! Welcome to SalonNow.", "success");
                 // Assuming successful registration logs the user in (setting cookies)
                 navigate("/role-selection");
             } else {
-                setError(response.data.message || "Registration failed");
+                const msg = response.data.message || "Registration failed";
+                setError(msg);
+                showNotification(msg, "error");
             }
         } catch (err) {
-            setError(err.response?.data?.message || "Something went wrong. Please try again.");
+            const msg = err.response?.data?.message || "Something went wrong. Please try again.";
+            setError(msg);
+            showNotification(msg, "error");
         } finally {
             setLoading(false);
         }

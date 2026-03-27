@@ -1,9 +1,11 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import axiosInstance from "../api/axiosConfig";
+import { useNotification } from "./NotificationContext";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+    const { showNotification } = useNotification();
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -27,8 +29,10 @@ export const AuthProvider = ({ children }) => {
             await axiosInstance.post("/users/logout");
             setUser(null);
             localStorage.removeItem("user");
+            showNotification("Logged out successfully. See you soon!", "success");
         } catch (error) {
             console.error("Logout failed:", error);
+            showNotification("Logout failed. Please try again.", "error");
         }
     };
 
