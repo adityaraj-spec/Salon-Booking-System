@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { User, Store, Scissors, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../api/axiosConfig";
 
 export function RoleSelectionPage() {
     const [loading, setLoading] = useState(null); // 'customer' or 'salonOwner'
@@ -9,16 +10,11 @@ export function RoleSelectionPage() {
     const handleRoleSelect = async (role) => {
         setLoading(role);
         try {
-            const response = await fetch("http://localhost:8000/api/v1/users/update-role", {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ role }),
-                credentials: "include",
+            const response = await axiosInstance.patch("/users/update-role", { role }, {
+                withCredentials: true,
             });
 
-            if (response.ok) {
+            if (response.status === 200 || response.status === 201) {
                 if (role === "customer") {
                     navigate("/home");
                 } else {

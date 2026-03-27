@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { Scissors, Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import axiosInstance from "../api/axiosConfig";
+import { useAuth } from "../context/AuthContext";
 
 export function LoginPage() {
+    const { login } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
@@ -18,26 +21,20 @@ export function LoginPage() {
         const password = formData.get("password");
 
         try {
-            const response = await fetch("http://localhost:8000/api/v1/users/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ email, password }),
-                credentials: "include",
+            const response = await axiosInstance.post("/users/login", { email, password }, {
+                withCredentials: true,
             });
 
-            const data = await response.json();
-
-            if (response.ok) {
+            if (response.status === 200 || response.status === 201) {
+                login(response.data.data.user);
                 // If user already has a role, we could redirect to home, 
                 // but let's go to role-selection to ensure consistency as requested
                 navigate("/role-selection");
             } else {
-                setError(data.message || "Login failed");
+                setError(response.data.message || "Login failed");
             }
         } catch (err) {
-            setError("Something went wrong. Please try again.");
+            setError(err.response?.data?.message || "Something went wrong. Please try again.");
         } finally {
             setLoading(false);
         }

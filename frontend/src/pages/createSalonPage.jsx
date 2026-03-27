@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Scissors, MapPin, Clock, Camera, Plus, Trash2, Store, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../api/axiosConfig";
 
 export function CreateSalonPage() {
     const [loading, setLoading] = useState(false);
@@ -50,22 +51,20 @@ export function CreateSalonPage() {
         });
 
         try {
-            const response = await fetch("http://localhost:8000/api/v1/salons/register", {
-                method: "POST",
-                body: formData,
-                credentials: "include",
-                // Do not set Content-Type header, fetch will set it correctly with boundary
+            const response = await axiosInstance.post("/salons/register", formData, {
+                withCredentials: true,
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
             });
 
-            const data = await response.json();
-
-            if (response.ok) {
+            if (response.status === 200 || response.status === 201) {
                 navigate("/home");
             } else {
-                setError(data.message || "Failed to register salon");
+                setError(response.data.message || "Failed to register salon");
             }
         } catch (err) {
-            setError("Something went wrong. Please try again.");
+            setError(err.response?.data?.message || "Something went wrong. Please try again.");
         } finally {
             setLoading(false);
         }

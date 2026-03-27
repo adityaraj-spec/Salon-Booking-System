@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { Scissors, Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import axiosInstance from "../api/axiosConfig";
+import { useAuth } from "../context/AuthContext";
 
 export function SignUpPage() {
+    const { login } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -15,24 +18,22 @@ export function SignUpPage() {
         setError("");
 
         const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
         
         try {
-            const response = await fetch("http://localhost:8000/api/v1/users/register", {
-                method: "POST",
-                body: formData,
-                credentials: "include",
+            const response = await axiosInstance.post("/users/register", data, {
+                withCredentials: true,
             });
 
-            const data = await response.json();
-
-            if (response.ok) {
+            if (response.status === 200 || response.status === 201) {
+                login(response.data.data.user);
                 // Assuming successful registration logs the user in (setting cookies)
                 navigate("/role-selection");
             } else {
-                setError(data.message || "Registration failed");
+                setError(response.data.message || "Registration failed");
             }
         } catch (err) {
-            setError("Something went wrong. Please try again.");
+            setError(err.response?.data?.message || "Something went wrong. Please try again.");
         } finally {
             setLoading(false);
         }
