@@ -4,12 +4,13 @@ import { ApiResponse } from "../utils/apiResponse.js"
 import { Salon } from "../models/salon.models.js"
 import { User } from "../models/user.models.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
+import { sendShopAddedEmail } from "../utils/mailer.js"
 
 const registerSalon = asyncHandler(async (req, res) => {
-    const { name, description, address, openingHours, closingHours } = req.body
+    const { name, city, description, address, openingHours, closingHours } = req.body
 
-    if (!name || !address) {
-        throw new ApiError(400, "Name and address are required")
+    if (!name || !address || !city) {
+        throw new ApiError(400, "Name, address, and city are required")
     }
 
     const imagesLocalPaths = req.files?.map(file => file.path) || [];
@@ -26,6 +27,7 @@ const registerSalon = asyncHandler(async (req, res) => {
 
     const salon = await Salon.create({
         name,
+        city,
         description,
         address,
         openingHours,
@@ -41,9 +43,58 @@ const registerSalon = asyncHandler(async (req, res) => {
     // Ensure user role is salonOwner
     await User.findByIdAndUpdate(req.user?._id, { $set: { role: "salonOwner" } })
 
+    // Trigger shop registered email silently
+    if (req.user) {
+        sendShopAddedEmail(req.user.email, req.user.fullName, salon.name);
+    }
+
     return res.status(201).json(
         new ApiResponse(201, salon, "Salon registered successfully")
     )
 })
 
-export { registerSalon }
+const getSalons = asyncHandler(async (req, res) => {
+    const { search, city } = req.query;
+    
+    let query = {};
+    
+    if (search) {
+        query.$or = [
+            { name: { $regex: search, $options: "i" } },
+            { description: { $regex: search, $options: "i" } },
+            { address: { $regex: search, $options: "i" } },
+            { city: { $regex: search, $options: "i" } }
+        ];
+    }
+    
+    if (city) {
+        query.city = { $regex: city, $options: "i" };
+    }
+    
+    const salons = await Salon.find(query).sort({ createdAt: -1 });
+    console.log("Salons fetched by API:", salons.length, query);
+    
+    return res.status(200).json(
+        new ApiResponse(200, salons, "Salons fetched successfully")
+    );
+});
+
+const getSalonById = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    if (!id) {
+        throw new ApiError(400, "Salon ID is required");
+    }
+
+    const salon = await Salon.findById(id);
+
+    if (!salon) {
+        throw new ApiError(404, "Salon not found");
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200, salon, "Salon details fetched successfully")
+    );
+});
+
+export { registerSalon, getSalons, getSalonById }

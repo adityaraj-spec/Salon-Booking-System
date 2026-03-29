@@ -12,6 +12,11 @@ const salonSchema = new mongoose.Schema({
     required: true
 
   },
+  city: {
+    type: String,
+    required: true,
+    index: true
+  },
   description: String,
   address: String,
   images: [String],

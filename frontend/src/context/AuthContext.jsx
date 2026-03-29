@@ -24,20 +24,31 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem("user", JSON.stringify(userData));
     };
 
+    const updateUserRole = (newRole) => {
+        if (user) {
+            const updatedUser = { ...user, role: newRole };
+            setUser(updatedUser);
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+        }
+    };
+
     const logout = async () => {
         try {
             await axiosInstance.post("/users/logout");
-            setUser(null);
-            localStorage.removeItem("user");
             showNotification("Logged out successfully. See you soon!", "success");
         } catch (error) {
             console.error("Logout failed:", error);
-            showNotification("Logout failed. Please try again.", "error");
+            // Even if backend fails (e.g. token expired), we should still log out on frontend
+            showNotification("Signed out from local session.", "info");
+        } finally {
+            setUser(null);
+            localStorage.removeItem("user");
+            window.location.href = "/login";
         }
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, logout }}>
+        <AuthContext.Provider value={{ user, loading, login, logout, updateUserRole }}>
             {children}
         </AuthContext.Provider>
     );

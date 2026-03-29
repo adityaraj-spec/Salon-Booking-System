@@ -3,6 +3,7 @@ import ApiError from "../utils/apiError.js"
 import { ApiResponse } from "../utils/apiResponse.js"
 import { User } from "../models/user.models.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
+import { sendWelcomeEmail, sendLoginEmail } from "../utils/mailer.js"
 
 const generateAccessAndRefreshToken = async (userId) => {
     try {
@@ -61,6 +62,9 @@ const registerUser = asyncHandler(async (req, res) => {
         secure: true
     }
 
+    // Trigger welcome email silently
+    sendWelcomeEmail(createdUser.email, createdUser.fullName);
+
     return res
         .status(201)
         .cookie("accessToken", accessToken, options)
@@ -96,6 +100,9 @@ const loginUser = asyncHandler(async (req, res) => {
         httpOnly: true,
         secure: true
     }
+
+    // Trigger login email silently
+    sendLoginEmail(loggedInUSer.email, loggedInUSer.fullName);
 
     return res
         .status(200)

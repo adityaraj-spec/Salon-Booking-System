@@ -8,6 +8,8 @@ import { Shop } from './pages/shop.jsx'
 import { BookingPage } from './pages/bookingPage.jsx'
 import { RoleSelectionPage } from "./pages/roleSelectionPage.jsx"
 import { CreateSalonPage } from "./pages/createSalonPage.jsx"
+import { ProfilePage } from "./pages/profilePage.jsx"
+import { MyBookingsPage } from "./pages/bookingsListPage.jsx"
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { NotificationProvider } from "./context/NotificationContext.jsx";
 import { Notification } from "./components/Notification.jsx";
@@ -29,7 +31,9 @@ function App() {
             <Route path="create-salon" element={<CreateSalonPage />} />
             <Route path="shops" element={<Shops />} />
             <Route path="shop/:id" element={<Shop />} />
-            <Route path="booking" element={<BookingPage />} />
+            <Route path="booking/:id" element={<BookingPage />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="bookings" element={<MyBookingsPage />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

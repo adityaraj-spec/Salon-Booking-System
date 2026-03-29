@@ -1,14 +1,47 @@
+import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router';
-import { Search, Star, MapPin, Users, Clock } from 'lucide-react';
-import salon1 from "../assets/salon1.jpg";
-import salon2 from "../assets/salon2.jpg";
-import salon3 from "../assets/salon3.jpg";
-import salon4 from "../assets/salon4.jpg";
-import salon5 from "../assets/salon5.avif";
+import { Search, Star, MapPin, Users, Clock, Loader2 } from 'lucide-react';
 
 export function Shops() {
+    const [salons, setSalons] = useState([]);
+    const [city, setCity] = useState("");
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    const fetchSalons = async () => {
+        setLoading(true);
+        setError("");
+        try {
+            const queryParams = new URLSearchParams();
+            if (city) queryParams.append("city", city);
+
+            const response = await fetch(`http://localhost:8000/api/v1/salons?${queryParams.toString()}`);
+            const data = await response.json();
+
+            if (response.ok) {
+                setSalons(data.data);
+            } else {
+                setError(data.message || "Failed to fetch salons");
+            }
+        } catch (err) {
+            setError("Failed to connect to the server. Please ensure the backend is running.");
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchSalons();
+    }, []);
+
+    const handleSearch = (e) => {
+        e.preventDefault();
+        fetchSalons();
+    };
+
     return (
-        <>
+        <div className="min-h-screen bg-[#fafafa]">
             <div className="text-center py-20 px-4">
                 <h1 className="text-6xl font-serif text-gray-900 mb-2">
                     Discover Your <br />
@@ -19,191 +52,97 @@ export function Shops() {
                 </p>
 
                 {/* Search Bar Container */}
-                <div className="flex flex-col md:flex-row items-center justify-center gap-4 max-w-4xl mx-auto bg-white p-2 rounded-full shadow-sm border border-gray-100">
-                    <div className="flex items-center flex-1 px-6 gap-3 border-r border-gray-200">
-                        <Search className="text-gray-400 w-5 h-5" />
-                        <input
-                            type="text"
-                            placeholder="Search salons or services..."
-                            className="w-full outline-none text-gray-700 placeholder-gray-400"
-                        />
-                    </div>
+                <form onSubmit={handleSearch} className="flex flex-col md:flex-row items-center justify-center gap-4 max-w-2xl mx-auto bg-white p-2 rounded-full shadow-sm border border-gray-100">
                     <div className="flex items-center flex-1 px-6 gap-3">
-                        <svg className="text-gray-400 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
+                        <MapPin className="text-gray-400 w-5 h-5" />
                         <input
                             type="text"
                             placeholder="City"
+                            value={city}
+                            onChange={(e) => setCity(e.target.value)}
                             className="w-full outline-none text-gray-700 placeholder-gray-400"
                         />
                     </div>
-                    <button className="bg-[#1A1A1A] text-white px-10 py-4 rounded-full font-bold uppercase text-xs tracking-widest hover:bg-black transition-colors">
-                        Search
+                    <button type="submit" className="bg-[#1A1A1A] text-white px-10 py-4 rounded-full font-bold uppercase text-xs tracking-widest hover:bg-black transition-colors disabled:opacity-70">
+                        {loading ? <Loader2 className="w-4 h-4 animate-spin inline mr-2" /> : "Search"}
                     </button>
-                </div>
+                </form>
             </div>
 
-            <div className="w-full bg-white mx-auto px-4 py-8">
-                <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 justify-items-center">
-
-                    {/* Card 1 */}
-                    <div className="w-full max-w-xs bg-white shadow-md rounded-xl overflow-hidden hover:shadow-lg transition">
-                        <NavLink to="/shop/1">
-                            <img src={salon1} className="w-full h-48 object-cover hover:scale-105 transition-transform duration-500" alt="Salon" />
-                        </NavLink>
-                        <div className="p-8 flex flex-col grow">
-                            <div className="flex justify-between items-start mb-4">
-                                <h3 className="text-2xl font-serif font-semibold text-gray-900">Glamour Studio</h3>
-                                <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
-                                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                    <span className="font-bold text-sm text-gray-700">4.5</span>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-2 text-gray-400 mb-4">
-                                <MapPin className="w-4 h-4" />
-                                <span className="text-sm font-medium">Howrah, west Bengal</span>
-                            </div>
-                            <div className="flex items-center justify-between pt-6 border-t border-gray-100 text-gray-600">
-                                <div className="flex items-center gap-2">
-                                    <Users className="w-4 h-4" />
-                                    <span className="text-sm font-medium">4 seats available</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Clock className="w-4 h-4" />
-                                    <span className="text-sm font-medium">09:00 AM - 21:00 PM</span>
-                                </div>
-                            </div>
-                        </div>
+            <div className="w-full bg-white mx-auto px-4 py-8 min-h-[400px]">
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center py-20">
+                        <Loader2 className="w-12 h-12 text-[#D4AF37] animate-spin mb-4" />
+                        <p className="text-gray-500 animate-pulse">Finding the best salons for you...</p>
                     </div>
-
-                    {/* Card 2 */}
-                    <div className="w-full max-w-xs bg-white shadow-md rounded-xl overflow-hidden hover:shadow-lg transition">
-                        <NavLink to="/shop/2">
-                            <img src={salon2} className="w-full h-48 object-cover hover:scale-105 transition-transform duration-500" alt="Salon" />
-                        </NavLink>
-                        <div className="p-8 flex flex-col grow">
-                            <div className="flex justify-between items-start mb-4">
-                                <h3 className="text-2xl font-serif font-semibold text-gray-900">Urban Cuts</h3>
-                                <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
-                                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                    <span className="font-bold text-sm text-gray-700">4.5</span>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-2 text-gray-400 mb-4">
-                                <MapPin className="w-4 h-4" />
-                                <span className="text-sm font-medium">Howrah, west Bengal</span>
-                            </div>
-                            <div className="flex items-center justify-between pt-6 border-t border-gray-100 text-gray-600">
-                                <div className="flex items-center gap-2">
-                                    <Users className="w-4 h-4" />
-                                    <span className="text-sm font-medium">4 seats available</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Clock className="w-4 h-4" />
-                                    <span className="text-sm font-medium">09:00 AM - 21:00 PM</span>
-                                </div>
-                            </div>
-                        </div>
+                ) : error ? (
+                    <div className="text-center py-20">
+                        <p className="text-red-500 mb-4">{error}</p>
+                        <button onClick={fetchSalons} className="text-[#D4AF37] font-bold border-b-2 border-[#D4AF37] hover:text-[#B48F27] transition-colors">
+                            Try Again
+                        </button>
                     </div>
-
-                    {/* Card 3 */}
-                    <div className="w-full max-w-xs bg-white shadow-md rounded-xl overflow-hidden hover:shadow-lg transition">
-                        <NavLink to="/shop/3">
-                            <img src={salon3} className="w-full h-48 object-cover hover:scale-105 transition-transform duration-500" alt="Salon" />
-                        </NavLink>
-                        <div className="p-8 flex flex-col grow">
-                            <div className="flex justify-between items-start mb-4">
-                                <h3 className="text-2xl font-serif font-semibold text-gray-900">Serenity Spa & Salon</h3>
-                                <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
-                                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                    <span className="font-bold text-sm text-gray-700">4.5</span>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-2 text-gray-400 mb-4">
-                                <MapPin className="w-4 h-4" />
-                                <span className="text-sm font-medium">Howrah, west Bengal</span>
-                            </div>
-                            <div className="flex items-center justify-between pt-6 border-t border-gray-100 text-gray-600">
-                                <div className="flex items-center gap-2">
-                                    <Users className="w-4 h-4" />
-                                    <span className="text-sm font-medium">4 seats available</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Clock className="w-4 h-4" />
-                                    <span className="text-sm font-medium">09:00 AM - 21:00 PM</span>
-                                </div>
-                            </div>
+                ) : salons.length === 0 ? (
+                    <div className="text-center py-20">
+                        <div className="bg-gray-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <Search className="text-gray-300 w-10 h-10" />
                         </div>
+                        <h3 className="text-2xl font-serif font-bold text-gray-900 mb-2">No Salons Found</h3>
+                        <p className="text-gray-500">We couldn't find any salons matching your search criteria.</p>
+                        <button 
+                            onClick={() => {setCity(""); fetchSalons();}} 
+                            className="mt-6 text-[#D4AF37] font-bold hover:text-[#B48F27] transition-colors"
+                        >
+                            Clear Filters
+                        </button>
                     </div>
+                ) : (
+                    <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 justify-items-center">
+                        {salons.map((salon) => (
+                            <div key={salon._id} className="w-full bg-white shadow-md rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <NavLink to={`/shop/${salon._id}`} className="block">
+                                    <div className="relative h-56 overflow-hidden">
+                                        <img 
+                                            src={salon.images && salon.images.length > 0 ? salon.images[0] : "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=80"} 
+                                            className="w-full h-full object-cover hover:scale-110 transition-transform duration-700" 
+                                            alt={salon.name} 
+                                        />
+                                        <div className="absolute top-4 right-4 flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm">
+                                            <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
+                                            <span className="font-bold text-xs text-gray-800">{salon.rating || "NEW"}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="p-6">
+                                        <h3 className="text-xl font-serif font-bold text-gray-900 mb-2 truncate group-hover:text-[#D4AF37] transition-colors">{salon.name}</h3>
+                                        <div className="flex items-center gap-2 text-gray-400 mb-4">
+                                            <MapPin className="w-4 h-4" />
+                                            <span className="text-sm font-medium">{salon.city}</span>
+                                        </div>
+                                        
+                                        <p className="text-gray-400 text-xs mb-6 line-clamp-2 h-8">
+                                            {salon.description || "Premium beauty and grooming services."}
+                                        </p>
 
-                    {/* Card 4 */}
-                    <div className="w-full max-w-xs bg-white shadow-md rounded-xl overflow-hidden hover:shadow-lg transition">
-                        <NavLink to="/shop/4">
-                            <img src={salon4} className="w-full h-48 object-cover hover:scale-105 transition-transform duration-500" alt="Salon" />
-                        </NavLink>
-                        <div className="p-8 flex flex-col grow">
-                            <div className="flex justify-between items-start mb-4">
-                                <h3 className="text-2xl font-serif font-semibold text-gray-900">Style Zone</h3>
-                                <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
-                                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                    <span className="font-bold text-sm text-gray-700">4.5</span>
-                                </div>
+                                        <div className="flex items-center justify-between pt-5 border-t border-gray-50 text-gray-600">
+                                            <div className="flex items-center gap-1.5">
+                                                <Users className="w-4 h-4 text-gray-400" />
+                                                <span className="text-xs font-medium">Available</span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5">
+                                                <Clock className="w-4 h-4 text-gray-400" />
+                                                <span className="text-xs font-medium">
+                                                    {salon.openingHours || "9:00 AM"} - {salon.closingHours || "9:00 PM"}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </NavLink>
                             </div>
-
-                            <div className="flex items-center gap-2 text-gray-400 mb-4">
-                                <MapPin className="w-4 h-4" />
-                                <span className="text-sm font-medium">Kolkata, west Bengal</span>
-                            </div>
-                            <div className="flex items-center justify-between pt-6 border-t border-gray-100 text-gray-600">
-                                <div className="flex items-center gap-2">
-                                    <Users className="w-4 h-4" />
-                                    <span className="text-sm font-medium">4 seats available</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Clock className="w-4 h-4" />
-                                    <span className="text-sm font-medium">09:00 AM - 21:00 PM</span>
-                                </div>
-                            </div>
-                        </div>
+                        ))}
                     </div>
-
-                    {/* Card 5 */}
-                    <div className="w-full max-w-xs bg-white shadow-md rounded-xl overflow-hidden hover:shadow-lg transition">
-                        <NavLink to="/shop/5">
-                            <img src={salon5} className="w-full h-48 object-cover hover:scale-105 transition-transform duration-500" alt="Salon" />
-                        </NavLink>
-                        <div className="p-8 flex flex-col grow">
-                            <div className="flex justify-between items-start mb-4">
-                                <h3 className="text-2xl font-serif font-semibold text-gray-900">Royal Grooming Lounge</h3>
-                                <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
-                                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                    <span className="font-bold text-sm text-gray-700">4.5</span>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-2 text-gray-400 mb-4">
-                                <MapPin className="w-4 h-4" />
-                                <span className="text-sm font-medium">Vaishali, Bihar</span>
-                            </div>
-                            <div className="flex items-center justify-between pt-6 border-t border-gray-100 text-gray-600">
-                                <div className="flex items-center gap-2">
-                                    <Users className="w-4 h-4" />
-                                    <span className="text-sm font-medium">4 seats available</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Clock className="w-4 h-4" />
-                                    <span className="text-sm font-medium">09:00 AM - 21:00 PM</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                )}
             </div>
-        </>
+        </div>
     );
 }

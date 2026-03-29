@@ -41,6 +41,7 @@ export function CreateSalonPage() {
         const formData = new FormData();
         
         formData.append("name", formElements.name.value);
+        formData.append("city", formElements.city.value);
         formData.append("description", formElements.description.value);
         formData.append("address", formElements.address.value);
         formData.append("openingHours", formElements.openingHours.value);
@@ -140,6 +141,17 @@ export function CreateSalonPage() {
                             <MapPin className="mr-2 text-[#D4AF37]" size={20} />
                             Location & Address
                         </h3>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
+                            <input
+                                name="city"
+                                type="text"
+                                placeholder="Enter your city"
+                                required
+                                className="w-full border border-gray-200 rounded-xl p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all mb-4"
+                            />
+                        </div>
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">Full Address</label>

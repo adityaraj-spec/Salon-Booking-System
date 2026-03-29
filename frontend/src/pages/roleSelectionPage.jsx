@@ -2,10 +2,12 @@ import { useState } from "react";
 import { User, Store, Scissors, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosConfig";
+import { useAuth } from "../context/AuthContext";
 
 export function RoleSelectionPage() {
     const [loading, setLoading] = useState(null); // 'customer' or 'salonOwner'
     const navigate = useNavigate();
+    const { updateUserRole } = useAuth();
 
     const handleRoleSelect = async (role) => {
         setLoading(role);
@@ -15,11 +17,8 @@ export function RoleSelectionPage() {
             });
 
             if (response.status === 200 || response.status === 201) {
-                if (role === "customer") {
-                    navigate("/home");
-                } else {
-                    navigate("/create-salon");
-                }
+                updateUserRole(role);
+                navigate("/home");
             } else {
                 console.error("Failed to update role");
             }
