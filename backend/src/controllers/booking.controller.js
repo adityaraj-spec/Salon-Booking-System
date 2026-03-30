@@ -6,7 +6,7 @@ import { Salon } from "../models/salon.models.js";
 import { sendBookingConfirmationEmail } from "../utils/mailer.js";
 
 const createBooking = asyncHandler(async (req, res) => {
-    const { salonId, services, staff, date, time, totalAmount } = req.body;
+    const { salonId, services, staff, date, time, totalAmount, serviceNames, staffName } = req.body;
 
     if (!salonId || !date || !time) {
         throw new ApiError(400, "Salon, date, and time are required");
@@ -28,9 +28,17 @@ const createBooking = asyncHandler(async (req, res) => {
         status: "confirmed"
     });
 
-    // Trigger booking confirmation email silently
+    // Trigger booking confirmation email silently with full details
     const bookingTime = `${date} at ${time}`;
-    sendBookingConfirmationEmail(req.user.email, req.user.fullName, salon.name, bookingTime);
+    sendBookingConfirmationEmail(
+        req.user.email, 
+        req.user.fullName, 
+        salon.name, 
+        bookingTime, 
+        totalAmount || 0, 
+        staffName || "Any Available", 
+        serviceNames || []
+    );
 
     return res.status(201).json(
         new ApiResponse(201, booking, "Booking confirmed successfully")

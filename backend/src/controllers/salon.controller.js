@@ -54,8 +54,13 @@ const registerSalon = asyncHandler(async (req, res) => {
 })
 
 const getSalons = asyncHandler(async (req, res) => {
-    const { search, city } = req.query;
+    const { search, city, page = 1, limit = 8 } = req.query;
     
+    // Parse pagination parameters
+    const currentPage = parseInt(page);
+    const pageLimit = parseInt(limit);
+    const skip = (currentPage - 1) * pageLimit;
+
     let query = {};
     
     if (search) {
@@ -71,11 +76,32 @@ const getSalons = asyncHandler(async (req, res) => {
         query.city = { $regex: city, $options: "i" };
     }
     
-    const salons = await Salon.find(query).sort({ createdAt: -1 });
-    console.log("Salons fetched by API:", salons.length, query);
+    // Fetch total count for pagination metadata
+    const totalSalons = await Salon.countDocuments(query);
+    const totalPages = Math.ceil(totalSalons / pageLimit);
+
+    // Fetch paginated salons
+    const salons = await Salon.find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(pageLimit);
+
+    console.log("Salons fetched by API:", salons.length, "Total:", totalSalons, "Query:", query);
     
     return res.status(200).json(
-        new ApiResponse(200, salons, "Salons fetched successfully")
+        new ApiResponse(
+            200, 
+            { 
+                salons, 
+                pagination: { 
+                    totalSalons, 
+                    totalPages, 
+                    currentPage, 
+                    limit: pageLimit 
+                } 
+            }, 
+            "Salons fetched successfully"
+        )
     );
 });
 

@@ -1,21 +1,30 @@
 import { useState, useEffect } from 'react';
 import { useParams, NavLink } from "react-router-dom";
-import axios from 'axios';
 import { NavBar } from "../components/navPage";
 import { Footer } from "../components/footerPage";
-import { Star, MapPin, Users, Clock, ShieldCheck, Sparkles, Loader2, ArrowLeft } from "lucide-react";
+import { Star, MapPin, Users, Clock, ShieldCheck, Sparkles, Loader2, ArrowLeft, MessageSquare, Send } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import axiosInstance from "../api/axiosConfig";
 
 export function Shop() {
+    const { user } = useAuth();
     const { id } = useParams();
     const [salon, setSalon] = useState(null);
+    const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    
+    // Review form state
+    const [rating, setRating] = useState(5);
+    const [reviewText, setReviewText] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [reviewError, setReviewError] = useState("");
 
     useEffect(() => {
         const fetchSalonDetails = async () => {
             setLoading(true);
             try {
-                const response = await axios.get(`http://localhost:8000/api/v1/salons/${id}`);
+                const response = await axiosInstance.get(`/salons/${id}`);
                 if (response.data.success) {
                     setSalon(response.data.data);
                 }
@@ -27,10 +36,50 @@ export function Shop() {
             }
         };
 
+        const fetchReviews = async () => {
+            try {
+                const response = await axiosInstance.get(`/reviews/salon/${id}`);
+                if (response.data.success) {
+                    setReviews(response.data.data);
+                }
+            } catch (err) {
+                console.error("Error fetching reviews:", err);
+            }
+        };
+
         if (id) {
             fetchSalonDetails();
+            fetchReviews();
         }
     }, [id]);
+
+    const handleReviewSubmit = async (e) => {
+        e.preventDefault();
+        if (!user) return;
+        
+        setIsSubmitting(true);
+        setReviewError("");
+        try {
+            const response = await axiosInstance.post(`/reviews`, {
+                salonId: id,
+                rating,
+                reviewText
+            });
+
+            if (response.data.success) {
+                setReviews([response.data.data, ...reviews]);
+                setReviewText("");
+                setRating(5);
+                // Refresh salon to get new average rating
+                const salonRes = await axiosInstance.get(`/salons/${id}`);
+                setSalon(salonRes.data.data);
+            }
+        } catch (err) {
+            setReviewError(err.response?.data?.message || "Failed to post review. You might have already reviewed this salon.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -189,6 +238,106 @@ export function Shop() {
                                 {salon.description || "Welcome to our premier destination for luxury grooming and beauty. We combine traditional techniques with modern style to give you the perfect look. Our studio features state-of-the-art equipment and a relaxing atmosphere designed for your comfort."}
                             </p>
                         </div>
+
+                        {/* REVIEWS SECTION */}
+                        <div className="pt-16 border-t border-gray-100 pb-20">
+                            <div className="flex items-center justify-between mb-10">
+                                <div>
+                                    <h3 className="text-3xl font-serif font-bold text-[#1a1a1a]">Customer Reviews</h3>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <div className="flex items-center gap-0.5">
+                                            {[...Array(5)].map((_, i) => (
+                                                <Star key={i} size={14} className={i < Math.floor(salon.rating || 0) ? "fill-yellow-400 text-yellow-400" : "text-gray-200"} />
+                                            ))}
+                                        </div>
+                                        <span className="text-sm font-bold text-gray-900">{salon.rating || "NEW"}</span>
+                                        <span className="text-sm text-gray-400">({reviews.length} Verified Reviews)</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* REVIEWS LIST */}
+                            <div className="space-y-8 mb-16">
+                                {reviews.length > 0 ? (
+                                    reviews.map((rev) => (
+                                        <div key={rev._id} className="group">
+                                            <div className="flex gap-4 items-start">
+                                                <div className="w-12 h-12 rounded-full bg-[#1a1a1a] flex items-center justify-center text-white font-bold text-lg border-2 border-[#D4AF37]/30 shrink-0 capitalize">
+                                                    {rev.user?.fullName?.charAt(0)}
+                                                </div>
+                                                <div className={rev.user?.fullName ? "flex-1" : "flex-1 text-gray-400 italic"}>
+                                                    <div className="flex items-center justify-between mb-1">
+                                                        <h5 className="font-bold text-[#1a1a1a]">{rev.user?.fullName || "Anonymous"}</h5>
+                                                        <span className="text-xs text-gray-400 font-medium">{new Date(rev.createdAt).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-0.5 mb-3">
+                                                        {[...Array(5)].map((_, i) => (
+                                                            <Star key={i} size={12} className={i < rev.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-200"} />
+                                                        ))}
+                                                    </div>
+                                                    <p className="text-gray-600 text-[15px] leading-relaxed italic border-l-2 border-[#D4AF37]/20 pl-4 py-1 bg-white/50 rounded-r-lg group-hover:bg-white/80 transition-colors">
+                                                        "{rev.reviewText}"
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-center py-20 bg-white rounded-3xl border border-gray-50 shadow-sm">
+                                        <p className="text-gray-400">No reviews yet. Be the first to share your experience!</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* REVIEW FORM */}
+                            {user ? (
+                                <div className="bg-white border border-gray-100 rounded-[32px] p-8 mb-12 shadow-sm">
+                                    <h4 className="text-lg font-bold text-[#1a1a1a] mb-6">Write a Review</h4>
+                                    <form onSubmit={handleReviewSubmit} className="space-y-6">
+                                        <div>
+                                            <p className="text-xs text-gray-400 uppercase font-black mb-3 tracking-widest">Select Rating</p>
+                                            <div className="flex gap-2">
+                                                {[1, 2, 3, 4, 5].map((star) => (
+                                                    <button 
+                                                        key={star}
+                                                        type="button"
+                                                        onClick={() => setRating(star)}
+                                                        className={`p-2 rounded-xl transition-all ${rating >= star ? "text-[#D4AF37] bg-orange-50/50" : "text-gray-200 bg-gray-50/30"}`}
+                                                    >
+                                                        <Star size={24} className={rating >= star ? "fill-current" : ""} />
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-xs text-gray-400 uppercase font-black tracking-widest">Your Experience</label>
+                                            <textarea 
+                                                className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-5 text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all h-32"
+                                                placeholder="Share your experience at this salon..."
+                                                value={reviewText}
+                                                onChange={(e) => setReviewText(e.target.value)}
+                                            />
+                                        </div>
+                                        {reviewError && <p className="text-red-500 text-xs font-bold">{reviewError}</p>}
+                                        <button 
+                                            disabled={isSubmitting}
+                                            className="bg-[#1a1a1a] text-white px-8 py-3.5 rounded-full font-bold text-sm tracking-widest uppercase hover:bg-black transition-colors flex items-center gap-2 group disabled:opacity-50"
+                                        >
+                                            {isSubmitting ? "Posting..." : "Post Review"}
+                                            <Send size={16} className="group-hover:translate-x-1 transition-transform" />
+                                        </button>
+                                    </form>
+                                </div>
+                            ) : (
+                                <div className="bg-gray-50/50 border border-dashed border-gray-200 rounded-[32px] p-10 text-center mb-12">
+                                    <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                                    <h4 className="text-lg font-bold text-gray-900">Want to share your experience?</h4>
+                                    <p className="text-gray-500 text-sm mb-6">Please log in to leave a rating and review for this salon.</p>
+                                    <NavLink to="/login" className="inline-block bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-sm tracking-widest uppercase hover:bg-black transition-colors">Login to Review</NavLink>
+                                </div>
+                            )}
+                        </div>
+
 
                     </div>
 

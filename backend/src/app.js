@@ -6,12 +6,13 @@ import cookieParser from "cookie-parser";
 import userRouter from "./routes/user.routes.js";
 import salonRouter from "./routes/salon.routes.js";
 import bookingRouter from "./routes/booking.routes.js";
+import reviewRouter from "./routes/review.routes.js";
 import ApiError from "./utils/apiError.js";
 
 const app = express();
 
 app.use(cors({
-    origin: process.env.CORS_ORIGIN,
+    origin: (process.env.CORS_ORIGIN || "").split(","),
     credentials: true
 }));
 
@@ -24,6 +25,7 @@ app.use(cookieParser());
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/salons", salonRouter);
 app.use("/api/v1/bookings", bookingRouter);
+app.use("/api/v1/reviews", reviewRouter);
 
 // common error handling middleware
 app.use((err, req, res, next) => {

@@ -104,8 +104,8 @@ function CustomCalendar({ selectedDate, onDateSelect }) {
                             key={day}
                             disabled={disabled}
                             onClick={() => {
-                                const newDate = new Date(currentYear, currentMonth, day);
-                                onDateSelect(newDate.toISOString().split('T')[0]);
+                                const formattedDate = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                                onDateSelect(formattedDate);
                             }}
                             className={`
                                 aspect-square rounded-full flex items-center justify-center text-sm font-medium transition-all relative
@@ -183,6 +183,8 @@ export function BookingPage() {
                 salonId: id,
                 services: selectedServices.map(s => s.id),
                 staff: selectedStaff?.id || null,
+                serviceNames: selectedServices.map(s => s.name),
+                staffName: selectedStaff?.name || "Any Available",
                 date,
                 time,
                 totalAmount,

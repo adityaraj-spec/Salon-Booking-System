@@ -133,7 +133,9 @@ export const sendShopAddedEmail = async (email, name, shopName) => {
 };
 
 // ─── Booking Confirmation Email ───────────────────────────────────────────────
-export const sendBookingConfirmationEmail = async (email, name, shopName, bookingTime) => {
+export const sendBookingConfirmationEmail = async (email, name, shopName, bookingTime, price, stylist, services) => {
+    const servicesList = Array.isArray(services) ? services.join(", ") : services;
+    
     const html = `
     <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #f0f0f0;">
       <div style="background:#1a1a1a;padding:32px 40px;text-align:center;">
@@ -152,16 +154,28 @@ export const sendBookingConfirmationEmail = async (email, name, shopName, bookin
           <table width="100%" cellpadding="10" cellspacing="0" style="border-collapse:collapse;">
             <tr style="border-bottom:1px solid #e8dfc0;">
               <td style="color:#999;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">SALON</td>
-              <td style="color:#1a1a1a;font-size:15px;font-weight:700;text-align:right;">${shopName}</td>
+              <td style="color:#1a1a1a;font-size:14px;font-weight:700;text-align:right;">${shopName}</td>
+            </tr>
+            <tr style="border-bottom:1px solid #e8dfc0;">
+              <td style="color:#999;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">TIME</td>
+              <td style="color:#1a1a1a;font-size:14px;font-weight:700;text-align:right;">${bookingTime}</td>
+            </tr>
+            <tr style="border-bottom:1px solid #e8dfc0;">
+              <td style="color:#999;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">STYLIST</td>
+              <td style="color:#1a1a1a;font-size:14px;font-weight:700;text-align:right;">${stylist}</td>
+            </tr>
+            <tr style="border-bottom:1px solid #e8dfc0;">
+              <td style="color:#999;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">SERVICES</td>
+              <td style="color:#1a1a1a;font-size:14px;font-weight:700;text-align:right;">${servicesList}</td>
             </tr>
             <tr>
-              <td style="color:#999;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">TIME</td>
-              <td style="color:#D4AF37;font-size:15px;font-weight:700;text-align:right;">${bookingTime}</td>
+              <td style="color:#999;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">TOTAL PRICE</td>
+              <td style="color:#D4AF37;font-size:18px;font-weight:900;text-align:right;">₹${price}</td>
             </tr>
           </table>
         </div>
         <div style="text-align:center;margin-bottom:32px;">
-          <a href="http://localhost:5174/home" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">VIEW BOOKING</a>
+          <a href="http://localhost:5174/bookings" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">VIEW BOOKING</a>
         </div>
         <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
         <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Team &nbsp;&bull;&nbsp; Enjoy your visit!</p>
