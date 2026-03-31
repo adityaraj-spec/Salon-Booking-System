@@ -29,7 +29,7 @@ const sendMail = async (to, subject, htmlContent) => {
         const mailTransporter = await createTransporter();
         const smtpUser = process.env.SMTP_USER?.trim();
         const info = await mailTransporter.sendMail({
-            from: `"SalonNow" <${smtpUser || 'no-reply@salonnow.app'}>`,
+            from: `SalonNow <${smtpUser || 'no-reply@salonnow.app'}>`,
             to,
             subject,
             html: htmlContent,
