@@ -178,7 +178,7 @@ export function NavBar() {
                     <NavLink 
                         to="/home" 
                         className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all ${
-                            isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50"
+                            isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37]"
                         }`}
                         onClick={() => setIsMobileMenuOpen(false)}
                     >
@@ -189,7 +189,7 @@ export function NavBar() {
                         <NavLink 
                             to="/create-salon" 
                             className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all ${
-                                isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50"
+                                isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37]"
                             }`}
                             onClick={() => setIsMobileMenuOpen(false)}
                         >
@@ -200,7 +200,7 @@ export function NavBar() {
                     <NavLink 
                         to="/bookings" 
                         className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all ${
-                            isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50"
+                            isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37]"
                         }`}
                         onClick={() => setIsMobileMenuOpen(false)}
                     >
@@ -211,7 +211,7 @@ export function NavBar() {
                         <>
                             <NavLink 
                                 to="/profile" 
-                                className="flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm text-gray-600 hover:bg-gray-50 transition-all"
+                                className="flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
                                 Profile

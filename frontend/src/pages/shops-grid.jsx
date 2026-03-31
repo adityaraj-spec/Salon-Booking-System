@@ -73,19 +73,30 @@ export function Shops() {
                 </p>
 
                 {/* Search Bar Container */}
-                <form onSubmit={handleSearch} className="flex flex-col md:flex-row items-center justify-center gap-3 max-w-2xl mx-auto bg-white p-2 rounded-2xl md:rounded-full shadow-sm border border-gray-100">
-                    <div className="flex items-center w-full md:flex-1 px-4 md:px-6 gap-3 py-2 md:py-0">
-                        <MapPin className="text-gray-400 w-5 h-5 shrink-0" />
+                <form onSubmit={handleSearch} className="flex flex-row items-center justify-between gap-1 max-w-2xl mx-auto bg-white p-1 md:p-2 rounded-full shadow-sm border border-gray-100 ring-4 ring-[#1A1A1A]/5">
+                    <div className="flex items-center flex-1 px-4 md:px-6 gap-2 md:gap-3">
+                        <MapPin className="text-[#D4AF37] w-4 h-4 md:w-5 md:h-5 shrink-0" />
                         <input
                             type="text"
                             placeholder="Search by city..."
                             value={city}
                             onChange={(e) => setCity(e.target.value)}
-                            className="w-full outline-none text-gray-700 placeholder-gray-400 text-sm md:text-base font-medium"
+                            className="w-full outline-none text-gray-700 placeholder-gray-400 text-sm md:text-base font-medium py-2.5 bg-transparent"
                         />
                     </div>
-                    <button type="submit" className="w-full md:w-auto bg-[#1A1A1A] text-white px-10 py-3.5 md:py-4 rounded-xl md:rounded-full font-bold uppercase text-xs tracking-widest hover:bg-black transition-colors disabled:opacity-70">
-                        {loading ? <Loader2 className="w-4 h-4 animate-spin inline mr-2" /> : "Search Salons"}
+                    <button 
+                        type="submit" 
+                        disabled={loading}
+                        className="shrink-0 bg-[#1A1A1A] text-white p-3 md:px-10 md:py-4 rounded-full font-bold uppercase text-[10px] md:text-xs tracking-widest hover:bg-black active:scale-95 transition-all disabled:opacity-70 flex items-center justify-center gap-2"
+                    >
+                        {loading ? (
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                            <>
+                                <span className="hidden md:inline">Search Salons</span>
+                                <Search className="md:hidden w-5 h-5" />
+                            </>
+                        )}
                     </button>
                 </form>
             </div>
