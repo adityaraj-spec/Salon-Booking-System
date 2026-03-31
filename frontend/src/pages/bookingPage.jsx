@@ -241,17 +241,16 @@ export function BookingPage() {
                         <ArrowLeft size={20} className="text-gray-600" />
                     </NavLink>
                     <div>
-                        <h1 className="text-4xl font-serif font-bold text-[#1a1a1a]">Secure Your Appointment</h1>
-                        <p className="text-gray-500 mt-1 uppercase tracking-widest text-xs font-bold">
+                        <h1 className="text-3xl md:text-4xl font-serif font-bold text-[#1a1a1a] leading-tight">Secure Your Appointment</h1>
+                        <p className="text-gray-500 mt-2 uppercase tracking-widest text-[10px] md:text-xs font-bold leading-relaxed">
                             Experience the difference with SalonNow at <span className="text-[#D4AF37]">{salon?.name || "Glamour Studio"}</span>
                         </p>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 md:gap-16">
                     {/* LEFT COLUMN: SELECTIONS */}
-                    <div className="lg:col-span-2 space-y-12">
+                    <div className="lg:col-span-2 space-y-10 md:space-y-16">
 
                         {/* 1. Services Section */}
                         <section>
@@ -297,9 +296,9 @@ export function BookingPage() {
                         <section>
                             <div className="flex items-center gap-2 mb-6">
                                 <span className="bg-[#1a1a1a] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold font-serif">2</span>
-                                <h2 className="text-xl font-serif font-bold text-[#1a1a1a]">Choose Stylist (Optional)</h2>
+                                <h2 className="text-lg md:text-xl font-serif font-bold text-[#1a1a1a]">Choose Stylist (Optional)</h2>
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4">
                                 {STAFF_MEMBERS.map(staff => (
                                     <div
                                         key={staff.id}
@@ -310,26 +309,26 @@ export function BookingPage() {
                                             }`}
                                     >
                                         <div className="relative inline-block mb-3">
-                                            <img src={staff.avatar} alt={staff.name} className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-sm" />
+                                            <img src={staff.avatar} alt={staff.name} className="w-12 h-12 md:w-16 md:h-16 rounded-full object-cover border-2 border-white shadow-sm" />
                                             {selectedStaff?.id === staff.id && (
                                                 <div className="absolute -bottom-1 -right-1 bg-[#e65c00] p-1 rounded-full text-white">
                                                     <Check size={10} strokeWidth={4} />
                                                 </div>
                                             )}
                                         </div>
-                                        <h3 className="font-bold text-gray-900 text-sm">{staff.name}</h3>
-                                        <p className="text-xs text-gray-400 mt-0.5">{staff.role}</p>
+                                        <h3 className="font-bold text-gray-900 text-xs md:text-sm truncate">{staff.name}</h3>
+                                        <p className="text-[10px] text-gray-400 mt-0.5 truncate">{staff.role}</p>
                                     </div>
                                 ))}
                             </div>
                         </section>
 
                         {/* 3. Date & Time Section */}
-                        <section className="grid md:grid-cols-2 gap-8">
+                        <section className="grid md:grid-cols-2 gap-10 md:gap-8">
                             <div>
                                 <div className="flex items-center gap-2 mb-6">
                                     <span className="bg-[#1a1a1a] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold font-serif">3</span>
-                                    <h2 className="text-xl font-serif font-bold text-[#1a1a1a]">Pick a Date</h2>
+                                    <h2 className="text-lg md:text-xl font-serif font-bold text-[#1a1a1a]">Pick a Date</h2>
                                 </div>
                                 <CustomCalendar 
                                     selectedDate={date} 
@@ -339,9 +338,9 @@ export function BookingPage() {
                             <div>
                                 <div className="flex items-center gap-2 mb-6">
                                     <span className="bg-[#1a1a1a] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold font-serif">4</span>
-                                    <h2 className="text-xl font-serif font-bold text-[#1a1a1a]">Select Time</h2>
+                                    <h2 className="text-lg md:text-xl font-serif font-bold text-[#1a1a1a]">Select Time</h2>
                                 </div>
-                                <div className="grid grid-cols-3 gap-2">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                                     {TIME_SLOTS.map(t => (
                                         <button
                                             key={t}
@@ -361,9 +360,9 @@ export function BookingPage() {
                     </div>
 
                     {/* RIGHT COLUMN: BOOKING SUMMARY */}
-                    <div className="lg:col-span-1">
-                        <div className="bg-white border border-gray-100 rounded-3xl p-8 sticky top-28 shadow-sm">
-                            <h2 className="text-xl font-serif font-bold text-[#1a1a1a] mb-6 border-b border-gray-50 pb-4">Booking Summary</h2>
+                    <div className="lg:col-span-1 order-first lg:order-last">
+                        <div className="bg-white border border-gray-100 rounded-3xl p-6 md:p-8 lg:sticky lg:top-28 shadow-sm">
+                            <h2 className="text-lg font-serif font-bold text-[#1a1a1a] mb-6 border-b border-gray-50 pb-4">Booking Summary</h2>
 
                             <div className="space-y-4 mb-8">
                                 {selectedServices.length > 0 ? (

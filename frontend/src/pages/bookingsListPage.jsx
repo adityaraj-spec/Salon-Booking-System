@@ -37,10 +37,10 @@ export function MyBookingsPage() {
             <NavBar />
             
             <main className="flex-1 pt-24 pb-20">
-                <div className="max-w-5xl mx-auto px-6 py-12">
-                    <div className="mb-10">
-                        <h1 className="text-4xl font-serif font-bold text-[#1a1a1a]">My Bookings</h1>
-                        <p className="text-gray-400 mt-2 font-medium">Manage your upcoming and past appointments</p>
+                <div className="max-w-5xl mx-auto px-6 py-8 md:py-12">
+                    <div className="mb-8 md:mb-10 text-center md:text-left">
+                        <h1 className="text-3xl md:text-4xl font-serif font-bold text-[#1a1a1a]">My Bookings</h1>
+                        <p className="text-gray-400 mt-2 font-medium text-sm md:text-base">Manage your upcoming and past appointments</p>
                     </div>
 
                     {bookings.length === 0 ? (
@@ -57,8 +57,8 @@ export function MyBookingsPage() {
                     ) : (
                         <div className="grid gap-6">
                             {bookings.map((booking) => (
-                                <div key={booking._id} className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col md:flex-row gap-8 items-center group">
-                                    <div className="w-full md:w-32 h-32 rounded-2xl overflow-hidden shrink-0 border border-gray-50">
+                                <div key={booking._id} className="bg-white rounded-3xl p-5 md:p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col md:flex-row gap-6 md:gap-8 items-center group">
+                                    <div className="w-full md:w-32 h-40 md:h-32 rounded-2xl overflow-hidden shrink-0 border border-gray-50">
                                         <img 
                                             src={booking.salon?.images?.[0] || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=300&h=300&auto=format&fit=crop"} 
                                             alt={booking.salon?.name} 
@@ -76,45 +76,46 @@ export function MyBookingsPage() {
                                                 </div>
                                             </div>
                                             <div className="flex flex-col items-center md:items-end">
-                                                <span className="bg-[#f9f5e8] text-[#D4AF37] px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest border border-[#D4AF37]/20 flex items-center gap-2">
+                                                <span className="bg-[#f9f5e8] text-[#D4AF37] px-4 py-1.5 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest border border-[#D4AF37]/20 flex items-center gap-2">
                                                     <CheckCircle2 size={12} />
                                                     {booking.status}
                                                 </span>
-                                                <p className="text-2xl font-black text-[#1a1a1a] mt-2 flex items-baseline gap-1">
-                                                    <span className="text-lg font-medium text-[#D4AF37]">₹</span>
+                                                <p className="text-xl md:text-2xl font-black text-[#1a1a1a] mt-2 flex items-baseline gap-1">
+                                                    <span className="text-base md:text-lg font-medium text-[#D4AF37]">₹</span>
                                                     {booking.totalAmount}
                                                 </p>
                                             </div>
                                         </div>
 
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-4 border-t border-gray-50">
-                                            <div className="flex items-center gap-3 justify-center md:justify-start">
-                                                <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-[#D4AF37]">
+                                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 pt-4 border-t border-gray-50">
+                                            <div className="flex items-center gap-2 md:gap-3 justify-start">
+                                                <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-[#D4AF37] shrink-0">
                                                     <Calendar size={16} />
                                                 </div>
-                                                <div className="text-left">
+                                                <div className="text-left min-w-0">
                                                     <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Date</p>
-                                                    <p className="text-xs font-bold text-[#1a1a1a]">{new Date(booking.date).toLocaleDateString(undefined, { dateStyle: 'medium' })}</p>
+                                                    <p className="text-xs font-bold text-[#1a1a1a] truncate">{new Date(booking.date).toLocaleDateString(undefined, { dateStyle: 'medium' })}</p>
                                                 </div>
                                             </div>
                                             
-                                            <div className="flex items-center gap-3 justify-center md:justify-start">
-                                                <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-[#D4AF37]">
+                                            <div className="flex items-center gap-2 md:gap-3 justify-start">
+                                                <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-[#D4AF37] shrink-0">
                                                     <Clock size={16} />
                                                 </div>
-                                                <div className="text-left">
+                                                <div className="text-left min-w-0">
                                                     <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Time</p>
-                                                    <p className="text-xs font-bold text-[#1a1a1a]">{booking.time}</p>
+                                                    <p className="text-xs font-bold text-[#1a1a1a] truncate">{booking.time}</p>
                                                 </div>
                                             </div>
 
-                                            <div className="flex items-center gap-3 justify-center md:justify-start">
-                                                <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-[#D4AF37]">
+
+                                            <div className="flex items-center gap-2 md:gap-3 justify-start col-span-2 lg:col-span-1 border-t md:border-t-0 pt-4 md:pt-0">
+                                                <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-[#D4AF37] shrink-0">
                                                     <Scissors size={16} />
                                                 </div>
-                                                <div className="text-left">
+                                                <div className="text-left min-w-0">
                                                     <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Service</p>
-                                                    <p className="text-xs font-bold text-[#1a1a1a] truncate max-w-[120px]">
+                                                    <p className="text-xs font-bold text-[#1a1a1a] truncate">
                                                         {booking.serviceNames?.length > 0 
                                                             ? booking.serviceNames.join(", ") 
                                                             : "Confirmed Visit"}

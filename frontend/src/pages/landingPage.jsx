@@ -19,7 +19,7 @@ export function LandingPage() {
 
                 {/* Content */}
                 <div className="relative z-10 px-6 max-w-4xl mx-auto flex flex-col items-center pt-16">
-                    <h1 className="text-5xl md:text-7xl font-serif font-bold text-white mb-6 leading-tight">
+                    <h1 className="text-4xl md:text-7xl font-serif font-bold text-white mb-6 leading-tight">
                         Your Beauty,<br />
                         <span className="text-[#e65c00]">Our Priority</span>
                     </h1>

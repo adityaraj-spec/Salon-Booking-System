@@ -16,19 +16,19 @@ export function ProfilePage() {
                 <div className="max-w-4xl mx-auto px-6 py-12">
                 <div className="bg-white rounded-[32px] overflow-hidden shadow-sm border border-gray-100">
                     {/* Header/Cover */}
-                    <div className="h-32 bg-[#1a1a1a] flex items-end px-12">
-                        <div className="w-24 h-24 rounded-full bg-[#D4AF37] border-4 border-white translate-y-12 flex items-center justify-center text-white text-3xl font-bold">
+                    <div className="h-32 bg-[#1a1a1a] flex items-end px-6 md:px-12">
+                        <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#D4AF37] border-4 border-white translate-y-10 md:translate-y-12 flex items-center justify-center text-white text-2xl md:text-3xl font-bold">
                             {user.fullName.charAt(0).toUpperCase()}
                         </div>
                     </div>
 
-                    <div className="px-12 pt-16 pb-12">
-                        <div className="flex justify-between items-start mb-10">
+                    <div className="px-6 md:px-12 pt-14 md:pt-16 pb-12">
+                        <div className="flex flex-col md:flex-row justify-between items-start mb-10 gap-4">
                             <div>
-                                <h1 className="text-3xl font-serif font-bold text-[#1a1a1a]">{user.fullName}</h1>
-                                <p className="text-gray-400 font-medium">@{user.username}</p>
+                                <h1 className="text-2xl md:text-3xl font-serif font-bold text-[#1a1a1a]">{user.fullName}</h1>
+                                <p className="text-gray-400 font-medium text-sm">@{user.username}</p>
                             </div>
-                            <span className="bg-[#f9f5e8] text-[#D4AF37] px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest border border-[#D4AF37]/20">
+                            <span className="bg-[#f9f5e8] text-[#D4AF37] px-4 py-1 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-widest border border-[#D4AF37]/20">
                                 {user.role}
                             </span>
                         </div>

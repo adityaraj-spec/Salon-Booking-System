@@ -136,7 +136,7 @@ export function Shop() {
                                 <Sparkles size={12} /> {salon.rating > 4.5 ? "Top Rated Salon" : "Verified Salon"}
                             </span>
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-serif font-bold text-[#1a1a1a]">
+                        <h1 className="text-3xl md:text-5xl font-serif font-bold text-[#1a1a1a] leading-tight">
                             {salon.name}
                         </h1>
                         <div className="flex items-center gap-4 mt-3 text-sm text-gray-500">
@@ -158,9 +158,9 @@ export function Shop() {
                     </div>
                 </div>
 
-                {/* Image Gallery - Premium Style */}
-                <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-3 mb-12 min-h-[400px] md:h-[500px]">
-                    <div className="md:col-span-2 md:row-span-2 overflow-hidden rounded-2xl md:rounded-l-2xl md:rounded-r-none">
+                {/* Image Gallery - Responsive Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 md:grid-rows-2 gap-2 md:gap-3 mb-10 md:mb-16 min-h-[300px] md:h-[500px]">
+                    <div className="col-span-2 row-span-2 md:col-span-2 md:row-span-2 overflow-hidden rounded-2xl md:rounded-l-2xl md:rounded-r-none">
                         <img src={galleryImages[0]} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Salon Main" />
                     </div>
                     <div className="hidden md:block overflow-hidden">
@@ -169,19 +169,19 @@ export function Shop() {
                     <div className="hidden md:block overflow-hidden rounded-tr-2xl">
                         <img src={galleryImages[2]} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Salon 3" />
                     </div>
-                    <div className="hidden md:block overflow-hidden">
+                    <div className="md:block overflow-hidden rounded-bl-2xl md:rounded-bl-none">
                         <img src={galleryImages[3]} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Salon 4" />
                     </div>
-                    <div className="hidden md:block overflow-hidden rounded-br-2xl text-white relative">
+                    <div className="md:block overflow-hidden rounded-br-2xl text-white relative">
                         <img src={galleryImages[4]} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Salon 5" />
                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center cursor-pointer">
-                            <span className="font-bold hover:underline">Show all photos</span>
+                            <span className="font-bold text-xs md:text-base hover:underline text-center">Show all photos</span>
                         </div>
                     </div>
                 </div>
 
                 {/* Main Layout */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 md:gap-16">
 
                     {/* LEFT CONTENT */}
                     <div className="lg:col-span-2 space-y-12">
@@ -244,7 +244,7 @@ export function Shop() {
                         <div className="pt-16 border-t border-gray-100 pb-20">
                             <div className="flex items-center justify-between mb-10">
                                 <div>
-                                    <h3 className="text-3xl font-serif font-bold text-[#1a1a1a]">Customer Reviews</h3>
+                                    <h3 className="text-2xl md:text-3xl font-serif font-bold text-[#1a1a1a]">Customer Reviews</h3>
                                     <div className="flex items-center gap-2 mt-1">
                                         <div className="flex items-center gap-0.5">
                                             {[...Array(5)].map((_, i) => (
@@ -343,8 +343,8 @@ export function Shop() {
                     </div>
 
                     {/* RIGHT BOOKING CARD */}
-                    <div className="relative">
-                        <div className="border border-gray-100 rounded-[32px] shadow-xl shadow-black/5 p-8 lg:sticky lg:top-32 bg-white">
+                    <div className="relative order-first lg:order-last">
+                        <div className="border border-gray-100 rounded-[32px] shadow-xl shadow-black/5 p-6 md:p-8 lg:sticky lg:top-32 bg-white">
                             <div className="flex justify-between items-end mb-10">
                                 <div>
                                     <span className="text-gray-400 text-[10px] uppercase font-bold tracking-[0.2em]">Service Starting</span>

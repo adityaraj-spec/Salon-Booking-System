@@ -63,34 +63,34 @@ export function Shops() {
 
     return (
         <div className="min-h-screen bg-[#fafafa]">
-            <div className="text-center py-20 px-12">
-                <h1 className="text-6xl font-serif text-gray-900 mb-2">
-                    Discover Your <br />
+            <div className="text-center py-16 md:py-24 px-6 md:px-12">
+                <h1 className="text-4xl md:text-6xl font-serif text-gray-900 mb-4 leading-tight">
+                    Discover Your <br className="hidden md:block" />
                     <span className="text-[#D4AF37]">Perfect Salon</span>
                 </h1>
-                <p className="text-gray-500 text-lg mb-12 max-w-2xl mx-auto">
+                <p className="text-gray-500 text-base md:text-lg mb-10 max-w-2xl mx-auto px-4">
                     Browse curated salons near you. View real-time availability and book instantly.
                 </p>
 
                 {/* Search Bar Container */}
-                <form onSubmit={handleSearch} className="flex flex-col md:flex-row items-center justify-center gap-4 max-w-2xl mx-auto bg-white p-2 rounded-full shadow-sm border border-gray-100">
-                    <div className="flex items-center flex-1 px-6 gap-3">
-                        <MapPin className="text-gray-400 w-5 h-5" />
+                <form onSubmit={handleSearch} className="flex flex-col md:flex-row items-center justify-center gap-3 max-w-2xl mx-auto bg-white p-2 rounded-2xl md:rounded-full shadow-sm border border-gray-100">
+                    <div className="flex items-center w-full md:flex-1 px-4 md:px-6 gap-3 py-2 md:py-0">
+                        <MapPin className="text-gray-400 w-5 h-5 shrink-0" />
                         <input
                             type="text"
-                            placeholder="City"
+                            placeholder="Search by city..."
                             value={city}
                             onChange={(e) => setCity(e.target.value)}
-                            className="w-full outline-none text-gray-700 placeholder-gray-400"
+                            className="w-full outline-none text-gray-700 placeholder-gray-400 text-sm md:text-base font-medium"
                         />
                     </div>
-                    <button type="submit" className="bg-[#1A1A1A] text-white px-10 py-4 rounded-full font-bold uppercase text-xs tracking-widest hover:bg-black transition-colors disabled:opacity-70">
-                        {loading ? <Loader2 className="w-4 h-4 animate-spin inline mr-2" /> : "Search"}
+                    <button type="submit" className="w-full md:w-auto bg-[#1A1A1A] text-white px-10 py-3.5 md:py-4 rounded-xl md:rounded-full font-bold uppercase text-xs tracking-widest hover:bg-black transition-colors disabled:opacity-70">
+                        {loading ? <Loader2 className="w-4 h-4 animate-spin inline mr-2" /> : "Search Salons"}
                     </button>
                 </form>
             </div>
 
-            <div className="w-full bg-white mx-auto px-12 py-8 min-h-[400px]">
+            <div className="w-full bg-white mx-auto px-6 md:px-12 py-8 min-h-[400px]">
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-20">
                         <Loader2 className="w-12 h-12 text-[#D4AF37] animate-spin mb-4" />
