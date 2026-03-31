@@ -139,8 +139,8 @@ export function NavBar() {
                 onClick={() => setIsMobileMenuOpen(false)}
             />
             
-            <div className={`fixed top-0 left-0 h-full w-[280px] bg-white z-50 shadow-2xl transform transition-transform duration-300 ease-in-out md:hidden flex flex-col ${
-                isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+            <div className={`fixed top-0 right-0 h-full w-[280px] bg-white z-50 shadow-2xl transform transition-transform duration-300 ease-in-out md:hidden flex flex-col ${
+                isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
             }`}>
                 {/* Sidebar Header */}
                 <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-[#fafafa]">
