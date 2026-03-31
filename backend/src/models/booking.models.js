@@ -26,6 +26,7 @@ const bookingSchema = new mongoose.Schema({
   }
 
   ],
+  serviceNames: [String],
   totalAmount: Number,
   date: String,
   time: String,

@@ -25,14 +25,14 @@ export function Shops() {
             if (city) params.city = city;
 
             const response = await axiosInstance.get("/salons", { params });
-            
+
             if (response.data.success) {
                 const { salons: fetchedSalons, pagination } = response.data.data;
                 setSalons(fetchedSalons);
                 setTotalPages(pagination.totalPages);
                 setTotalSalons(pagination.totalSalons);
                 setPage(pagination.currentPage);
-                
+
                 // Scroll to top when page changes
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
@@ -110,8 +110,8 @@ export function Shops() {
                         </div>
                         <h3 className="text-2xl font-serif font-bold text-gray-900 mb-2">No Salons Found</h3>
                         <p className="text-gray-500">We couldn't find any salons matching your search criteria.</p>
-                        <button 
-                            onClick={() => {setCity(""); fetchSalons(1);}} 
+                        <button
+                            onClick={() => { setCity(""); fetchSalons(1); }}
                             className="mt-6 text-[#D4AF37] font-bold hover:text-[#B48F27] transition-colors"
                         >
                             Clear Filters
@@ -124,28 +124,28 @@ export function Shops() {
                                 <div key={salon._id} className="w-full bg-white shadow-md rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                     <NavLink to={`/shop/${salon._id}`} className="block">
                                         <div className="relative h-56 overflow-hidden">
-                                            <img 
-                                                src={salon.images && salon.images.length > 0 ? salon.images[0] : "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=80"} 
-                                                className="w-full h-full object-cover hover:scale-110 transition-transform duration-700" 
-                                                alt={salon.name} 
+                                            <img
+                                                src={salon.images && salon.images.length > 0 ? salon.images[0] : "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=80"}
+                                                className="w-full h-full object-cover hover:scale-110 transition-transform duration-700"
+                                                alt={salon.name}
                                             />
                                             <div className="absolute top-4 right-4 flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm">
                                                 <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
                                                 <span className="font-bold text-xs text-gray-800">{salon.rating || "NEW"}</span>
                                             </div>
                                         </div>
-                                        
+
                                         <div className="p-6">
                                             <h3 className="text-xl font-serif font-bold text-gray-900 mb-2 truncate group-hover:text-[#D4AF37] transition-colors">{salon.name}</h3>
-                                            
-                                            <div className="flex items-start gap-2 text-gray-400 mb-6 h-10 overflow-hidden">
+
+                                            <div className="flex items-start gap-2 text-gray-400 mb-2 h-10 overflow-hidden">
                                                 <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
                                                 <span className="text-xs font-medium line-clamp-2 leading-relaxed">
                                                     {salon.address || salon.city}
                                                 </span>
                                             </div>
 
-                                            <div className="flex items-center justify-between pt-5 border-t border-gray-50 text-gray-600">
+                                            <div className="flex items-center justify-between pt-3 border-t border-gray-100 text-gray-600">
                                                 <div className="flex items-center gap-1.5">
                                                     <Clock className="w-4 h-4 text-[#D4AF37]" />
                                                     <span className="text-xs font-bold text-[#1A1A1A]">
@@ -172,23 +172,22 @@ export function Shops() {
                                 >
                                     <ChevronLeft size={20} />
                                 </button>
-                                
+
                                 <div className="flex items-center gap-2">
                                     {[...Array(totalPages)].map((_, i) => (
                                         <button
                                             key={i + 1}
                                             onClick={() => handlePageChange(i + 1)}
-                                            className={`w-10 h-10 rounded-full font-bold text-sm transition-all ${
-                                                page === i + 1
-                                                    ? "bg-[#1A1A1A] text-white"
-                                                    : "text-gray-500 hover:bg-gray-50"
-                                            }`}
+                                            className={`w-10 h-10 rounded-full font-bold text-sm transition-all ${page === i + 1
+                                                ? "bg-[#1A1A1A] text-white"
+                                                : "text-gray-500 hover:bg-gray-50"
+                                                }`}
                                         >
                                             {i + 1}
                                         </button>
                                     ))}
                                 </div>
-                                
+
                                 <button
                                     onClick={() => handlePageChange(page + 1)}
                                     disabled={page === totalPages}

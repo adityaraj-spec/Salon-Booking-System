@@ -118,10 +118,11 @@ export function Shop() {
     }
 
     return (
-        <div className="min-h-screen bg-[#fafafa] font-sans pt-20">
+        <div className="min-h-screen flex flex-col bg-[#fafafa] font-sans">
             <NavBar />
 
-            <div className="max-w-7xl mx-auto px-6 py-10">
+            <main className="flex-1 pt-20">
+                <div className="max-w-7xl mx-auto px-6 py-10">
                 {/* Navigation Breadcrumb */}
                 <NavLink to="/home" className="inline-flex items-center gap-2 text-gray-500 hover:text-[#D4AF37] mb-8 transition-colors text-sm font-medium">
                     <ArrowLeft size={16} /> Back to Discover
@@ -384,8 +385,8 @@ export function Shop() {
                     </div>
 
                 </div>
-
-            </div>
+                </div>
+            </main>
             <Footer />
         </div>
     );

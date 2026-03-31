@@ -9,10 +9,11 @@ export function ProfilePage() {
     if (!user) return null;
 
     return (
-        <div className="min-h-screen bg-[#fafafa] pt-24">
+        <div className="min-h-screen flex flex-col bg-[#fafafa]">
             <NavBar />
             
-            <div className="max-w-4xl mx-auto px-6 py-12">
+            <main className="flex-1 pt-24 pb-12">
+                <div className="max-w-4xl mx-auto px-6 py-12">
                 <div className="bg-white rounded-[32px] overflow-hidden shadow-sm border border-gray-100">
                     {/* Header/Cover */}
                     <div className="h-32 bg-[#1a1a1a] flex items-end px-12">
@@ -83,7 +84,8 @@ export function ProfilePage() {
                         </div>
                     </div>
                 </div>
-            </div>
+                </div>
+            </main>
             
             <Footer />
         </div>

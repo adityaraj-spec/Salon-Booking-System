@@ -230,10 +230,11 @@ export function BookingPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#fafafa] font-sans pt-24">
+        <div className="min-h-screen flex flex-col bg-[#fafafa] font-sans">
             <NavBar />
 
-            <div className="max-w-6xl mx-auto px-6 pb-24">
+            <main className="flex-1 pt-24">
+                <div className="max-w-6xl mx-auto px-6 pb-24">
                 {/* Header Section */}
                 <div className="flex items-center gap-4 mb-10">
                     <NavLink to={`/shop/${id}`} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
@@ -431,7 +432,8 @@ export function BookingPage() {
                     </div>
 
                 </div>
-            </div>
+                </div>
+            </main>
 
             <Footer />
         </div>

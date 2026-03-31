@@ -4,10 +4,12 @@ import { Shops } from './shops-grid.jsx';
 
 export function HomePage() {
     return (
-        <>
+        <div className="min-h-screen flex flex-col">
             <NavBar />
-            <Shops />
+            <main className="flex-1">
+                <Shops />
+            </main>
             <Footer />
-        </>
+        </div>
     );
 }

@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Scissors, LogOut, ChevronDown, User, Calendar, Settings } from "lucide-react";
+import { Scissors, LogOut, ChevronDown, User, Calendar, Settings, Menu, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 export function NavBar() {
     const { user, logout } = useAuth();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const menuRef = useRef(null);
 
     // Close menu when clicking outside
@@ -20,18 +21,19 @@ export function NavBar() {
     }, []);
 
     return (
-        <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-12 py-4 bg-white/70 backdrop-blur-lg border-b border-gray-100/50 shadow-sm transition-all duration-300">
+        <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-12 py-4 bg-white/80 backdrop-blur-lg border-b border-gray-100/50 shadow-sm transition-all duration-300">
             <div className="flex items-center gap-2">
                 <NavLink to="/home" className="text-[#D4AF37] cursor-pointer" >
                     <div className="bg-[#1a1a1a] p-2 rounded-full text-white">
-                        <Scissors size={24} />
+                        <Scissors size={20} className="md:w-6 md:h-6" />
                     </div>
                 </NavLink>
-                <span className="text-2xl font-serif font-semibold tracking-tight">Salon<span className="text-[#D4AF37]">Now</span></span>
+                <span className="text-xl md:text-2xl font-serif font-semibold tracking-tight">Salon<span className="text-[#D4AF37]">Now</span></span>
             </div>
 
-            <div className="flex items-center gap-6">
-                <NavLink to="/home" className="text-[#D4AF37] font-medium text-sm tracking-widest uppercase hover:opacity-80 transition-opacity">
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-6">
+                <NavLink to="/home" className="text-[#1a1a1a] font-medium text-sm tracking-widest uppercase hover:text-[#D4AF37] transition-colors">
                     Discover
                 </NavLink>
 
@@ -113,6 +115,87 @@ export function NavBar() {
                     </div>
                 )}
             </div>
+
+            {/* Mobile Menu Button */}
+            <div className="md:hidden flex items-center gap-4">
+                {user && (
+                    <NavLink to="/profile" className="w-8 h-8 rounded-full bg-[#1a1a1a] flex items-center justify-center text-white font-bold text-xs border border-[#D4AF37]">
+                        {user.fullName?.charAt(0).toUpperCase()}
+                    </NavLink>
+                )}
+                <button 
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    className="text-gray-900 focus:outline-none p-1"
+                >
+                    {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+                </button>
+            </div>
+
+            {/* Mobile Menu Overlay */}
+            {isMobileMenuOpen && (
+                <div className="fixed inset-0 top-[73px] bg-white z-40 md:hidden animate-in slide-in-from-right duration-300">
+                    <div className="flex flex-col p-8 gap-6">
+                        <NavLink 
+                            to="/home" 
+                            className="text-2xl font-serif font-bold text-[#1a1a1a] flex items-center justify-between"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                            Discover <ChevronDown size={20} className="-rotate-90 text-gray-300" />
+                        </NavLink>
+                        
+                        {user?.role === "salonOwner" && (
+                            <NavLink 
+                                to="/create-salon" 
+                                className="text-2xl font-serif font-bold text-[#1a1a1a] flex items-center justify-between"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                Add Your Shop <ChevronDown size={20} className="-rotate-90 text-gray-300" />
+                            </NavLink>
+                        )}
+
+                        <NavLink 
+                            to="/bookings" 
+                            className="text-2xl font-serif font-bold text-[#1a1a1a] flex items-center justify-between"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                            My Bookings <ChevronDown size={20} className="-rotate-90 text-gray-300" />
+                        </NavLink>
+
+                        <div className="h-px bg-gray-100 my-4"></div>
+
+                        {!user ? (
+                            <div className="flex flex-col gap-4">
+                                <NavLink 
+                                    to="/login" 
+                                    className="w-full text-center border-2 border-[#1a1a1a] py-4 rounded-2xl font-bold uppercase tracking-widest text-sm"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    Login
+                                </NavLink>
+                                <NavLink 
+                                    to="/signup" 
+                                    className="w-full text-center bg-[#1a1a1a] text-white py-4 rounded-2xl font-bold uppercase tracking-widest text-sm"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    Sign Up
+                                </NavLink>
+                            </div>
+                        ) : (
+                            <button 
+                                onClick={() => {
+                                    setIsMobileMenuOpen(false);
+                                    logout();
+                                }}
+                                className="w-full text-left text-2xl font-serif font-bold text-red-600 flex items-center justify-between"
+                            >
+                                Logout <LogOut size={24} />
+                            </button>
+                        )}
+                    </div>
+                </div>
+            )}
         </nav>
+    );
+}
     );
 }

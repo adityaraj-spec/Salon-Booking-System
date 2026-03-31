@@ -21,6 +21,7 @@ const createBooking = asyncHandler(async (req, res) => {
         customer: req.user._id,
         salon: salonId,
         services: services || [],
+        serviceNames: serviceNames || [],
         staff: staff || null,
         date,
         time,
