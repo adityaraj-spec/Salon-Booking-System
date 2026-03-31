@@ -131,69 +131,118 @@ export function NavBar() {
                 </button>
             </div>
 
-            {/* Mobile Menu Overlay */}
-            {isMobileMenuOpen && (
-                <div className="fixed inset-0 top-[73px] bg-white z-40 md:hidden animate-in slide-in-from-right duration-300">
-                    <div className="flex flex-col p-8 gap-6">
+            {/* Mobile Menu Sidebar & Backdrop */}
+            <div 
+                className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity duration-300 md:hidden ${
+                    isMobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+                }`}
+                onClick={() => setIsMobileMenuOpen(false)}
+            />
+            
+            <div className={`fixed top-0 left-0 h-full w-[280px] bg-white z-50 shadow-2xl transform transition-transform duration-300 ease-in-out md:hidden flex flex-col ${
+                isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+            }`}>
+                {/* Sidebar Header */}
+                <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-[#fafafa]">
+                    <div className="flex items-center gap-2">
+                        <div className="bg-[#1a1a1a] p-1.5 rounded-full text-white">
+                            <Scissors size={16} />
+                        </div>
+                        <span className="text-lg font-serif font-bold">Salon<span className="text-[#D4AF37]">Now</span></span>
+                    </div>
+                    <button 
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500"
+                    >
+                        <X size={24} />
+                    </button>
+                </div>
+
+                {/* Sidebar Links */}
+                <div className="flex-1 overflow-y-auto py-6 px-4 space-y-2">
+                    <p className="px-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Navigations</p>
+                    
+                    <NavLink 
+                        to="/home" 
+                        className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all ${
+                            isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50"
+                        }`}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                        Discover
+                    </NavLink>
+                    
+                    {user?.role === "salonOwner" && (
                         <NavLink 
-                            to="/home" 
-                            className="text-2xl font-serif font-bold text-[#1a1a1a] flex items-center justify-between"
+                            to="/create-salon" 
+                            className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all ${
+                                isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50"
+                            }`}
                             onClick={() => setIsMobileMenuOpen(false)}
                         >
-                            Discover <ChevronDown size={20} className="-rotate-90 text-gray-300" />
+                            Add Your Shop
                         </NavLink>
-                        
-                        {user?.role === "salonOwner" && (
+                    )}
+
+                    <NavLink 
+                        to="/bookings" 
+                        className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all ${
+                            isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50"
+                        }`}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                        My Bookings
+                    </NavLink>
+
+                    <div className="h-px bg-gray-100 my-6 mx-4"></div>
+
+                    <p className="px-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Account</p>
+
+                    {user ? (
+                        <>
                             <NavLink 
-                                to="/create-salon" 
-                                className="text-2xl font-serif font-bold text-[#1a1a1a] flex items-center justify-between"
+                                to="/profile" 
+                                className="flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm text-gray-600 hover:bg-gray-50 transition-all"
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
-                                Add Your Shop <ChevronDown size={20} className="-rotate-90 text-gray-300" />
+                                Profile
                             </NavLink>
-                        )}
-
-                        <NavLink 
-                            to="/bookings" 
-                            className="text-2xl font-serif font-bold text-[#1a1a1a] flex items-center justify-between"
-                            onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                            My Bookings <ChevronDown size={20} className="-rotate-90 text-gray-300" />
-                        </NavLink>
-
-                        <div className="h-px bg-gray-100 my-4"></div>
-
-                        {!user ? (
-                            <div className="flex flex-col gap-4">
-                                <NavLink 
-                                    to="/login" 
-                                    className="w-full text-center border-2 border-[#1a1a1a] py-4 rounded-2xl font-bold uppercase tracking-widest text-sm"
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                >
-                                    Login
-                                </NavLink>
-                                <NavLink 
-                                    to="/signup" 
-                                    className="w-full text-center bg-[#1a1a1a] text-white py-4 rounded-2xl font-bold uppercase tracking-widest text-sm"
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                >
-                                    Sign Up
-                                </NavLink>
-                            </div>
-                        ) : (
                             <button 
                                 onClick={() => {
                                     setIsMobileMenuOpen(false);
                                     logout();
                                 }}
-                                className="w-full text-left text-2xl font-serif font-bold text-red-600 flex items-center justify-between"
+                                className="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm text-red-600 hover:bg-red-50 transition-all"
                             >
-                                Logout <LogOut size={24} />
+                                <LogOut size={18} />
+                                Logout
                             </button>
-                        )}
-                    </div>
+                        </>
+                    ) : (
+                        <div className="space-y-3 px-2 pt-2">
+                            <NavLink 
+                                to="/login" 
+                                className="block w-full text-center border-2 border-gray-100 py-3.5 rounded-2xl font-bold uppercase tracking-widest text-xs hover:border-[#1a1a1a] transition-all"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                Login
+                            </NavLink>
+                            <NavLink 
+                                to="/signup" 
+                                className="block w-full text-center bg-[#1a1a1a] text-white py-3.5 rounded-2xl font-bold uppercase tracking-widest text-xs shadow-lg shadow-black/10 active:scale-[0.98] transition-all"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                Sign Up
+                            </NavLink>
+                        </div>
+                    )}
                 </div>
-            )}
+
+                {/* Sidebar Footer */}
+                <div className="p-8 border-t border-gray-50 text-center">
+                    <p className="text-[10px] text-gray-400 font-medium tracking-tight">© 2026 SalonNow Platform</p>
+                </div>
+            </div>
         </nav>
     );
 }
