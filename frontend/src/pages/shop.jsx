@@ -292,43 +292,49 @@ export function Shop() {
 
                             {/* REVIEW FORM */}
                             {user ? (
-                                <div className="bg-white border border-gray-100 rounded-[32px] p-8 mb-12 shadow-sm">
-                                    <h4 className="text-lg font-bold text-[#1a1a1a] mb-6">Write a Review</h4>
-                                    <form onSubmit={handleReviewSubmit} className="space-y-6">
-                                        <div>
-                                            <p className="text-xs text-gray-400 uppercase font-black mb-3 tracking-widest">Select Rating</p>
-                                            <div className="flex gap-2">
-                                                {[1, 2, 3, 4, 5].map((star) => (
-                                                    <button 
-                                                        key={star}
-                                                        type="button"
-                                                        onClick={() => setRating(star)}
-                                                        className={`p-2 rounded-xl transition-all ${rating >= star ? "text-[#D4AF37] bg-orange-50/50" : "text-gray-200 bg-gray-50/30"}`}
-                                                    >
-                                                        <Star size={24} className={rating >= star ? "fill-current" : ""} />
-                                                    </button>
-                                                ))}
+                                user.role !== "salonOwner" ? (
+                                    <div className="bg-white border border-gray-100 rounded-[32px] p-8 mb-12 shadow-sm">
+                                        <h4 className="text-lg font-bold text-[#1a1a1a] mb-6">Write a Review</h4>
+                                        <form onSubmit={handleReviewSubmit} className="space-y-6">
+                                            <div>
+                                                <p className="text-xs text-gray-400 uppercase font-black mb-3 tracking-widest">Select Rating</p>
+                                                <div className="flex gap-2">
+                                                    {[1, 2, 3, 4, 5].map((star) => (
+                                                        <button 
+                                                            key={star}
+                                                            type="button"
+                                                            onClick={() => setRating(star)}
+                                                            className={`p-2 rounded-xl transition-all ${rating >= star ? "text-[#D4AF37] bg-orange-50/50" : "text-gray-200 bg-gray-50/30"}`}
+                                                        >
+                                                            <Star size={24} className={rating >= star ? "fill-current" : ""} />
+                                                        </button>
+                                                    ))}
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-xs text-gray-400 uppercase font-black tracking-widest">Your Experience</label>
-                                            <textarea 
-                                                className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-5 text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all h-32"
-                                                placeholder="Share your experience at this salon..."
-                                                value={reviewText}
-                                                onChange={(e) => setReviewText(e.target.value)}
-                                            />
-                                        </div>
-                                        {reviewError && <p className="text-red-500 text-xs font-bold">{reviewError}</p>}
-                                        <button 
-                                            disabled={isSubmitting}
-                                            className="bg-[#1a1a1a] text-white px-8 py-3.5 rounded-full font-bold text-sm tracking-widest uppercase hover:bg-black transition-colors flex items-center gap-2 group disabled:opacity-50"
-                                        >
-                                            {isSubmitting ? "Posting..." : "Post Review"}
-                                            <Send size={16} className="group-hover:translate-x-1 transition-transform" />
-                                        </button>
-                                    </form>
-                                </div>
+                                            <div className="space-y-2">
+                                                <label className="text-xs text-gray-400 uppercase font-black tracking-widest">Your Experience</label>
+                                                <textarea 
+                                                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-5 text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all h-32"
+                                                    placeholder="Share your experience at this salon..."
+                                                    value={reviewText}
+                                                    onChange={(e) => setReviewText(e.target.value)}
+                                                />
+                                            </div>
+                                            {reviewError && <p className="text-red-500 text-xs font-bold">{reviewError}</p>}
+                                            <button 
+                                                disabled={isSubmitting}
+                                                className="bg-[#1a1a1a] text-white px-8 py-3.5 rounded-full font-bold text-sm tracking-widest uppercase hover:bg-black transition-colors flex items-center gap-2 group disabled:opacity-50"
+                                            >
+                                                {isSubmitting ? "Posting..." : "Post Review"}
+                                                <Send size={16} className="group-hover:translate-x-1 transition-transform" />
+                                            </button>
+                                        </form>
+                                    </div>
+                                ) : (
+                                    <div className="bg-white/50 border border-gray-100 rounded-[32px] p-8 mb-12 text-center">
+                                        <p className="text-gray-500 font-medium italic">Reviews are reserved for customers. Thank you for maintaining the platform's integrity!</p>
+                                    </div>
+                                )
                             ) : (
                                 <div className="bg-gray-50/50 border border-dashed border-gray-200 rounded-[32px] p-10 text-center mb-12">
                                     <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" />
@@ -369,11 +375,17 @@ export function Shop() {
                                 </div>
                             </div>
 
-                            <NavLink to={`/booking/${salon._id}`} className="block">
-                                <button className="w-full bg-[#1a1a1a] text-white font-bold py-5 rounded-2xl hover:bg-black transition-all active:scale-[0.98] shadow-xl shadow-black/10 text-lg uppercase tracking-widest">
-                                    Check Slots
-                                </button>
-                            </NavLink>
+                            {user?.role !== "salonOwner" ? (
+                                <NavLink to={`/booking/${salon._id}`} className="block">
+                                    <button className="w-full bg-[#1a1a1a] text-white font-bold py-5 rounded-2xl hover:bg-black transition-all active:scale-[0.98] shadow-xl shadow-black/10 text-lg uppercase tracking-widest">
+                                        Check Slots
+                                    </button>
+                                </NavLink>
+                            ) : (
+                                <div className="w-full bg-gray-50 border border-gray-100 py-5 rounded-2xl text-center">
+                                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Owner View Only</p>
+                                </div>
+                            )}
 
                             <div className="flex items-center justify-center gap-2 mt-6">
                                 <ShieldCheck size={14} className="text-green-500" />

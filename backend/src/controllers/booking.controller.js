@@ -3,6 +3,7 @@ import ApiError from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { Booking } from "../models/booking.models.js";
 import { Salon } from "../models/salon.models.js";
+import { Notification } from "../models/notification.models.js";
 import { sendBookingConfirmationEmail } from "../utils/mailer.js";
 
 const createBooking = asyncHandler(async (req, res) => {
@@ -26,10 +27,10 @@ const createBooking = asyncHandler(async (req, res) => {
         date,
         time,
         totalAmount: totalAmount || 0,
-        status: "confirmed"
+        status: "pending"
     });
 
-    // Trigger booking confirmation email silently with full details
+    // Notify customer that the request was received (Not confirmed yet)
     const bookingTime = `${date} at ${time}`;
     sendBookingConfirmationEmail(
         req.user.email, 
@@ -41,8 +42,18 @@ const createBooking = asyncHandler(async (req, res) => {
         serviceNames || []
     );
 
+    // Create notification for salon owner
+    await Notification.create({
+        recipient: salon.owner,
+        sender: req.user._id,
+        title: "New Booking Request",
+        message: `You have a new appointment request from ${req.user.fullName} for ${date} at ${time}.`,
+        type: "booking_request",
+        bookingId: booking._id
+    });
+
     return res.status(201).json(
-        new ApiResponse(201, booking, "Booking confirmed successfully")
+        new ApiResponse(201, booking, "Booking request sent to salon. Please wait for confirmation.")
     );
 });
 
@@ -56,4 +67,75 @@ const getUserBookings = asyncHandler(async (req, res) => {
     );
 });
 
-export { createBooking, getUserBookings };
+const getSalonBookings = asyncHandler(async (req, res) => {
+    // 1. Find all salons owned by this user
+    const salons = await Salon.find({ owner: req.user._id });
+    const salonIds = salons.map(s => s._id);
+
+    // 2. Fetch bookings for those salons
+    const bookings = await Booking.find({ salon: { $in: salonIds } })
+        .populate("customer", "fullName email phone_number")
+        .populate("salon", "name")
+        .sort({ createdAt: -1 });
+
+    return res.status(200).json(
+        new ApiResponse(200, bookings, "Salon bookings fetched successfully")
+    );
+});
+
+const updateBookingStatus = asyncHandler(async (req, res) => {
+    const { bookingId } = req.params;
+    const { status } = req.body;
+
+    if (!["pending", "confirmed", "completed", "cancelled", "rejected"].includes(status)) {
+        throw new ApiError(400, "Invalid status upgrade");
+    }
+
+    const booking = await Booking.findById(bookingId).populate("salon");
+    if (!booking) {
+        throw new ApiError(404, "Booking not found");
+    }
+
+    // Security check: Only the salon owner can update this
+    const salon = await Salon.findById(booking.salon._id);
+    if (salon.owner.toString() !== req.user._id.toString()) {
+        throw new ApiError(403, "You do not have permission to manage this booking");
+    }
+
+    booking.status = status;
+    await booking.save();
+
+    // Create notification for customer
+    let title = "Booking Update";
+    let type = "system";
+    if (status === "confirmed") {
+        title = "Booking Confirmed!";
+        type = "booking_confirmed";
+    } else if (status === "rejected") {
+        title = "Booking Declined";
+        type = "booking_rejected";
+    } else if (status === "completed") {
+        title = "Appointment Completed";
+        type = "booking_completed";
+    }
+
+    await Notification.create({
+        recipient: booking.customer,
+        sender: req.user._id,
+        title,
+        message: `Your booking at ${salon.name} for ${booking.date} has been ${status}.`,
+        type,
+        bookingId: booking._id
+    });
+
+    return res.status(200).json(
+        new ApiResponse(200, booking, `Booking status updated to ${status}`)
+    );
+});
+
+export { 
+    createBooking, 
+    getUserBookings, 
+    getSalonBookings, 
+    updateBookingStatus 
+};

@@ -93,7 +93,10 @@ export function Shops() {
                             <Loader2 className="w-5 h-5 animate-spin" />
                         ) : (
                             <>
-                                <span className="hidden md:inline">Search Salons</span>
+                                <div className="hidden md:flex items-center gap-2">
+                                    <Search className="w-5 h-5" />
+                                    <span>Search</span>
+                                </div>
                                 <Search className="md:hidden w-5 h-5" />
                             </>
                         )}

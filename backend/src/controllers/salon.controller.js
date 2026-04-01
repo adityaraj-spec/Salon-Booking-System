@@ -123,4 +123,12 @@ const getSalonById = asyncHandler(async (req, res) => {
     );
 });
 
-export { registerSalon, getSalons, getSalonById }
+const getOwnerSalon = asyncHandler(async (req, res) => {
+    const salon = await Salon.findOne({ owner: req.user?._id });
+    
+    return res.status(200).json(
+        new ApiResponse(200, salon, "Owner salon fetched successfully")
+    );
+});
+
+export { registerSalon, getSalons, getSalonById, getOwnerSalon }

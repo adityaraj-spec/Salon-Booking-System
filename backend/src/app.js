@@ -7,6 +7,7 @@ import userRouter from "./routes/user.routes.js";
 import salonRouter from "./routes/salon.routes.js";
 import bookingRouter from "./routes/booking.routes.js";
 import reviewRouter from "./routes/review.routes.js";
+import notificationRouter from "./routes/notification.routes.js";
 import ApiError from "./utils/apiError.js";
 
 const app = express();
@@ -26,6 +27,7 @@ app.use("/api/v1/users", userRouter);
 app.use("/api/v1/salons", salonRouter);
 app.use("/api/v1/bookings", bookingRouter);
 app.use("/api/v1/reviews", reviewRouter);
+app.use("/api/v1/notifications", notificationRouter);
 
 // common error handling middleware
 app.use((err, req, res, next) => {

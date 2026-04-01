@@ -1,13 +1,36 @@
 import { useState, useRef, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Scissors, LogOut, ChevronDown, User, Calendar, Settings, Menu, X } from "lucide-react";
+import { Scissors, LogOut, ChevronDown, User, Calendar, Settings, Menu, X, Bell, CheckCircle2, Clock } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import axiosInstance from "../api/axiosConfig";
 
 export function NavBar() {
     const { user, logout } = useAuth();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+    const [hasSalon, setHasSalon] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
     const menuRef = useRef(null);
+    const notificationsRef = useRef(null);
+
+    // Check if salon owner already has a shop
+    useEffect(() => {
+        const checkOwnership = async () => {
+            if (user?.role === "salonOwner") {
+                try {
+                    const response = await axiosInstance.get("/salons/owner/my-salon");
+                    if (response.data.success && response.data.data) {
+                        setHasSalon(true);
+                    }
+                } catch (error) {
+                    console.error("Error checking salon ownership:", error);
+                }
+            }
+        };
+        checkOwnership();
+    }, [user]);
 
     // Lock body scroll when mobile menu is open
     useEffect(() => {
@@ -25,10 +48,56 @@ export function NavBar() {
             if (menuRef.current && !menuRef.current.contains(event.target)) {
                 setIsMenuOpen(false);
             }
+            if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+                setIsNotificationsOpen(false);
+            }
         }
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
+
+    // Fetch notifications
+    const fetchNotifications = async () => {
+        if (!user) return;
+        try {
+            const response = await axiosInstance.get("/notifications");
+            if (response.data.success) {
+                setNotifications(response.data.data);
+                setUnreadCount(response.data.data.filter(n => !n.isRead).length);
+            }
+        } catch (error) {
+            console.error("Error fetching notifications:", error);
+        }
+    };
+
+    useEffect(() => {
+        if (user) {
+            fetchNotifications();
+            // Polling every 1 minute for a "real-time" feel without web-sockets
+            const interval = setInterval(fetchNotifications, 60000);
+            return () => clearInterval(interval);
+        }
+    }, [user]);
+
+    const markAsRead = async (id) => {
+        try {
+            await axiosInstance.patch(`/notifications/${id}/read`);
+            setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
+            setUnreadCount(prev => Math.max(0, prev - 1));
+        } catch (error) {
+            console.error("Error marking notification as read:", error);
+        }
+    };
+
+    const markAllAsRead = async () => {
+        try {
+            await axiosInstance.patch("/notifications/mark-all-read");
+            setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+            setUnreadCount(0);
+        } catch (error) {
+            console.error("Error marking all as read:", error);
+        }
+    };
 
     return (
         <>
@@ -49,22 +118,112 @@ export function NavBar() {
                     </NavLink>
 
                     {user?.role === "salonOwner" && (
-                        <NavLink to="/create-salon" className="bg-[#1a1a1a] hover:bg-black text-white px-5 py-2 rounded-full font-medium text-xs tracking-widest uppercase transition-colors flex items-center gap-2">
-                            Add Your Shop
-                        </NavLink>
+                        <div className="flex items-center gap-6">
+                            {!hasSalon && (
+                                <NavLink to="/create-salon" className="bg-[#1a1a1a] hover:bg-black text-white px-5 py-2 rounded-full font-medium text-xs tracking-widest uppercase transition-colors flex items-center gap-2">
+                                    Add Your Shop
+                                </NavLink>
+                            )}
+                            <NavLink to="/salon/dashboard" className="text-[#1a1a1a] font-medium text-sm tracking-widest uppercase hover:text-[#D4AF37] transition-colors">
+                                Booking Requests
+                            </NavLink>
+                        </div>
                     )}
 
                     {user ? (
-                        <div className="relative ml-4" ref={menuRef}>
-                            <button 
-                                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                                className="flex items-center gap-2 group focus:outline-none"
-                            >
-                                <div className="w-10 h-10 rounded-full bg-[#1a1a1a] flex items-center justify-center text-white font-bold text-lg border-2 border-[#D4AF37] group-hover:scale-105 transition-transform">
-                                    {user.fullName?.charAt(0).toUpperCase()}
-                                </div>
-                                <ChevronDown size={16} className={`text-gray-500 transition-transform duration-200 ${isMenuOpen ? 'rotate-180' : ''}`} />
-                            </button>
+                        <div className="flex items-center gap-4">
+                            {/* Notifications Bell */}
+                            <div className="relative" ref={notificationsRef}>
+                                <button 
+                                    onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                                    className="p-2.5 bg-gray-50 rounded-full text-gray-500 hover:text-[#D4AF37] hover:bg-[#D4AF37]/5 transition-all relative group"
+                                >
+                                    <Bell size={20} />
+                                    {unreadCount > 0 && (
+                                        <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white ring-1 ring-red-500/20">
+                                            {unreadCount}
+                                        </span>
+                                    )}
+                                </button>
+
+                                {isNotificationsOpen && (
+                                    <div className="absolute right-0 mt-3 w-80 md:w-96 bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden z-[60] animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+                                        <div className="p-5 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
+                                            <h3 className="font-bold text-gray-900">Notifications</h3>
+                                            {unreadCount > 0 && (
+                                                <button 
+                                                    onClick={markAllAsRead}
+                                                    className="text-[10px] uppercase font-black tracking-widest text-[#D4AF37] hover:text-black transition-colors"
+                                                >
+                                                    Mark all as read
+                                                </button>
+                                            )}
+                                        </div>
+                                        <div className="max-h-[400px] overflow-y-auto">
+                                            {notifications.length > 0 ? (
+                                                <div className="divide-y divide-gray-50">
+                                                    {notifications.map((notif) => (
+                                                        <div 
+                                                            key={notif._id} 
+                                                            onClick={() => !notif.isRead && markAsRead(notif._id)}
+                                                            className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer flex gap-4 ${!notif.isRead ? 'bg-[#D4AF37]/5' : ''}`}
+                                                        >
+                                                            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${
+                                                                notif.type.includes('confirmed') ? 'bg-emerald-50 text-emerald-600' : 
+                                                                notif.type.includes('rejected') ? 'bg-red-50 text-red-600' : 
+                                                                'bg-blue-50 text-blue-600'
+                                                            }`}>
+                                                                <Clock size={18} />
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <p className={`text-sm ${!notif.isRead ? 'font-bold text-gray-900' : 'text-gray-600'}`}>
+                                                                    {notif.title}
+                                                                </p>
+                                                                <p className="text-xs text-gray-500 line-clamp-2 mt-0.5">{notif.message}</p>
+                                                                <p className="text-[10px] text-gray-400 mt-2 font-medium">
+                                                                    {new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {new Date(notif.createdAt).toLocaleDateString()}
+                                                                </p>
+                                                            </div>
+                                                            {!notif.isRead && <div className="w-2 h-2 rounded-full bg-[#D4AF37] mt-2 shrink-0"></div>}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="p-10 text-center text-gray-400">
+                                                    <Bell className="mx-auto mb-3 opacity-20" size={32} />
+                                                    <p className="text-sm font-medium">Your notification center is empty</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                        {notifications.length > 0 && (
+                                            <div className="p-3 bg-gray-50/50 border-t border-gray-50 text-center">
+                                                <button className="text-[10px] font-bold text-gray-400 hover:text-gray-900 uppercase tracking-widest">
+                                                    View all activity
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="relative ml-2" ref={menuRef}>
+                                <button 
+                                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                    className="flex items-center gap-3 p-1.5 pr-4 bg-gray-50 hover:bg-gray-100 rounded-full transition-all group"
+                                >
+                                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-[#1a1a1a] flex items-center justify-center text-white font-bold text-sm md:text-base border-2 border-[#D4AF37]/30 group-hover:border-[#D4AF37] transition-all">
+                                        {user.fullName?.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div className="hidden lg:block text-left">
+                                        <p className="text-xs font-bold text-gray-900 leading-none mb-1 capitalize truncate max-w-[100px]">
+                                            {user.fullName.split(' ')[0]}
+                                        </p>
+                                        <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider leading-none">
+                                            {user.role}
+                                        </p>
+                                    </div>
+                                    <ChevronDown size={16} className={`text-gray-400 transition-transform duration-300 ${isMenuOpen ? "rotate-180" : ""}`} />
+                                </button>
 
                             {isMenuOpen && (
                                 <div className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
@@ -115,8 +274,9 @@ export function NavBar() {
                                 </div>
                             )}
                         </div>
-                    ) : (
-                        <div className="flex items-center gap-4 ml-2">
+                    </div>
+                ) : (
+                    <div className="flex items-center gap-4 ml-2">
                             <NavLink to="/login" className="text-gray-800 font-medium text-sm tracking-widest uppercase hover:text-[#e65c00] transition-colors">
                                 Login
                             </NavLink>
@@ -186,15 +346,28 @@ export function NavBar() {
                     </NavLink>
                     
                     {user?.role === "salonOwner" && (
-                        <NavLink 
-                            to="/create-salon" 
-                            className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all ${
-                                isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37]"
-                            }`}
-                            onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                            Add Your Shop
-                        </NavLink>
+                        <>
+                            {!hasSalon && (
+                                <NavLink 
+                                    to="/create-salon" 
+                                    className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all ${
+                                        isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37]"
+                                    }`}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    Add Your Shop
+                                </NavLink>
+                            )}
+                            <NavLink 
+                                to="/salon/dashboard" 
+                                className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all ${
+                                    isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37]"
+                                }`}
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                Booking Requests
+                            </NavLink>
+                        </>
                     )}
 
                     <NavLink 

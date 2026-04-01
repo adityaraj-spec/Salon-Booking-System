@@ -10,6 +10,7 @@ import { RoleSelectionPage } from "./pages/roleSelectionPage.jsx"
 import { CreateSalonPage } from "./pages/createSalonPage.jsx"
 import { ProfilePage } from "./pages/profilePage.jsx"
 import { MyBookingsPage } from "./pages/bookingsListPage.jsx"
+import SalonBookingsPage from "./pages/SalonBookingsPage.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { NotificationProvider } from "./context/NotificationContext.jsx";
 import { Notification } from "./components/Notification.jsx";
@@ -34,6 +35,7 @@ function App() {
             <Route path="booking/:id" element={<BookingPage />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="bookings" element={<MyBookingsPage />} />
+            <Route path="salon/dashboard" element={<SalonBookingsPage />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>
