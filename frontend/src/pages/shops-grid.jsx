@@ -81,19 +81,19 @@ export function Shops() {
                             placeholder="Search by city..."
                             value={city}
                             onChange={(e) => setCity(e.target.value)}
-                            className="w-full outline-none text-gray-700 placeholder-gray-400 text-sm md:text-base font-medium py-2.5 bg-transparent"
+                            className="w-full outline-none text-gray-700 placeholder-gray-400 text-sm md:text-base font-medium py-2 bg-transparent"
                         />
                     </div>
                     <button 
                         type="submit" 
                         disabled={loading}
-                        className="shrink-0 bg-[#1A1A1A] text-white p-3 md:px-10 md:py-4 rounded-full font-bold uppercase text-[10px] md:text-xs tracking-widest hover:bg-black active:scale-95 transition-all disabled:opacity-70 flex items-center justify-center gap-2"
+                        className="shrink-0 bg-[#1A1A1A] text-white p-3 md:px-5 md:py-4 rounded-full font-bold uppercase text-[10px] md:text-xs tracking-widest hover:bg-black active:scale-95 transition-all disabled:opacity-70 flex items-center justify-center gap-2"
                     >
                         {loading ? (
                             <Loader2 className="w-5 h-5 animate-spin" />
                         ) : (
                             <>
-                                <div className="hidden md:flex items-center gap-2">
+                                <div className="hidden md:flex items-center gap-1">
                                     <Search className="w-5 h-5" />
                                     <span>Search</span>
                                 </div>
