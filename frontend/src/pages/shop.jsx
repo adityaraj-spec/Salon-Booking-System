@@ -229,6 +229,25 @@ export function Shop() {
                     <ArrowLeft size={16} /> Back to Discover
                 </NavLink>
 
+                {/* Salon Closed Banner */}
+                {salon.isOpen === false && (
+                    <div className="mb-10 bg-red-50 border border-red-100 p-6 rounded-[32px] flex flex-col md:flex-row items-center justify-between gap-6 animate-in slide-in-from-top-4 duration-500">
+                        <div className="flex items-center gap-4 text-center md:text-left">
+                            <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-red-500 shadow-sm shadow-red-100">
+                                <Clock size={28} />
+                            </div>
+                            <div>
+                                <h4 className="text-xl font-serif font-black text-red-600">Currently Offline</h4>
+                                <p className="text-red-400 text-sm font-medium">This salon is not accepting immediate bookings right now.</p>
+                            </div>
+                        </div>
+                        <div className="px-6 py-2 bg-red-100 rounded-full text-red-600 text-[10px] font-black uppercase tracking-widest">
+                            Closed
+                        </div>
+                    </div>
+                )}
+
+
                 {/* Title & Brand Section */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
                     <div>
@@ -606,11 +625,15 @@ export function Shop() {
                             </div>
 
                             {user?.role !== "salonOwner" ? (
-                                <NavLink to={`/booking/${salon._id}`} className="block">
-                                    <button className="w-full bg-[#1a1a1a] text-white font-bold py-5 rounded-2xl hover:bg-black transition-all active:scale-[0.98] shadow-xl shadow-black/10 text-lg uppercase tracking-widest">
-                                        Check Slots
+                                <NavLink to={`/booking/${salon._id}`} className={`block ${!salon.isOpen ? 'pointer-events-none' : ''}`}>
+                                    <button 
+                                        disabled={!salon.isOpen}
+                                        className={`w-full font-bold py-5 rounded-2xl transition-all active:scale-[0.98] shadow-xl text-lg uppercase tracking-widest ${salon.isOpen ? 'bg-[#1a1a1a] text-white hover:bg-black shadow-black/10' : 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'}`}
+                                    >
+                                        {salon.isOpen ? 'Check Slots' : 'Temporarily Closed'}
                                     </button>
                                 </NavLink>
+
                             ) : (
                                 <div className="w-full bg-gray-50 border border-gray-100 py-5 rounded-2xl text-center">
                                     <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Owner View Only</p>

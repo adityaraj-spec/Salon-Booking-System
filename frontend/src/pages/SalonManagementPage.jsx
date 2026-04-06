@@ -36,8 +36,11 @@ export function SalonManagementPage() {
     const [tab, setTab] = useState("services"); // "services" or "staff"
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSalonSelectorOpen, setIsSalonSelectorOpen] = useState(false);
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [salonSettings, setSalonSettings] = useState({ openingHours: "", closingHours: "" });
 
     // Editing States
+
     const [editingServiceId, setEditingServiceId] = useState(null);
     const [editServiceForm, setEditServiceForm] = useState({ name: "", price: "", description: "" });
     const [editingStaffId, setEditingStaffId] = useState(null);
@@ -58,7 +61,12 @@ export function SalonManagementPage() {
                 // Set first salon as active if none selected
                 if (!activeSalon) {
                     setActiveSalon(salonsData[0]);
+                    setSalonSettings({ 
+                        openingHours: salonsData[0].openingHours || "", 
+                        closingHours: salonsData[0].closingHours || "" 
+                    });
                 }
+
             } else {
                 showNotification("No salon found. Please register one first.", "error");
                 navigate("/create-salon");
@@ -92,8 +100,13 @@ export function SalonManagementPage() {
     useEffect(() => {
         if (activeSalon) {
             fetchSalonDetails(activeSalon._id);
+            setSalonSettings({ 
+                openingHours: activeSalon.openingHours || "", 
+                closingHours: activeSalon.closingHours || "" 
+            });
         }
     }, [activeSalon]);
+
 
 
     const handleAddService = async (e) => {
@@ -116,7 +129,42 @@ export function SalonManagementPage() {
         }
     };
 
+    const handleUpdateSalonStatus = async () => {
+        try {
+            const newStatus = !activeSalon.isOpen;
+            const response = await axiosInstance.patch(`/salons/${activeSalon._id}`, { isOpen: newStatus });
+            if (response.data.success) {
+                const updatedSalon = response.data.data;
+                setActiveSalon(updatedSalon);
+                setSalons(salons.map(s => s._id === updatedSalon._id ? updatedSalon : s));
+                showNotification(`Salon is now ${newStatus ? 'Open' : 'Closed'}`, "success");
+            }
+        } catch (error) {
+            showNotification("Failed to update status", "error");
+        }
+    };
+
+    const handleUpdateSalonSettings = async (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            const response = await axiosInstance.patch(`/salons/${activeSalon._id}`, salonSettings);
+            if (response.data.success) {
+                const updatedSalon = response.data.data;
+                setActiveSalon(updatedSalon);
+                setSalons(salons.map(s => s._id === updatedSalon._id ? updatedSalon : s));
+                setIsSettingsOpen(false);
+                showNotification("Business hours updated", "success");
+            }
+        } catch (error) {
+            showNotification("Failed to update hours", "error");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     const handleUpdateService = async (id) => {
+
         setIsSubmitting(true);
         try {
             const response = await axiosInstance.patch(`/services/${id}`, editServiceForm);
@@ -265,11 +313,31 @@ export function SalonManagementPage() {
                                         <Phone size={14} className="text-[#D4AF37]" />
                                         {activeSalon?.contactNumber || "Contact not set"}
                                     </p>
+                                    <div className="h-1 w-1 bg-gray-200 rounded-full"></div>
+                                    <button 
+                                        onClick={() => setIsSettingsOpen(true)}
+                                        className="text-[10px] font-bold text-gray-400 uppercase tracking-widest hover:text-[#D4AF37] transition-colors"
+                                    >
+                                        Edit Hours
+                                    </button>
                                 </div>
                             </div>
                         </div>
                         
                         <div className="flex flex-wrap gap-4 w-full md:w-auto">
+                            {/* Live Status Toggle */}
+                            <div className="bg-gray-50 p-2 rounded-2xl flex items-center gap-3">
+                                <span className={`text-[10px] font-black uppercase tracking-widest pl-2 ${activeSalon?.isOpen ? 'text-emerald-500' : 'text-red-400'}`}>
+                                    {activeSalon?.isOpen ? 'Live Now' : 'Offline'}
+                                </span>
+                                <button 
+                                    onClick={handleUpdateSalonStatus}
+                                    className={`w-12 h-6 rounded-full relative transition-all duration-300 ${activeSalon?.isOpen ? 'bg-emerald-500' : 'bg-gray-300'}`}
+                                >
+                                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all duration-300 ${activeSalon?.isOpen ? 'left-7' : 'left-1'}`}></div>
+                                </button>
+                            </div>
+                            
                             <NavLink 
                                 to="/salon/dashboard"
                                 className="flex-1 md:flex-none flex items-center justify-center gap-3 px-8 py-4 bg-[#1A1A1A] text-white rounded-2xl font-bold text-xs uppercase tracking-[0.2em] hover:bg-black hover:scale-[1.02] transition-all shadow-xl shadow-black/10"
@@ -588,6 +656,47 @@ export function SalonManagementPage() {
                         </div>
                     </div>
                 </div>
+
+                {/* Hours Settings Modal */}
+                {isSettingsOpen && (
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+                        <div className="bg-white rounded-[40px] w-full max-w-md p-10 relative animate-in fade-in zoom-in duration-300">
+                            <button onClick={() => setIsSettingsOpen(false)} className="absolute top-8 right-8 text-gray-400 hover:text-black transition-colors"><X size={24} /></button>
+                            <h3 className="text-3xl font-serif font-black text-gray-900 mb-2">Business Hours</h3>
+                            <p className="text-gray-500 text-sm mb-8">Update your salon's daily operational schedule.</p>
+                            
+                            <form onSubmit={handleUpdateSalonSettings} className="space-y-6">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Opens At</label>
+                                        <input 
+                                            className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm"
+                                            value={salonSettings.openingHours}
+                                            onChange={e => setSalonSettings({...salonSettings, openingHours: e.target.value})}
+                                            placeholder="9:00 AM"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Closes At</label>
+                                        <input 
+                                            className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm"
+                                            value={salonSettings.closingHours}
+                                            onChange={e => setSalonSettings({...salonSettings, closingHours: e.target.value})}
+                                            placeholder="8:00 PM"
+                                        />
+                                    </div>
+                                </div>
+                                <button 
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    className="w-full bg-[#D4AF37] text-white py-4 rounded-2xl font-bold text-sm tracking-widest uppercase hover:bg-[#B8962E] transition-all flex items-center justify-center gap-2 mt-4 shadow-xl shadow-[#D4AF37]/20"
+                                >
+                                    {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : "Save Settings"}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

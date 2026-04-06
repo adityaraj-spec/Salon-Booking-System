@@ -189,4 +189,38 @@ const getOwnerSalon = asyncHandler(async (req, res) => {
     );
 });
 
-export { registerSalon, getSalons, getSalonById, getOwnerSalon }
+const updateSalonDetails = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { name, city, address, description, openingHours, closingHours, isOpen } = req.body;
+
+    const salon = await Salon.findById(id);
+    if (!salon) {
+        throw new ApiError(404, "Salon not found");
+    }
+
+    if (salon.owner.toString() !== req.user._id.toString()) {
+        throw new ApiError(403, "You do not have permission to update this salon");
+    }
+
+    const updatedSalon = await Salon.findByIdAndUpdate(
+        id,
+        {
+            $set: {
+                name,
+                city,
+                address,
+                description,
+                openingHours,
+                closingHours,
+                isOpen
+            }
+        },
+        { new: true }
+    );
+
+    return res.status(200).json(
+        new ApiResponse(200, updatedSalon, "Salon details updated successfully")
+    );
+});
+
+export { registerSalon, getSalons, getSalonById, getOwnerSalon, updateSalonDetails }
