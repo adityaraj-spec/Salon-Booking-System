@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, NavLink } from "react-router-dom";
-import { Star, MapPin, Users, Clock, ShieldCheck, Sparkles, Loader2, ArrowLeft, MessageSquare, Send, Trash2, Heart, Phone, Scissors, Award } from "lucide-react";
+import { Star, MapPin, Users, Clock, ShieldCheck, Sparkles, Loader2, ArrowLeft, MessageSquare, Send, Trash2, Heart, Phone, Scissors, Award, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
 import axiosInstance from "../api/axiosConfig";
@@ -22,6 +22,7 @@ export function Shop() {
     const [reviewError, setReviewError] = useState("");
     const [isDeletingReview, setIsDeletingReview] = useState(null);
     const [isLikingReview, setIsLikingReview] = useState(null);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
     
     // Services & Staff state
     const [services, setServices] = useState([]);
@@ -299,25 +300,58 @@ export function Shop() {
                 </div>
             </div>
 
-            {/* Image Gallery - Responsive Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 md:grid-rows-2 gap-2 md:gap-3 mb-10 md:mb-16 min-h-[300px] md:h-[500px]">
-                <div className="col-span-2 row-span-2 md:col-span-2 md:row-span-2 overflow-hidden rounded-2xl md:rounded-l-2xl md:rounded-r-none">
+            {/* Image Gallery - Desktop Grid */}
+            <div className="hidden md:grid grid-cols-4 grid-rows-2 gap-3 mb-16 h-[500px]">
+                <div className="col-span-2 row-span-2 overflow-hidden rounded-l-2xl">
                     <img src={galleryImages[0]} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Salon Main" />
                 </div>
-                <div className="hidden md:block overflow-hidden">
+                <div className="overflow-hidden">
                     <img src={galleryImages[1]} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Salon 2" />
                 </div>
-                <div className="hidden md:block overflow-hidden rounded-tr-2xl">
+                <div className="overflow-hidden rounded-tr-2xl">
                     <img src={galleryImages[2]} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Salon 3" />
                 </div>
-                <div className="md:block overflow-hidden rounded-bl-2xl md:rounded-bl-none">
+                <div className="overflow-hidden">
                     <img src={galleryImages[3]} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Salon 4" />
                 </div>
-                <div className="md:block overflow-hidden rounded-br-2xl text-white relative">
+                <div className="overflow-hidden rounded-br-2xl text-white relative">
                     <img src={galleryImages[4]} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Salon 5" />
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center cursor-pointer">
-                        <span className="font-bold text-xs md:text-base hover:underline text-center">Show all photos</span>
+                        <span className="font-bold text-base hover:underline text-center">Show all photos</span>
                     </div>
+                </div>
+            </div>
+
+            {/* Image Gallery - Mobile Carousel */}
+            <div className="md:hidden relative w-full h-[400px] mb-8 rounded-2xl overflow-hidden shadow-sm">
+                <img 
+                    src={galleryImages[currentImageIndex]} 
+                    className="w-full h-full object-cover transition-opacity duration-300" 
+                    alt={`Salon Photo ${currentImageIndex + 1}`} 
+                />
+                
+                {/* Navigation Arrows */}
+                <button 
+                    onClick={() => setCurrentImageIndex((prev) => (prev === 0 ? galleryImages.length - 1 : prev - 1))}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/70 backdrop-blur-md text-black rounded-full flex items-center justify-center shadow-md active:scale-95 transition-transform z-10 hover:bg-white"
+                >
+                    <ChevronLeft size={20} />
+                </button>
+                <button 
+                    onClick={() => setCurrentImageIndex((prev) => (prev === galleryImages.length - 1 ? 0 : prev + 1))}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/70 backdrop-blur-md text-black rounded-full flex items-center justify-center shadow-md active:scale-95 transition-transform z-10 hover:bg-white"
+                >
+                    <ChevronRight size={20} />
+                </button>
+
+                {/* Dot Indicators */}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-10">
+                    {galleryImages.map((_, idx) => (
+                        <div 
+                            key={idx} 
+                            className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentImageIndex ? "w-4 bg-white" : "w-1.5 bg-white/50"}`}
+                        />
+                    ))}
                 </div>
             </div>
 
