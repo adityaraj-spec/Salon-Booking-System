@@ -18,6 +18,28 @@ const createBooking = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Salon not found");
     }
 
+    // --- CHECK CAPACITY BEFORE BOOKING ---
+    // Match the hour of the requested time (e.g., "10:30 AM" matches "10")
+    const requestedHourMatch = time.match(/(^|\D)(\d+)(?=:)/);
+    const requestedHour = requestedHourMatch ? requestedHourMatch[0].trim() : "";
+    const ampmMatch = time.match(/AM|PM/i);
+    const ampm = ampmMatch ? ampmMatch[0].toUpperCase() : "";
+
+    // Regex to match anything in the same hour block
+    const timeMatcher = new RegExp(`(^${requestedHour}:|^0${requestedHour}:).*${ampm}`, "i");
+
+    const existingBookingsCount = await Booking.countDocuments({
+        salon: salonId,
+        date: date,
+        status: { $in: ["pending", "confirmed"] },
+        time: { $regex: timeMatcher }
+    });
+
+    const totalSeats = salon.totalSeats || 6;
+    if (existingBookingsCount >= totalSeats) {
+        throw new ApiError(400, "This salon is fully booked for the requested time slot. Please try another time.");
+    }
+
     const booking = await Booking.create({
         customer: req.user._id,
         salon: salonId,
@@ -74,7 +96,7 @@ const getSalonBookings = asyncHandler(async (req, res) => {
 
     // 2. Fetch bookings for those salons
     const bookings = await Booking.find({ salon: { $in: salonIds } })
-        .populate("customer", "fullName email phone_number")
+        .populate("customer", "fullName email phonenumber")
         .populate("salon", "name")
         .sort({ createdAt: -1 });
 
@@ -133,9 +155,47 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
     );
 });
 
+const getAvailability = asyncHandler(async (req, res) => {
+    const { salonId } = req.params;
+    const { date } = req.query;
+
+    if (!salonId || !date) {
+        throw new ApiError(400, "Salon ID and date are required");
+    }
+
+    const salon = await Salon.findById(salonId);
+    if (!salon) {
+        throw new ApiError(404, "Salon not found");
+    }
+
+    // Fetch all confirmed/pending bookings for this salon on this date
+    const bookings = await Booking.find({
+        salon: salonId,
+        date: date,
+        status: { $in: ["pending", "confirmed"] }
+    });
+
+    // We'll return an object mapping time slots to their booking counts
+    // The frontend can then compare these to salon.totalSeats
+    const availability = {};
+    bookings.forEach(b => {
+        // Extract the hour/AM-PM part to group slots if they aren't exactly identical strings
+        const timeKey = b.time; 
+        availability[timeKey] = (availability[timeKey] || 0) + 1;
+    });
+
+    return res.status(200).json(
+        new ApiResponse(200, {
+            availability,
+            totalSeats: salon.totalSeats || 6
+        }, "Availability fetched successfully")
+    );
+});
+
 export { 
     createBooking, 
     getUserBookings, 
     getSalonBookings, 
-    updateBookingStatus 
+    updateBookingStatus,
+    getAvailability
 };

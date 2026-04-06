@@ -17,21 +17,6 @@ import {
     ChevronRight
 } from "lucide-react";
 
-// Mock Data - To be replaced by API calls in production
-const AVAILABLE_SERVICES = [
-    { id: "s1", name: "Executive Haircut", price: 30, duration: "45 min", description: "Precision cut with styling and rinse." },
-    { id: "s2", name: "Beard Sculpture", price: 20, duration: "30 min", description: "Complete trim and shape with hot towel." },
-    { id: "s3", name: "Advanced Styling", price: 45, duration: "60 min", description: "Blowout and specialty styling." },
-    { id: "s4", name: "Hydrating Facial", price: 60, duration: "50 min", description: "Deep cleansing and hydration treatment." },
-    { id: "s5", name: "Full Color", price: 100, duration: "120 min", description: "Premium permanent color application." },
-];
-
-const STAFF_MEMBERS = [
-    { id: "st1", name: "Alex Rivera", role: "Master Stylist", avatar: "https://i.pravatar.cc/150?u=alex" },
-    { id: "st2", name: "Sam Chen", role: "Senior Barber", avatar: "https://i.pravatar.cc/150?u=sam" },
-    { id: "st3", name: "Jordan Smith", role: "Color Expert", avatar: "https://i.pravatar.cc/150?u=jordan" },
-];
-
 const TIME_SLOTS = [
     "09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM",
     "02:00 PM", "03:00 PM", "04:00 PM", "05:00 PM", "06:00 PM"
@@ -138,31 +123,66 @@ export function BookingPage() {
     const [selectedStaff, setSelectedStaff] = useState(null);
     const [date, setDate] = useState("");
     const [time, setTime] = useState("");
-
+    const [availability, setAvailability] = useState({});
+    const [availabilityLoading, setAvailabilityLoading] = useState(false);
+    
+    // Real Data State
+    const [services, setServices] = useState([]);
+    const [staffMembers, setStaffMembers] = useState([]);
+    const [servicesLoading, setServicesLoading] = useState(false);
+    const [staffLoading, setStaffLoading] = useState(false);
     useEffect(() => {
-        const fetchSalonDetails = async () => {
+        const fetchSalonData = async () => {
             setLoading(true);
             try {
-                const response = await axiosInstance.get(`/salons/${id}`);
-                if (response.data.success) {
-                    setSalon(response.data.data);
-                }
+                // Fetch Salon Details, Services, and Staff in parallel
+                const [salonRes, servicesRes, staffRes] = await Promise.all([
+                    axiosInstance.get(`/salons/${id}`),
+                    axiosInstance.get(`/services/salon/${id}`),
+                    axiosInstance.get(`/staff/salon/${id}`)
+                ]);
+
+                if (salonRes.data.success) setSalon(salonRes.data.data);
+                if (servicesRes.data.success) setServices(servicesRes.data.data);
+                if (staffRes.data.success) setStaffMembers(staffRes.data.data);
+                
             } catch (err) {
-                console.error("Error fetching salon in booking:", err);
+                console.error("Error fetching salon data:", err);
             } finally {
                 setLoading(false);
             }
         };
 
         if (id) {
-            fetchSalonDetails();
+            fetchSalonData();
         }
     }, [id]);
 
+    useEffect(() => {
+        const fetchAvailability = async () => {
+            if (!id || !date) return;
+            setAvailabilityLoading(true);
+            try {
+                const response = await axiosInstance.get(`/bookings/availability/${id}`, {
+                    params: { date }
+                });
+                if (response.data.success) {
+                    setAvailability(response.data.data.availability || {});
+                }
+            } catch (err) {
+                console.error("Error fetching availability:", err);
+            } finally {
+                setAvailabilityLoading(false);
+            }
+        };
+
+        fetchAvailability();
+    }, [id, date]);
+
     const toggleService = (service) => {
         setSelectedServices(prev =>
-            prev.find(s => s.id === service.id)
-                ? prev.filter(s => s.id !== service.id)
+            prev.find(s => s._id === service._id)
+                ? prev.filter(s => s._id !== service._id)
                 : [...prev, service]
         );
     };
@@ -181,8 +201,8 @@ export function BookingPage() {
         try {
             const response = await axiosInstance.post("/bookings", {
                 salonId: id,
-                services: selectedServices.map(s => s.id),
-                staff: selectedStaff?.id || null,
+                services: selectedServices.map(s => s._id),
+                staff: selectedStaff?._id || null,
                 serviceNames: selectedServices.map(s => s.name),
                 staffName: selectedStaff?.name || "Any Available",
                 date,
@@ -259,36 +279,42 @@ export function BookingPage() {
                                 <h2 className="text-xl font-serif font-bold text-[#1a1a1a]">Select Services</h2>
                             </div>
                             <div className="grid gap-4">
-                                {AVAILABLE_SERVICES.map(service => (
-                                    <div
-                                        key={service.id}
-                                        onClick={() => toggleService(service)}
-                                        className={`group cursor-pointer p-5 rounded-2xl border-2 transition-all flex items-center justify-between ${selectedServices.find(s => s.id === service.id)
-                                            ? "border-[#e65c00] bg-orange-50/30"
-                                            : "border-gray-100 bg-white hover:border-gray-200"
-                                            }`}
-                                    >
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <h3 className="font-bold text-gray-900">{service.name}</h3>
-                                                <span className="text-xs text-gray-400 font-medium bg-gray-50 px-2 py-0.5 rounded-full">{service.duration}</span>
+                                {services.length > 0 ? (
+                                    services.map(service => (
+                                        <div
+                                            key={service._id}
+                                            onClick={() => toggleService(service)}
+                                            className={`group cursor-pointer p-5 rounded-2xl border-2 transition-all flex items-center justify-between ${selectedServices.find(s => s._id === service._id)
+                                                ? "border-[#D4AF37] bg-orange-50/30"
+                                                : "border-gray-100 bg-white hover:border-gray-200"
+                                                }`}
+                                        >
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <h3 className="font-bold text-gray-900">{service.name}</h3>
+                                                    <span className="text-xs text-gray-400 font-medium bg-gray-50 px-2 py-0.5 rounded-full">{service.duration} min</span>
+                                                </div>
+                                                <p className="text-sm text-gray-500 line-clamp-1">{service.description}</p>
                                             </div>
-                                            <p className="text-sm text-gray-500 line-clamp-1">{service.description}</p>
-                                        </div>
-                                        <div className="text-right ml-4">
-                                            <p className={`font-bold transition-colors ${selectedServices.find(s => s.id === service.id) ? "text-[#e65c00]" : "text-gray-900"
-                                                }`}>
-                                                ₹{service.price}
-                                            </p>
-                                            <div className={`mt-2 w-5 h-5 rounded-full border flex items-center justify-center transition-all ${selectedServices.find(s => s.id === service.id)
-                                                ? "bg-[#e65c00] border-[#e65c00]"
-                                                : "border-gray-200"
-                                                }`}>
-                                                {selectedServices.find(s => s.id === service.id) && <Check size={12} className="text-white" />}
+                                            <div className="text-right ml-4">
+                                                <p className={`font-bold transition-colors ${selectedServices.find(s => s._id === service._id) ? "text-[#D4AF37]" : "text-gray-900"
+                                                    }`}>
+                                                    ₹{service.price}
+                                                </p>
+                                                <div className={`mt-2 w-5 h-5 rounded-full border flex items-center justify-center transition-all ${selectedServices.find(s => s._id === service._id)
+                                                    ? "bg-[#D4AF37] border-[#D4AF37]"
+                                                    : "border-gray-200"
+                                                    }`}>
+                                                    {selectedServices.find(s => s._id === service._id) && <Check size={12} className="text-white" />}
+                                                </div>
                                             </div>
                                         </div>
+                                    ))
+                                ) : (
+                                    <div className="text-center py-10 bg-white rounded-2xl border border-dashed border-gray-200 text-gray-400">
+                                        No services available for this salon.
                                     </div>
-                                ))}
+                                )}
                             </div>
                         </section>
 
@@ -299,27 +325,37 @@ export function BookingPage() {
                                 <h2 className="text-lg md:text-xl font-serif font-bold text-[#1a1a1a]">Choose Stylist (Optional)</h2>
                             </div>
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4">
-                                {STAFF_MEMBERS.map(staff => (
-                                    <div
-                                        key={staff.id}
-                                        onClick={() => setSelectedStaff(selectedStaff?.id === staff.id ? null : staff)}
-                                        className={`cursor-pointer p-4 rounded-2xl border-2 transition-all text-center ${selectedStaff?.id === staff.id
-                                            ? "border-[#e65c00] bg-orange-50/30 shadow-sm"
-                                            : "border-gray-100 bg-white hover:border-gray-200"
-                                            }`}
-                                    >
-                                        <div className="relative inline-block mb-3">
-                                            <img src={staff.avatar} alt={staff.name} className="w-12 h-12 md:w-16 md:h-16 rounded-full object-cover border-2 border-white shadow-sm" />
-                                            {selectedStaff?.id === staff.id && (
-                                                <div className="absolute -bottom-1 -right-1 bg-[#e65c00] p-1 rounded-full text-white">
-                                                    <Check size={10} strokeWidth={4} />
-                                                </div>
-                                            )}
+                                {staffMembers.length > 0 ? (
+                                    staffMembers.map(staff => (
+                                        <div
+                                            key={staff._id}
+                                            onClick={() => setSelectedStaff(selectedStaff?._id === staff._id ? null : staff)}
+                                            className={`cursor-pointer p-4 rounded-2xl border-2 transition-all text-center ${selectedStaff?._id === staff._id
+                                                ? "border-[#D4AF37] bg-orange-50/30 shadow-sm"
+                                                : "border-gray-100 bg-white hover:border-gray-200"
+                                                }`}
+                                        >
+                                            <div className="relative inline-block mb-3">
+                                                <img 
+                                                    src={`https://i.pravatar.cc/150?u=${staff._id}`} 
+                                                    alt={staff.name} 
+                                                    className="w-12 h-12 md:w-16 md:h-16 rounded-full object-cover border-2 border-white shadow-sm" 
+                                                />
+                                                {selectedStaff?._id === staff._id && (
+                                                    <div className="absolute -bottom-1 -right-1 bg-[#D4AF37] p-1 rounded-full text-white">
+                                                        <Check size={10} strokeWidth={4} />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <h3 className="font-bold text-gray-900 text-xs md:text-sm truncate">{staff.name}</h3>
+                                            <p className="text-[10px] text-gray-400 mt-0.5 truncate">{staff.role}</p>
                                         </div>
-                                        <h3 className="font-bold text-gray-900 text-xs md:text-sm truncate">{staff.name}</h3>
-                                        <p className="text-[10px] text-gray-400 mt-0.5 truncate">{staff.role}</p>
+                                    ))
+                                ) : (
+                                    <div className="col-span-full text-center py-6 bg-white rounded-2xl border border-dashed border-gray-200 text-gray-400 text-sm">
+                                        No specific stylists listed. We will assign an expert for you.
                                     </div>
-                                ))}
+                                )}
                             </div>
                         </section>
 
@@ -340,19 +376,52 @@ export function BookingPage() {
                                     <span className="bg-[#1a1a1a] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold font-serif">4</span>
                                     <h2 className="text-lg md:text-xl font-serif font-bold text-[#1a1a1a]">Select Time</h2>
                                 </div>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                                    {TIME_SLOTS.map(t => (
-                                        <button
-                                            key={t}
-                                            onClick={() => setTime(t)}
-                                            className={`py-3 rounded-xl text-sm font-medium transition-all ${time === t
-                                                ? "bg-[#1a1a1a] text-white shadow-md"
-                                                : "bg-white text-gray-600 border border-gray-100 hover:border-gray-200"
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 relative">
+                                    {availabilityLoading && (
+                                        <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-xl">
+                                            <Loader2 size={24} className="animate-spin text-[#D4AF37]" />
+                                        </div>
+                                    )}
+                                    {TIME_SLOTS.map(t => {
+                                        const bookedCount = availability[t] || 0;
+                                        const totalSeats = salon?.totalSeats || 6;
+                                        const seatsLeft = Math.max(0, totalSeats - bookedCount);
+                                        const isFull = seatsLeft <= 0;
+
+                                        return (
+                                            <button
+                                                key={t}
+                                                disabled={isFull || !date}
+                                                onClick={() => setTime(t)}
+                                                className={`py-3 px-2 rounded-xl text-sm font-medium transition-all flex flex-col items-center justify-center gap-0.5 relative ${
+                                                    time === t
+                                                    ? "bg-[#1a1a1a] text-white shadow-md"
+                                                    : isFull
+                                                        ? "bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed"
+                                                        : !date
+                                                            ? "bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed"
+                                                            : "bg-white text-gray-600 border border-gray-100 hover:border-gray-200"
                                                 }`}
-                                        >
-                                            {t}
-                                        </button>
-                                    ))}
+                                            >
+                                                <span>{t}</span>
+                                                {date && !isFull && (
+                                                    <span className={`text-[9px] font-bold uppercase tracking-tight ${time === t ? "text-[#D4AF37]" : "text-green-500"}`}>
+                                                        {seatsLeft} Seats Left
+                                                    </span>
+                                                )}
+                                                {date && isFull && (
+                                                    <span className="text-[9px] font-black uppercase tracking-tight text-red-500">
+                                                        FULL
+                                                    </span>
+                                                )}
+                                                {!date && (
+                                                    <span className="text-[8px] font-medium uppercase tracking-tight text-gray-300 italic">
+                                                        Pick Date
+                                                    </span>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </section>
@@ -367,7 +436,7 @@ export function BookingPage() {
                             <div className="space-y-4 mb-8">
                                 {selectedServices.length > 0 ? (
                                     selectedServices.map(s => (
-                                        <div key={s.id} className="flex justify-between items-start text-sm">
+                                        <div key={s._id} className="flex justify-between items-start text-sm">
                                             <span className="text-gray-600">{s.name}</span>
                                             <span className="font-bold text-gray-900">₹{s.price}</span>
                                         </div>
@@ -381,7 +450,7 @@ export function BookingPage() {
                                 <div className="mb-8 pt-4 border-t border-gray-50">
                                     <p className="text-xs text-gray-400 uppercase tracking-widest mb-2 font-bold">Your Stylist</p>
                                     <div className="flex items-center gap-3">
-                                        <img src={selectedStaff.avatar} className="w-8 h-8 rounded-full" alt="" />
+                                        <img src={`https://i.pravatar.cc/150?u=${selectedStaff._id}`} className="w-8 h-8 rounded-full" alt="" />
                                         <span className="text-sm font-bold text-gray-900">{selectedStaff.name}</span>
                                     </div>
                                 </div>

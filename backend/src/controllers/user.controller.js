@@ -170,9 +170,53 @@ const updateUserRole = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, user, "User role updated successfully"))
 })
 
+const updateAccountDetails = asyncHandler(async (req, res) => {
+    const { fullName, email, phonenumber } = req.body
+
+    if (!fullName || !email || !phonenumber) {
+        throw new ApiError(400, "All fields are required")
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: {
+                fullName,
+                email,
+                phonenumber
+            }
+        },
+        { new: true }
+    ).select("-password -refreshToken")
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, user, "Account details updated successfully"))
+})
+
+const changeCurrentPassword = asyncHandler(async (req, res) => {
+    const { oldPassword, newPassword } = req.body
+
+    const user = await User.findById(req.user?._id)
+    const isPasswordCorrect = await user.isPasswordcorrect(oldPassword)
+
+    if (!isPasswordCorrect) {
+        throw new ApiError(400, "Invalid old password")
+    }
+
+    user.password = newPassword
+    await user.save({ validateBeforeSave: false })
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, {}, "Password changed successfully"))
+})
+
 export {
     registerUser,
     loginUser,
     logoutUser,
-    updateUserRole
+    updateUserRole,
+    updateAccountDetails,
+    changeCurrentPassword
 }

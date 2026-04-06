@@ -3,11 +3,12 @@ import ApiError from "../utils/apiError.js"
 import { ApiResponse } from "../utils/apiResponse.js"
 import { Salon } from "../models/salon.models.js"
 import { User } from "../models/user.models.js"
+import { Booking } from "../models/booking.models.js" 
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
 import { sendShopAddedEmail } from "../utils/mailer.js"
 
 const registerSalon = asyncHandler(async (req, res) => {
-    const { name, city, description, address, openingHours, closingHours } = req.body
+    const { name, city, description, address, openingHours, closingHours, totalSeats } = req.body
 
     if (!name || !address || !city) {
         throw new ApiError(400, "Name, address, and city are required")
@@ -86,13 +87,38 @@ const getSalons = asyncHandler(async (req, res) => {
         .skip(skip)
         .limit(pageLimit);
 
-    console.log("Salons fetched by API:", salons.length, "Total:", totalSalons, "Query:", query);
+    // --- CALCULATE LIVE AVAILABILITY FOR THE LIST ---
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const hour = now.getHours();
+    const displayHour = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
+    const ampm = hour >= 12 ? "PM" : "AM";
+    const timeMatcher = new RegExp(`(^${hour}:|^0${hour}:|^${displayHour}:|^0${displayHour}:).*${ampm}|(^${hour}:|^0${hour}:)`, "i");
+
+    const salonsWithAvailability = await Promise.all(salons.map(async (salon) => {
+        const activeBookingsCount = await Booking.countDocuments({
+            salon: salon._id,
+            date: today,
+            status: { $in: ["pending", "confirmed"] },
+            time: { $regex: timeMatcher }
+        });
+
+        const totalSeats = salon.totalSeats || 6;
+        const availableSeats = Math.max(0, totalSeats - activeBookingsCount);
+
+        return {
+            ...salon.toObject(),
+            availableSeats
+        };
+    }));
+
+    console.log("Salons fetched with availability:", salonsWithAvailability.length);
     
     return res.status(200).json(
         new ApiResponse(
             200, 
             { 
-                salons, 
+                salons: salonsWithAvailability, 
                 pagination: { 
                     totalSalons, 
                     totalPages, 
@@ -112,14 +138,43 @@ const getSalonById = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Salon ID is required");
     }
 
-    const salon = await Salon.findById(id);
+    const salon = await Salon.findById(id).populate("owner", "fullName email phonenumber");
 
     if (!salon) {
         throw new ApiError(404, "Salon not found");
     }
 
+    // --- CALCULATE LIVE AVAILABILITY ---
+    // 1. Get current date (matching backend Booking format: YYYY-MM-DD or similar)
+    const now = new Date();
+    const today = now.toISOString().split('T')[0]; // "2024-04-06"
+    
+    // 2. Identify current hour for matching "time" string
+    const hour = now.getHours(); // 0-23
+    const displayHour = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
+    const ampm = hour >= 12 ? "PM" : "AM";
+    
+    // Flexible regex for "2:XX PM" or "14:XX"
+    const timeMatcher = new RegExp(`(^${hour}:|^0${hour}:|^${displayHour}:|^0${displayHour}:).*${ampm}|(^${hour}:|^0${hour}:)`, "i");
+
+    const activeBookingsCount = await Booking.countDocuments({
+        salon: id,
+        date: today,
+        status: { $in: ["pending", "confirmed"] },
+        time: { $regex: timeMatcher }
+    });
+
+    const totalSeats = salon.totalSeats || 6;
+    const availableSeats = Math.max(0, totalSeats - activeBookingsCount);
+
+    // Merge into response
+    const salonData = {
+        ...salon.toObject(),
+        availableSeats
+    };
+
     return res.status(200).json(
-        new ApiResponse(200, salon, "Salon details fetched successfully")
+        new ApiResponse(200, salonData, "Salon details with live availability fetched successfully")
     );
 });
 

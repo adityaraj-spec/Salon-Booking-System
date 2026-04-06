@@ -63,4 +63,64 @@ const getSalonReviews = asyncHandler(async (req, res) => {
     );
 });
 
-export { createReview, getSalonReviews };
+const deleteReview = asyncHandler(async (req, res) => {
+    const { reviewId } = req.params;
+
+    const review = await Review.findById(reviewId);
+    if (!review) {
+        throw new ApiError(404, "Review not found");
+    }
+
+    // Only the review author can delete it
+    if (review.user.toString() !== req.user._id.toString()) {
+        throw new ApiError(403, "You are not authorized to delete this review");
+    }
+
+    const salonId = review.salon;
+    await Review.findByIdAndDelete(reviewId);
+
+    // Recalculate salon average rating
+    const remainingReviews = await Review.find({ salon: salonId });
+    const newRating = remainingReviews.length > 0
+        ? (remainingReviews.reduce((sum, r) => sum + r.rating, 0) / remainingReviews.length).toFixed(1)
+        : 0;
+
+    await Salon.findByIdAndUpdate(salonId, { $set: { rating: Number(newRating) } });
+
+    return res.status(200).json(
+        new ApiResponse(200, {}, "Review deleted successfully")
+    );
+});
+
+const toggleLike = asyncHandler(async (req, res) => {
+    const { reviewId } = req.params;
+    const userId = req.user._id;
+
+    const review = await Review.findById(reviewId);
+    if (!review) {
+        throw new ApiError(404, "Review not found");
+    }
+
+    const alreadyLiked = (review.likes || []).some(
+        (id) => id.toString() === userId.toString()
+    );
+
+    if (alreadyLiked) {
+        // Unlike
+        await Review.findByIdAndUpdate(reviewId, { $pull: { likes: userId } });
+    } else {
+        // Like
+        await Review.findByIdAndUpdate(reviewId, { $addToSet: { likes: userId } });
+    }
+
+    const updated = await Review.findById(reviewId);
+    return res.status(200).json(
+        new ApiResponse(200, {
+            likes: updated.likes,
+            likeCount: updated.likes.length,
+            liked: !alreadyLiked
+        }, alreadyLiked ? "Review unliked" : "Review liked")
+    );
+});
+
+export { createReview, getSalonReviews, deleteReview, toggleLike };

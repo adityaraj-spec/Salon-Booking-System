@@ -166,8 +166,13 @@ export function Shops() {
                                                         {salon.openingHours || "9:00 AM"} - {salon.closingHours || "9:00 PM"}
                                                     </span>
                                                 </div>
-                                                <div className="bg-gray-50 px-3 py-1 rounded-full">
-                                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Timing</span>
+                                                
+                                                {/* Live Availability Badge */}
+                                                <div className={`px-2.5 py-1 rounded-lg flex items-center gap-1.5 ${salon.availableSeats > 0 ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"}`}>
+                                                    <Users size={12} />
+                                                    <span className="text-[10px] font-black uppercase tracking-tight">
+                                                        {salon.availableSeats > 0 ? `${salon.availableSeats} LEFT` : "FULL"}
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>

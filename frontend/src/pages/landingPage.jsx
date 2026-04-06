@@ -4,7 +4,7 @@ import { Calendar, ShieldCheck, Sparkles, ArrowRight } from 'lucide-react';
 
 export function LandingPage() {
     return (
-        <div className="min-h-screen bg-[#fafafa] font-sans pt-16">
+        <div className="min-h-screen bg-[#fafafa] dark:bg-[#121212] font-sans pt-16 transition-colors duration-300">
             <NavBar />
 
             {/* HERO SECTION */}
@@ -38,71 +38,71 @@ export function LandingPage() {
             </section>
 
             {/* WHY CHOOSE US SECTION */}
-            <section className="py-24 bg-white px-6">
+            <section className="py-24 bg-white dark:bg-[#1a1a1a] px-6 transition-colors duration-300">
                 <div className="max-w-6xl mx-auto">
                     <div className="text-center mb-16">
-                        <h2 className="text-4xl font-serif font-bold text-[#1a1a1a] mb-4">Why Choose SalonNow?</h2>
-                        <p className="text-gray-500 text-lg">We make salon booking simple, secure, and convenient.</p>
+                        <h2 className="text-4xl font-serif font-bold text-[#1a1a1a] dark:text-gray-100 mb-4">Why Choose SalonNow?</h2>
+                        <p className="text-gray-500 dark:text-gray-400 text-lg">We make salon booking simple, secure, and convenient.</p>
                     </div>
 
                     <div className="grid md:grid-cols-3 gap-8">
                         {/* Card 1 */}
-                        <div className="bg-[#fafafa] border border-gray-100/50 p-10 rounded-3xl shadow-sm hover:shadow-md transition-shadow">
-                            <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center text-[#e65c00] mb-6">
+                        <div className="bg-[#fafafa] dark:bg-[#252525] border border-gray-100/50 dark:border-gray-800 p-10 rounded-3xl shadow-sm hover:shadow-md transition-all">
+                            <div className="w-12 h-12 bg-orange-50 dark:bg-orange-950/30 rounded-full flex items-center justify-center text-[#e65c00] dark:text-[#ff8c3c] mb-6">
                                 <Calendar size={24} strokeWidth={1.5} />
                             </div>
-                            <h3 className="text-xl font-serif font-bold text-[#1a1a1a] mb-3">Easy Booking</h3>
-                            <p className="text-gray-500 leading-relaxed text-sm">Book your appointment in just a few clicks with our intuitive booking system.</p>
+                            <h3 className="text-xl font-serif font-bold text-[#1a1a1a] dark:text-gray-100 mb-3">Easy Booking</h3>
+                            <p className="text-gray-500 dark:text-gray-400 leading-relaxed text-sm">Book your appointment in just a few clicks with our intuitive booking system.</p>
                         </div>
 
                         {/* Card 2 */}
-                        <div className="bg-[#fafafa] border border-gray-100/50 p-10 rounded-3xl shadow-sm hover:shadow-md transition-shadow">
-                            <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center text-[#e65c00] mb-6">
+                        <div className="bg-[#fafafa] dark:bg-[#252525] border border-gray-100/50 dark:border-gray-800 p-10 rounded-3xl shadow-sm hover:shadow-md transition-all">
+                            <div className="w-12 h-12 bg-orange-50 dark:bg-orange-950/30 rounded-full flex items-center justify-center text-[#e65c00] dark:text-[#ff8c3c] mb-6">
                                 <ShieldCheck size={24} strokeWidth={1.5} />
                             </div>
-                            <h3 className="text-xl font-serif font-bold text-[#1a1a1a] mb-3">Verified Salons</h3>
-                            <p className="text-gray-500 leading-relaxed text-sm">All salons are verified and approved to ensure quality service.</p>
+                            <h3 className="text-xl font-serif font-bold text-[#1a1a1a] dark:text-gray-100 mb-3">Verified Salons</h3>
+                            <p className="text-gray-500 dark:text-gray-400 leading-relaxed text-sm">All salons are verified and approved to ensure quality service.</p>
                         </div>
 
                         {/* Card 3 */}
-                        <div className="bg-[#fafafa] border border-gray-100/50 p-10 rounded-3xl shadow-sm hover:shadow-md transition-shadow">
-                            <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center text-[#e65c00] mb-6">
+                        <div className="bg-[#fafafa] dark:bg-[#252525] border border-gray-100/50 dark:border-gray-800 p-10 rounded-3xl shadow-sm hover:shadow-md transition-all">
+                            <div className="w-12 h-12 bg-orange-50 dark:bg-orange-950/30 rounded-full flex items-center justify-center text-[#e65c00] dark:text-[#ff8c3c] mb-6">
                                 <Sparkles size={24} strokeWidth={1.5} />
                             </div>
-                            <h3 className="text-xl font-serif font-bold text-[#1a1a1a] mb-3">Premium Services</h3>
-                            <p className="text-gray-500 leading-relaxed text-sm">Access to premium beauty services at competitive prices.</p>
+                            <h3 className="text-xl font-serif font-bold text-[#1a1a1a] dark:text-gray-100 mb-3">Premium Services</h3>
+                            <p className="text-gray-500 dark:text-gray-400 leading-relaxed text-sm">Access to premium beauty services at competitive prices.</p>
                         </div>
                     </div>
                 </div>
             </section>
 
             {/* HOW IT WORKS SECTION */}
-            <section className="py-24 bg-white px-6 border-t border-gray-50">
+            <section className="py-24 bg-white dark:bg-[#121212] px-6 border-t border-gray-50 dark:border-gray-800 transition-colors duration-300">
                 <div className="max-w-6xl mx-auto">
                     <div className="text-center mb-20">
-                        <h2 className="text-4xl font-serif font-bold text-[#1a1a1a]">How It Works</h2>
+                        <h2 className="text-4xl font-serif font-bold text-[#1a1a1a] dark:text-gray-100">How It Works</h2>
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
                         <div>
-                            <div className="text-6xl font-serif text-[#ffe0cc] font-bold mb-4">01</div>
-                            <h3 className="text-lg font-bold text-[#1a1a1a] mb-2 font-serif">Browse Salons</h3>
-                            <p className="text-gray-500 text-sm">Explore verified salons near you</p>
+                            <div className="text-6xl font-serif text-[#ffe0cc] dark:text-[#3d2a1d] font-bold mb-4">01</div>
+                            <h3 className="text-lg font-bold text-[#1a1a1a] dark:text-gray-100 mb-2 font-serif">Browse Salons</h3>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm">Explore verified salons near you</p>
                         </div>
                         <div>
-                            <div className="text-6xl font-serif text-[#ffe0cc] font-bold mb-4">02</div>
-                            <h3 className="text-lg font-bold text-[#1a1a1a] mb-2 font-serif">Choose Service</h3>
-                            <p className="text-gray-500 text-sm">Select from a range of services</p>
+                            <div className="text-6xl font-serif text-[#ffe0cc] dark:text-[#3d2a1d] font-bold mb-4">02</div>
+                            <h3 className="text-lg font-bold text-[#1a1a1a] dark:text-gray-100 mb-2 font-serif">Choose Service</h3>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm">Select from a range of services</p>
                         </div>
                         <div>
-                            <div className="text-6xl font-serif text-[#ffe0cc] font-bold mb-4">03</div>
-                            <h3 className="text-lg font-bold text-[#1a1a1a] mb-2 font-serif">Book & Pay</h3>
-                            <p className="text-gray-500 text-sm">Secure online booking & payment</p>
+                            <div className="text-6xl font-serif text-[#ffe0cc] dark:text-[#3d2a1d] font-bold mb-4">03</div>
+                            <h3 className="text-lg font-bold text-[#1a1a1a] dark:text-gray-100 mb-2 font-serif">Book & Pay</h3>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm">Secure online booking & payment</p>
                         </div>
                         <div>
-                            <div className="text-6xl font-serif text-[#ffe0cc] font-bold mb-4">04</div>
-                            <h3 className="text-lg font-bold text-[#1a1a1a] mb-2 font-serif">Enjoy Service</h3>
-                            <p className="text-gray-500 text-sm">Visit salon and enjoy your service</p>
+                            <div className="text-6xl font-serif text-[#ffe0cc] dark:text-[#3d2a1d] font-bold mb-4">04</div>
+                            <h3 className="text-lg font-bold text-[#1a1a1a] dark:text-gray-100 mb-2 font-serif">Enjoy Service</h3>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm">Visit salon and enjoy your service</p>
                         </div>
                     </div>
                 </div>

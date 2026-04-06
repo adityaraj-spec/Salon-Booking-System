@@ -13,8 +13,10 @@ import {
     Scissors,
     Phone,
     Mail,
-    ChevronDown
+    ChevronDown,
+    Settings
 } from "lucide-react";
+import { NavLink } from "react-router-dom";
 
 const SalonBookingsPage = () => {
     const { showNotification } = useNotification();
@@ -100,6 +102,14 @@ const SalonBookingsPage = () => {
                             Filter: {filter.replace('_', ' ')}
                             <ChevronDown size={14} className={`transition-transform duration-200 ${isFilterOpen ? 'rotate-180' : ''}`} />
                         </button>
+                        
+                        <NavLink 
+                            to="/salon/manage"
+                            className="flex items-center gap-2 bg-[#1A1A1A] px-5 py-2.5 rounded-full shadow-md text-white font-bold text-xs uppercase tracking-widest hover:bg-black transition-all"
+                        >
+                            <Settings size={16} className="text-[#D4AF37]" />
+                            Manage Services & Staff
+                        </NavLink>
 
                         {isFilterOpen && (
                             <div className="absolute right-0 mt-3 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-20 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
@@ -149,9 +159,9 @@ const SalonBookingsPage = () => {
                                             {booking.bookingNumber && <span className="text-xs text-gray-400 font-normal">#{booking.bookingNumber}</span>}
                                         </h3>
                                         <div className="flex items-center gap-4 mt-1">
-                                            <a href={`tel:${booking.customer?.phone_number}`} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-[#D4AF37] transition-colors">
+                                            <a href={`tel:${booking.customer?.phonenumber}`} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-[#D4AF37] transition-colors">
                                                 <Phone size={12} />
-                                                {booking.customer?.phone_number}
+                                                {booking.customer?.phonenumber}
                                             </a>
                                             <a href={`mailto:${booking.customer?.email}`} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-[#D4AF37] transition-colors">
                                                 <Mail size={12} />

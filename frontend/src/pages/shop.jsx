@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, NavLink } from "react-router-dom";
 import { NavBar } from "../components/navPage";
 import { Footer } from "../components/footerPage";
-import { Star, MapPin, Users, Clock, ShieldCheck, Sparkles, Loader2, ArrowLeft, MessageSquare, Send } from "lucide-react";
+import { Star, MapPin, Users, Clock, ShieldCheck, Sparkles, Loader2, ArrowLeft, MessageSquare, Send, Trash2, Heart, Phone } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import axiosInstance from "../api/axiosConfig";
 
@@ -15,10 +15,12 @@ export function Shop() {
     const [error, setError] = useState("");
     
     // Review form state
-    const [rating, setRating] = useState(5);
+    const [rating, setRating] = useState(0);
     const [reviewText, setReviewText] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [reviewError, setReviewError] = useState("");
+    const [isDeletingReview, setIsDeletingReview] = useState(null);
+    const [isLikingReview, setIsLikingReview] = useState(null);
 
     useEffect(() => {
         const fetchSalonDetails = async () => {
@@ -59,6 +61,12 @@ export function Shop() {
         
         setIsSubmitting(true);
         setReviewError("");
+
+        if (rating === 0) {
+            setReviewError("Please select a star rating before posting.");
+            setIsSubmitting(false);
+            return;
+        }
         try {
             const response = await axiosInstance.post(`/reviews`, {
                 salonId: id,
@@ -67,17 +75,82 @@ export function Shop() {
             });
 
             if (response.data.success) {
-                setReviews([response.data.data, ...reviews]);
                 setReviewText("");
-                setRating(5);
-                // Refresh salon to get new average rating
-                const salonRes = await axiosInstance.get(`/salons/${id}`);
+                setRating(0);
+                // Re-fetch reviews (populated with user._id & fullName) + salon rating
+                const [reviewsRes, salonRes] = await Promise.all([
+                    axiosInstance.get(`/reviews/salon/${id}`),
+                    axiosInstance.get(`/salons/${id}`)
+                ]);
+                setReviews(reviewsRes.data.data);
                 setSalon(salonRes.data.data);
             }
         } catch (err) {
             setReviewError(err.response?.data?.message || "Failed to post review. You might have already reviewed this salon.");
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleDeleteReview = async (reviewId) => {
+        if (!user) return;
+        setIsDeletingReview(reviewId);
+        try {
+            await axiosInstance.delete(`/reviews/${reviewId}`);
+            const updatedReviews = reviews.filter((r) => r._id !== reviewId);
+            setReviews(updatedReviews);
+            // Recalculate average rating locally
+            if (updatedReviews.length > 0) {
+                const avg = (updatedReviews.reduce((sum, r) => sum + r.rating, 0) / updatedReviews.length).toFixed(1);
+                setSalon((prev) => ({ ...prev, rating: Number(avg) }));
+            } else {
+                setSalon((prev) => ({ ...prev, rating: 0 }));
+            }
+        } catch (err) {
+            console.error("Error deleting review:", err);
+        } finally {
+            setIsDeletingReview(null);
+        }
+    };
+
+    const handleToggleLike = async (reviewId) => {
+        if (!user) return;
+        if (isLikingReview === reviewId) return;
+        setIsLikingReview(reviewId);
+
+        // Optimistic UI update
+        setReviews((prev) =>
+            prev.map((r) => {
+                if (r._id !== reviewId) return r;
+                const alreadyLiked = r.likes?.some((id) => String(id) === String(user._id));
+                return {
+                    ...r,
+                    likes: alreadyLiked
+                        ? r.likes.filter((id) => String(id) !== String(user._id))
+                        : [...(r.likes || []), user._id]
+                };
+            })
+        );
+
+        try {
+            await axiosInstance.post(`/reviews/${reviewId}/like`);
+        } catch (err) {
+            console.error("Error toggling like:", err);
+            // Revert on failure
+            setReviews((prev) =>
+                prev.map((r) => {
+                    if (r._id !== reviewId) return r;
+                    const wasLiked = r.likes?.some((id) => String(id) === String(user._id));
+                    return {
+                        ...r,
+                        likes: wasLiked
+                            ? r.likes.filter((id) => String(id) !== String(user._id))
+                            : [...(r.likes || []), user._id]
+                    };
+                })
+            );
+        } finally {
+            setIsLikingReview(null);
         }
     };
 
@@ -206,13 +279,27 @@ export function Shop() {
                         </div>
 
                         <div className="pb-4 border-b border-gray-100">
-                            <h3 className="text-2xl font-serif font-bold text-[#1a1a1a] mb-6">Location & Address</h3>
-                            <div className="flex gap-4 items-start bg-white p-6 rounded-3xl border border-gray-100 shadow-sm mb-12">
-                                <div className="p-3 bg-gray-50 rounded-xl text-[#D4AF37]"><MapPin size={24} /></div>
-                                <div>
-                                    <p className="text-[#1a1a1a] font-bold text-lg mb-1">{salon.city}</p>
-                                    <p className="text-gray-500">{salon.address}</p>
+                            <h3 className="text-2xl font-serif font-bold text-[#1a1a1a] mb-6">Location & Contact</h3>
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div className="flex gap-4 items-start bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                                    <div className="p-3 bg-gray-50 rounded-xl text-[#D4AF37]"><MapPin size={24} /></div>
+                                    <div>
+                                        <p className="text-[#1a1a1a] font-bold text-lg mb-1">{salon.city}</p>
+                                        <p className="text-gray-500">{salon.address}</p>
+                                    </div>
                                 </div>
+                                {salon.owner && (
+                                    <div className="flex gap-4 items-start bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                                        <div className="p-3 bg-gray-50 rounded-xl text-[#D4AF37]"><Phone size={24} /></div>
+                                        <div>
+                                            <p className="text-[#1a1a1a] font-bold text-lg mb-1">Contact Owner</p>
+                                            <p className="text-gray-900 font-medium">{salon.owner.fullName}</p>
+                                            <a href={`tel:${salon.owner.phonenumber}`} className="text-[#D4AF37] font-bold hover:underline">
+                                                {salon.owner.phonenumber}
+                                            </a>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -269,7 +356,50 @@ export function Shop() {
                                                 <div className={rev.user?.fullName ? "flex-1" : "flex-1 text-gray-400 italic"}>
                                                     <div className="flex items-center justify-between mb-1">
                                                         <h5 className="font-bold text-[#1a1a1a]">{rev.user?.fullName || "Anonymous"}</h5>
-                                                        <span className="text-xs text-gray-400 font-medium">{new Date(rev.createdAt).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</span>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-xs text-gray-400 font-medium">{new Date(rev.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                                                            
+                                                            {/* Actions: (Delete and Like) */}
+                                                            <div className="flex items-center gap-1.5">
+                                                                {user && String(rev.user?._id) === String(user._id) && (
+                                                                    <button
+                                                                        onClick={() => handleDeleteReview(rev._id)}
+                                                                        disabled={isDeletingReview === rev._id}
+                                                                        title="Delete your review"
+                                                                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-semibold text-red-500 bg-red-50 hover:bg-red-100 hover:text-red-700 transition-all duration-200 disabled:opacity-40 border border-red-100"
+                                                                    >
+                                                                        {isDeletingReview === rev._id
+                                                                            ? <Loader2 size={12} className="animate-spin" />
+                                                                            : <Trash2 size={12} />}
+                                                                        <span>Delete</span>
+                                                                    </button>
+                                                                )}
+
+                                                                {/* Like Button - Moved here */}
+                                                                <button
+                                                                    onClick={() => user ? handleToggleLike(rev._id) : null}
+                                                                    disabled={isLikingReview === rev._id}
+                                                                    title={user ? (rev.likes?.some((id) => String(id) === String(user._id)) ? "Unlike this review" : "Like this review") : "Log in to like"}
+                                                                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 border ${
+                                                                        !user
+                                                                            ? "text-gray-300 border-gray-100 cursor-not-allowed bg-gray-50"
+                                                                            : rev.likes?.some((id) => String(id) === String(user._id))
+                                                                                ? "text-rose-500 bg-rose-50 border-rose-100 hover:bg-rose-100"
+                                                                                : "text-gray-400 bg-gray-100 border-gray-100 hover:text-rose-500 hover:bg-rose-50 hover:border-rose-100"
+                                                                    } disabled:opacity-50`}
+                                                                >
+                                                                    {isLikingReview === rev._id ? (
+                                                                        <Loader2 size={12} className="animate-spin" />
+                                                                    ) : (
+                                                                        <Heart
+                                                                            size={12}
+                                                                            className={rev.likes?.some((id) => String(id) === String(user._id)) ? "fill-current" : ""}
+                                                                        />
+                                                                    )}
+                                                                    <span>{rev.likes?.length || 0}</span>
+                                                                </button>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                     <div className="flex items-center gap-0.5 mb-3">
                                                         {[...Array(5)].map((_, i) => (
@@ -370,8 +500,13 @@ export function Shop() {
                                     <span className="font-bold text-[#1a1a1a]">{salon.openingHours || "09:00 AM"} - {salon.closingHours || "09:00 PM"}</span>
                                 </div>
                                 <div className="p-4 bg-gray-50/50 border border-gray-100 rounded-2xl flex items-center justify-between text-sm">
-                                    <div className="flex items-center gap-3 text-gray-600 font-medium"><Sparkles size={18} className="text-[#D4AF37]" /> Availability</div>
-                                    <span className="font-bold text-[#1a1a1a]">Instant Booking</span>
+                                    <div className="flex items-center gap-3 text-gray-600 font-medium">
+                                        <Sparkles size={18} className={salon.availableSeats > 0 ? "text-green-500" : "text-red-500"} /> 
+                                        Availability
+                                    </div>
+                                    <span className={`font-bold ${salon.availableSeats > 0 ? "text-[#1a1a1a]" : "text-red-600"}`}>
+                                        {salon.availableSeats > 0 ? `${salon.availableSeats} Seats Available` : "Full House"}
+                                    </span>
                                 </div>
                             </div>
 

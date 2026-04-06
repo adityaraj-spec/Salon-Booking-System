@@ -25,7 +25,10 @@ const salonSchema = new mongoose.Schema({
   rating: {
     type: Number,
     default: 0
-
+  },
+  totalSeats: {
+    type: Number,
+    default: 6 // Default capacity per salon
   }
 }, { timestamps: true });
 
