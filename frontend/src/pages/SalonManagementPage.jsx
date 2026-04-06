@@ -7,56 +7,81 @@ import {
     Users, 
     Plus, 
     Trash2, 
-    Clock, 
     IndianRupee, 
-    ArrowLeft,
     Loader2,
     Store,
-    Briefcase,
     Zap,
-    LayoutDashboard
+    LayoutDashboard,
+    Phone,
+    Edit2,
+    Save,
+    X,
+    ChevronDown,
+    PlusCircle,
+    Star,
+    CalendarCheck,
+    TrendingUp
 } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 export function SalonManagementPage() {
+    const { user } = useAuth();
     const { showNotification } = useNotification();
     const navigate = useNavigate();
-    const [salon, setSalon] = useState(null);
+    const [salons, setSalons] = useState([]);
+    const [activeSalon, setActiveSalon] = useState(null);
     const [services, setServices] = useState([]);
     const [staff, setStaff] = useState([]);
     const [loading, setLoading] = useState(true);
     const [tab, setTab] = useState("services"); // "services" or "staff"
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSalonSelectorOpen, setIsSalonSelectorOpen] = useState(false);
+
+    // Editing States
+    const [editingServiceId, setEditingServiceId] = useState(null);
+    const [editServiceForm, setEditServiceForm] = useState({ name: "", price: "", description: "" });
+    const [editingStaffId, setEditingStaffId] = useState(null);
+    const [editStaffForm, setEditStaffForm] = useState({ name: "", role: "", skills: "" });
 
     // Form States
-    const [serviceForm, setServiceForm] = useState({ name: "", category: "Haircut", price: "", duration: "", description: "" });
+    const [serviceForm, setServiceForm] = useState({ name: "", category: "Haircut", price: "", description: "" });
     const [staffForm, setStaffForm] = useState({ name: "", role: "", experience: "", skills: "" });
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const fetchData = async () => {
         setLoading(true);
         try {
-            // First get the owner's salon
-            const salonRes = await axiosInstance.get("/salons/owner/salon");
-            if (salonRes.data.success && salonRes.data.data) {
-                const salonData = salonRes.data.data;
-                setSalon(salonData);
-
-                // Fetch its services and staff
-                const [servRes, staffRes] = await Promise.all([
-                    axiosInstance.get(`/services/salon/${salonData._id}`),
-                    axiosInstance.get(`/staff/salon/${salonData._id}`)
-                ]);
-
-                if (servRes.data.success) setServices(servRes.data.data);
-                if (staffRes.data.success) setStaff(staffRes.data.data);
+            const salonRes = await axiosInstance.get("/salons/owner/my-salon");
+            if (salonRes.data.success && salonRes.data.data.length > 0) {
+                const salonsData = salonRes.data.data;
+                setSalons(salonsData);
+                
+                // Set first salon as active if none selected
+                if (!activeSalon) {
+                    setActiveSalon(salonsData[0]);
+                }
             } else {
                 showNotification("No salon found. Please register one first.", "error");
                 navigate("/create-salon");
             }
         } catch (error) {
-            console.error("Error fetching management data:", error);
+            console.error("Error fetching salons:", error);
             showNotification("Failed to load salon details.", "error");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchSalonDetails = async (salonId) => {
+        try {
+            const [servRes, staffRes] = await Promise.all([
+                axiosInstance.get(`/services/salon/${salonId}`),
+                axiosInstance.get(`/staff/salon/${salonId}`)
+            ]);
+
+            if (servRes.data.success) setServices(servRes.data.data);
+            if (staffRes.data.success) setStaff(staffRes.data.data);
+        } catch (error) {
+            console.error("Error fetching salon items:", error);
         }
     };
 
@@ -64,21 +89,44 @@ export function SalonManagementPage() {
         fetchData();
     }, []);
 
+    useEffect(() => {
+        if (activeSalon) {
+            fetchSalonDetails(activeSalon._id);
+        }
+    }, [activeSalon]);
+
+
     const handleAddService = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
             const response = await axiosInstance.post("/services/add", {
                 ...serviceForm,
-                salonId: salon._id
+                salonId: activeSalon._id
             });
             if (response.data.success) {
                 setServices([...services, response.data.data]);
-                setServiceForm({ name: "", category: "Haircut", price: "", duration: "", description: "" });
+                setServiceForm({ name: "", category: "Haircut", price: "", description: "" });
                 showNotification("Service added successfully!", "success");
             }
         } catch (error) {
             showNotification(error.response?.data?.message || "Failed to add service", "error");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleUpdateService = async (id) => {
+        setIsSubmitting(true);
+        try {
+            const response = await axiosInstance.patch(`/services/${id}`, editServiceForm);
+            if (response.data.success) {
+                setServices(services.map(s => s._id === id ? response.data.data : s));
+                setEditingServiceId(null);
+                showNotification("Service updated", "success");
+            }
+        } catch (error) {
+            showNotification("Failed to update service", "error");
         } finally {
             setIsSubmitting(false);
         }
@@ -90,7 +138,7 @@ export function SalonManagementPage() {
         try {
             const response = await axiosInstance.post("/staff/add", {
                 ...staffForm,
-                salonId: salon._id,
+                salonId: activeSalon._id,
                 skills: staffForm.skills.split(",").map(s => s.trim())
             });
             if (response.data.success) {
@@ -100,6 +148,25 @@ export function SalonManagementPage() {
             }
         } catch (error) {
             showNotification(error.response?.data?.message || "Failed to add staff", "error");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleUpdateStaff = async (id) => {
+        setIsSubmitting(true);
+        try {
+            const response = await axiosInstance.patch(`/staff/${id}`, {
+                ...editStaffForm,
+                skills: typeof editStaffForm.skills === 'string' ? editStaffForm.skills.split(",").map(s => s.trim()) : editStaffForm.skills
+            });
+            if (response.data.success) {
+                setStaff(staff.map(s => s._id === id ? response.data.data : s));
+                setEditingStaffId(null);
+                showNotification("Staff updated", "success");
+            }
+        } catch (error) {
+            showNotification("Failed to update staff member", "error");
         } finally {
             setIsSubmitting(false);
         }
@@ -129,6 +196,7 @@ export function SalonManagementPage() {
         }
     };
 
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-[#fafafa]">
@@ -138,37 +206,112 @@ export function SalonManagementPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#fafafa] pt-24 pb-12 px-4 md:px-12 font-sans">
+        <div className="min-h-screen bg-[#fafafa] pt-24 pb-12 px-4 md:px-12 font-sans overflow-x-hidden">
             <div className="max-w-6xl mx-auto">
-                {/* Header Card */}
-                <div className="bg-white rounded-[32px] p-8 md:p-12 shadow-sm border border-gray-100 mb-8 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-[#D4AF37]/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+                {/* Header & Multi-Salon Selector */}
+                <div className="bg-white rounded-[40px] p-8 md:p-12 shadow-sm border border-gray-100 mb-10 relative">
+                    <div className="absolute top-0 right-0 w-80 h-80 bg-[#D4AF37]/5 rounded-full -mr-40 -mt-20 blur-3xl"></div>
                     
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
+                    <div className="flex flex-col md:flex-row justify-between items-start lg:items-center gap-8 relative z-10">
                         <div className="flex items-center gap-6">
-                            <div className="w-20 h-20 bg-[#1a1a1a] rounded-[24px] flex items-center justify-center text-white border-2 border-[#D4AF37]">
-                                <Store size={32} />
+                            <div className="w-20 h-20 bg-[#1a1a1a] rounded-[28px] flex items-center justify-center text-white border-2 border-[#D4AF37] shadow-xl shadow-[#D4AF37]/10">
+                                <Store size={36} />
                             </div>
                             <div>
-                                <h1 className="text-3xl md:text-4xl font-serif font-bold text-gray-900">{salon?.name}</h1>
-                                <p className="text-gray-500 mt-1 flex items-center gap-2">
-                                    <Zap size={14} className="text-[#D4AF37]" />
-                                    Salon Management Center
-                                </p>
+                                <div className="relative">
+                                    <button 
+                                        onClick={() => setIsSalonSelectorOpen(!isSalonSelectorOpen)}
+                                        className="flex items-center gap-3 text-3xl md:text-4xl font-serif font-black text-gray-900 group"
+                                    >
+                                        {activeSalon?.name}
+                                        <ChevronDown size={28} className={`text-[#D4AF37] transition-transform duration-300 ${isSalonSelectorOpen ? 'rotate-180' : ''}`} />
+                                    </button>
+                                    
+                                    {isSalonSelectorOpen && (
+                                        <div className="absolute top-full left-0 mt-4 w-72 bg-white rounded-3xl shadow-2xl border border-gray-100 p-3 z-50 animate-in fade-in zoom-in slide-in-from-top-1 px-4">
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest p-3 border-b border-gray-50 mb-2">My Salons</p>
+                                            <div className="space-y-1 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
+                                                {salons.map(s => (
+                                                    <button
+                                                        key={s._id}
+                                                        onClick={() => {
+                                                            setActiveSalon(s);
+                                                            setIsSalonSelectorOpen(false);
+                                                        }}
+                                                        className={`w-full text-left p-3 rounded-2xl flex items-center justify-between transition-all ${activeSalon._id === s._id ? 'bg-[#D4AF37]/10 text-gray-900' : 'hover:bg-gray-50 text-gray-500'}`}
+                                                    >
+                                                        <span className="font-bold text-sm">{s.name}</span>
+                                                        {activeSalon._id === s._id && <Star size={12} className="fill-[#D4AF37] text-[#D4AF37]" />}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            <NavLink 
+                                                to="/create-salon"
+                                                className="mt-3 flex items-center gap-2 p-3 text-[#D4AF37] font-bold text-xs uppercase tracking-widest hover:bg-gray-50 rounded-2xl transition-all"
+                                            >
+                                                <PlusCircle size={16} />
+                                                Add New Salon
+                                            </NavLink>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex flex-wrap items-center gap-6 mt-3">
+                                    <p className="text-gray-400 flex items-center gap-2 font-bold text-[11px] uppercase tracking-wider">
+                                        <Zap size={14} className="text-[#D4AF37]" />
+                                        Elite Dashboard
+                                    </p>
+                                    <div className="h-1 w-1 bg-gray-200 rounded-full"></div>
+                                    <p className="text-gray-700 flex items-center gap-2 font-bold text-xs">
+                                        <Phone size={14} className="text-[#D4AF37]" />
+                                        {activeSalon?.contactNumber || "Contact not set"}
+                                    </p>
+                                </div>
                             </div>
                         </div>
                         
-                        <div className="flex gap-4">
+                        <div className="flex flex-wrap gap-4 w-full md:w-auto">
                             <NavLink 
                                 to="/salon/dashboard"
-                                className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-100 rounded-2xl text-gray-700 font-bold text-sm hover:border-[#D4AF37] transition-all"
+                                className="flex-1 md:flex-none flex items-center justify-center gap-3 px-8 py-4 bg-[#1A1A1A] text-white rounded-2xl font-bold text-xs uppercase tracking-[0.2em] hover:bg-black hover:scale-[1.02] transition-all shadow-xl shadow-black/10"
                             >
-                                <LayoutDashboard size={18} />
+                                <CalendarCheck size={18} className="text-[#D4AF37]" />
                                 View Bookings
                             </NavLink>
                         </div>
                     </div>
+
+                    {/* Stats Overview */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 pt-10 border-t border-gray-50">
+                        <div className="bg-gray-50/50 p-6 rounded-3xl border border-transparent hover:border-[#D4AF37]/20 transition-all group">
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3">Service Menu</p>
+                            <div className="flex items-end justify-between">
+                                <h4 className="text-3xl font-serif font-black text-gray-900">{services.length}</h4>
+                                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm text-amber-500">
+                                    <Scissors size={20} />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="bg-gray-50/50 p-6 rounded-3xl border border-transparent hover:border-[#D4AF37]/20 transition-all">
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3">Master Stylists</p>
+                            <div className="flex items-end justify-between">
+                                <h4 className="text-3xl font-serif font-black text-gray-900">{staff.length}</h4>
+                                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm text-emerald-500">
+                                    <Users size={20} />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="bg-gray-50/50 p-6 rounded-3xl border border-transparent hover:border-[#D4AF37]/20 transition-all">
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3">Active Performance</p>
+                            <div className="flex items-end justify-between">
+                                <h4 className="text-3xl font-serif font-black text-gray-900">Good</h4>
+                                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm text-blue-500">
+                                    <TrendingUp size={20} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
 
                 {/* Tabs */}
                 <div className="flex gap-2 mb-8 bg-gray-100/50 p-1.5 rounded-2xl w-fit mx-auto md:mx-0">
@@ -209,7 +352,7 @@ export function SalonManagementPage() {
                                             placeholder="e.g. Signature Haircut"
                                         />
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 gap-4">
                                         <div>
                                             <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Price (₹)</label>
                                             <input 
@@ -219,17 +362,6 @@ export function SalonManagementPage() {
                                                 onChange={e => setServiceForm({...serviceForm, price: e.target.value})}
                                                 className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none"
                                                 placeholder="499"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Mins</label>
-                                            <input 
-                                                required
-                                                type="number"
-                                                value={serviceForm.duration}
-                                                onChange={e => setServiceForm({...serviceForm, duration: e.target.value})}
-                                                className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none"
-                                                placeholder="45"
                                             />
                                         </div>
                                     </div>
@@ -305,80 +437,154 @@ export function SalonManagementPage() {
                     {/* List Section */}
                     <div className="lg:col-span-8">
                         <div className="space-y-4">
-                            {tab === "services" ? (
-                                services.length > 0 ? (
-                                    <div className="grid sm:grid-cols-2 gap-4">
-                                        {services.map(s => (
-                                            <div key={s._id} className="bg-white p-6 rounded-[24px] border border-gray-100 shadow-sm group hover:shadow-md transition-all flex items-start justify-between">
-                                                <div className="space-y-2">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="bg-orange-50 text-[#D4AF37] px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider border border-orange-100/50">
-                                                            {s.category || "General"}
-                                                        </span>
-                                                        <h3 className="font-bold text-gray-900">{s.name}</h3>
-                                                    </div>
-                                                    <p className="text-xs text-gray-400 leading-relaxed line-clamp-2">{s.description || "No description provided."}</p>
-                                                    <div className="flex items-center gap-4 pt-2">
-                                                        <div className="flex items-center gap-1.5 text-xs font-bold text-gray-700">
-                                                            <IndianRupee size={12} className="text-[#D4AF37]" />
-                                                            {s.price}
-                                                        </div>
-                                                        <div className="flex items-center gap-1.5 text-xs font-bold text-gray-400">
-                                                            <Clock size={12} />
-                                                            {s.duration} min
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <button 
-                                                    onClick={() => handleDeleteService(s._id)}
-                                                    className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="bg-white rounded-3xl p-16 text-center border border-gray-100 shadow-sm border-dashed">
-                                        <Scissors className="mx-auto text-gray-200 mb-4" size={40} />
-                                        <p className="text-gray-500 font-medium italic">No services listed yet. Start adding your menu!</p>
-                                    </div>
-                                )
-                            ) : (
-                                staff.length > 0 ? (
-                                    <div className="grid sm:grid-cols-2 gap-4">
-                                        {staff.map(m => (
-                                            <div key={m._id} className="bg-white p-6 rounded-[24px] border border-gray-100 shadow-sm group hover:shadow-md transition-all flex items-start justify-between">
-                                                <div className="flex gap-4">
-                                                    <div className="w-12 h-12 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400">
-                                                        <Users size={20} />
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="font-bold text-gray-900">{m.name}</h3>
-                                                        <p className="text-xs text-[#D4AF37] font-bold mb-2">{m.role}</p>
-                                                        <div className="flex flex-wrap gap-1">
-                                                            {m.skills?.map((skill, index) => (
-                                                                <span key={index} className="text-[9px] bg-gray-50 px-2 py-0.5 rounded-full text-gray-400 font-medium">{skill}</span>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <button 
-                                                    onClick={() => handleDeleteStaff(m._id)}
-                                                    className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="bg-white rounded-3xl p-16 text-center border border-gray-100 shadow-sm border-dashed">
-                                        <Users className="mx-auto text-gray-200 mb-4" size={40} />
-                                        <p className="text-gray-500 font-medium italic">Your team is empty. Add your expert stylists!</p>
-                                    </div>
-                                )
-                            )}
+                             {tab === "services" ? (
+                                 services.length > 0 ? (
+                                     <div className="grid sm:grid-cols-2 gap-6">
+                                         {services.map(s => (
+                                             <div key={s._id} className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm group hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col items-start justify-between">
+                                                 {editingServiceId === s._id ? (
+                                                     <div className="w-full space-y-4">
+                                                         <input 
+                                                             className="w-full bg-gray-50 border-none rounded-xl px-4 py-2 font-bold text-sm"
+                                                             value={editServiceForm.name}
+                                                             onChange={e => setEditServiceForm({...editServiceForm, name: e.target.value})}
+                                                         />
+                                                         <input 
+                                                             className="w-full bg-gray-50 border-none rounded-xl px-4 py-2 text-sm"
+                                                             type="number"
+                                                             value={editServiceForm.price}
+                                                             onChange={e => setEditServiceForm({...editServiceForm, price: e.target.value})}
+                                                         />
+                                                         <textarea 
+                                                             className="w-full bg-gray-50 border-none rounded-xl px-4 py-2 text-xs"
+                                                             value={editServiceForm.description}
+                                                             onChange={e => setEditServiceForm({...editServiceForm, description: e.target.value})}
+                                                         />
+                                                         <div className="flex gap-2">
+                                                             <button onClick={() => handleUpdateService(s._id)} className="flex-1 bg-[#1a1a1a] text-white py-2 rounded-xl text-xs font-bold hover:bg-black transition-all flex items-center justify-center gap-2">
+                                                                 <Save size={14} /> Save
+                                                             </button>
+                                                             <button onClick={() => setEditingServiceId(null)} className="px-4 bg-gray-100 rounded-xl text-gray-500 hover:bg-gray-200 transition-all font-bold text-xs"><X size={14} /></button>
+                                                         </div>
+                                                     </div>
+                                                 ) : (
+                                                     <>
+                                                         <div className="w-full">
+                                                             <div className="flex items-center justify-between mb-4">
+                                                                 <span className="bg-[#D4AF37]/5 text-[#D4AF37] px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-[#D4AF37]/10">
+                                                                     {s.category || "Premium"}
+                                                                 </span>
+                                                                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                     <button 
+                                                                         onClick={() => {
+                                                                             setEditingServiceId(s._id);
+                                                                             setEditServiceForm({ name: s.name, price: s.price, description: s.description || "" });
+                                                                         }}
+                                                                         className="p-2 text-gray-400 hover:text-[#D4AF37] hover:bg-[#D4AF37]/5 rounded-xl transition-all"
+                                                                     >
+                                                                         <Edit2 size={16} />
+                                                                     </button>
+                                                                     <button 
+                                                                         onClick={() => handleDeleteService(s._id)}
+                                                                         className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                                                     >
+                                                                         <Trash2 size={16} />
+                                                                     </button>
+                                                                 </div>
+                                                             </div>
+                                                             <h3 className="text-lg font-bold text-gray-900 mb-2">{s.name}</h3>
+                                                             <p className="text-xs text-gray-400 leading-relaxed line-clamp-3 mb-4">{s.description || "Indulge in our premium signature treatment designed for excellence."}</p>
+                                                             <div className="flex items-center justify-between pt-4 border-t border-gray-50">
+                                                                 <div className="flex items-center gap-1.5 text-lg font-black text-gray-900">
+                                                                     <IndianRupee size={16} className="text-[#D4AF37]" />
+                                                                     {s.price}
+                                                                 </div>
+                                                                 <div className="p-2 rounded-full bg-gray-50 text-gray-300">
+                                                                     <Scissors size={14} />
+                                                                 </div>
+                                                             </div>
+                                                         </div>
+                                                     </>
+                                                 )}
+                                             </div>
+                                         ))}
+                                     </div>
+                                 ) : (
+                                     <div className="bg-white rounded-3xl p-16 text-center border border-gray-100 shadow-sm border-dashed">
+                                         <Scissors className="mx-auto text-gray-200 mb-4" size={40} />
+                                         <p className="text-gray-500 font-medium italic">No services listed yet.</p>
+                                     </div>
+                                 )
+                             ) : (
+                                 staff.length > 0 ? (
+                                     <div className="grid sm:grid-cols-2 gap-6">
+                                         {staff.map(m => (
+                                             <div key={m._id} className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm group hover:shadow-xl transition-all">
+                                                 {editingStaffId === m._id ? (
+                                                     <div className="space-y-4">
+                                                         <input 
+                                                             className="w-full bg-gray-50 border-none rounded-xl px-4 py-2 font-bold text-sm"
+                                                             value={editStaffForm.name}
+                                                             onChange={e => setEditStaffForm({...editStaffForm, name: e.target.value})}
+                                                         />
+                                                         <input 
+                                                             className="w-full bg-gray-50 border-none rounded-xl px-4 py-2 text-sm"
+                                                             value={editStaffForm.role}
+                                                             onChange={e => setEditStaffForm({...editStaffForm, role: e.target.value})}
+                                                         />
+                                                         <div className="flex gap-2">
+                                                             <button onClick={() => handleUpdateStaff(m._id)} className="flex-1 bg-[#1a1a1a] text-white py-2 rounded-xl text-xs font-bold hover:bg-black transition-all flex items-center justify-center gap-2">
+                                                                 <Save size={14} /> Save
+                                                             </button>
+                                                             <button onClick={() => setEditingStaffId(null)} className="px-4 bg-gray-100 rounded-xl text-gray-500 hover:bg-gray-200 transition-all font-bold text-xs"><X size={14} /></button>
+                                                         </div>
+                                                     </div>
+                                                 ) : (
+                                                     <div className="flex items-start justify-between">
+                                                         <div className="flex gap-4">
+                                                             <div className="w-14 h-14 rounded-2xl bg-gray-900 flex items-center justify-center text-[#D4AF37] border-2 border-[#D4AF37]/20">
+                                                                 <Users size={24} />
+                                                             </div>
+                                                             <div>
+                                                                 <h3 className="font-bold text-gray-900 text-lg">{m.name}</h3>
+                                                                 <p className="text-xs text-[#D4AF37] font-black uppercase tracking-widest mt-1">{m.role}</p>
+                                                                 <div className="flex flex-wrap gap-1 mt-3">
+                                                                     {m.skills?.map((skill, index) => (
+                                                                         <span key={index} className="text-[10px] bg-gray-50 px-3 py-1 rounded-full text-gray-500 font-bold border border-gray-100">{skill}</span>
+                                                                     ))}
+                                                                 </div>
+                                                             </div>
+                                                         </div>
+                                                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                             <button 
+                                                                 onClick={() => {
+                                                                     setEditingStaffId(m._id);
+                                                                     setEditStaffForm({ name: m.name, role: m.role, skills: m.skills?.join(", ") });
+                                                                 }}
+                                                                 className="p-2 text-gray-400 hover:text-[#D4AF37] hover:bg-[#D4AF37]/5 rounded-xl transition-all"
+                                                             >
+                                                                 <Edit2 size={16} />
+                                                             </button>
+                                                             <button 
+                                                                 onClick={() => handleDeleteStaff(m._id)}
+                                                                 className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                                             >
+                                                                 <Trash2 size={16} />
+                                                             </button>
+                                                         </div>
+                                                     </div>
+                                                 )}
+                                             </div>
+                                         ))}
+                                     </div>
+                                 ) : (
+                                     <div className="bg-white rounded-3xl p-16 text-center border border-gray-100 shadow-sm border-dashed">
+                                         <Users className="mx-auto text-gray-200 mb-4" size={40} />
+                                         <p className="text-gray-500 font-medium italic">Your team is empty.</p>
+                                     </div>
+                                 )
+                             )}
+
                         </div>
                     </div>
                 </div>

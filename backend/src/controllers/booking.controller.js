@@ -81,7 +81,14 @@ const createBooking = asyncHandler(async (req, res) => {
 
 const getUserBookings = asyncHandler(async (req, res) => {
     const bookings = await Booking.find({ customer: req.user._id })
-        .populate("salon", "name city address images")
+        .populate({
+            path: "salon",
+            select: "name city address images owner",
+            populate: {
+                path: "owner",
+                select: "fullName phonenumber"
+            }
+        })
         .sort({ createdAt: -1 });
 
     return res.status(200).json(

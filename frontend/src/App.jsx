@@ -12,9 +12,7 @@ import { ProfilePage } from "./pages/profilePage.jsx"
 import { MyBookingsPage } from "./pages/bookingsListPage.jsx"
 import SalonBookingsPage from "./pages/SalonBookingsPage.jsx";
 import { SalonManagementPage } from "./pages/SalonManagementPage.jsx";
-import { SettingsPage } from "./pages/SettingsPage.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
-import { ThemeProvider } from "./context/ThemeContext.jsx";
 import { NotificationProvider } from "./context/NotificationContext.jsx";
 import { Notification } from "./components/Notification.jsx";
 import './App.css'
@@ -23,10 +21,9 @@ function App() {
 
   return (
     <NotificationProvider>
-      <ThemeProvider>
-        <AuthProvider>
-          <Notification />
-          <BrowserRouter>
+      <AuthProvider>
+        <Notification />
+        <BrowserRouter>
           <Routes>
             <Route index element={<LandingPage />} />
             <Route path="home" element={<HomePage />} />
@@ -41,11 +38,9 @@ function App() {
             <Route path="bookings" element={<MyBookingsPage />} />
             <Route path="salon/dashboard" element={<SalonBookingsPage />} />
             <Route path="salon/manage" element={<SalonManagementPage />} />
-            <Route path="settings" element={<SettingsPage />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>
-      </ThemeProvider>
     </NotificationProvider>
   )
 }

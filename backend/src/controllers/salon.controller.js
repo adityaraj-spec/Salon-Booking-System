@@ -31,8 +31,10 @@ const registerSalon = asyncHandler(async (req, res) => {
         city,
         description,
         address,
+        contactNumber: contactNumber || req.user.phonenumber,
         openingHours,
         closingHours,
+        totalSeats: totalSeats || 6,
         images: imageUrls,
         owner: req.user?._id
     })
@@ -83,6 +85,7 @@ const getSalons = asyncHandler(async (req, res) => {
 
     // Fetch paginated salons
     const salons = await Salon.find(query)
+        .populate("owner", "fullName phonenumber")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(pageLimit);
@@ -179,10 +182,10 @@ const getSalonById = asyncHandler(async (req, res) => {
 });
 
 const getOwnerSalon = asyncHandler(async (req, res) => {
-    const salon = await Salon.findOne({ owner: req.user?._id });
+    const salons = await Salon.find({ owner: req.user?._id });
     
     return res.status(200).json(
-        new ApiResponse(200, salon, "Owner salon fetched successfully")
+        new ApiResponse(200, salons, "Owner salons fetched successfully")
     );
 });
 

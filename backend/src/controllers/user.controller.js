@@ -171,10 +171,10 @@ const updateUserRole = asyncHandler(async (req, res) => {
 })
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
-    const { fullName, email, phonenumber } = req.body
+    const { fullName, phonenumber } = req.body
 
-    if (!fullName || !email || !phonenumber) {
-        throw new ApiError(400, "All fields are required")
+    if (!fullName || !phonenumber) {
+        throw new ApiError(400, "Full name and phone number are required")
     }
 
     const user = await User.findByIdAndUpdate(
@@ -182,7 +182,6 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
         {
             $set: {
                 fullName,
-                email,
                 phonenumber
             }
         },
@@ -194,29 +193,10 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, user, "Account details updated successfully"))
 })
 
-const changeCurrentPassword = asyncHandler(async (req, res) => {
-    const { oldPassword, newPassword } = req.body
-
-    const user = await User.findById(req.user?._id)
-    const isPasswordCorrect = await user.isPasswordcorrect(oldPassword)
-
-    if (!isPasswordCorrect) {
-        throw new ApiError(400, "Invalid old password")
-    }
-
-    user.password = newPassword
-    await user.save({ validateBeforeSave: false })
-
-    return res
-        .status(200)
-        .json(new ApiResponse(200, {}, "Password changed successfully"))
-})
-
 export {
     registerUser,
     loginUser,
     logoutUser,
     updateUserRole,
-    updateAccountDetails,
-    changeCurrentPassword
+    updateAccountDetails
 }

@@ -292,7 +292,6 @@ export function BookingPage() {
                                             <div className="flex-1">
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <h3 className="font-bold text-gray-900">{service.name}</h3>
-                                                    <span className="text-xs text-gray-400 font-medium bg-gray-50 px-2 py-0.5 rounded-full">{service.duration} min</span>
                                                 </div>
                                                 <p className="text-sm text-gray-500 line-clamp-1">{service.description}</p>
                                             </div>

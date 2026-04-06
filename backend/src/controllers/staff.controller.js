@@ -68,4 +68,36 @@ const deleteStaff = asyncHandler(async (req, res) => {
     );
 });
 
-export { addStaff, getSalonStaff, deleteStaff };
+const updateStaff = asyncHandler(async (req, res) => {
+    const { staffId } = req.params;
+    const { name, role, experience, skills } = req.body;
+
+    const staff = await Staff.findById(staffId);
+    if (!staff) {
+        throw new ApiError(404, "Staff member not found");
+    }
+
+    const salon = await Salon.findById(staff.salon);
+    if (salon.owner.toString() !== req.user._id.toString()) {
+        throw new ApiError(403, "You do not have permission to update this staff member");
+    }
+
+    const updatedStaff = await Staff.findByIdAndUpdate(
+        staffId,
+        {
+            $set: {
+                name,
+                role,
+                experience,
+                skills
+            }
+        },
+        { new: true }
+    );
+
+    return res.status(200).json(
+        new ApiResponse(200, updatedStaff, "Staff member updated successfully")
+    );
+});
+
+export { addStaff, getSalonStaff, deleteStaff, updateStaff };

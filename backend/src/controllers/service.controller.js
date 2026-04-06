@@ -5,10 +5,10 @@ import { Service } from "../models/service.models.js";
 import { Salon } from "../models/salon.models.js";
 
 const addService = asyncHandler(async (req, res) => {
-    const { salonId, name, category, price, duration, description } = req.body;
+    const { salonId, name, category, price, description } = req.body;
 
-    if (!salonId || !name || !price || !duration) {
-        throw new ApiError(400, "Salon ID, name, price, and duration are required");
+    if (!salonId || !name || !price) {
+        throw new ApiError(400, "Salon ID, name, and price are required");
     }
 
     const salon = await Salon.findById(salonId);
@@ -26,7 +26,6 @@ const addService = asyncHandler(async (req, res) => {
         name,
         category,
         price,
-        duration,
         description
     });
 
@@ -69,4 +68,36 @@ const deleteService = asyncHandler(async (req, res) => {
     );
 });
 
-export { addService, getSalonServices, deleteService };
+const updateService = asyncHandler(async (req, res) => {
+    const { serviceId } = req.params;
+    const { name, category, price, description } = req.body;
+
+    const service = await Service.findById(serviceId);
+    if (!service) {
+        throw new ApiError(404, "Service not found");
+    }
+
+    const salon = await Salon.findById(service.salon);
+    if (salon.owner.toString() !== req.user._id.toString()) {
+        throw new ApiError(403, "You do not have permission to update this service");
+    }
+
+    const updatedService = await Service.findByIdAndUpdate(
+        serviceId,
+        {
+            $set: {
+                name,
+                category,
+                price,
+                description
+            }
+        },
+        { new: true }
+    );
+
+    return res.status(200).json(
+        new ApiResponse(200, updatedService, "Service updated successfully")
+    );
+});
+
+export { addService, getSalonServices, deleteService, updateService };

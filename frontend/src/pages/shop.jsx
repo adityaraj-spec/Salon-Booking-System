@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, NavLink } from "react-router-dom";
 import { NavBar } from "../components/navPage";
 import { Footer } from "../components/footerPage";
-import { Star, MapPin, Users, Clock, ShieldCheck, Sparkles, Loader2, ArrowLeft, MessageSquare, Send, Trash2, Heart, Phone } from "lucide-react";
+import { Star, MapPin, Users, Clock, ShieldCheck, Sparkles, Loader2, ArrowLeft, MessageSquare, Send, Trash2, Heart, Phone, Scissors, Award } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import axiosInstance from "../api/axiosConfig";
 
@@ -21,6 +21,10 @@ export function Shop() {
     const [reviewError, setReviewError] = useState("");
     const [isDeletingReview, setIsDeletingReview] = useState(null);
     const [isLikingReview, setIsLikingReview] = useState(null);
+    
+    // Services & Staff state
+    const [services, setServices] = useState([]);
+    const [staff, setStaff] = useState([]);
 
     useEffect(() => {
         const fetchSalonDetails = async () => {
@@ -49,9 +53,33 @@ export function Shop() {
             }
         };
 
+        const fetchServices = async () => {
+            try {
+                const response = await axiosInstance.get(`/services/salon/${id}`);
+                if (response.data.success) {
+                    setServices(response.data.data);
+                }
+            } catch (err) {
+                console.error("Error fetching services:", err);
+            }
+        };
+
+        const fetchStaff = async () => {
+            try {
+                const response = await axiosInstance.get(`/staff/salon/${id}`);
+                if (response.data.success) {
+                    setStaff(response.data.data);
+                }
+            } catch (err) {
+                console.error("Error fetching staff:", err);
+            }
+        };
+
         if (id) {
             fetchSalonDetails();
             fetchReviews();
+            fetchServices();
+            fetchStaff();
         }
     }, [id]);
 
@@ -212,16 +240,28 @@ export function Shop() {
                         <h1 className="text-3xl md:text-5xl font-serif font-bold text-[#1a1a1a] leading-tight">
                             {salon.name}
                         </h1>
-                        <div className="flex items-center gap-4 mt-3 text-sm text-gray-500">
+                        <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-gray-500">
                             <div className="flex items-center gap-1">
                                 <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                                 <span className="font-bold text-gray-900">{salon.rating || "NEW"}</span>
                                 <span>(Verified Reviews)</span>
                             </div>
-                            <span>•</span>
+                            <span className="hidden md:inline text-gray-300">•</span>
                             <div className="flex items-center gap-1">
-                                <MapPin className="w-4 h-4" />
-                                <span>{salon.city}, India</span>
+                                <MapPin className="w-4 h-4 text-[#D4AF37]" />
+                                <span className="text-[#1a1a1a] font-medium">{salon.city}, India</span>
+                            </div>
+                            <span className="hidden md:inline text-gray-300">•</span>
+                            <div className="flex items-center gap-1">
+                                <Phone className="w-4 h-4 text-[#D4AF37]" />
+                                <a href={`tel:${salon.contactNumber || salon.owner?.phonenumber}`} className="text-[#1a1a1a] font-bold hover:text-[#D4AF37] transition-colors">
+                                    {salon.contactNumber || salon.owner?.phonenumber}
+                                </a>
+                            </div>
+                            <span className="hidden md:inline text-gray-300">•</span>
+                            <div className="flex items-center gap-1">
+                                <Clock className="w-4 h-4 text-[#D4AF37]" />
+                                <span className="text-[#1a1a1a] font-medium">{salon.openingHours || "9:00 AM"} - {salon.closingHours || "9:00 PM"}</span>
                             </div>
                         </div>
                     </div>
@@ -283,25 +323,80 @@ export function Shop() {
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div className="flex gap-4 items-start bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
                                     <div className="p-3 bg-gray-50 rounded-xl text-[#D4AF37]"><MapPin size={24} /></div>
-                                    <div>
-                                        <p className="text-[#1a1a1a] font-bold text-lg mb-1">{salon.city}</p>
-                                        <p className="text-gray-500">{salon.address}</p>
+                                    <div className="min-w-0">
+                                        <p className="text-[#1a1a1a] font-bold text-lg mb-1 truncate">{salon.city}</p>
+                                        <p className="text-gray-500 break-words">{salon.address}</p>
                                     </div>
                                 </div>
                                 {salon.owner && (
                                     <div className="flex gap-4 items-start bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
                                         <div className="p-3 bg-gray-50 rounded-xl text-[#D4AF37]"><Phone size={24} /></div>
-                                        <div>
-                                            <p className="text-[#1a1a1a] font-bold text-lg mb-1">Contact Owner</p>
-                                            <p className="text-gray-900 font-medium">{salon.owner.fullName}</p>
-                                            <a href={`tel:${salon.owner.phonenumber}`} className="text-[#D4AF37] font-bold hover:underline">
-                                                {salon.owner.phonenumber}
+                                        <div className="min-w-0">
+                                            <p className="text-[#1a1a1a] font-bold text-lg mb-1">Contact Salon</p>
+                                            <p className="text-gray-900 font-medium truncate">{salon.owner?.fullName || "Salon Staff"}</p>
+                                            <a href={`tel:${salon.contactNumber || salon.owner?.phonenumber}`} className="text-[#D4AF37] font-bold hover:underline">
+                                                {salon.contactNumber || salon.owner?.phonenumber}
                                             </a>
                                         </div>
                                     </div>
                                 )}
                             </div>
                         </div>
+
+                        {/* OUR SERVICES SECTION */}
+                        {services.length > 0 && (
+                            <div className="py-8 border-b border-gray-100">
+                                <div className="flex items-center justify-between mb-8">
+                                    <h3 className="text-2xl font-serif font-bold text-[#1a1a1a]">Our Services</h3>
+                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest bg-gray-50 px-3 py-1 rounded-full">
+                                        {services.length} {services.length === 1 ? 'Service' : 'Services'}
+                                    </span>
+                                </div>
+                                <div className="grid sm:grid-cols-2 gap-4">
+                                    {services.map((service) => (
+                                        <div key={service._id} className="p-6 bg-white border border-gray-100 rounded-3xl hover:border-[#D4AF37]/30 transition-all group flex justify-between items-center shadow-sm">
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <Scissors size={14} className="text-[#D4AF37]" />
+                                                    <h4 className="font-bold text-[#1a1a1a] truncate">{service.name}</h4>
+                                                </div>
+                                                <p className="text-xs text-gray-500 line-clamp-1 mb-2">{service.description || "Professional salon service"}</p>
+                                                <div className="flex items-center gap-3">
+                                                </div>
+                                            </div>
+                                            <div className="text-right ml-4">
+                                                <p className="text-lg font-serif font-bold text-[#1a1a1a]">₹{service.price}</p>
+                                                <p className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-tighter">Premium</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* MEET OUR TEAM SECTION */}
+                        {staff.length > 0 && (
+                            <div className="py-8 border-b border-gray-100">
+                                <h3 className="text-2xl font-serif font-bold text-[#1a1a1a] mb-8">Meet Our Team</h3>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+                                    {staff.map((member) => (
+                                        <div key={member._id} className="text-center group">
+                                            <div className="w-24 h-24 mx-auto rounded-full bg-gray-50 border-2 border-gray-50 p-1 mb-4 group-hover:border-[#D4AF37]/30 transition-all overflow-hidden">
+                                                <div className="w-full h-full rounded-full bg-[#fafafa] flex items-center justify-center text-gray-300">
+                                                    <Users size={40} />
+                                                </div>
+                                            </div>
+                                            <h4 className="font-bold text-[#1a1a1a] text-sm mb-1">{member.name}</h4>
+                                            <p className="text-[10px] text-[#D4AF37] font-black uppercase tracking-widest">{member.role}</p>
+                                            <div className="flex items-center justify-center gap-1 mt-2">
+                                                <Award size={10} className="text-orange-400" />
+                                                <span className="text-[10px] font-medium text-gray-400">{member.experience}+ Years</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
                         <div className="grid sm:grid-cols-2 gap-8">
                             <div className="flex gap-5">

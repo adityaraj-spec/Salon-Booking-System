@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Scissors, MapPin, Clock, Camera, Plus, Trash2, Store, X } from "lucide-react";
+import { Scissors, MapPin, Clock, Camera, Plus, Trash2, Store, X, Phone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosConfig";
 
@@ -47,6 +47,7 @@ export function CreateSalonPage() {
         formData.append("openingHours", formElements.openingHours.value);
         formData.append("closingHours", formElements.closingHours.value);
         formData.append("totalSeats", formElements.totalSeats.value);
+        formData.append("contactNumber", formElements.contactNumber.value);
 
         imageFiles.forEach(file => {
             formData.append("images", file);
@@ -145,7 +146,23 @@ export function CreateSalonPage() {
                                 required
                                 className="w-full border border-gray-200 rounded-xl p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
                             />
-                            <p className="text-xs text-gray-400 mt-2 italic">How many people can you serve at once? This will be used to show live availability to customers.</p>
+                            <p className="text-xs text-gray-400 mt-2 italic">How many people can you serve at once?</p>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Business Phone Number</label>
+                            <div className="relative">
+                                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400">
+                                    <Phone size={18} />
+                                </span>
+                                <input
+                                    name="contactNumber"
+                                    type="text"
+                                    placeholder="Enter salon contact number"
+                                    required
+                                    className="w-full border border-gray-200 rounded-xl p-3.5 pl-11 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
+                                />
+                            </div>
                         </div>
                     </div>
 

@@ -20,6 +20,10 @@ const salonSchema = new mongoose.Schema({
   description: String,
   address: String,
   images: [String],
+  contactNumber: {
+    type: String,
+    required: false
+  },
   openingHours: String,
   closingHours: String,
   rating: {
@@ -29,6 +33,10 @@ const salonSchema = new mongoose.Schema({
   totalSeats: {
     type: Number,
     default: 6 // Default capacity per salon
+  },
+  isOpen: {
+    type: Boolean,
+    default: true
   }
 }, { timestamps: true });
 

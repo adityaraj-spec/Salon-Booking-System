@@ -8,5 +8,6 @@ router.route("/").post(verifyJWT, createBooking);
 router.route("/my-bookings").get(verifyJWT, getUserBookings);
 router.route("/salon-bookings").get(verifyJWT, getSalonBookings);
 router.route("/availability/:salonId").get(getAvailability);
+router.route("/:bookingId/status").patch(verifyJWT, updateBookingStatus);
 
 export default router;

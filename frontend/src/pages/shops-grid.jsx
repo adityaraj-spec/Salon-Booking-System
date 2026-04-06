@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
-import { Search, Star, MapPin, Users, Clock, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { Search, Star, MapPin, Users, Clock, Loader2, ChevronLeft, ChevronRight, Phone } from 'lucide-react';
 import axiosInstance from '../api/axiosConfig';
 
 export function Shops() {
+    const navigate = useNavigate();
     const [salons, setSalons] = useState([]);
     const [city, setCity] = useState("");
     const [loading, setLoading] = useState(true);
@@ -135,48 +136,70 @@ export function Shops() {
                     <>
                         <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 justify-items-center mb-16">
                             {salons.map((salon) => (
-                                <div key={salon._id} className="w-full bg-white shadow-md rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                                    <NavLink to={`/shop/${salon._id}`} className="block">
-                                        <div className="relative h-56 overflow-hidden">
-                                            <img
-                                                src={salon.images && salon.images.length > 0 ? salon.images[0] : "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=80"}
-                                                className="w-full h-full object-cover hover:scale-110 transition-transform duration-700"
-                                                alt={salon.name}
-                                            />
-                                            <div className="absolute top-4 right-4 flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm">
-                                                <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-                                                <span className="font-bold text-xs text-gray-800">{salon.rating || "NEW"}</span>
-                                            </div>
+                                <div 
+                                    key={salon._id} 
+                                    className="w-full bg-white shadow-md rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
+                                    onClick={() => navigate(`/shop/${salon._id}`)}
+                                >
+                                    <div className="relative h-56 overflow-hidden">
+                                        <img
+                                            src={salon.images && salon.images.length > 0 ? salon.images[0] : "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=80"}
+                                            className="w-full h-full object-cover hover:scale-110 transition-transform duration-700"
+                                            alt={salon.name}
+                                        />
+                                        <div className="absolute top-4 right-4 flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm">
+                                            <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
+                                            <span className="font-bold text-xs text-gray-800">{salon.rating || "NEW"}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="p-6">
+                                        {/* 1. Name */}
+                                        <h3 className="text-xl font-serif font-bold text-gray-900 mb-3 truncate group-hover:text-[#D4AF37] transition-colors">
+                                            {salon.name}
+                                        </h3>
+
+                                        {/* 2. Location */}
+                                        <div className="flex items-center gap-2 text-gray-500 mb-2">
+                                            <MapPin className="w-4 h-4 text-[#D4AF37]" />
+                                            <span className="text-xs font-bold text-[#1A1A1A] truncate">
+                                                {salon.city || "Location not set"}
+                                            </span>
                                         </div>
 
-                                        <div className="p-6">
-                                            <h3 className="text-xl font-serif font-bold text-gray-900 mb-2 truncate group-hover:text-[#D4AF37] transition-colors">{salon.name}</h3>
+                                        {/* 3. Contact No */}
+                                        <div className="flex items-center gap-2 text-gray-500 mb-4">
+                                            <Phone className="w-4 h-4 text-[#D4AF37]" />
+                                            {salon.contactNumber || salon.owner?.phonenumber ? (
+                                                <a 
+                                                    href={`tel:${salon.contactNumber || salon.owner?.phonenumber}`} 
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="text-xs font-bold text-[#1A1A1A] hover:text-[#D4AF37] transition-colors"
+                                                >
+                                                    {salon.contactNumber || salon.owner?.phonenumber}
+                                                </a>
+                                            ) : (
+                                                <span className="text-xs font-bold text-gray-300 italic">No contact info</span>
+                                            )}
+                                        </div>
 
-                                            <div className="flex items-start gap-2 text-gray-400 mb-2 h-10 overflow-hidden">
-                                                <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
-                                                <span className="text-xs font-medium line-clamp-2 leading-relaxed">
-                                                    {salon.address || salon.city}
+                                        {/* 4. Timing and Seat in the same line */}
+                                        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                                            <div className="flex items-center gap-1.5">
+                                                <Clock className="w-4 h-4 text-[#D4AF37]" />
+                                                <span className="text-[10px] font-black uppercase tracking-tight text-[#1A1A1A]">
+                                                    {salon.openingHours || "9:00 AM"} - {salon.closingHours || "9:00 PM"}
                                                 </span>
                                             </div>
 
-                                            <div className="flex items-center justify-between pt-3 border-t border-gray-100 text-gray-600">
-                                                <div className="flex items-center gap-1.5">
-                                                    <Clock className="w-4 h-4 text-[#D4AF37]" />
-                                                    <span className="text-xs font-bold text-[#1A1A1A]">
-                                                        {salon.openingHours || "9:00 AM"} - {salon.closingHours || "9:00 PM"}
-                                                    </span>
-                                                </div>
-                                                
-                                                {/* Live Availability Badge */}
-                                                <div className={`px-2.5 py-1 rounded-lg flex items-center gap-1.5 ${salon.availableSeats > 0 ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"}`}>
-                                                    <Users size={12} />
-                                                    <span className="text-[10px] font-black uppercase tracking-tight">
-                                                        {salon.availableSeats > 0 ? `${salon.availableSeats} LEFT` : "FULL"}
-                                                    </span>
-                                                </div>
+                                            <div className={`px-2.5 py-1 rounded-lg flex items-center gap-1.5 ${salon.availableSeats > 0 ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"}`}>
+                                                <Users size={12} />
+                                                <span className="text-[10px] font-black uppercase tracking-tight">
+                                                    {salon.availableSeats > 0 ? `${salon.availableSeats} LEFT` : "FULL"}
+                                                </span>
                                             </div>
                                         </div>
-                                    </NavLink>
+                                    </div>
                                 </div>
                             ))}
                         </div>

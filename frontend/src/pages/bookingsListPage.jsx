@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axiosInstance from "../api/axiosConfig";
 import { NavBar } from "../components/navPage";
 import { Footer } from "../components/footerPage";
-import { Calendar, Clock, MapPin, Loader2, Scissors, CheckCircle2 } from "lucide-react";
+import { Calendar, Clock, MapPin, Loader2, Scissors, CheckCircle2, Phone } from "lucide-react";
 
 export function MyBookingsPage() {
     const [bookings, setBookings] = useState([]);
@@ -120,6 +120,22 @@ export function MyBookingsPage() {
                                                             ? booking.serviceNames.join(", ") 
                                                             : "Confirmed Visit"}
                                                     </p>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-2 md:gap-3 justify-start border-t md:border-t-0 pt-4 md:pt-0">
+                                                <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-[#D4AF37] shrink-0">
+                                                    <Phone size={16} />
+                                                </div>
+                                                <div className="text-left min-w-0">
+                                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Contact Salon</p>
+                                                    {booking.salon?.contactNumber || booking.salon?.owner?.phonenumber ? (
+                                                        <a href={`tel:${booking.salon.contactNumber || booking.salon.owner.phonenumber}`} className="text-xs font-bold text-[#D4AF37] hover:underline truncate block">
+                                                            {booking.salon.contactNumber || booking.salon.owner.phonenumber}
+                                                        </a>
+                                                    ) : (
+                                                        <p className="text-xs font-bold text-gray-300 italic">No number listed</p>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
