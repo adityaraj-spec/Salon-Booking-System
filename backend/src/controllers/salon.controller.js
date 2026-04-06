@@ -6,6 +6,8 @@ import { User } from "../models/user.models.js"
 import { Booking } from "../models/booking.models.js" 
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
 import { sendShopAddedEmail } from "../utils/mailer.js"
+import { emitToAll } from "../socket.js";
+
 
 const registerSalon = asyncHandler(async (req, res) => {
     const { name, city, description, address, openingHours, closingHours, totalSeats } = req.body
@@ -217,6 +219,12 @@ const updateSalonDetails = asyncHandler(async (req, res) => {
         },
         { new: true }
     );
+
+    // --- SOCKET.IO EMIT ---
+    if (isOpen !== undefined) {
+        emitToAll("salonStatusUpdate", { salonId: id, isOpen });
+    }
+
 
     return res.status(200).json(
         new ApiResponse(200, updatedSalon, "Salon details updated successfully")

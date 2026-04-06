@@ -13,6 +13,7 @@ import { MyBookingsPage } from "./pages/bookingsListPage.jsx"
 import SalonBookingsPage from "./pages/SalonBookingsPage.jsx";
 import { SalonManagementPage } from "./pages/SalonManagementPage.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
+import { SocketProvider } from "./context/SocketContext.jsx";
 import { NotificationProvider } from "./context/NotificationContext.jsx";
 import { Notification } from "./components/Notification.jsx";
 import './App.css'
@@ -22,24 +23,26 @@ function App() {
   return (
     <NotificationProvider>
       <AuthProvider>
-        <Notification />
-        <BrowserRouter>
-          <Routes>
-            <Route index element={<LandingPage />} />
-            <Route path="home" element={<HomePage />} />
-            <Route path="login" element={<LoginPage />} />
-            <Route path="signup" element={<SignUpPage />} />
-            <Route path="role-selection" element={<RoleSelectionPage />} />
-            <Route path="create-salon" element={<CreateSalonPage />} />
-            <Route path="shops" element={<Shops />} />
-            <Route path="shop/:id" element={<Shop />} />
-            <Route path="booking/:id" element={<BookingPage />} />
-            <Route path="profile" element={<ProfilePage />} />
-            <Route path="bookings" element={<MyBookingsPage />} />
-            <Route path="salon/dashboard" element={<SalonBookingsPage />} />
-            <Route path="salon/manage" element={<SalonManagementPage />} />
-          </Routes>
-        </BrowserRouter>
+        <SocketProvider>
+          <Notification />
+          <BrowserRouter>
+            <Routes>
+              <Route index element={<LandingPage />} />
+              <Route path="home" element={<HomePage />} />
+              <Route path="login" element={<LoginPage />} />
+              <Route path="signup" element={<SignUpPage />} />
+              <Route path="role-selection" element={<RoleSelectionPage />} />
+              <Route path="create-salon" element={<CreateSalonPage />} />
+              <Route path="shops" element={<Shops />} />
+              <Route path="shop/:id" element={<Shop />} />
+              <Route path="booking/:id" element={<BookingPage />} />
+              <Route path="profile" element={<ProfilePage />} />
+              <Route path="bookings" element={<MyBookingsPage />} />
+              <Route path="salon/dashboard" element={<SalonBookingsPage />} />
+              <Route path="salon/manage" element={<SalonManagementPage />} />
+            </Routes>
+          </BrowserRouter>
+        </SocketProvider>
       </AuthProvider>
     </NotificationProvider>
   )

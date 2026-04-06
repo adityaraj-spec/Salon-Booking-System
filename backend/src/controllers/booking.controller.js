@@ -5,6 +5,8 @@ import { Booking } from "../models/booking.models.js";
 import { Salon } from "../models/salon.models.js";
 import { Notification } from "../models/notification.models.js";
 import { sendBookingConfirmationEmail } from "../utils/mailer.js";
+import { emitToUser, emitToAll } from "../socket.js";
+
 
 const createBooking = asyncHandler(async (req, res) => {
     const { salonId, services, staff, date, time, totalAmount, serviceNames, staffName } = req.body;
@@ -65,7 +67,7 @@ const createBooking = asyncHandler(async (req, res) => {
     );
 
     // Create notification for salon owner
-    await Notification.create({
+    const notification = await Notification.create({
         recipient: salon.owner,
         sender: req.user._id,
         title: "New Booking Request",
@@ -73,6 +75,11 @@ const createBooking = asyncHandler(async (req, res) => {
         type: "booking_request",
         bookingId: booking._id
     });
+
+    // --- SOCKET.IO EMIT ---
+    emitToUser(salon.owner, "newNotification", notification);
+    emitToUser(salon.owner, "bookingUpdate", { booking, type: "NEW_REQUEST" });
+
 
     return res.status(201).json(
         new ApiResponse(201, booking, "Booking request sent to salon. Please wait for confirmation.")
@@ -148,7 +155,7 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
         type = "booking_completed";
     }
 
-    await Notification.create({
+    const notification = await Notification.create({
         recipient: booking.customer,
         sender: req.user._id,
         title,
@@ -156,6 +163,13 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
         type,
         bookingId: booking._id
     });
+
+    // --- SOCKET.IO EMIT ---
+    emitToUser(booking.customer, "newNotification", notification);
+    emitToUser(booking.customer, "bookingUpdate", { booking, type: "STATUS_CHANGE" });
+    // Also notify owner's other tabs if any
+    emitToUser(req.user._id, "bookingUpdate", { booking, type: "STATUS_CHANGE" });
+
 
     return res.status(200).json(
         new ApiResponse(200, booking, `Booking status updated to ${status}`)

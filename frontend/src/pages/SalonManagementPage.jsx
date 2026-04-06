@@ -23,10 +23,14 @@ import {
     TrendingUp
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useSocket } from "../context/SocketContext";
+
 
 export function SalonManagementPage() {
     const { user } = useAuth();
+    const socket = useSocket();
     const { showNotification } = useNotification();
+
     const navigate = useNavigate();
     const [salons, setSalons] = useState([]);
     const [activeSalon, setActiveSalon] = useState(null);
@@ -106,6 +110,29 @@ export function SalonManagementPage() {
             });
         }
     }, [activeSalon]);
+
+    useEffect(() => {
+        if (socket && activeSalon) {
+            socket.on("bookingUpdate", (data) => {
+                // If the booking belongs to the current salon, refresh the data
+                if (data.booking.salon === activeSalon._id || data.booking.salon?._id === activeSalon._id) {
+                    fetchSalonDetails(activeSalon._id);
+                }
+            });
+
+            socket.on("salonStatusUpdate", (data) => {
+                if (data.salonId === activeSalon._id) {
+                    setActiveSalon(prev => ({ ...prev, isOpen: data.isOpen }));
+                }
+            });
+
+            return () => {
+                socket.off("bookingUpdate");
+                socket.off("salonStatusUpdate");
+            };
+        }
+    }, [socket, activeSalon]);
+
 
 
 

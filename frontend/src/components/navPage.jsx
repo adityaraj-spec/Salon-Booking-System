@@ -2,11 +2,15 @@ import { useState, useRef, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Scissors, LogOut, ChevronDown, User, Calendar, Settings, Menu, X, Bell, CheckCircle2, Clock } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useSocket } from "../context/SocketContext";
 import axiosInstance from "../api/axiosConfig";
+
 
 export function NavBar() {
     const { user, logout } = useAuth();
+    const socket = useSocket();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
     const [notifications, setNotifications] = useState([]);
@@ -80,11 +84,22 @@ export function NavBar() {
     useEffect(() => {
         if (user) {
             fetchNotifications();
-            // Polling every 1 minute for a "real-time" feel without web-sockets
-            const interval = setInterval(fetchNotifications, 60000);
-            return () => clearInterval(interval);
         }
     }, [user]);
+
+    useEffect(() => {
+        if (socket) {
+            socket.on("newNotification", (notification) => {
+                setNotifications(prev => [notification, ...prev]);
+                setUnreadCount(prev => prev + 1);
+            });
+
+            return () => {
+                socket.off("newNotification");
+            };
+        }
+    }, [socket]);
+
 
     const markAsRead = async (id) => {
         try {

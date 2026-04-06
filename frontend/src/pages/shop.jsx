@@ -4,11 +4,15 @@ import { NavBar } from "../components/navPage";
 import { Footer } from "../components/footerPage";
 import { Star, MapPin, Users, Clock, ShieldCheck, Sparkles, Loader2, ArrowLeft, MessageSquare, Send, Trash2, Heart, Phone, Scissors, Award } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useSocket } from "../context/SocketContext";
 import axiosInstance from "../api/axiosConfig";
+
 
 export function Shop() {
     const { user } = useAuth();
+    const socket = useSocket();
     const { id } = useParams();
+
     const [salon, setSalon] = useState(null);
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -82,6 +86,22 @@ export function Shop() {
             fetchStaff();
         }
     }, [id]);
+
+    useEffect(() => {
+        if (socket && id) {
+            socket.on("salonStatusUpdate", (data) => {
+                if (data.salonId === id) {
+                    setSalon(prev => ({ ...prev, isOpen: data.isOpen }));
+                }
+            });
+
+            return () => {
+                socket.off("salonStatusUpdate");
+            };
+        }
+    }, [socket, id]);
+
+
 
     const handleReviewSubmit = async (e) => {
         e.preventDefault();
