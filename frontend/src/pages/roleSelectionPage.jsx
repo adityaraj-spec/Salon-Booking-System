@@ -25,12 +25,12 @@ export function RoleSelectionPage() {
         } catch (error) {
             console.error("Error updating role:", error);
         } finally {
-            setLoading(null);
         }
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-6 py-12">
+        <div className="flex flex-col items-center justify-center px-6 py-12 w-full h-full min-h-[80vh]">
+
             <div className="max-w-4xl w-full">
                 {/* Logo */}
                 <div className="flex justify-center items-center space-x-2 mb-12">

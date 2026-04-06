@@ -63,8 +63,9 @@ export function Shops() {
     };
 
     return (
-        <div className="min-h-screen bg-[#fafafa]">
-            <div className="text-center py-16 md:py-24 px-6 md:px-12">
+        <div className="">
+            <div className="text-center py-10 md:py-16 px-6 md:px-12">
+
                 <h1 className="text-4xl md:text-6xl font-serif text-gray-900 mb-4 leading-tight">
                     Discover Your <br className="hidden md:block" />
                     <span className="text-[#D4AF37]">Perfect Salon</span>

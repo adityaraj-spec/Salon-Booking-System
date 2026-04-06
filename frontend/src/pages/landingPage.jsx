@@ -1,14 +1,12 @@
-import { NavBar } from '../components/navPage.jsx';
 import { NavLink } from 'react-router';
 import { Calendar, ShieldCheck, Sparkles, ArrowRight } from 'lucide-react';
 
 export function LandingPage() {
     return (
-        <div className="min-h-screen bg-[#fafafa] font-sans pt-16">
-            <NavBar />
-
+        <div className="font-sans">
             {/* HERO SECTION */}
-            <section className="relative h-[calc(100vh-64px)] flex flex-col items-center justify-center text-center">
+            <section className="relative h-[calc(100vh-80px)] flex flex-col items-center justify-center text-center">
+
                 {/* Background Image with Dark Overlay */}
                 <div
                     className="absolute inset-0 z-0 bg-cover bg-center"

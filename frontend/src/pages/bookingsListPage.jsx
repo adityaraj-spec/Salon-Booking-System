@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import axiosInstance from "../api/axiosConfig";
-import { NavBar } from "../components/navPage";
-import { Footer } from "../components/footerPage";
 import { Calendar, Clock, MapPin, Loader2, Scissors, CheckCircle2, Phone } from "lucide-react";
+
 
 export function MyBookingsPage() {
     const [bookings, setBookings] = useState([]);
@@ -33,10 +32,8 @@ export function MyBookingsPage() {
     }
 
     return (
-        <div className="min-h-screen flex flex-col bg-[#fafafa]">
-            <NavBar />
-            
-            <main className="flex-1 pt-24 pb-20">
+        <main className="flex-1 pb-20">
+
                 <div className="max-w-5xl mx-auto px-6 py-8 md:py-12">
                     <div className="mb-8 md:mb-10 text-center md:text-left">
                         <h1 className="text-3xl md:text-4xl font-serif font-bold text-[#1a1a1a]">My Bookings</h1>
@@ -145,9 +142,6 @@ export function MyBookingsPage() {
                         </div>
                     )}
                 </div>
-            </main>
-            
-            <Footer />
-        </div>
+        </main>
     );
 }

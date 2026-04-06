@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { NavBar } from "../components/navPage";
-import { Footer } from "../components/footerPage";
 import { User, Mail, Phone, Shield, Calendar, Edit2, Check, X, Loader2 } from "lucide-react";
 import axiosInstance from "../api/axiosConfig";
 import { useNotification } from "../context/NotificationContext";
@@ -36,11 +34,8 @@ export function ProfilePage() {
     };
 
     return (
-        <div className="min-h-screen flex flex-col bg-[#fafafa]">
-            <NavBar />
-            
-            <main className="flex-1 pt-24 pb-12">
-                <div className="max-w-4xl mx-auto px-6 py-12">
+        <main className="flex-1 pb-12">
+            <div className="max-w-4xl mx-auto px-6 py-6 md:py-12">
                 <div className="bg-white rounded-[32px] overflow-hidden shadow-sm border border-gray-100">
                     {/* Header/Cover */}
                     <div className="h-32 bg-[#1a1a1a] flex items-end px-6 md:px-12 relative">
@@ -169,10 +164,7 @@ export function ProfilePage() {
                         </div>
                     </div>
                 </div>
-                </div>
-            </main>
-            
-            <Footer />
-        </div>
+            </div>
+        </main>
     );
 }

@@ -74,9 +74,9 @@ export function CreateSalonPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#fcfcfc] font-sans pb-20">
+        <div className="font-sans pb-20 w-full">
             {/* Header */}
-            <div className="bg-white border-b border-gray-100 py-6 px-6 sticky top-0 z-10 shadow-sm">
+            <div className="bg-white border-b border-gray-100 py-6 px-6 sticky top-0 z-10 shadow-sm rounded-t-[32px] md:rounded-none">
                 <div className="max-w-5xl mx-auto flex justify-between items-center">
                     <div className="flex items-center space-x-2">
                         <div className="bg-[#1a1a1a] p-1.5 rounded-full text-white">

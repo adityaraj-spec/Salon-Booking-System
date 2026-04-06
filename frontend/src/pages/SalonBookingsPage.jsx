@@ -85,7 +85,8 @@ const SalonBookingsPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#fafafa] pt-24 pb-12 px-6 md:px-12">
+        <div className="pb-12 px-6 md:px-12">
+
             <div className="max-w-6xl mx-auto">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
                     <div>
