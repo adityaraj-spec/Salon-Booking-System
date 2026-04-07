@@ -122,9 +122,8 @@ const getSalonBookings = asyncHandler(async (req, res) => {
 const updateBookingStatus = asyncHandler(async (req, res) => {
     const { bookingId } = req.params;
     const { status } = req.body;
-    const allowedStatuses = ["pending", "confirmed", "completed", "cancelled", "rejected", "no-show"];
 
-    if (!allowedStatuses.includes(status)) {
+    if (!["pending", "confirmed", "completed", "cancelled", "rejected"].includes(status)) {
         throw new ApiError(400, "Invalid status upgrade");
     }
 

@@ -6,7 +6,7 @@ import { Salon } from "../models/salon.models.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const addStaff = asyncHandler(async (req, res) => {
-    const { salonId, name, role, experience, skills, color } = req.body;
+    const { salonId, name, role, experience, skills } = req.body;
 
     if (!salonId || !name || !role) {
         throw new ApiError(400, "Salon ID, name, and role are required");
@@ -38,7 +38,6 @@ const addStaff = asyncHandler(async (req, res) => {
         role,
         experience: experience || 0,
         skills: parsedSkills,
-        color: color || "#D4AF37",
         profilePic: profilePicUrl
     });
 
@@ -83,7 +82,7 @@ const deleteStaff = asyncHandler(async (req, res) => {
 
 const updateStaff = asyncHandler(async (req, res) => {
     const { staffId } = req.params;
-    const { name, role, experience, skills, color } = req.body;
+    const { name, role, experience, skills } = req.body;
 
     const staff = await Staff.findById(staffId);
     if (!staff) {
@@ -113,7 +112,6 @@ const updateStaff = asyncHandler(async (req, res) => {
                 role,
                 experience,
                 skills: parsedSkills,
-                color,
                 profilePic: profilePicUrl
             }
         },

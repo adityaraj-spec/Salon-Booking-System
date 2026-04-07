@@ -171,7 +171,7 @@ const updateUserRole = asyncHandler(async (req, res) => {
 })
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
-    const { fullName, phonenumber, notes, allergies, preferredStylist } = req.body
+    const { fullName, phonenumber } = req.body
 
     if (!fullName || !phonenumber) {
         throw new ApiError(400, "Full name and phone number are required")
@@ -182,10 +182,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
         {
             $set: {
                 fullName,
-                phonenumber,
-                notes,
-                allergies,
-                preferredStylist
+                phonenumber
             }
         },
         { new: true }
