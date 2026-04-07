@@ -37,6 +37,18 @@ const userSchema = new mongoose.Schema({
   },
   refreshToken: {
     type: String,
+  },
+  notes: {
+    type: String,
+    default: ""
+  },
+  allergies: {
+    type: String,
+    default: ""
+  },
+  preferredStylist: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Staff"
   }
 }, { timestamps: true });
 

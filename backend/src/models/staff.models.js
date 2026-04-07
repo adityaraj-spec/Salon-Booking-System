@@ -10,5 +10,9 @@ const staffSchema = new mongoose.Schema({
   experience: Number,
   skills: [String],
   profilePic: String,
+  color: {
+    type: String,
+    default: "#D4AF37" // Default gold
+  }
 });
 export const Staff = mongoose.model("Staff", staffSchema);

@@ -21,7 +21,9 @@ import {
     Star,
     CalendarCheck,
     TrendingUp,
-    Upload
+    Upload,
+    Package,
+    AlertTriangle
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
@@ -38,22 +40,25 @@ export function SalonManagementPage() {
     const [services, setServices] = useState([]);
     const [staff, setStaff] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [tab, setTab] = useState("services"); // "services" or "staff"
+    const [tab, setTab] = useState("services"); // "services", "staff", or "inventory"
+    const [products, setProducts] = useState([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSalonSelectorOpen, setIsSalonSelectorOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [salonSettings, setSalonSettings] = useState({ openingHours: "", closingHours: "" });
 
     // Editing States
-
     const [editingServiceId, setEditingServiceId] = useState(null);
     const [editServiceForm, setEditServiceForm] = useState({ name: "", price: "", description: "" });
     const [editingStaffId, setEditingStaffId] = useState(null);
     const [editStaffForm, setEditStaffForm] = useState({ name: "", role: "", skills: "", profilePic: null });
+    const [editingProductId, setEditingProductId] = useState(null);
+    const [editProductForm, setEditProductForm] = useState({ name: "", stock: 0, price: 0, threshold: 5 });
 
     // Form States
     const [serviceForm, setServiceForm] = useState({ name: "", category: "Haircut", price: "", description: "" });
     const [staffForm, setStaffForm] = useState({ name: "", role: "", experience: "", skills: "", profilePic: null });
+    const [productForm, setProductForm] = useState({ name: "", stock: "", price: "", threshold: "" });
 
     const fetchData = async () => {
         setLoading(true);
@@ -86,13 +91,15 @@ export function SalonManagementPage() {
 
     const fetchSalonDetails = async (salonId) => {
         try {
-            const [servRes, staffRes] = await Promise.all([
+            const [servRes, staffRes, prodRes] = await Promise.all([
                 axiosInstance.get(`/services/salon/${salonId}`),
-                axiosInstance.get(`/staff/salon/${salonId}`)
+                axiosInstance.get(`/staff/salon/${salonId}`),
+                axiosInstance.get(`/inventory/salon/${salonId}`)
             ]);
 
             if (servRes.data.success) setServices(servRes.data.data);
             if (staffRes.data.success) setStaff(staffRes.data.data);
+            if (prodRes.data.success) setProducts(prodRes.data.data);
         } catch (error) {
             console.error("Error fetching salon items:", error);
         }
@@ -111,6 +118,58 @@ export function SalonManagementPage() {
             });
         }
     }, [activeSalon]);
+
+    // ... (socket effects remain the same) ...
+
+    const handleAddProduct = async (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            const response = await axiosInstance.post("/inventory/add", {
+                ...productForm,
+                salonId: activeSalon._id
+            });
+            if (response.data.success) {
+                setProducts([...products, response.data.data]);
+                setProductForm({ name: "", stock: "", price: "", threshold: "" });
+                showNotification("Product added to inventory!", "success");
+            }
+        } catch (error) {
+            showNotification("Failed to add product", "error");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleUpdateProduct = async (id) => {
+        setIsSubmitting(true);
+        try {
+            const response = await axiosInstance.patch(`/inventory/${id}`, editProductForm);
+            if (response.data.success) {
+                setProducts(products.map(p => p._id === id ? response.data.data : p));
+                setEditingProductId(null);
+                showNotification("Inventory updated", "success");
+            }
+        } catch (error) {
+            showNotification("Update failed", "error");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleDeleteProduct = async (id) => {
+        try {
+            const response = await axiosInstance.delete(`/inventory/${id}`);
+            if (response.data.success) {
+                setProducts(products.filter(p => p._id !== id));
+                showNotification("Product removed from inventory", "info");
+            }
+        } catch (error) {
+            showNotification("Deletion failed", "error");
+        }
+    };
+
+    // ... (rest of the handlers like handleAddService, handleUpdateStaff, etc. remain the same) ...
 
     useEffect(() => {
         if (socket && activeSalon) {
@@ -442,6 +501,13 @@ export function SalonManagementPage() {
                         <Users size={18} />
                         Team Members
                     </button>
+                    <button 
+                        onClick={() => setTab("inventory")}
+                        className={`flex items-center gap-2 px-8 py-3 rounded-xl font-bold text-sm transition-all ${tab === "inventory" ? "bg-white text-[#1a1a1a] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                    >
+                        <Package size={18} />
+                        Inventory
+                    </button>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -450,7 +516,7 @@ export function SalonManagementPage() {
                         <div className="bg-white rounded-[28px] p-8 border border-gray-100 shadow-sm sticky top-32">
                             <h2 className="text-xl font-serif font-bold text-gray-900 mb-6 flex items-center gap-2">
                                 <Plus size={20} className="text-[#D4AF37]" />
-                                {tab === "services" ? "Add New Service" : "Add Team Member"}
+                                {tab === "services" ? "Add New Service" : tab === "staff" ? "Add Team Member" : "Add Product"}
                             </h2>
 
                             {tab === "services" ? (
@@ -495,7 +561,7 @@ export function SalonManagementPage() {
                                         {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : "Save Service"}
                                     </button>
                                 </form>
-                            ) : (
+                            ) : tab === "staff" ? (
                                 <form onSubmit={handleAddStaff} className="space-y-4">
                                     <div>
                                         <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Staff Name</label>
@@ -541,6 +607,60 @@ export function SalonManagementPage() {
                                         className="w-full bg-[#1a1a1a] text-white py-4 rounded-2xl font-bold text-sm tracking-widest uppercase hover:bg-black transition-all flex items-center justify-center gap-2 mt-4"
                                     >
                                         {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : "Add to Team"}
+                                    </button>
+                                </form>
+                            ) : (
+                                <form onSubmit={handleAddProduct} className="space-y-4">
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Product Name</label>
+                                        <input 
+                                            required
+                                            value={productForm.name}
+                                            onChange={e => setProductForm({...productForm, name: e.target.value})}
+                                            className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none"
+                                            placeholder="e.g. Hair Dye - Midnight Black"
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-4">
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Stock</label>
+                                            <input 
+                                                required
+                                                type="number"
+                                                value={productForm.stock}
+                                                onChange={e => setProductForm({...productForm, stock: e.target.value})}
+                                                className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none"
+                                                placeholder="25"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Price (₹)</label>
+                                            <input 
+                                                required
+                                                type="number"
+                                                value={productForm.price}
+                                                onChange={e => setProductForm({...productForm, price: e.target.value})}
+                                                className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none"
+                                                placeholder="1200"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Alert At</label>
+                                            <input 
+                                                required
+                                                type="number"
+                                                value={productForm.threshold}
+                                                onChange={e => setProductForm({...productForm, threshold: e.target.value})}
+                                                className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none"
+                                                placeholder="5"
+                                            />
+                                        </div>
+                                    </div>
+                                    <button 
+                                        disabled={isSubmitting}
+                                        className="w-full bg-[#1a1a1a] text-white py-4 rounded-2xl font-bold text-sm tracking-widest uppercase hover:bg-black transition-all flex items-center justify-center gap-2 mt-4"
+                                    >
+                                        {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : "Register Product"}
                                     </button>
                                 </form>
                             )}
@@ -628,7 +748,7 @@ export function SalonManagementPage() {
                                          <p className="text-gray-500 font-medium italic">No services listed yet.</p>
                                      </div>
                                  )
-                             ) : (
+                             ) : tab === "staff" ? (
                                  staff.length > 0 ? (
                                      <div className="grid sm:grid-cols-2 gap-6">
                                          {staff.map(m => (
@@ -694,6 +814,90 @@ export function SalonManagementPage() {
                                      <div className="bg-white rounded-3xl p-16 text-center border border-gray-100 shadow-sm border-dashed">
                                          <Users className="mx-auto text-gray-200 mb-4" size={40} />
                                          <p className="text-gray-500 font-medium italic">Your team is empty.</p>
+                                     </div>
+                                 )
+                             ) : (
+                                 products.length > 0 ? (
+                                     <div className="grid sm:grid-cols-2 gap-6">
+                                         {products.map(p => (
+                                             <div key={p._id} className={`bg-white p-6 rounded-[32px] border ${p.stock < 5 ? 'border-red-200 bg-red-50/10' : 'border-gray-100'} shadow-sm group hover:shadow-xl transition-all`}>
+                                                 {editingProductId === p._id ? (
+                                                     <div className="space-y-4">
+                                                         <input 
+                                                             className="w-full bg-gray-50 border-none rounded-xl px-4 py-2 font-bold text-sm"
+                                                             value={editProductForm.name}
+                                                             onChange={e => setEditProductForm({...editProductForm, name: e.target.value})}
+                                                         />
+                                                         <div className="grid grid-cols-3 gap-2">
+                                                            <input 
+                                                                className="w-full bg-gray-50 border-none rounded-xl px-4 py-2 text-sm"
+                                                                type="number"
+                                                                value={editProductForm.stock}
+                                                                onChange={e => setEditProductForm({...editProductForm, stock: e.target.value})}
+                                                            />
+                                                            <input 
+                                                                className="w-full bg-gray-50 border-none rounded-xl px-4 py-2 text-sm"
+                                                                type="number"
+                                                                value={editProductForm.price}
+                                                                onChange={e => setEditProductForm({...editProductForm, price: e.target.value})}
+                                                            />
+                                                            <input 
+                                                                className="w-full bg-gray-50 border-none rounded-xl px-4 py-2 text-sm"
+                                                                type="number"
+                                                                value={editProductForm.threshold}
+                                                                onChange={e => setEditProductForm({...editProductForm, threshold: e.target.value})}
+                                                            />
+                                                         </div>
+                                                         <div className="flex gap-2">
+                                                             <button onClick={() => handleUpdateProduct(p._id)} className="flex-1 bg-[#1a1a1a] text-white py-2 rounded-xl text-xs font-bold hover:bg-black transition-all flex items-center justify-center gap-2">
+                                                                 <Save size={14} /> Save
+                                                             </button>
+                                                             <button onClick={() => setEditingProductId(null)} className="px-4 bg-gray-100 rounded-xl text-gray-500 hover:bg-gray-200 transition-all font-bold text-xs"><X size={14} /></button>
+                                                         </div>
+                                                     </div>
+                                                 ) : (
+                                                     <div className="flex items-start justify-between">
+                                                         <div className="flex gap-4">
+                                                             <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border-2 transition-all ${p.stock < 5 ? 'bg-red-500 text-white border-red-500' : 'bg-gray-50 text-[#D4AF37] border-gray-100'}`}>
+                                                                 <Package size={24} />
+                                                             </div>
+                                                             <div>
+                                                                 <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
+                                                                     {p.name}
+                                                                     {p.stock < 5 && <AlertTriangle size={14} className="text-red-500 animate-pulse" />}
+                                                                 </h3>
+                                                                 <p className={`text-xs font-black uppercase tracking-widest mt-1 ${p.stock < 5 ? 'text-red-500' : 'text-gray-400'}`}>
+                                                                     Stock: {p.stock} units
+                                                                 </p>
+                                                                 <p className="text-sm font-black text-gray-900 mt-2">₹{p.price}</p>
+                                                             </div>
+                                                         </div>
+                                                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                             <button 
+                                                                 onClick={() => {
+                                                                     setEditingProductId(p._id);
+                                                                     setEditProductForm({ name: p.name, stock: p.stock, price: p.price, threshold: p.threshold || 5 });
+                                                                 }}
+                                                                 className="p-2 text-gray-400 hover:text-[#D4AF37] hover:bg-[#D4AF37]/5 rounded-xl transition-all"
+                                                             >
+                                                                 <Edit2 size={16} />
+                                                             </button>
+                                                             <button 
+                                                                 onClick={() => handleDeleteProduct(p._id)}
+                                                                 className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                                             >
+                                                                 <Trash2 size={16} />
+                                                             </button>
+                                                         </div>
+                                                     </div>
+                                                 )}
+                                             </div>
+                                         ))}
+                                     </div>
+                                 ) : (
+                                     <div className="bg-white rounded-3xl p-16 text-center border border-gray-100 shadow-sm border-dashed">
+                                         <Package className="mx-auto text-gray-200 mb-4" size={40} />
+                                         <p className="text-gray-500 font-medium italic">Inventory is empty.</p>
                                      </div>
                                  )
                              )}
