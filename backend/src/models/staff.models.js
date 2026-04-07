@@ -9,5 +9,6 @@ const staffSchema = new mongoose.Schema({
   role: String,
   experience: Number,
   skills: [String],
+  profilePic: String,
 });
 export const Staff = mongoose.model("Staff", staffSchema);

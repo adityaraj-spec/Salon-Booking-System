@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Scissors, LogOut, ChevronDown, User, Calendar, Settings, Menu, X, Bell, CheckCircle2, Clock } from "lucide-react";
+import { Scissors, LogOut, ChevronDown, User, Calendar, Settings, Menu, X, Bell, CheckCircle2, Clock, LayoutDashboard } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
 import axiosInstance from "../api/axiosConfig";
@@ -149,9 +149,7 @@ export function NavBar() {
                             <NavLink to="/salon/dashboard" className="text-[#1a1a1a] font-medium text-sm tracking-widest uppercase hover:text-[#D4AF37] transition-colors">
                                 Requests
                             </NavLink>
-                            <NavLink to="/salon/manage" className="text-[#1a1a1a] font-medium text-sm tracking-widest uppercase hover:text-[#D4AF37] transition-colors">
-                                Manage
-                            </NavLink>
+
                         </div>
                     )}
 
@@ -284,6 +282,17 @@ export function NavBar() {
                                         Settings
                                     </NavLink>
                                     
+                                    {user?.role === "salonOwner" && (
+                                        <NavLink 
+                                            to="/salon/manage" 
+                                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-colors"
+                                            onClick={() => setIsMenuOpen(false)}
+                                        >
+                                            <LayoutDashboard size={18} />
+                                            Dashboard
+                                        </NavLink>
+                                    )}
+                                    
                                     <div className="h-px bg-gray-100 my-1 mx-2"></div>
                                     
                                     <button 
@@ -393,14 +402,14 @@ export function NavBar() {
                                 Requests
                             </NavLink>
                             <NavLink 
-                                to="/salon/manage" 
-                                className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all ${
-                                    isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37]"
-                                }`}
-                                onClick={() => setIsMobileMenuOpen(false)}
-                            >
-                                Manage
-                            </NavLink>
+                                        to="/salon/manage" 
+                                        className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all ${
+                                            isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37]"
+                                        }`}
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                    >
+                                        Dashboard
+                                    </NavLink>
                         </>
                     )}
 

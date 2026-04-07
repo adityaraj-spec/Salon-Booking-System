@@ -20,7 +20,8 @@ import {
     PlusCircle,
     Star,
     CalendarCheck,
-    TrendingUp
+    TrendingUp,
+    Upload
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
@@ -48,11 +49,11 @@ export function SalonManagementPage() {
     const [editingServiceId, setEditingServiceId] = useState(null);
     const [editServiceForm, setEditServiceForm] = useState({ name: "", price: "", description: "" });
     const [editingStaffId, setEditingStaffId] = useState(null);
-    const [editStaffForm, setEditStaffForm] = useState({ name: "", role: "", skills: "" });
+    const [editStaffForm, setEditStaffForm] = useState({ name: "", role: "", skills: "", profilePic: null });
 
     // Form States
     const [serviceForm, setServiceForm] = useState({ name: "", category: "Haircut", price: "", description: "" });
-    const [staffForm, setStaffForm] = useState({ name: "", role: "", experience: "", skills: "" });
+    const [staffForm, setStaffForm] = useState({ name: "", role: "", experience: "", skills: "", profilePic: null });
 
     const fetchData = async () => {
         setLoading(true);
@@ -211,14 +212,22 @@ export function SalonManagementPage() {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            const response = await axiosInstance.post("/staff/add", {
-                ...staffForm,
-                salonId: activeSalon._id,
-                skills: staffForm.skills.split(",").map(s => s.trim())
+            const formData = new FormData();
+            formData.append("name", staffForm.name);
+            formData.append("role", staffForm.role);
+            formData.append("experience", staffForm.experience);
+            formData.append("skills", staffForm.skills);
+            formData.append("salonId", activeSalon._id);
+            if (staffForm.profilePic) {
+                formData.append("profilePic", staffForm.profilePic);
+            }
+
+            const response = await axiosInstance.post("/staff/add", formData, {
+                headers: { "Content-Type": "multipart/form-data" }
             });
             if (response.data.success) {
                 setStaff([...staff, response.data.data]);
-                setStaffForm({ name: "", role: "", experience: "", skills: "" });
+                setStaffForm({ name: "", role: "", experience: "", skills: "", profilePic: null });
                 showNotification("Staff member added!", "success");
             }
         } catch (error) {
@@ -231,9 +240,17 @@ export function SalonManagementPage() {
     const handleUpdateStaff = async (id) => {
         setIsSubmitting(true);
         try {
-            const response = await axiosInstance.patch(`/staff/${id}`, {
-                ...editStaffForm,
-                skills: typeof editStaffForm.skills === 'string' ? editStaffForm.skills.split(",").map(s => s.trim()) : editStaffForm.skills
+            const formData = new FormData();
+            formData.append("name", editStaffForm.name);
+            formData.append("role", editStaffForm.role);
+            formData.append("experience", editStaffForm.experience || "");
+            formData.append("skills", editStaffForm.skills);
+            if (editStaffForm.profilePic) {
+                formData.append("profilePic", editStaffForm.profilePic);
+            }
+
+            const response = await axiosInstance.patch(`/staff/${id}`, formData, {
+                headers: { "Content-Type": "multipart/form-data" }
             });
             if (response.data.success) {
                 setStaff(staff.map(s => s._id === id ? response.data.data : s));

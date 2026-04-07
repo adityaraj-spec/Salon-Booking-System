@@ -3,6 +3,7 @@ import ApiError from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { Staff } from "../models/staff.models.js";
 import { Salon } from "../models/salon.models.js";
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const addStaff = asyncHandler(async (req, res) => {
     const { salonId, name, role, experience, skills } = req.body;
@@ -21,12 +22,23 @@ const addStaff = asyncHandler(async (req, res) => {
         throw new ApiError(403, "You do not have permission to add staff to this salon");
     }
 
+    let profilePicUrl = "";
+    if (req.file) {
+        const uploadedFile = await uploadOnCloudinary(req.file.path);
+        if (uploadedFile) {
+            profilePicUrl = uploadedFile.url;
+        }
+    }
+
+    const parsedSkills = typeof skills === 'string' ? skills.split(',').map(s => s.trim()) : (skills || []);
+
     const staff = await Staff.create({
         salon: salonId,
         name,
         role,
         experience: experience || 0,
-        skills: skills || []
+        skills: parsedSkills,
+        profilePic: profilePicUrl
     });
 
     return res.status(201).json(
@@ -82,6 +94,16 @@ const updateStaff = asyncHandler(async (req, res) => {
         throw new ApiError(403, "You do not have permission to update this staff member");
     }
 
+    let profilePicUrl = staff.profilePic;
+    if (req.file) {
+        const uploadedFile = await uploadOnCloudinary(req.file.path);
+        if (uploadedFile) {
+            profilePicUrl = uploadedFile.url;
+        }
+    }
+
+    const parsedSkills = typeof skills === 'string' ? skills.split(',').map(s => s.trim()) : (skills || staff.skills);
+
     const updatedStaff = await Staff.findByIdAndUpdate(
         staffId,
         {
@@ -89,7 +111,8 @@ const updateStaff = asyncHandler(async (req, res) => {
                 name,
                 role,
                 experience,
-                skills
+                skills: parsedSkills,
+                profilePic: profilePicUrl
             }
         },
         { new: true }
