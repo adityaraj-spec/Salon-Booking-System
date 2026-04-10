@@ -4,6 +4,7 @@ import { Scissors, LogOut, ChevronDown, User, Calendar, Settings, Menu, X, Bell,
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
 import { useUI } from "../context/UIContext";
+import { useNotification } from "../context/NotificationContext";
 import axiosInstance from "../api/axiosConfig";
 
 
@@ -11,6 +12,7 @@ export function NavBar() {
     const { user, logout } = useAuth();
     const { navbarTheme } = useUI();
     const socket = useSocket();
+    const { showNotification } = useNotification();
     const location = useLocation();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
@@ -107,6 +109,12 @@ export function NavBar() {
             socket.on("newNotification", (notification) => {
                 setNotifications(prev => [notification, ...prev]);
                 setUnreadCount(prev => prev + 1);
+                
+                // Trigger real-time popup
+                showNotification(
+                    notification.message, 
+                    notification.type?.includes("confirmed") ? "success" : "info"
+                );
             });
 
             return () => {

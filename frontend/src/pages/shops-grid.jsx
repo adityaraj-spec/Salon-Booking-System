@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Search, Star, MapPin, Users, Clock, Loader2, ChevronLeft, ChevronRight, Phone, Heart } from 'lucide-react';
 import axiosInstance from '../api/axiosConfig';
+import { MapPlaceholder } from '../components/MapPlaceholder';
 
 export function Shops() {
     const navigate = useNavigate();
@@ -63,7 +64,8 @@ export function Shops() {
     };
 
     return (
-        <div className="max-w-[1280px] mx-auto px-6 md:px-10">
+        <div className="w-full min-h-screen bg-white">
+            <div className="max-w-[1280px] mx-auto px-6 md:px-10">
             <div className="text-center pt-28 pb-10 md:pt-32 md:pb-16">
 
                 <h1 className="text-4xl md:text-6xl font-serif text-gray-900 mb-4 leading-tight">
@@ -106,7 +108,11 @@ export function Shops() {
                 </form>
             </div>
 
-            <div className="py-8 min-h-[400px]">
+            {/* Main Content Split Plane */}
+            <div className="flex flex-col lg:flex-row w-full border-t border-gray-100">
+                {/* Left Side: List of Salons */}
+                <div className="w-full lg:w-[55%] xl:w-[60%] lg:border-r border-gray-100 px-6 md:px-10 py-8">
+
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-20">
                         <Loader2 className="w-12 h-12 text-[#D4AF37] animate-spin mb-4" />
@@ -135,7 +141,7 @@ export function Shops() {
                     </div>
                 ) : (
                     <>
-                        <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-16">
+                        <div className="w-full grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-6 mb-16">
                             {salons.map((salon) => (
                                 <div
                                     key={salon._id}
@@ -264,6 +270,12 @@ export function Shops() {
                         )}
                     </>
                 )}
+                </div>
+
+                {/* Right Side: Map Container (Fixed on Desktop) */}
+                <div className="hidden lg:block lg:w-[45%] xl:w-[40%] h-[calc(100vh-80px)] sticky top-20 overflow-hidden bg-gray-50">
+                    <MapPlaceholder />
+                </div>
             </div>
         </div>
     );
