@@ -139,11 +139,13 @@ export function Shops() {
                             {salons.map((salon) => (
                                 <div
                                     key={salon._id}
-                                    className="w-full bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col cursor-pointer transition hover:shadow-md group"
-                                    onClick={() => navigate(`/shop/${salon._id}`)}
+                                    className="w-full bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col transition hover:shadow-md group"
                                 >
                                     {/* Image Section */}
-                                    <div className="relative h-56 w-full overflow-hidden flex-shrink-0">
+                                    <div
+                                        className="relative h-56 w-full overflow-hidden flex-shrink-0 cursor-pointer"
+                                        onClick={() => navigate(`/shop/${salon._id}`)}
+                                    >
                                         <img
                                             src={salon.images && salon.images.length > 0 ? salon.images[0] : "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=80"}
                                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -174,17 +176,18 @@ export function Shops() {
                                         </div>
 
                                         {/* Name */}
-                                        <h3 className="text-[1.1rem] font-bold text-[#1a1a1a] leading-tight mb-1 group-hover:text-[#0071C2] transition-colors">
+                                        <h3
+                                            className="text-[1.1rem] font-bold text-[#1a1a1a] leading-tight mb-1 cursor-pointer hover:text-[#0071C2] transition-colors"
+                                            onClick={() => navigate(`/shop/${salon._id}`)}
+                                        >
                                             {salon.name}
                                         </h3>
 
                                         {/* Location & Phone */}
                                         <div className="mb-4 flex flex-col gap-1">
-                                            <span className="text-sm text-[#0071c2] flex items-start gap-1">
-                                                <MapPin size={13} className="shrink-0 mt-0.5" />
-                                                <span className="line-clamp-1">
-                                                    {[salon.city, salon.address, "India"].filter(Boolean).join(", ")}
-                                                </span>
+                                            <span className="text-sm text-[#0071c2] flex items-center gap-1">
+                                                <MapPin size={13} className="shrink-0" />
+                                                {salon.city ? `${salon.city}, India` : "Location not set"}
                                             </span>
                                             <span className="text-sm text-gray-500 flex items-center gap-1">
                                                 <Phone size={13} className="shrink-0" />
