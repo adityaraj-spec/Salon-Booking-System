@@ -111,18 +111,18 @@ export function LandingPage() {
                 <AnimatePresence mode="popLayout" initial={false}>
                     <motion.div
                         key={currentHero.url}
-                        initial={{ x: "-100%" }}
-                        animate={{ x: 0 }}
-                        exit={{ x: "100%" }}
+                        initial={{ x: "100%", opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        exit={{ x: "-100%", opacity: 0 }}
                         transition={{ duration: 1.0, ease: [0.4, 0, 0.2, 1] }}
                         className="absolute inset-0 bg-cover bg-center"
                         style={{ backgroundImage: `url('${currentHero.url}')` }}
-                    />
+                    >
+                        {/* Slide-specific Overlays */}
+                        <div className={`absolute inset-0 transition-opacity duration-1000 ${currentHero.isDark ? 'bg-black/40' : 'bg-white/20'}`}></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+                    </motion.div>
                 </AnimatePresence>
-
-                {/* Dynamic Overlay */}
-                <div className={`absolute inset-0 z-0 transition-opacity duration-1000 ${isDark ? 'bg-black/40' : 'bg-white/20'}`}></div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent z-0"></div>
 
                 <motion.div
                     variants={staggerContainer}
