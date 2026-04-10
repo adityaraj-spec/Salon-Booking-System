@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Search, Star, MapPin, Users, Clock, Loader2, ChevronLeft, ChevronRight, Phone } from 'lucide-react';
+import { Search, Star, MapPin, Users, Clock, Loader2, ChevronLeft, ChevronRight, Phone, Heart } from 'lucide-react';
 import axiosInstance from '../api/axiosConfig';
 
 export function Shops() {
@@ -135,69 +135,82 @@ export function Shops() {
                     </div>
                 ) : (
                     <>
-                        <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 justify-items-center mb-16">
+                        <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-16">
                             {salons.map((salon) => (
                                 <div 
                                     key={salon._id} 
-                                    className="w-full bg-white shadow-md rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
+                                    className="w-full bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col cursor-pointer transition hover:shadow-md group"
                                     onClick={() => navigate(`/shop/${salon._id}`)}
                                 >
-                                    <div className="relative h-56 overflow-hidden">
+                                    {/* Image Section */}
+                                    <div className="relative h-64 w-full overflow-hidden">
                                         <img
                                             src={salon.images && salon.images.length > 0 ? salon.images[0] : "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=80"}
-                                            className="w-full h-full object-cover hover:scale-110 transition-transform duration-700"
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                             alt={salon.name}
                                         />
-                                        <div className="absolute top-4 right-4 flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm">
-                                            <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-                                            <span className="font-bold text-xs text-gray-800">{salon.rating || "NEW"}</span>
-                                        </div>
+                                        {/* Heart Icon */}
+                                        <button className="absolute top-3 right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm transition-colors" onClick={(e) => { e.stopPropagation(); /* Add to wishlist logic */ }}>
+                                            <Heart size={16} strokeWidth={2} />
+                                        </button>
                                     </div>
 
-                                    <div className="p-6">
-                                        {/* 1. Name */}
-                                        <h3 className="text-xl font-serif font-bold text-gray-900 mb-3 truncate group-hover:text-[#D4AF37] transition-colors">
-                                            {salon.name}
-                                        </h3>
-
-                                        {/* 2. Location */}
-                                        <div className="flex items-center gap-2 text-gray-500 mb-2">
-                                            <MapPin className="w-4 h-4 text-[#D4AF37]" />
-                                            <span className="text-xs font-bold text-[#1A1A1A] truncate">
-                                                {salon.city || "Location not set"}
-                                            </span>
-                                        </div>
-
-                                        {/* 3. Contact No */}
-                                        <div className="flex items-center gap-2 text-gray-500 mb-4">
-                                            <Phone className="w-4 h-4 text-[#D4AF37]" />
-                                            {salon.contactNumber || salon.owner?.phonenumber ? (
-                                                <a 
-                                                    href={`tel:${salon.contactNumber || salon.owner?.phonenumber}`} 
-                                                    onClick={(e) => e.stopPropagation()}
-                                                    className="text-xs font-bold text-[#1A1A1A] hover:text-[#D4AF37] transition-colors"
-                                                >
-                                                    {salon.contactNumber || salon.owner?.phonenumber}
-                                                </a>
-                                            ) : (
-                                                <span className="text-xs font-bold text-gray-300 italic">No contact info</span>
+                                    {/* Content Section */}
+                                    <div className="p-4 flex flex-col flex-1">
+                                        {/* Salon Type & Stars */}
+                                        <div className="flex items-center gap-1 mb-2">
+                                            <span className="text-xs text-gray-500">Salon</span>
+                                            <div className="flex gap-0.5">
+                                                {[...Array(5)].map((_, i) => (
+                                                    <Star key={i} size={11} className="fill-[#febb02] text-[#febb02]" />
+                                                ))}
+                                            </div>
+                                            {/* Top Rated Badge */}
+                                            {salon.rating >= 4.5 && (
+                                                <span className="ml-1 bg-[#0071c2] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wide">
+                                                    Top Rated
+                                                </span>
                                             )}
                                         </div>
 
-                                        {/* 4. Timing and Seat in the same line */}
-                                        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                                            <div className="flex items-center gap-1.5">
-                                                <Clock className="w-4 h-4 text-[#D4AF37]" />
-                                                <span className="text-[10px] font-black uppercase tracking-tight text-[#1A1A1A]">
-                                                    {salon.openingHours || "9:00 AM"} - {salon.closingHours || "9:00 PM"}
-                                                </span>
+                                        {/* Name */}
+                                        <h3 className="text-[1.1rem] font-bold text-[#1a1a1a] leading-tight mb-1 group-hover:text-[#0071C2] transition-colors">
+                                            {salon.name}
+                                        </h3>
+
+                                        {/* Location & Phone */}
+                                        <div className="text-sm text-[#0071c2] underline decoration-transparent hover:decoration-[#0071c2] mb-5">
+                                            {salon.city || "Location not set"}
+                                            <span className="text-gray-600 no-underline ml-1 text-sm">
+                                                • {salon.contactNumber || salon.owner?.phonenumber || "+91 Unavailable"}
+                                            </span>
+                                        </div>
+
+                                        {/* Bottom row aligning rating left and timing/seats right */}
+                                        <div className="mt-auto flex items-end justify-between">
+                                            {/* Left: Rating block */}
+                                            <div className="flex items-center gap-2">
+                                                <div className="bg-[#003b95] text-white px-2 py-2 font-bold flex items-center justify-center rounded-t-md rounded-br-md rounded-bl-sm min-w-[32px] text-sm">
+                                                    {salon.rating || "New"}
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-xs font-bold text-[#1a1a1a] leading-none mb-1">
+                                                        {salon.rating > 4 ? "Excellent" : (salon.rating > 3 ? "Very Good" : "Good")}
+                                                    </span>
+                                                    <span className="text-[11px] text-gray-500 leading-none">
+                                                        {salon.reviews?.length || "0"} reviews
+                                                    </span>
+                                                </div>
                                             </div>
 
-                                            <div className={`px-2.5 py-1 rounded-lg flex items-center gap-1.5 ${salon.availableSeats > 0 ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"}`}>
-                                                <Users size={12} />
-                                                <span className="text-[10px] font-black uppercase tracking-tight">
-                                                    {salon.availableSeats > 0 ? `${salon.availableSeats} LEFT` : "FULL"}
-                                                </span>
+                                            {/* Right: Timing and Seats */}
+                                            <div className="text-right flex flex-col items-end">
+                                                <div className="text-[11px] text-gray-500 mb-1">
+                                                    Timing <span className="font-bold text-gray-800">{salon.openingHours || "09:00"} - {salon.closingHours || "21:00"}</span>
+                                                </div>
+                                                <div className="text-xs text-gray-500">
+                                                    Available Seats <span className="text-lg font-bold text-[#1a1a1a] ml-1">{salon.availableSeats || 0}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
