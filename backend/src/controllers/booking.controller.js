@@ -4,7 +4,7 @@ import { ApiResponse } from "../utils/apiResponse.js";
 import { Booking } from "../models/booking.models.js";
 import { Salon } from "../models/salon.models.js";
 import { Notification } from "../models/notification.models.js";
-import { sendBookingConfirmationEmail } from "../utils/mailer.js";
+import { sendBookingConfirmationEmail, sendBookingStatusEmail, sendBookingPendingEmail } from "../utils/mailer.js";
 import { emitToUser, emitToAll } from "../socket.js";
 
 
@@ -38,9 +38,8 @@ const createBooking = asyncHandler(async (req, res) => {
     });
 
     const totalSeats = salon.totalSeats || 6;
-    if (existingBookingsCount >= totalSeats) {
-        throw new ApiError(400, "This salon is fully booked for the requested time slot. Please try another time.");
-    }
+    const isAvailable = existingBookingsCount < totalSeats;
+    const initialStatus = isAvailable ? "confirmed" : "pending";
 
     const booking = await Booking.create({
         customer: req.user._id,
@@ -52,28 +51,42 @@ const createBooking = asyncHandler(async (req, res) => {
         date,
         time,
         totalAmount: totalAmount || 0,
-        status: "pending"
+        status: initialStatus
     });
 
-    // Notify customer that the request was received (Not confirmed yet)
+    // Notify customer appropriately
     const bookingTime = `${date} at ${time}`;
-    sendBookingConfirmationEmail(
-        req.user.email, 
-        req.user.fullName, 
-        salon.name, 
-        bookingTime, 
-        totalAmount || 0, 
-        staffName || "Any Available", 
-        serviceNames || []
-    );
+    if (initialStatus === "confirmed") {
+        sendBookingConfirmationEmail(
+            req.user.email, 
+            req.user.fullName, 
+            salon.name, 
+            bookingTime, 
+            totalAmount || 0, 
+            staffName || "Any Available", 
+            serviceNames || []
+        );
+    } else {
+        sendBookingPendingEmail(
+            req.user.email, 
+            req.user.fullName, 
+            salon.name, 
+            bookingTime, 
+            totalAmount || 0, 
+            staffName || "Any Available", 
+            serviceNames || []
+        );
+    }
 
     // Create notification for salon owner
     const notification = await Notification.create({
         recipient: salon.owner,
         sender: req.user._id,
-        title: "New Booking Request",
-        message: `You have a new appointment request from ${req.user.fullName} for ${date} at ${time}.`,
-        type: "booking_request",
+        title: initialStatus === "confirmed" ? "New Confirmed Booking" : "New Booking Request",
+        message: initialStatus === "confirmed" 
+            ? `New auto-confirmed booking from ${req.user.fullName} for ${date} at ${time}.`
+            : `New pending request from ${req.user.fullName} for ${date} at ${time} (Over capacity).`,
+        type: initialStatus === "confirmed" ? "booking_confirmed" : "booking_request",
         bookingId: booking._id
     });
 
@@ -83,7 +96,9 @@ const createBooking = asyncHandler(async (req, res) => {
 
 
     return res.status(201).json(
-        new ApiResponse(201, booking, "Booking request sent to salon. Please wait for confirmation.")
+        new ApiResponse(201, booking, initialStatus === "confirmed" 
+            ? "Your booking has been automatically confirmed!" 
+            : "Request received! Since the salon is full, please wait for the owner to confirm.")
     );
 });
 
@@ -130,7 +145,7 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid status upgrade");
     }
 
-    const booking = await Booking.findById(bookingId).populate("salon");
+    const booking = await Booking.findById(bookingId).populate("salon").populate("customer", "fullName email");
     if (!booking) {
         throw new ApiError(404, "Booking not found");
     }
@@ -166,6 +181,16 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
         type,
         bookingId: booking._id
     });
+
+    // Trigger booking status email
+    sendBookingStatusEmail(
+        booking.customer.email,
+        booking.customer.fullName,
+        booking.salon.name,
+        booking.date,
+        booking.time,
+        status.charAt(0).toUpperCase() + status.slice(1)
+    );
 
     // --- SOCKET.IO EMIT ---
     emitToUser(booking.customer, "newNotification", notification);

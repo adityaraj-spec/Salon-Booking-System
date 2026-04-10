@@ -1,5 +1,7 @@
 import nodemailer from 'nodemailer';
 
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+
 const createTransporter = async () => {
     const smtpUser = process.env.SMTP_USER?.trim();
     const smtpPass = process.env.SMTP_PASS?.trim();
@@ -67,7 +69,7 @@ export const sendWelcomeEmail = async (email, name) => {
           <span style="display:inline-block;width:40px;height:2px;background:#D4AF37;vertical-align:middle;"></span>
         </div>
         <div style="text-align:center;margin-bottom:32px;">
-          <a href="http://localhost:5174/home" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">EXPLORE SALONS</a>
+          <a href="${FRONTEND_URL}/home" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">EXPLORE SALONS</a>
         </div>
         <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
         <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Team &nbsp;&bull;&nbsp; Making every day a good hair day</p>
@@ -93,7 +95,7 @@ export const sendLoginEmail = async (email, name) => {
           You've successfully logged in to your SalonNow account. Your next perfect salon experience is just a click away!
         </p>
         <div style="text-align:center;margin-bottom:32px;">
-          <a href="http://localhost:5174/home" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">BROWSE SALONS</a>
+          <a href="${FRONTEND_URL}/home" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">BROWSE SALONS</a>
         </div>
         <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
         <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Team &nbsp;&bull;&nbsp; Making every day a good hair day</p>
@@ -123,7 +125,7 @@ export const sendShopAddedEmail = async (email, name, shopName) => {
           <p style="margin:0;color:#1a1a1a;font-size:18px;font-weight:700;">${shopName}</p>
         </div>
         <div style="text-align:center;margin-bottom:32px;">
-          <a href="http://localhost:5174/home" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">VIEW YOUR SHOP</a>
+          <a href="${FRONTEND_URL}/home" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">VIEW YOUR SHOP</a>
         </div>
         <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
         <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Team &nbsp;&bull;&nbsp; We can't wait to see your business grow!</p>
@@ -175,11 +177,101 @@ export const sendBookingConfirmationEmail = async (email, name, shopName, bookin
           </table>
         </div>
         <div style="text-align:center;margin-bottom:32px;">
-          <a href="http://localhost:5174/bookings" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">VIEW BOOKING</a>
+          <a href="${FRONTEND_URL}/bookings" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">VIEW BOOKING</a>
         </div>
         <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
         <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Team &nbsp;&bull;&nbsp; Enjoy your visit!</p>
       </div>
     </div>`;
     return sendMail(email, "Your SalonNow Booking is Confirmed!", html);
+};
+
+// ─── Booking Status Update Email ──────────────────────────────────────────────
+export const sendBookingStatusEmail = async (email, name, shopName, date, time, status) => {
+    const statusColors = {
+        confirmed: "#22c55e",
+        completed: "#D4AF37",
+        rejected: "#ef4444",
+        cancelled: "#6b7280"
+    };
+    const color = statusColors[status.toLowerCase()] || "#1a1a1a";
+    
+    const html = `
+    <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #f0f0f0;">
+      <div style="background:#1a1a1a;padding:32px 40px;text-align:center;">
+        <div style="display:inline-block;background:${color};border-radius:50%;width:64px;height:64px;text-align:center;line-height:64px;margin-bottom:16px;font-size:28px;color:#ffffff;">&#128365;</div>
+        <h1 style="color:#ffffff;margin:0;font-size:26px;font-weight:700;letter-spacing:1px;">Salon<span style="color:#D4AF37;">Now</span></h1>
+      </div>
+      <div style="padding:40px;">
+        <div style="background:${color}11;border:2px solid ${color};border-radius:12px;padding:16px;text-align:center;margin-bottom:24px;">
+          <p style="margin:0;font-size:13px;color:${color};font-weight:700;letter-spacing:2px;text-transform:uppercase;">Booking ${status}</p>
+        </div>
+        <h2 style="color:#1a1a1a;font-size:22px;margin:0 0 12px;text-align:center;">Important Update for ${name}</h2>
+        <p style="color:#555555;font-size:15px;line-height:1.7;text-align:center;margin:0 0 24px;">
+          Your appointment status at <strong>${shopName}</strong> has been updated to <strong>${status}</strong>.
+        </p>
+        <div style="background:#f9f9f9;border-radius:12px;padding:20px;margin-bottom:28px;text-align:center;">
+          <p style="margin:0 0 8px;color:#999;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Appointment Details</p>
+          <p style="margin:0;color:#1a1a1a;font-size:16px;font-weight:700;">${date} at ${time}</p>
+        </div>
+        <div style="text-align:center;margin-bottom:32px;">
+          <a href="${FRONTEND_URL}/bookings" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">GO TO BOOKINGS</a>
+        </div>
+        <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
+        <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Team &nbsp;&bull;&nbsp; Making every visit special</p>
+      </div>
+    </div>`;
+    return sendMail(email, `Your booking at ${shopName} is ${status}`, html);
+};
+
+// ─── Booking Pending Email ─────────────────────────────────────────────────────
+export const sendBookingPendingEmail = async (email, name, shopName, bookingTime, price, stylist, services) => {
+    const servicesList = Array.isArray(services) ? services.join(", ") : services;
+    
+    const html = `
+    <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #f0f0f0;">
+      <div style="background:#1a1a1a;padding:32px 40px;text-align:center;">
+        <div style="display:inline-block;background:#D4AF37;border-radius:50%;width:64px;height:64px;text-align:center;line-height:64px;margin-bottom:16px;font-size:28px;color:#1a1a1a;">&#128366;</div>
+        <h1 style="color:#ffffff;margin:0;font-size:26px;font-weight:700;letter-spacing:1px;">Salon<span style="color:#D4AF37;">Now</span></h1>
+      </div>
+      <div style="padding:40px;">
+        <div style="background:#fefce8;border:2px solid #facc15;border-radius:12px;padding:16px;text-align:center;margin-bottom:24px;">
+          <p style="margin:0;font-size:13px;color:#ca8a04;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Request Received &bull; Pending Approval</p>
+        </div>
+        <h2 style="color:#1a1a1a;font-size:22px;margin:0 0 12px;text-align:center;">Almost there, ${name}!</h2>
+        <p style="color:#555555;font-size:15px;line-height:1.7;text-align:center;margin:0 0 20px;">
+          We have received your booking request for <strong>${shopName}</strong>. Since the salon is currently at high capacity for this slot, the owner needs to review your request manually. 
+        </p>
+        <p style="color:#555555;font-size:14px;line-height:1.7;text-align:center;margin:0 0 24px;background:#f9f9f9;padding:12px;border-radius:8px;">
+          <strong>What happens next?</strong><br/>
+          You will receive another email as soon as the salon owner reviews and updates your booking status.
+        </p>
+        <div style="background:#f9f5e8;border-radius:12px;padding:20px 24px;margin:0 0 28px;">
+          <table width="100%" cellpadding="8" cellspacing="0" style="border-collapse:collapse;">
+            <tr style="border-bottom:1px solid #e8dfc0;">
+              <td style="color:#999;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">SALON</td>
+              <td style="color:#1a1a1a;font-size:13px;font-weight:700;text-align:right;">${shopName}</td>
+            </tr>
+            <tr style="border-bottom:1px solid #e8dfc0;">
+              <td style="color:#999;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">TIME</td>
+              <td style="color:#1a1a1a;font-size:13px;font-weight:700;text-align:right;">${bookingTime}</td>
+            </tr>
+            <tr style="border-bottom:1px solid #e8dfc0;">
+              <td style="color:#999;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">STYLIST</td>
+              <td style="color:#1a1a1a;font-size:13px;font-weight:700;text-align:right;">${stylist}</td>
+            </tr>
+            <tr>
+              <td style="color:#999;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">ESTIMATED PRICE</td>
+              <td style="color:#D4AF37;font-size:16px;font-weight:900;text-align:right;">₹${price}</td>
+            </tr>
+          </table>
+        </div>
+        <div style="text-align:center;margin-bottom:32px;">
+          <a href="${FRONTEND_URL}/bookings" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">CHECK MY REQUEST</a>
+        </div>
+        <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
+        <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Team &nbsp;&bull;&nbsp; We'll notify you soon!</p>
+      </div>
+    </div>`;
+    return sendMail(email, "Your SalonNow booking request is pending review", html);
 };
