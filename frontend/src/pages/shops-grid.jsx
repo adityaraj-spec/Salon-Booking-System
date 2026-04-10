@@ -278,5 +278,6 @@ export function Shops() {
                 </div>
             </div>
         </div>
+    </div>
     );
 }
