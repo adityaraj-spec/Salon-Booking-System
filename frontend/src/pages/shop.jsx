@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, NavLink } from "react-router-dom";
+import { useParams, NavLink, useNavigate } from "react-router-dom";
 import { Star, MapPin, Users, Clock, ShieldCheck, Sparkles, Loader2, ArrowLeft, MessageSquare, Send, Trash2, Heart, Phone, Scissors, Award, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
@@ -9,6 +9,7 @@ export function Shop() {
     const { user } = useAuth();
     const socket = useSocket();
     const { id } = useParams();
+    const navigate = useNavigate();
 
     const [salon, setSalon] = useState(null);
     const [reviews, setReviews] = useState([]);
@@ -668,14 +669,19 @@ export function Shop() {
                         </div>
 
                         {user?.role !== "salonOwner" ? (
-                            <NavLink to={`/booking/${salon._id}`} className={`block ${!salon.isOpen ? 'pointer-events-none' : ''}`}>
-                                <button 
-                                    disabled={!salon.isOpen}
-                                    className={`w-full font-bold py-5 rounded-2xl transition-all active:scale-[0.98] shadow-xl text-lg uppercase tracking-widest ${salon.isOpen ? 'bg-[#1a1a1a] text-white hover:bg-black shadow-black/10' : 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'}`}
-                                >
-                                    {salon.isOpen ? 'Check Slots' : 'Temporarily Closed'}
-                                </button>
-                            </NavLink>
+                            <button 
+                                onClick={() => {
+                                    if (!user) {
+                                        navigate("/login");
+                                    } else if (salon.isOpen) {
+                                        navigate(`/booking/${salon._id}`);
+                                    }
+                                }}
+                                disabled={!salon.isOpen}
+                                className={`w-full font-bold py-5 rounded-2xl transition-all active:scale-[0.98] shadow-xl text-lg uppercase tracking-widest ${salon.isOpen ? 'bg-[#1a1a1a] text-white hover:bg-black shadow-black/10' : 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'}`}
+                            >
+                                {salon.isOpen ? 'Check Slots' : 'Temporarily Closed'}
+                            </button>
                         ) : (
                             <div className="w-full bg-gray-50 border border-gray-100 py-5 rounded-2xl text-center">
                                 <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Owner View Only</p>

@@ -3,6 +3,7 @@ import { useParams, NavLink, useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosConfig";
 import { NavBar } from "../components/navPage";
 import { Footer } from "../components/footerPage";
+import { useAuth } from "../context/AuthContext";
 import {
     Calendar as CalendarIcon,
     Clock,
@@ -114,6 +115,7 @@ function CustomCalendar({ selectedDate, onDateSelect }) {
 export function BookingPage() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { user, loading: authLoading } = useAuth();
     const [salon, setSalon] = useState(null);
     const [loading, setLoading] = useState(true);
     const [bookingLoading, setBookingLoading] = useState(false);
@@ -131,6 +133,13 @@ export function BookingPage() {
     const [staffMembers, setStaffMembers] = useState([]);
     const [servicesLoading, setServicesLoading] = useState(false);
     const [staffLoading, setStaffLoading] = useState(false);
+
+    useEffect(() => {
+        if (!authLoading && !user) {
+            navigate("/login");
+        }
+    }, [user, authLoading, navigate]);
+
     useEffect(() => {
         const fetchSalonData = async () => {
             setLoading(true);
