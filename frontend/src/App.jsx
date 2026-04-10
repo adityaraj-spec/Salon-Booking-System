@@ -16,41 +16,44 @@ import MainLayout from "./layouts/MainLayout.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { SocketProvider } from "./context/SocketContext.jsx";
 import { NotificationProvider } from "./context/NotificationContext.jsx";
+import { UIProvider } from "./context/UIContext.jsx";
 import { Notification } from "./components/Notification.jsx";
 import './App.css'
 
 function App() {
 
   return (
-    <NotificationProvider>
-      <AuthProvider>
-        <SocketProvider>
-          <Notification />
-          <BrowserRouter>
-            <Routes>
-              {/* Layout Wrapper for standard pages */}
-              <Route element={<MainLayout />}>
-                <Route index element={<LandingPage />} />
-                <Route path="home" element={<HomePage />} />
-                <Route path="role-selection" element={<RoleSelectionPage />} />
-                <Route path="create-salon" element={<CreateSalonPage />} />
-                <Route path="shops" element={<Shops />} />
-                <Route path="shop/:id" element={<Shop />} />
-                <Route path="booking/:id" element={<BookingPage />} />
-                <Route path="profile" element={<ProfilePage />} />
-                <Route path="bookings" element={<MyBookingsPage />} />
-                <Route path="salon/dashboard" element={<SalonBookingsPage />} />
-                <Route path="salon/manage" element={<SalonManagementPage />} />
-              </Route>
-              
-              {/* Auth pages (no layout) */}
-              <Route path="login" element={<LoginPage />} />
-              <Route path="signup" element={<SignUpPage />} />
-            </Routes>
-          </BrowserRouter>
-        </SocketProvider>
-      </AuthProvider>
-    </NotificationProvider>
+    <UIProvider>
+      <NotificationProvider>
+        <AuthProvider>
+          <SocketProvider>
+            <Notification />
+            <BrowserRouter>
+              <Routes>
+                {/* Layout Wrapper for standard pages */}
+                <Route element={<MainLayout />}>
+                  <Route index element={<LandingPage />} />
+                  <Route path="home" element={<HomePage />} />
+                  <Route path="role-selection" element={<RoleSelectionPage />} />
+                  <Route path="create-salon" element={<CreateSalonPage />} />
+                  <Route path="shops" element={<Shops />} />
+                  <Route path="shop/:id" element={<Shop />} />
+                  <Route path="booking/:id" element={<BookingPage />} />
+                  <Route path="profile" element={<ProfilePage />} />
+                  <Route path="bookings" element={<MyBookingsPage />} />
+                  <Route path="salon/dashboard" element={<SalonBookingsPage />} />
+                  <Route path="salon/manage" element={<SalonManagementPage />} />
+                </Route>
+                
+                {/* Auth pages (no layout) */}
+                <Route path="login" element={<LoginPage />} />
+                <Route path="signup" element={<SignUpPage />} />
+              </Routes>
+            </BrowserRouter>
+          </SocketProvider>
+        </AuthProvider>
+      </NotificationProvider>
+    </UIProvider>
   )
 }
 

@@ -1,15 +1,19 @@
 import { useState, useRef, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import { useLocation, NavLink } from 'react-router-dom';
 import { Scissors, LogOut, ChevronDown, User, Calendar, Settings, Menu, X, Bell, CheckCircle2, Clock, LayoutDashboard } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
+import { useUI } from "../context/UIContext";
 import axiosInstance from "../api/axiosConfig";
 
 
 export function NavBar() {
     const { user, logout } = useAuth();
+    const { navbarTheme } = useUI();
     const socket = useSocket();
+    const location = useLocation();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -45,6 +49,17 @@ export function NavBar() {
         }
         return () => { document.body.style.overflow = 'unset'; };
     }, [isMobileMenuOpen]);
+
+    // Track scroll for transparent navbar
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 20);
+        };
+        window.addEventListener('scroll', handleScroll);
+        // initialize
+        handleScroll();
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     // Close menu when clicking outside
     useEffect(() => {
@@ -121,21 +136,29 @@ export function NavBar() {
         }
     };
 
+    const isLandingPage = location.pathname === '/' || location.pathname === '/home';
+    const isTransparent = isLandingPage && !scrolled;
+    const isDark = navbarTheme === 'dark';
+
     return (
         <>
-            <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-12 py-4 bg-white/80 backdrop-blur-lg border-b border-gray-100/50 shadow-sm transition-all duration-300">
+            <nav className={`fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-6 md:px-12 py-4 transition-all duration-300 ${
+                isTransparent 
+                    ? 'bg-transparent border-transparent' 
+                    : 'bg-white/90 backdrop-blur-xl border-b border-gray-100/50 shadow-sm'
+            }`}>
                 <div className="flex items-center gap-2">
                     <NavLink to="/home" className="text-[#D4AF37] cursor-pointer" >
                         <div className="bg-[#1a1a1a] p-2 rounded-full text-white">
                             <Scissors size={20} className="md:w-6 md:h-6" />
                         </div>
                     </NavLink>
-                    <span className="text-xl md:text-2xl font-serif font-semibold tracking-tight">Salon<span className="text-[#D4AF37]">Now</span></span>
+                    <span className={`text-xl md:text-2xl font-serif font-semibold tracking-tight transition-colors duration-1000 ${isTransparent ? (isDark ? 'text-white' : 'text-gray-900') : 'text-[#1a1a1a]'}`}>Salon<span className="text-[#D4AF37]">Now</span></span>
                 </div>
 
                 {/* Desktop Navigation */}
                 <div className="hidden md:flex items-center gap-6">
-                    <NavLink to="/home" className="text-[#1a1a1a] font-medium text-sm tracking-widest uppercase hover:text-[#D4AF37] transition-colors">
+                    <NavLink to="/home" className={`${isTransparent ? (isDark ? 'text-white' : 'text-gray-900') : 'text-[#1a1a1a]'} font-medium text-sm tracking-widest uppercase hover:text-[#D4AF37] transition-colors duration-1000`}>
                         Discover
                     </NavLink>
 
@@ -239,7 +262,7 @@ export function NavBar() {
                                     </div>
                                     <div className="hidden lg:block text-left">
                                         <p className="text-xs font-bold text-gray-900 leading-none mb-1 capitalize truncate max-w-[100px]">
-                                            {user.fullName.split(' ')[0]}
+                                            {user.fullName?.split(' ')[0] || "User"}
                                         </p>
                                         <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider leading-none">
                                             {user.role}
@@ -311,10 +334,10 @@ export function NavBar() {
                     </div>
                 ) : (
                     <div className="flex items-center gap-4 ml-2">
-                            <NavLink to="/login" className="text-gray-800 font-medium text-sm tracking-widest uppercase hover:text-[#e65c00] transition-colors">
+                            <NavLink to="/login" className={`${isTransparent ? (isDark ? 'text-white hover:text-white/80' : 'text-gray-800 hover:text-black') : 'text-gray-800 hover:text-[#e65c00]'} font-medium text-sm tracking-widest uppercase transition-colors duration-1000`}>
                                 Login
                             </NavLink>
-                            <NavLink to="/signup" className="bg-[#1a1a1a] hover:bg-black text-white px-6 py-2.5 rounded-full font-medium text-sm tracking-widest uppercase transition-colors">
+                            <NavLink to="/signup" className={`${isTransparent ? (isDark ? 'bg-white text-black hover:bg-gray-100' : 'bg-gray-900 text-white hover:bg-black') : 'bg-[#1a1a1a] text-white hover:bg-black'} px-6 py-2.5 rounded-full font-medium text-sm tracking-widest uppercase transition-colors duration-1000 shadow-md`}>
                                 Sign Up
                             </NavLink>
                         </div>
@@ -339,13 +362,13 @@ export function NavBar() {
 
             {/* Mobile Menu Sidebar & Backdrop - OUTSIDE the <nav> element to fix stacking context issues */}
             <div 
-                className={`fixed inset-0 bg-black/60 backdrop-blur-md z-[60] transition-opacity duration-300 md:hidden ${
+                className={`fixed inset-0 bg-black/60 backdrop-blur-md z-[110] transition-opacity duration-300 md:hidden ${
                     isMobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
                 }`}
                 onClick={() => setIsMobileMenuOpen(false)}
             />
             
-            <div className={`fixed inset-y-0 right-0 w-[280px] bg-white z-[70] shadow-2xl transform transition-transform duration-300 ease-in-out md:hidden flex flex-col ${
+            <div className={`fixed inset-y-0 right-0 w-[280px] bg-white z-[120] shadow-2xl transform transition-transform duration-300 ease-in-out md:hidden flex flex-col ${
                 isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
             }`}>
                 {/* Sidebar Header */}

@@ -550,7 +550,7 @@ export function Shop() {
                                                                 ) : (
                                                                     <Heart
                                                                         size={12}
-                                                                        className={rev.likes?.some((id) => String(id) === String(user._id)) ? "fill-current" : ""}
+                                                                        className={user && rev.likes?.some((id) => String(id) === String(user._id)) ? "fill-current" : ""}
                                                                     />
                                                                 )}
                                                                 <span>{rev.likes?.length || 0}</span>

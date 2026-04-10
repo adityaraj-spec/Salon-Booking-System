@@ -40,7 +40,7 @@ export function ProfilePage() {
                     {/* Header/Cover */}
                     <div className="h-32 bg-[#1a1a1a] flex items-end px-6 md:px-12 relative">
                         <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#D4AF37] border-4 border-white translate-y-10 md:translate-y-12 flex items-center justify-center text-white text-2xl md:text-3xl font-bold z-0">
-                            {user.fullName.charAt(0).toUpperCase()}
+                            {user.fullName?.charAt(0).toUpperCase() || "U"}
                         </div>
                         {!isEditing && (
                             <button 
@@ -70,7 +70,7 @@ export function ProfilePage() {
                                     </div>
                                 ) : (
                                     <>
-                                        <h1 className="text-2xl md:text-3xl font-serif font-bold text-[#1a1a1a]">{user.fullName}</h1>
+                                        <h1 className="text-2xl md:text-3xl font-serif font-bold text-[#1a1a1a]">{user.fullName || "User"}</h1>
                                         <p className="text-gray-400 font-medium text-sm">@{user.username}</p>
                                     </>
                                 )}
@@ -127,7 +127,7 @@ export function ProfilePage() {
                                         <button 
                                             onClick={() => {
                                                 setIsEditing(false);
-                                                setFormData({ fullName: user.fullName, phonenumber: user.phonenumber });
+                                                setFormData({ fullName: user.fullName || "", phonenumber: user.phonenumber || "" });
                                             }}
                                             className="bg-gray-100 text-gray-500 px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest flex items-center gap-2 hover:bg-gray-200 transition-all font-sans"
                                         >
