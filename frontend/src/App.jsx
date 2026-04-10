@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { HomePage } from './pages/homePage.jsx'
 import { LandingPage } from './pages/landingPage.jsx'
 import { Shops } from './pages/shops-grid.jsx'
 import { LoginPage } from './pages/loginPage.jsx'
@@ -33,7 +32,7 @@ function App() {
                 {/* Layout Wrapper for standard pages */}
                 <Route element={<MainLayout />}>
                   <Route index element={<LandingPage />} />
-                  <Route path="home" element={<HomePage />} />
+                  <Route path="home" element={<Shops />} />
                   <Route path="role-selection" element={<RoleSelectionPage />} />
                   <Route path="create-salon" element={<CreateSalonPage />} />
                   <Route path="shops" element={<Shops />} />
