@@ -180,9 +180,11 @@ export function Shops() {
 
                                         {/* Location & Phone */}
                                         <div className="mb-4 flex flex-col gap-1">
-                                            <span className="text-sm text-[#0071c2] flex items-center gap-1">
-                                                <MapPin size={13} className="shrink-0" />
-                                                {salon.city || "Location not set"}
+                                            <span className="text-sm text-[#0071c2] flex items-start gap-1">
+                                                <MapPin size={13} className="shrink-0 mt-0.5" />
+                                                <span className="line-clamp-1">
+                                                    {[salon.city, salon.address, "India"].filter(Boolean).join(", ")}
+                                                </span>
                                             </span>
                                             <span className="text-sm text-gray-500 flex items-center gap-1">
                                                 <Phone size={13} className="shrink-0" />
