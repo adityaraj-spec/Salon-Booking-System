@@ -288,9 +288,28 @@ export function Shop() {
                         </div>
                     </div>
                 </div>
-                <div className="flex gap-3">
-                    <button className="px-5 py-2.5 bg-white border border-gray-200 rounded-full text-sm font-bold hover:bg-gray-50 transition-all shadow-sm">Share</button>
-                    <button className="px-5 py-2.5 bg-white border border-gray-200 rounded-full text-sm font-bold hover:bg-gray-50 transition-all shadow-sm">Save</button>
+                <div className="flex gap-6">
+                    <button className="flex items-center gap-2 text-[#ff6b00] hover:text-[#ff8533] transition-colors font-medium">
+                        <span className="underline underline-offset-4">Save</span>
+                        <Heart size={20} />
+                    </button>
+                    <button className="flex items-center gap-2 text-[#ff6b00] hover:text-[#ff8533] transition-colors font-medium">
+                        <span className="underline underline-offset-4">Share</span>
+                        <svg 
+                            width="20" 
+                            height="20" 
+                            viewBox="0 0 24 24" 
+                            fill="none" 
+                            stroke="currentColor" 
+                            strokeWidth="2" 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round" 
+                        >
+                            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                            <polyline points="16 6 12 2 8 6" />
+                            <line x1="12" y1="2" x2="12" y2="15" />
+                        </svg>
+                    </button>
                 </div>
             </div>
 
