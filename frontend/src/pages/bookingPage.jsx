@@ -1,8 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useParams, NavLink, useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosConfig";
-import { NavBar } from "../components/navPage";
-import { Footer } from "../components/footerPage";
 import { useAuth } from "../context/AuthContext";
 import {
     Calendar as CalendarIcon,
@@ -232,7 +230,6 @@ export function BookingPage() {
     if (bookingSuccess) {
         return (
             <div className="min-h-screen bg-white flex flex-col items-center justify-center text-center px-6">
-                <NavBar />
                 <div className="max-w-md">
                     <div className="w-20 h-20 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-6">
                         <Check className="text-[#D4AF37] w-10 h-10" strokeWidth={3} />
@@ -251,7 +248,6 @@ export function BookingPage() {
     if (loading) {
         return (
             <div className="min-h-screen bg-white flex flex-col items-center justify-center">
-                <NavBar />
                 <Loader2 className="w-12 h-12 text-[#D4AF37] animate-spin mb-4" />
                 <p className="text-gray-500 animate-pulse">Setting up your booking experience...</p>
             </div>
@@ -259,8 +255,7 @@ export function BookingPage() {
     }
 
     return (
-        <div className="min-h-screen flex flex-col bg-[#fafafa] font-sans">
-            <NavBar />
+        <div className="flex flex-col bg-[#fafafa] font-sans">
 
             <main className="flex-1 pt-24">
                 <div className="max-w-[1280px] mx-auto px-6 md:px-10 pb-24">
@@ -510,8 +505,6 @@ export function BookingPage() {
                 </div>
                 </div>
             </main>
-
-            <Footer />
         </div>
     );
 }

@@ -96,6 +96,7 @@ const getUserBookings = asyncHandler(async (req, res) => {
                 select: "fullName phonenumber"
             }
         })
+        .populate("staff", "name")
         .sort({ createdAt: -1 });
 
     return res.status(200).json(
@@ -112,6 +113,7 @@ const getSalonBookings = asyncHandler(async (req, res) => {
     const bookings = await Booking.find({ salon: { $in: salonIds } })
         .populate("customer", "fullName email phonenumber")
         .populate("salon", "name")
+        .populate("staff", "name")
         .sort({ createdAt: -1 });
 
     return res.status(200).json(

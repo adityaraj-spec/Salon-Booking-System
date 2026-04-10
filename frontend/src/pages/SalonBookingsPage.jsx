@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import axiosInstance from "../api/axiosConfig";
 import { useNotification } from "../context/NotificationContext";
-import { 
-    Calendar, 
-    Clock, 
-    User, 
-    CheckCircle, 
-    XCircle, 
-    MessageSquare, 
+import {
+    Calendar,
+    Clock,
+    User,
+    CheckCircle,
+    XCircle,
+    MessageSquare,
     Filter,
     Loader2,
     Scissors,
@@ -94,7 +94,7 @@ const SalonBookingsPage = () => {
                     </div>
 
                     <div className="relative">
-                        <button 
+                        <button
                             onClick={() => setIsFilterOpen(!isFilterOpen)}
                             className="flex items-center gap-3 bg-white px-5 py-2.5 rounded-full shadow-sm border border-gray-100 font-bold text-xs uppercase tracking-widest text-gray-700 hover:bg-gray-50 transition-colors"
                         >
@@ -102,8 +102,8 @@ const SalonBookingsPage = () => {
                             Filter: {filter.replace('_', ' ')}
                             <ChevronDown size={14} className={`transition-transform duration-200 ${isFilterOpen ? 'rotate-180' : ''}`} />
                         </button>
-                        
-                        <NavLink 
+
+                        <NavLink
                             to="/salon/manage"
                             className="flex items-center gap-2 bg-[#1A1A1A] px-5 py-2.5 rounded-full shadow-md text-white font-bold text-xs uppercase tracking-widest hover:bg-black transition-all"
                         >
@@ -114,15 +114,14 @@ const SalonBookingsPage = () => {
                         {isFilterOpen && (
                             <div className="absolute right-0 mt-3 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-20 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
                                 {["all", "pending", "confirmed", "completed", "rejected"].map((option) => (
-                                    <button 
+                                    <button
                                         key={option}
                                         onClick={() => {
                                             setFilter(option);
                                             setIsFilterOpen(false);
                                         }}
-                                        className={`w-full text-left px-4 py-2.5 text-sm font-bold capitalize transition-colors ${
-                                            filter === option ? "text-[#D4AF37] bg-[#D4AF37]/5" : "text-gray-600 hover:bg-gray-50"
-                                        }`}
+                                        className={`w-full text-left px-4 py-2.5 text-sm font-bold capitalize transition-colors ${filter === option ? "text-[#D4AF37] bg-[#D4AF37]/5" : "text-gray-600 hover:bg-gray-50"
+                                            }`}
                                     >
                                         {option}
                                     </button>
@@ -141,98 +140,108 @@ const SalonBookingsPage = () => {
                         <p className="text-gray-500 max-w-sm mx-auto">When customers book services at your salon, they will appear here for review.</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 gap-6">
                         {filteredBookings.map((booking) => (
-                            <div key={booking._id} className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 hover:shadow-md transition-shadow relative overflow-hidden group">
-                                {/* Status Badge */}
-                                <div className={`absolute top-6 right-6 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${getStatusColor(booking.status)}`}>
-                                    {booking.status}
-                                </div>
-
-                                <div className="flex items-start gap-4 mb-6">
-                                    <div className="w-14 h-14 rounded-2xl bg-[#1A1A1A] flex items-center justify-center text-white text-xl font-bold border-2 border-[#D4AF37]">
+                            <div key={booking._id} className="bg-white rounded-[32px] p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+                                <div className="flex flex-col md:flex-row gap-8 items-start">
+                                    {/* Left: Customer Initials/Avatar */}
+                                    <div className="w-24 h-24 md:w-32 md:h-32 rounded-3xl bg-[#1A1A1A] flex items-center justify-center text-white text-3xl font-bold border-2 border-[#D4AF37] shrink-0">
                                         {booking.customer?.fullName?.charAt(0).toUpperCase()}
                                     </div>
-                                    <div>
-                                        <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                                            {booking.customer?.fullName}
-                                            {booking.bookingNumber && <span className="text-xs text-gray-400 font-normal">#{booking.bookingNumber}</span>}
-                                        </h3>
-                                        <div className="flex items-center gap-4 mt-1">
-                                            <a href={`tel:${booking.customer?.phonenumber}`} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-[#D4AF37] transition-colors">
-                                                <Phone size={12} />
-                                                {booking.customer?.phonenumber}
-                                            </a>
-                                            <a href={`mailto:${booking.customer?.email}`} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-[#D4AF37] transition-colors">
-                                                <Mail size={12} />
-                                                Contact
-                                            </a>
+
+                                    {/* Middle: Details */}
+                                    <div className="flex-1 space-y-6">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <h3 className="text-2xl font-black text-[#D4AF37] mb-1">
+                                                    {booking.customer?.fullName}
+                                                    {booking.bookingNumber && <span className="text-xs text-gray-400 font-normal ml-2 tracking-widest">#{booking.bookingNumber}</span>}
+                                                </h3>
+                                                <div className="flex items-center gap-4 text-gray-500">
+                                                    <a href={`tel:${booking.customer?.phonenumber}`} className="flex items-center gap-1.5 text-sm hover:text-[#D4AF37] transition-colors font-medium">
+                                                        <Phone size={14} className="text-[#D4AF37]" />
+                                                        {booking.customer?.phonenumber}
+                                                    </a>
+                                                    <a href={`mailto:${booking.customer?.email}`} className="flex items-center gap-1.5 text-sm hover:text-[#D4AF37] transition-colors font-medium">
+                                                        <Mail size={14} className="text-[#D4AF37]" />
+                                                        Contact
+                                                    </a>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex flex-col items-end gap-3">
+                                                <div className={`px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border flex items-center gap-2 ${getStatusColor(booking.status)}`}>
+                                                    {booking.status === 'confirmed' && <CheckCircle size={14} />}
+                                                    {booking.status}
+                                                </div>
+                                                <p className="text-2xl font-black text-[#1a1a1a]">
+                                                    <span className="text-lg font-medium text-[#D4AF37] mr-1">₹</span>
+                                                    {booking.totalAmount}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Info Grid */}
+                                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-8 pt-6 border-t border-gray-50">
+                                            <div className="flex items-center gap-3">
+                                                <Calendar size={18} className="text-[#D4AF37] shrink-0" />
+                                                <div>
+                                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Date</p>
+                                                    <p className="text-sm font-bold text-[#1a1a1a]">{booking.date}</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-3">
+                                                <Clock size={18} className="text-[#D4AF37] shrink-0" />
+                                                <div>
+                                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Time</p>
+                                                    <p className="text-sm font-bold text-[#1a1a1a]">{booking.time}</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-3">
+                                                <Scissors size={18} className="text-[#D4AF37] shrink-0" />
+                                                <div>
+                                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Services</p>
+                                                    <p className="text-sm font-bold text-[#1a1a1a] truncate">
+                                                        {booking.serviceNames?.join(", ")}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Action Buttons */}
+                                        <div className="pt-6 border-t border-gray-50 flex gap-3">
+                                            {booking.status === "pending" && (
+                                                <>
+                                                    <button
+                                                        onClick={() => handleStatusUpdate(booking._id, "confirmed")}
+                                                        className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] uppercase tracking-widest py-3 rounded-xl transition-all shadow-md shadow-emerald-600/10 flex items-center justify-center gap-2"
+                                                    >
+                                                        <CheckCircle size={16} />
+                                                        Accept
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleStatusUpdate(booking._id, "rejected")}
+                                                        className="flex-1 bg-white border-2 border-red-50 hover:border-red-500 text-red-500 font-bold text-[11px] uppercase tracking-widest py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+                                                    >
+                                                        <XCircle size={16} />
+                                                        Decline
+                                                    </button>
+                                                </>
+                                            )}
+                                            {booking.status === "confirmed" && (
+                                                <button
+                                                    onClick={() => handleStatusUpdate(booking._id, "completed")}
+                                                    className="flex-1 bg-[#1A1A1A] hover:bg-black text-white font-bold text-[11px] uppercase tracking-widest py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+                                                >
+                                                    <CheckCircle size={16} className="text-[#D4AF37]" />
+                                                    Mark as Completed
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
-
-                                <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-2xl mb-6">
-                                    <div className="space-y-1">
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Date & Time</p>
-                                        <div className="flex items-center gap-2 text-sm font-bold text-gray-800">
-                                            <Calendar size={14} className="text-[#D4AF37]" />
-                                            {booking.date}
-                                        </div>
-                                        <div className="flex items-center gap-2 text-sm font-bold text-gray-800">
-                                            <Clock size={14} className="text-[#D4AF37]" />
-                                            {booking.time}
-                                        </div>
-                                    </div>
-                                    <div className="space-y-1 text-right">
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Revenue</p>
-                                        <p className="text-lg font-bold text-[#D4AF37]">₹{booking.totalAmount}</p>
-                                        <p className="text-[10px] text-gray-400">{booking.serviceNames?.length} Services</p>
-                                    </div>
-                                </div>
-
-                                <div className="mb-6">
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Selected Services</p>
-                                    <div className="flex flex-wrap gap-2">
-                                        {booking.serviceNames?.map((service, idx) => (
-                                            <span key={idx} className="bg-white border border-gray-200 px-3 py-1.5 rounded-xl text-[11px] font-bold text-gray-700 flex items-center gap-2 shadow-sm">
-                                                <Scissors size={10} className="text-[#D4AF37]" />
-                                                {service}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Action Buttons */}
-                                {booking.status === "pending" && (
-                                    <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
-                                        <button 
-                                            onClick={() => handleStatusUpdate(booking._id, "confirmed")}
-                                            className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] uppercase tracking-widest py-3 rounded-xl transition-all shadow-md shadow-emerald-600/10 flex items-center justify-center gap-2"
-                                        >
-                                            <CheckCircle size={16} />
-                                            Accept Request
-                                        </button>
-                                        <button 
-                                            onClick={() => handleStatusUpdate(booking._id, "rejected")}
-                                            className="flex-1 bg-white border-2 border-red-100 hover:border-red-500 text-red-500 font-bold text-[11px] uppercase tracking-widest py-3 rounded-xl transition-all flex items-center justify-center gap-2"
-                                        >
-                                            <XCircle size={16} />
-                                            Decline
-                                        </button>
-                                    </div>
-                                )}
-
-                                {booking.status === "confirmed" && (
-                                    <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
-                                        <button 
-                                            onClick={() => handleStatusUpdate(booking._id, "completed")}
-                                            className="flex-1 bg-[#1A1A1A] hover:bg-black text-white font-bold text-[11px] uppercase tracking-widest py-3 rounded-xl transition-all flex items-center justify-center gap-2"
-                                        >
-                                            <CheckCircle size={16} className="text-[#D4AF37]" />
-                                            Mark as Completed
-                                        </button>
-                                    </div>
-                                )}
                             </div>
                         ))}
                     </div>
