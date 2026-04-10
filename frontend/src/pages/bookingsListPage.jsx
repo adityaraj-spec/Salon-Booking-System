@@ -54,85 +54,78 @@ export function MyBookingsPage() {
                     ) : (
                         <div className="grid gap-6">
                             {bookings.map((booking) => (
-                                <div key={booking._id} className="bg-white rounded-3xl p-5 md:p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col md:flex-row gap-6 md:gap-8 items-center group">
-                                    <div className="w-full md:w-32 h-40 md:h-32 rounded-2xl overflow-hidden shrink-0 border border-gray-50">
-                                        <img 
-                                            src={booking.salon?.images?.[0] || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=300&h=300&auto=format&fit=crop"} 
-                                            alt={booking.salon?.name} 
-                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                        />
-                                    </div>
-
-                                    <div className="flex-1 space-y-4 text-center md:text-left">
-                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                            <div>
-                                                <h3 className="text-xl font-extrabold text-[#1a1a1a] group-hover:text-[#D4AF37] transition-colors">{booking.salon?.name}</h3>
-                                                <div className="flex items-center gap-2 text-gray-400 text-sm justify-center md:justify-start mt-1">
-                                                    <MapPin size={14} className="text-[#D4AF37]" />
-                                                    <span className="font-medium text-xs font-serif">{booking.salon?.city}</span>
-                                                </div>
-                                            </div>
-                                            <div className="flex flex-col items-center md:items-end">
-                                                <span className="bg-[#f9f5e8] text-[#D4AF37] px-4 py-1.5 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest border border-[#D4AF37]/20 flex items-center gap-2">
-                                                    <CheckCircle2 size={12} />
-                                                    {booking.status}
-                                                </span>
-                                                <p className="text-xl md:text-2xl font-black text-[#1a1a1a] mt-2 flex items-baseline gap-1">
-                                                    <span className="text-base md:text-lg font-medium text-[#D4AF37]">₹</span>
-                                                    {booking.totalAmount}
-                                                </p>
-                                            </div>
+                                <div key={booking._id} className="bg-white rounded-[32px] p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+                                    <div className="flex flex-col md:flex-row gap-8 items-start">
+                                        {/* Left: Image */}
+                                        <div className="w-24 h-24 md:w-32 md:h-32 rounded-3xl overflow-hidden shrink-0 border border-gray-50">
+                                            <img 
+                                                src={booking.salon?.images?.[0] || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=300&h=300&auto=format&fit=crop"} 
+                                                alt={booking.salon?.name} 
+                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                            />
                                         </div>
 
-                                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 pt-4 border-t border-gray-50">
-                                            <div className="flex items-center gap-2 md:gap-3 justify-start">
-                                                <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-[#D4AF37] shrink-0">
-                                                    <Calendar size={16} />
+                                        {/* Middle: Details */}
+                                        <div className="flex-1 space-y-6">
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <h3 className="text-2xl font-black text-[#D4AF37] mb-1">{booking.salon?.name || "Style Station"}</h3>
+                                                    <div className="flex items-center gap-1.5 text-gray-400">
+                                                        <MapPin size={16} className="text-[#D4AF37] fill-[#D4AF37]/10" />
+                                                        <span className="text-sm font-medium">{booking.salon?.city || "panapur"}</span>
+                                                    </div>
                                                 </div>
-                                                <div className="text-left min-w-0">
-                                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Date</p>
-                                                    <p className="text-xs font-bold text-[#1a1a1a] truncate">{new Date(booking.date).toLocaleDateString(undefined, { dateStyle: 'medium' })}</p>
-                                                </div>
-                                            </div>
-                                            
-                                            <div className="flex items-center gap-2 md:gap-3 justify-start">
-                                                <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-[#D4AF37] shrink-0">
-                                                    <Clock size={16} />
-                                                </div>
-                                                <div className="text-left min-w-0">
-                                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Time</p>
-                                                    <p className="text-xs font-bold text-[#1a1a1a] truncate">{booking.time}</p>
-                                                </div>
-                                            </div>
-
-
-                                            <div className="flex items-center gap-2 md:gap-3 justify-start col-span-2 lg:col-span-1 border-t md:border-t-0 pt-4 md:pt-0">
-                                                <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-[#D4AF37] shrink-0">
-                                                    <Scissors size={16} />
-                                                </div>
-                                                <div className="text-left min-w-0">
-                                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Service</p>
-                                                    <p className="text-xs font-bold text-[#1a1a1a] truncate">
-                                                        {booking.serviceNames?.length > 0 
-                                                            ? booking.serviceNames.join(", ") 
-                                                            : "Confirmed Visit"}
+                                                
+                                                <div className="flex flex-col items-end gap-3">
+                                                    <span className="bg-[#f9f5e8] text-[#D4AF37] px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border border-[#D4AF37]/10 flex items-center gap-2">
+                                                        <CheckCircle2 size={14} />
+                                                        {booking.status}
+                                                    </span>
+                                                    <p className="text-2xl font-black text-[#1a1a1a]">
+                                                        <span className="text-lg font-medium text-[#D4AF37] mr-1">₹</span>
+                                                        {booking.totalAmount}
                                                     </p>
                                                 </div>
                                             </div>
 
-                                            <div className="flex items-center gap-2 md:gap-3 justify-start border-t md:border-t-0 pt-4 md:pt-0">
-                                                <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-[#D4AF37] shrink-0">
-                                                    <Phone size={16} />
+                                            {/* Info Grid */}
+                                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 pt-6 border-t border-gray-50">
+                                                <div className="flex items-center gap-3">
+                                                    <Calendar size={18} className="text-[#D4AF37] shrink-0" />
+                                                    <div>
+                                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Date</p>
+                                                        <p className="text-sm font-bold text-[#1a1a1a]">{new Date(booking.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                                                    </div>
                                                 </div>
-                                                <div className="text-left min-w-0">
-                                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Contact Salon</p>
-                                                    {booking.salon?.contactNumber || booking.salon?.owner?.phonenumber ? (
-                                                        <a href={`tel:${booking.salon.contactNumber || booking.salon.owner.phonenumber}`} className="text-xs font-bold text-[#D4AF37] hover:underline truncate block">
-                                                            {booking.salon.contactNumber || booking.salon.owner.phonenumber}
-                                                        </a>
-                                                    ) : (
-                                                        <p className="text-xs font-bold text-gray-300 italic">No number listed</p>
-                                                    )}
+                                                
+                                                <div className="flex items-center gap-3">
+                                                    <Clock size={18} className="text-[#D4AF37] shrink-0" />
+                                                    <div>
+                                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Time</p>
+                                                        <p className="text-sm font-bold text-[#1a1a1a]">{booking.time}</p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center gap-3">
+                                                    <Scissors size={18} className="text-[#D4AF37] shrink-0" />
+                                                    <div>
+                                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Service</p>
+                                                        <p className="text-sm font-bold text-[#1a1a1a] truncate">
+                                                            {booking.serviceNames?.length > 0 
+                                                                ? booking.serviceNames.join(", ") 
+                                                                : "Confirmed Visit"}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center gap-3">
+                                                    <Phone size={18} className="text-[#D4AF37] shrink-0" />
+                                                    <div>
+                                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Contact Salon</p>
+                                                        <p className="text-sm font-bold text-[#D4AF37]">
+                                                            {booking.salon?.contactNumber || booking.salon?.owner?.phonenumber || "No number"}
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

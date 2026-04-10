@@ -289,12 +289,12 @@ export function Shop() {
                     </div>
                 </div>
                 <div className="flex gap-6">
-                    <button className="flex items-center gap-2 text-[#ff6b00] hover:text-[#ff8533] transition-colors font-medium">
-                        <span className="underline underline-offset-4">Save</span>
+                    <button className="flex items-center gap-2 text-[#D4AF37] hover:opacity-80 transition-opacity font-medium">
+                        <span>Save</span>
                         <Heart size={20} />
                     </button>
-                    <button className="flex items-center gap-2 text-[#ff6b00] hover:text-[#ff8533] transition-colors font-medium">
-                        <span className="underline underline-offset-4">Share</span>
+                    <button className="flex items-center gap-2 text-[#D4AF37] hover:opacity-80 transition-opacity font-medium">
+                        <span>Share</span>
                         <svg 
                             width="20" 
                             height="20" 
