@@ -48,6 +48,7 @@ const createBooking = asyncHandler(async (req, res) => {
         services: services || [],
         serviceNames: serviceNames || [],
         staff: staff || null,
+        staffName: staffName || "Any Available",
         date,
         time,
         totalAmount: totalAmount || 0,
