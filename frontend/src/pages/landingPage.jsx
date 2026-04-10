@@ -5,10 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useUI } from "../context/UIContext";
 
 const heroImages = [
-    { url: "/adam-winger-KVVjmb3IIL8-unsplash.jpg", isDark: false },
-    { url: "/shari-sirotnak-oM5YoMhTf8E-unsplash.jpg", isDark: true },
-    { url: "/engin-akyurt-g-m8EDc4X6Q-unsplash.jpg", isDark: false },
-    { url: "/taylor-heery-_TyrA1RUaiI-unsplash.jpg", isDark: true }
+    { url: "/adam-winger-KVVjmb3IIL8-unsplash.jpg", isDark: true },
+    { url: "/benyamin-bohlouli-_C-S7LqxHPw-unsplash.jpg", isDark: false },
+    { url: "/greg-trowman-jsuWg7IXx1k-unsplash.jpg", isDark: true },
+    { url: "/guilherme-petri-PtOfbGkU3uI-unsplash.jpg", isDark: false }
 ];
 
 const projectList = [
@@ -119,46 +119,44 @@ export function LandingPage() {
                         style={{ backgroundImage: `url('${currentHero.url}')` }}
                     />
                 </AnimatePresence>
-                
+
                 {/* Dynamic Overlay */}
                 <div className={`absolute inset-0 z-0 transition-opacity duration-1000 ${isDark ? 'bg-black/40' : 'bg-white/20'}`}></div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent z-0"></div>
 
-                <motion.div 
+                <motion.div
                     variants={staggerContainer}
                     initial="hidden"
                     animate="visible"
                     className="relative z-10 px-6 max-w-4xl mx-auto flex flex-col items-center pt-16"
                 >
-                    <motion.h1 
-                        variants={fadeUpVariants} 
+                    <motion.h1
+                        variants={fadeUpVariants}
                         className={`text-5xl md:text-7xl font-bold mb-6 leading-tight transition-colors duration-1000 ${isDark ? 'text-white' : 'text-gray-900'}`}
                     >
                         Your Beauty,<br />
                         <span className="text-[#ff9f43]">Our Priority</span>
                     </motion.h1>
-                    <motion.p 
-                        variants={fadeUpVariants} 
+                    <motion.p
+                        variants={fadeUpVariants}
                         className={`text-lg md:text-xl mb-10 max-w-2xl font-light transition-colors duration-1000 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}
                     >
                         Discover and book appointments with top-rated salons in your city.<br className="hidden md:block" /> Professional beauty services at your fingertips.
                     </motion.p>
                     <motion.div variants={fadeUpVariants} className="flex flex-col sm:flex-row gap-5">
-                        <NavLink 
-                            to="/home" 
-                            className={`px-8 py-4 rounded-full font-medium flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 ${
-                                isDark ? 'bg-white text-black hover:bg-gray-100' : 'bg-[#1a1a1a] text-white hover:bg-black'
-                            }`}
+                        <NavLink
+                            to="/home"
+                            className={`px-8 py-4 rounded-full font-medium flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 ${isDark ? 'bg-white text-black hover:bg-gray-100' : 'bg-[#1a1a1a] text-white hover:bg-black'
+                                }`}
                         >
                             Browse Salons <ArrowRight size={18} />
                         </NavLink>
-                        <NavLink 
-                            to="/signup" 
-                            className={`px-8 py-4 rounded-full font-medium transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 border ${
-                                isDark 
-                                    ? 'border-white/80 text-white hover:bg-white/10' 
-                                    : 'border-black/80 text-black hover:bg-black/5'
-                            }`}
+                        <NavLink
+                            to="/signup"
+                            className={`px-8 py-4 rounded-full font-medium transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 border ${isDark
+                                ? 'border-white/80 text-white hover:bg-white/10'
+                                : 'border-black/80 text-black hover:bg-black/5'
+                                }`}
                         >
                             Sign Up Now
                         </NavLink>
@@ -168,9 +166,9 @@ export function LandingPage() {
 
             {/* SERVICES SECTION */}
             <section id="services" className="py-24 bg-white px-6 pt-40 scroll-mt-20">
-                <motion.div 
-                    initial="hidden" 
-                    whileInView="visible" 
+                <motion.div
+                    initial="hidden"
+                    whileInView="visible"
                     viewport={{ once: true, margin: "-100px" }}
                     variants={staggerContainer}
                     className="max-w-6xl mx-auto"
@@ -185,7 +183,7 @@ export function LandingPage() {
                     {/* Tabs */}
                     <motion.div variants={fadeUpVariants} className="flex flex-wrap justify-center gap-4 mb-14">
                         {Object.keys(serviceData).map((category) => (
-                            <div 
+                            <div
                                 key={category}
                                 onClick={() => setActiveCategory(category)}
                                 className={`${activeCategory === category ? 'bg-[#ff9f43] text-white shadow-md' : 'bg-[#222222] text-white hover:bg-gray-800'} px-10 py-2.5 rounded-lg font-medium text-sm cursor-pointer transition`}
@@ -199,7 +197,7 @@ export function LandingPage() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6 min-h-[300px]">
                         <AnimatePresence mode="popLayout">
                             {serviceData[activeCategory].map((service, idx) => (
-                                <motion.div 
+                                <motion.div
                                     key={service.name + activeCategory}
                                     initial={{ opacity: 0, scale: 0.9 }}
                                     animate={{ opacity: 1, scale: 1 }}
@@ -218,9 +216,9 @@ export function LandingPage() {
 
             {/* OUR PROJECT SECTION */}
             <section id="projects" className="py-24 bg-white px-6 pt-40 scroll-mt-20 border-t border-gray-50">
-                <motion.div 
-                    initial="hidden" 
-                    whileInView="visible" 
+                <motion.div
+                    initial="hidden"
+                    whileInView="visible"
                     viewport={{ once: true, margin: "-100px" }}
                     variants={staggerContainer}
                     className="max-w-6xl mx-auto"
@@ -246,7 +244,7 @@ export function LandingPage() {
                         {projectList.map((proj, idx) => {
                             let offset = idx - activeProject;
                             const total = projectList.length;
-                            
+
                             // Unravel circular offset logically
                             if (offset > Math.floor(total / 2)) {
                                 offset -= total;
@@ -263,19 +261,19 @@ export function LandingPage() {
                             const opacity = isActive ? 1 : (dist === 1 ? 0.6 : 0);
 
                             return (
-                                <motion.div 
+                                <motion.div
                                     key={proj.id}
                                     initial={false}
                                     animate={{ x, scale, zIndex, opacity }}
                                     transition={{ duration: 0.3, ease: "easeInOut" }}
                                     style={{ pointerEvents: dist > 1 ? 'none' : 'auto' }}
-                                    onClick={() => { if (dist !== 0) setActiveProject(idx); }} 
+                                    onClick={() => { if (dist !== 0) setActiveProject(idx); }}
                                     className="absolute w-[75%] md:w-[30%] aspect-[3/4] md:aspect-[4/5] rounded-2xl overflow-hidden shadow-xl cursor-pointer bg-black"
                                 >
                                     <img src={proj.image} alt={`Project ${proj.id}`} className="w-full h-full object-cover" />
-                                    
+
                                     <div className={`absolute inset-0 transition-opacity duration-500 ${isActive ? 'bg-gradient-to-t from-black via-black/40 to-transparent' : 'bg-gradient-to-t from-black/80 to-transparent'}`}></div>
-                                    
+
                                     {isActive && (
                                         <>
                                             <div className="absolute top-1/2 left-6 -translate-y-1/2 cursor-pointer z-50" onClick={(e) => { e.stopPropagation(); nextProject(); }}>
@@ -304,9 +302,9 @@ export function LandingPage() {
 
             {/* TESTIMONIALS SECTION */}
             <section className="py-24 bg-[#fafafa] px-6">
-                <motion.div 
-                    initial="hidden" 
-                    whileInView="visible" 
+                <motion.div
+                    initial="hidden"
+                    whileInView="visible"
                     viewport={{ once: true, margin: "-100px" }}
                     variants={staggerContainer}
                     className="max-w-6xl mx-auto"
@@ -387,7 +385,7 @@ export function LandingPage() {
 
             {/* READY TO GET STARTED CTA */}
             <section className="py-24 bg-[#111111] px-6 text-center overflow-hidden relative">
-                <motion.div 
+                <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
