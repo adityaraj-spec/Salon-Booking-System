@@ -283,13 +283,6 @@ export function Shop() {
                         </div>
                         <span className="hidden md:inline text-gray-300">•</span>
                         <div className="flex items-center gap-1">
-                            <Phone className="w-4 h-4 text-[#D4AF37]" />
-                            <a href={`tel:${salon.contactNumber || salon.owner?.phonenumber}`} className="text-[#1a1a1a] font-bold hover:text-[#D4AF37] transition-colors">
-                                {salon.contactNumber || salon.owner?.phonenumber}
-                            </a>
-                        </div>
-                        <span className="hidden md:inline text-gray-300">•</span>
-                        <div className="flex items-center gap-1">
                             <Clock className="w-4 h-4 text-[#D4AF37]" />
                             <span className="text-[#1a1a1a] font-medium">{salon.openingHours || "9:00 AM"} - {salon.closingHours || "9:00 PM"}</span>
                         </div>
