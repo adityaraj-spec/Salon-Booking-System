@@ -273,8 +273,10 @@ export function Shops() {
                 </div>
 
                 {/* Right Side: Map Container (Fixed on Desktop) */}
-                <div className="hidden lg:block lg:w-[45%] xl:w-[40%] h-[calc(100vh-80px)] sticky top-20 overflow-hidden bg-gray-50">
-                    <MapPlaceholder />
+                <div className="hidden lg:block lg:w-[45%] xl:w-[40%] h-[calc(100vh-80px)] sticky top-20 overflow-hidden bg-white p-6">
+                    <div className="w-full h-full rounded-[32px] overflow-hidden border border-gray-100 shadow-sm ring-1 ring-gray-50">
+                        <MapPlaceholder />
+                    </div>
                 </div>
             </div>
         </div>
