@@ -179,11 +179,13 @@ export function Shops() {
                                         </h3>
 
                                         {/* Location & Phone */}
-                                        <div className="mb-4 flex flex-col gap-0.5">
-                                            <span className="text-sm text-[#0071c2]">
+                                        <div className="mb-4 flex flex-col gap-1">
+                                            <span className="text-sm text-[#0071c2] flex items-center gap-1">
+                                                <MapPin size={13} className="shrink-0" />
                                                 {salon.city || "Location not set"}
                                             </span>
-                                            <span className="text-sm text-gray-500">
+                                            <span className="text-sm text-gray-500 flex items-center gap-1">
+                                                <Phone size={13} className="shrink-0" />
                                                 {salon.contactNumber || salon.owner?.phonenumber || "+91 Unavailable"}
                                             </span>
                                         </div>
