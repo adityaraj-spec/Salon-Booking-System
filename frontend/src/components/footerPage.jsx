@@ -8,7 +8,7 @@ export function Footer() {
 
     return (
         <footer className="bg-[#111111] text-white pt-16 font-sans relative border-t border-gray-900 overflow-hidden">
-            <div className="max-w-6xl mx-auto px-6 pb-16">
+            <div className="max-w-[1280px] mx-auto px-6 md:px-10 pb-16">
                 <div className="grid md:grid-cols-4 gap-8">
                     {/* Column 1 */}
                     <div className="md:col-span-1">
@@ -56,7 +56,7 @@ export function Footer() {
 
             {/* Bottom Bar */}
             <div className="bg-[#ff9f43] py-4 relative">
-                <div className="max-w-6xl mx-auto px-6 text-center">
+                <div className="max-w-[1280px] mx-auto px-6 md:px-10 text-center">
                     <p className="text-white text-sm font-medium">
                         SalonNow. All Rights Reserved.
                     </p>

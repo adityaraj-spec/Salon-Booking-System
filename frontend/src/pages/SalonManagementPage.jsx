@@ -298,9 +298,8 @@ export function SalonManagementPage() {
     }
 
     return (
-        <div className="pb-12 px-4 md:px-12 font-sans overflow-x-hidden">
-
-            <div className="max-w-6xl mx-auto">
+        <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-28 md:pt-32 pb-12 font-sans">
+            <div>
                 {/* Header & Multi-Salon Selector */}
                 <div className="bg-white rounded-[40px] p-8 md:p-12 shadow-sm border border-gray-100 mb-10 relative">
                     <div className="absolute top-0 right-0 w-80 h-80 bg-[#D4AF37]/5 rounded-full -mr-40 -mt-20 blur-3xl"></div>

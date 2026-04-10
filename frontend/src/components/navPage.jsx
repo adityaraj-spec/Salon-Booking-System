@@ -136,17 +136,18 @@ export function NavBar() {
         }
     };
 
-    const isLandingPage = location.pathname === '/' || location.pathname === '/home';
+    const isLandingPage = location.pathname === '/';
     const isTransparent = isLandingPage && !scrolled;
     const isDark = navbarTheme === 'dark';
 
     return (
         <>
-            <nav className={`fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-6 md:px-12 py-4 transition-all duration-300 ${
+            <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${
                 isTransparent 
                     ? 'bg-transparent border-transparent' 
                     : 'bg-white/90 backdrop-blur-xl border-b border-gray-100/50 shadow-sm'
             }`}>
+            <div className="max-w-[1280px] mx-auto px-6 md:px-10 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <NavLink to="/home" className="text-[#D4AF37] cursor-pointer" >
                         <div className="bg-[#1a1a1a] p-2 rounded-full text-white">
@@ -358,7 +359,8 @@ export function NavBar() {
                         {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
                     </button>
                 </div>
-            </nav>
+            </div>
+        </nav>
 
             {/* Mobile Menu Sidebar & Backdrop - OUTSIDE the <nav> element to fix stacking context issues */}
             <div 

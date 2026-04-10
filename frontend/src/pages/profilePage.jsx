@@ -35,7 +35,7 @@ export function ProfilePage() {
 
     return (
         <main className="flex-1 pb-12">
-            <div className="max-w-4xl mx-auto px-6 py-6 md:py-12">
+            <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-28 md:pt-32 pb-12">
                 <div className="bg-white rounded-[32px] overflow-hidden shadow-sm border border-gray-100">
                     {/* Header/Cover */}
                     <div className="h-32 bg-[#1a1a1a] flex items-end px-6 md:px-12 relative">

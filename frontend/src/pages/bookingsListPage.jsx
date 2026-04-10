@@ -34,7 +34,7 @@ export function MyBookingsPage() {
     return (
         <main className="flex-1 pb-20">
 
-                <div className="max-w-5xl mx-auto px-6 py-8 md:py-12">
+                <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-28 md:pt-32 pb-12">
                     <div className="mb-8 md:mb-10 text-center md:text-left">
                         <h1 className="text-3xl md:text-4xl font-serif font-bold text-[#1a1a1a]">My Bookings</h1>
                         <p className="text-gray-400 mt-2 font-medium text-sm md:text-base">Manage your upcoming and past appointments</p>

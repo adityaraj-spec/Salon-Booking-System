@@ -63,8 +63,8 @@ export function Shops() {
     };
 
     return (
-        <div className="">
-            <div className="text-center py-10 md:py-16 px-6 md:px-12">
+        <div className="max-w-[1280px] mx-auto px-6 md:px-10">
+            <div className="text-center pt-28 pb-10 md:pt-32 md:pb-16">
 
                 <h1 className="text-4xl md:text-6xl font-serif text-gray-900 mb-4 leading-tight">
                     Discover Your <br className="hidden md:block" />
@@ -86,8 +86,8 @@ export function Shops() {
                             className="w-full outline-none text-gray-700 placeholder-gray-400 text-sm md:text-base font-medium py-2 bg-transparent"
                         />
                     </div>
-                    <button 
-                        type="submit" 
+                    <button
+                        type="submit"
                         disabled={loading}
                         className="shrink-0 bg-[#1A1A1A] text-white p-3 md:px-5 md:py-4 rounded-full font-bold uppercase text-[10px] md:text-xs tracking-widest hover:bg-black active:scale-95 transition-all disabled:opacity-70 flex items-center justify-center gap-2"
                     >
@@ -106,7 +106,7 @@ export function Shops() {
                 </form>
             </div>
 
-            <div className="w-full bg-white mx-auto px-6 md:px-12 py-8 min-h-[400px]">
+            <div className="py-8 min-h-[400px]">
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-20">
                         <Loader2 className="w-12 h-12 text-[#D4AF37] animate-spin mb-4" />
@@ -137,13 +137,13 @@ export function Shops() {
                     <>
                         <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-16">
                             {salons.map((salon) => (
-                                <div 
-                                    key={salon._id} 
+                                <div
+                                    key={salon._id}
                                     className="w-full bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col cursor-pointer transition hover:shadow-md group"
                                     onClick={() => navigate(`/shop/${salon._id}`)}
                                 >
                                     {/* Image Section */}
-                                    <div className="relative h-64 w-full overflow-hidden">
+                                    <div className="relative h-56 w-full overflow-hidden flex-shrink-0">
                                         <img
                                             src={salon.images && salon.images.length > 0 ? salon.images[0] : "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=80"}
                                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -179,10 +179,12 @@ export function Shops() {
                                         </h3>
 
                                         {/* Location & Phone */}
-                                        <div className="text-sm text-[#0071c2] underline decoration-transparent hover:decoration-[#0071c2] mb-5">
-                                            {salon.city || "Location not set"}
-                                            <span className="text-gray-600 no-underline ml-1 text-sm">
-                                                • {salon.contactNumber || salon.owner?.phonenumber || "+91 Unavailable"}
+                                        <div className="mb-4 flex flex-col gap-0.5">
+                                            <span className="text-sm text-[#0071c2]">
+                                                {salon.city || "Location not set"}
+                                            </span>
+                                            <span className="text-sm text-gray-500">
+                                                {salon.contactNumber || salon.owner?.phonenumber || "+91 Unavailable"}
                                             </span>
                                         </div>
 

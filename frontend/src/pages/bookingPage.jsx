@@ -263,7 +263,7 @@ export function BookingPage() {
             <NavBar />
 
             <main className="flex-1 pt-24">
-                <div className="max-w-6xl mx-auto px-6 pb-24">
+                <div className="max-w-[1280px] mx-auto px-6 md:px-10 pb-24">
                 {/* Header Section */}
                 <div className="flex items-center gap-4 mb-10">
                     <NavLink to={`/shop/${id}`} className="p-2 hover:bg-gray-100 rounded-full transition-colors">

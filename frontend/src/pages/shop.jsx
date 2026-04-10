@@ -234,7 +234,7 @@ export function Shop() {
     }
 
     return (
-        <div className="max-w-7xl mx-auto px-6 py-6 md:py-10">
+        <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-28 pb-10 md:pt-32">
             {/* Navigation Breadcrumb */}
             <NavLink to="/home" className="inline-flex items-center gap-2 text-gray-500 hover:text-[#D4AF37] mb-8 transition-colors text-sm font-medium">
                 <ArrowLeft size={16} /> Back to Discover
