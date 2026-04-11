@@ -48,11 +48,11 @@ export function Footer() {
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 text-sm text-gray-400">
                                 <Mail size={16} className="text-[#ff9f43]" />
-                                <span>process.env.EMAIL</span>
+                                <span>{import.meta.env.VITE_EMAIL || 'support@salonnow.com'}</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm text-gray-400">
                                 <Phone size={16} className="text-[#ff9f43]" />
-                                <span>process.env.PHONE</span>
+                                <span>{import.meta.env.VITE_PHONE || '+91 98765 43210'}</span>
                             </div>
                         </div>
                     </div>
