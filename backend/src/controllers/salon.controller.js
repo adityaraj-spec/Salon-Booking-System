@@ -7,6 +7,7 @@ import { Booking } from "../models/booking.models.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
 import { sendShopAddedEmail } from "../utils/mailer.js"
 import { emitToAll } from "../socket.js";
+import { geocodeAddress } from "../utils/geocoding.js";
 
 
 const registerSalon = asyncHandler(async (req, res) => {
@@ -38,7 +39,11 @@ const registerSalon = asyncHandler(async (req, res) => {
         closingHours,
         totalSeats: totalSeats || 6,
         images: imageUrls,
-        owner: req.user?._id
+        owner: req.user?._id,
+        location: {
+            type: "Point",
+            coordinates: await geocodeAddress(`${address}, ${city}`) || [0, 0]
+        }
     })
 
     if (!salon) {
@@ -214,7 +219,11 @@ const updateSalonDetails = asyncHandler(async (req, res) => {
                 description,
                 openingHours,
                 closingHours,
-                isOpen
+                isOpen,
+                location: address || city ? {
+                    type: "Point",
+                    coordinates: await geocodeAddress(`${address || salon.address}, ${city || salon.city}`) || salon.location?.coordinates || [0, 0]
+                } : salon.location
             }
         },
         { new: true }

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Search, Star, MapPin, Users, Clock, Loader2, ChevronLeft, ChevronRight, Phone, Heart } from 'lucide-react';
 import axiosInstance from '../api/axiosConfig';
-import { MapPlaceholder } from '../components/MapPlaceholder';
 
 export function Shops() {
     const navigate = useNavigate();
@@ -108,10 +107,8 @@ export function Shops() {
                 </form>
             </div>
 
-            {/* Main Content Split Plane */}
-            <div className="flex flex-col lg:flex-row w-full border-t border-gray-100">
-                {/* Left Side: List of Salons */}
-                <div className="w-full lg:w-[55%] xl:w-[60%] lg:border-r border-gray-100 px-6 md:px-10 py-8">
+            {/* Main Content: Full Width Grid */}
+            <div className="w-full border-t border-gray-100 py-8">
 
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-20">
@@ -271,15 +268,7 @@ export function Shops() {
                     </>
                 )}
                 </div>
-
-                {/* Right Side: Map Container (Fixed on Desktop) */}
-                <div className="hidden lg:block lg:w-[45%] xl:w-[40%] h-[calc(100vh-80px)] sticky top-20 overflow-hidden bg-white p-6">
-                    <div className="w-full h-full rounded-[32px] overflow-hidden border border-gray-100 shadow-sm ring-1 ring-gray-50">
-                        <MapPlaceholder />
-                    </div>
-                </div>
             </div>
         </div>
-    </div>
     );
 }

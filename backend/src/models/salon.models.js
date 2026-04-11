@@ -37,7 +37,20 @@ const salonSchema = new mongoose.Schema({
   isOpen: {
     type: Boolean,
     default: true
+  },
+  location: {
+    type: {
+      type: String,
+      enum: ['Point'],
+      default: 'Point'
+    },
+    coordinates: {
+      type: [Number], // [longitude, latitude]
+      index: '2dsphere'
+    }
   }
 }, { timestamps: true });
+
+salonSchema.index({ location: "2dsphere" });
 
 export const Salon = mongoose.model("Salon", salonSchema);

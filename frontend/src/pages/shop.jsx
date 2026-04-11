@@ -4,6 +4,7 @@ import { Star, MapPin, Users, Clock, ShieldCheck, Sparkles, Loader2, ArrowLeft, 
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
 import axiosInstance from "../api/axiosConfig";
+import { SalonMap } from "../components/SalonMap";
 
 export function Shop() {
     const { user } = useAuth();
@@ -396,25 +397,30 @@ export function Shop() {
                     <div className="pb-4 border-b border-gray-100">
                         <h3 className="text-2xl font-serif font-bold text-[#1a1a1a] mb-6">Location & Contact</h3>
                         <div className="grid md:grid-cols-2 gap-6">
-                            <div className="flex gap-4 items-start bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-                                <div className="p-3 bg-gray-50 rounded-xl text-[#D4AF37]"><MapPin size={24} /></div>
-                                <div className="min-w-0">
-                                    <p className="text-[#1a1a1a] font-bold text-lg mb-1 truncate">{salon.city}</p>
-                                    <p className="text-gray-500 break-words">{salon.address}</p>
-                                </div>
-                            </div>
-                            {salon.owner && (
+                            <div className="flex flex-col gap-6">
                                 <div className="flex gap-4 items-start bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-                                    <div className="p-3 bg-gray-50 rounded-xl text-[#D4AF37]"><Phone size={24} /></div>
+                                    <div className="p-3 bg-gray-50 rounded-xl text-[#D4AF37]"><MapPin size={24} /></div>
                                     <div className="min-w-0">
-                                        <p className="text-[#1a1a1a] font-bold text-lg mb-1">Contact Salon</p>
-                                        <p className="text-gray-900 font-medium truncate">{salon.owner?.fullName || "Salon Staff"}</p>
-                                        <a href={`tel:${salon.contactNumber || salon.owner?.phonenumber}`} className="text-[#D4AF37] font-bold hover:underline">
-                                            {salon.contactNumber || salon.owner?.phonenumber}
-                                        </a>
+                                        <p className="text-[#1a1a1a] font-bold text-lg mb-1 truncate">{salon.city}</p>
+                                        <p className="text-gray-500 break-words">{salon.address}</p>
                                     </div>
                                 </div>
-                            )}
+                                {salon.owner && (
+                                    <div className="flex gap-4 items-start bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                                        <div className="p-3 bg-gray-50 rounded-xl text-[#D4AF37]"><Phone size={24} /></div>
+                                        <div className="min-w-0">
+                                            <p className="text-[#1a1a1a] font-bold text-lg mb-1">Contact Salon</p>
+                                            <p className="text-gray-900 font-medium truncate">{salon.owner?.fullName || "Salon Staff"}</p>
+                                            <a href={`tel:${salon.contactNumber || salon.owner?.phonenumber}`} className="text-[#D4AF37] font-bold hover:underline">
+                                                {salon.contactNumber || salon.owner?.phonenumber}
+                                            </a>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="h-[300px] md:h-auto overflow-hidden rounded-[32px] border border-gray-100 shadow-sm ring-1 ring-gray-50">
+                                <SalonMap salons={[salon]} zoom={15} />
+                            </div>
                         </div>
                     </div>
 
