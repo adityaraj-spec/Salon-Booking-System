@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, NavLink } from "react-router-dom";
+import { useNavigate, NavLink } from "react-router-dom";
 import axiosInstance from "../api/axiosConfig";
 import { useNotification } from "../context/NotificationContext";
 import { 
@@ -11,7 +11,6 @@ import {
     Loader2,
     Store,
     Zap,
-    LayoutDashboard,
     Phone,
     Edit2,
     Save,

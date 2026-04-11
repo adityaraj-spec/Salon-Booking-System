@@ -11,7 +11,7 @@ import { geocodeAddress } from "../utils/geocoding.js";
 
 
 const registerSalon = asyncHandler(async (req, res) => {
-    const { name, city, description, address, openingHours, closingHours, totalSeats } = req.body
+    const { name, city, description, address, contactNumber, openingHours, closingHours, totalSeats } = req.body
 
     if (!name || !address || !city) {
         throw new ApiError(400, "Name, address, and city are required")
@@ -122,7 +122,7 @@ const getSalons = asyncHandler(async (req, res) => {
         };
     }));
 
-    console.log("Salons fetched with availability:", salonsWithAvailability.length);
+
     
     return res.status(200).json(
         new ApiResponse(

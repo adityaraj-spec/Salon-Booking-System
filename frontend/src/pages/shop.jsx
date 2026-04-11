@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, NavLink, useNavigate } from "react-router-dom";
-import { Star, MapPin, Users, Clock, ShieldCheck, Sparkles, Loader2, ArrowLeft, MessageSquare, Send, Trash2, Heart, Phone, Scissors, Award, ChevronLeft, ChevronRight } from "lucide-react";
+import { Star, MapPin, Users, Clock, ShieldCheck, Sparkles, Loader2, ArrowLeft, MessageSquare, Send, Trash2, Heart, Phone, Scissors, Award, ChevronLeft, ChevronRight, X, Images } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
 import axiosInstance from "../api/axiosConfig";
@@ -29,6 +29,10 @@ export function Shop() {
     // Services & Staff state
     const [services, setServices] = useState([]);
     const [staff, setStaff] = useState([]);
+
+    // Lightbox state
+    const [lightboxOpen, setLightboxOpen] = useState(false);
+    const [lightboxIndex, setLightboxIndex] = useState(0);
 
     useEffect(() => {
         const fetchSalonDetails = async () => {
@@ -328,45 +332,117 @@ export function Shop() {
                             <div className="h-[216px] overflow-hidden shadow-sm">
                                 <img src={galleryImages[1]} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700 border-none" alt="Salon 2" />
                             </div>
-                            <div className="h-[216px] overflow-hidden shadow-sm">
-                                <img src={galleryImages[2]} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700 border-none" alt="Salon 3" />
+                            {/* Last image with See all photos overlay */}
+                            <div
+                                className="h-[216px] overflow-hidden shadow-sm rounded-br-md relative group cursor-pointer"
+                                onClick={() => { setLightboxIndex(0); setLightboxOpen(true); }}
+                            >
+                                <img src={galleryImages[2]} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 border-none" alt="Salon 3" />
+                                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/55 transition-colors flex flex-col items-center justify-center gap-2">
+                                    <Images size={24} className="text-white" />
+                                    <span className="text-white font-bold text-sm text-center leading-tight">
+                                        See all {displayImages.length} photo{displayImages.length !== 1 ? 's' : ''}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
+</div>
 
-                    {/* Bottom: 5 Thumbnails Row */}
-                    <div className="grid grid-cols-5 gap-2 h-[120px]">
-                        {galleryImages.slice(3, 8).map((img, idx) => (
-                            <div key={idx} className={`overflow-hidden shadow-sm relative ${idx === 4 ? 'rounded-br-md text-white' : ''}`}>
-                                <img src={img} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt={`Thumbnail ${idx + 1}`} />
-                                {idx === 4 && (
-                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center cursor-pointer">
-                                        <span className="font-bold text-sm hover:underline">+63 photos</span>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
+            {/* Lightbox Modal */}
+            {lightboxOpen && (
+                <div
+                    className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center"
+                    onClick={() => setLightboxOpen(false)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'ArrowRight') setLightboxIndex(i => (i + 1) % displayImages.length);
+                        if (e.key === 'ArrowLeft') setLightboxIndex(i => (i - 1 + displayImages.length) % displayImages.length);
+                        if (e.key === 'Escape') setLightboxOpen(false);
+                    }}
+                    tabIndex={0}
+                    autoFocus
+                >
+                    {/* Close Button */}
+                    <button
+                        className="absolute top-5 right-5 z-10 bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition-colors"
+                        onClick={(e) => { e.stopPropagation(); setLightboxOpen(false); }}
+                    >
+                        <X size={24} />
+                    </button>
+
+                    {/* Counter */}
+                    <div className="absolute top-5 left-1/2 -translate-x-1/2 text-white/70 text-sm font-medium">
+                        {lightboxIndex + 1} / {displayImages.length}
                     </div>
+
+                    {/* Prev Button */}
+                    {displayImages.length > 1 && (
+                        <button
+                            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full transition-colors z-10"
+                            onClick={(e) => { e.stopPropagation(); setLightboxIndex(i => (i - 1 + displayImages.length) % displayImages.length); }}
+                        >
+                            <ChevronLeft size={28} />
+                        </button>
+                    )}
+
+                    {/* Main Image */}
+                    <div className="max-w-5xl max-h-[85vh] w-full px-20" onClick={(e) => e.stopPropagation()}>
+                        <img
+                            src={displayImages[lightboxIndex]}
+                            alt={`Photo ${lightboxIndex + 1}`}
+                            className="w-full h-full max-h-[85vh] object-contain rounded-lg select-none"
+                        />
+                    </div>
+
+                    {/* Next Button */}
+                    {displayImages.length > 1 && (
+                        <button
+                            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full transition-colors z-10"
+                            onClick={(e) => { e.stopPropagation(); setLightboxIndex(i => (i + 1) % displayImages.length); }}
+                        >
+                            <ChevronRight size={28} />
+                        </button>
+                    )}
+
+                    {/* Thumbnail Strip */}
+                    {displayImages.length > 1 && (
+                        <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-2 px-4 overflow-x-auto max-w-full" onClick={(e) => e.stopPropagation()}>
+                            {displayImages.map((img, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => setLightboxIndex(idx)}
+                                    className={`w-12 h-12 rounded-md overflow-hidden shrink-0 border-2 transition-all ${
+                                        idx === lightboxIndex ? 'border-white opacity-100' : 'border-transparent opacity-50 hover:opacity-75'
+                                    }`}
+                                >
+                                    <img src={img} alt={`thumb ${idx}`} className="w-full h-full object-cover" />
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
+            )}
 
                 {/* RIGHT: Booking Sidebar (Rating + Location + Map) */}
-                <div className="lg:w-[28%] xl:w-[25%] flex flex-col gap-3 h-[568px]">
+                <div className="lg:w-[28%] xl:w-[25%] flex flex-col gap-3 h-[440px]">
                     {/* Rating Card */}
                     <div className="bg-white border border-gray-200 rounded-md p-3 flex justify-between items-start shadow-sm h-fit">
                         <div className="flex flex-col">
-                            <span className="font-bold text-[#1a1a1a] text-base leading-tight">Excellent</span>
+                            <span className="font-bold text-[#1a1a1a] text-base leading-tight">
+                                {salon.rating >= 4.5 ? "Excellent" : salon.rating >= 4 ? "Very Good" : salon.rating > 0 ? "Good" : "New"}
+                            </span>
                             <span className="text-xs text-gray-500">{reviews.length || 0} reviews</span>
                         </div>
                         <div className="bg-[#003b95] text-white w-8 h-8 rounded-t-md rounded-br-md flex items-center justify-center font-bold text-sm">
-                            {(salon.rating > 0 ? salon.rating.toFixed(1) : "8.5")}
+                            {salon.rating > 0 ? salon.rating.toFixed(1) : "New"}
                         </div>
                     </div>
 
                     {/* Location Badge Card */}
                     <div className="bg-white border border-gray-200 rounded-md p-3 flex items-center justify-between shadow-sm h-fit">
                         <span className="font-bold text-[#1a1a1a] text-sm leading-tight">Great location!</span>
-                        <div className="bg-white border border-gray-200 w-8 h-8 rounded-md flex items-center justify-center font-bold text-sm text-gray-500">
-                            8.3
+                        <div className="bg-[#003b95] text-white w-8 h-8 rounded-t-md rounded-br-md flex items-center justify-center font-bold text-sm">
+                            {salon.rating > 0 ? salon.rating.toFixed(1) : ""}
                         </div>
                     </div>
 
@@ -489,8 +565,7 @@ export function Shop() {
                                                 <h4 className="font-bold text-[#1a1a1a] truncate">{service.name}</h4>
                                             </div>
                                             <p className="text-xs text-gray-500 line-clamp-1 mb-2">{service.description || "Professional salon service"}</p>
-                                            <div className="flex items-center gap-3">
-                                            </div>
+
                                         </div>
                                         <div className="text-right ml-4">
                                             <p className="text-lg font-serif font-bold text-[#1a1a1a]">₹{service.price}</p>
@@ -676,7 +751,7 @@ export function Shop() {
                                         {reviewError && <p className="text-red-500 text-xs font-bold">{reviewError}</p>}
                                         <button 
                                             disabled={isSubmitting}
-                                            className="bg-[#1a1a1a] text-white px-8 py-3.5 rounded-full font-bold text-sm tracking-widest uppercase hover:bg-black transition-colors flex items-center gap-2 group disabled:opacity-50"
+                                            className="bg-[#1a1a1a] text-white px-8 py-3.5 rounded-full font-bold text-sm tracking-widest uppercase hover:bg-black transition-colors flex items-center gap-2 group disabled:opacity-50 mx-auto md:mx-0"
                                         >
                                             {isSubmitting ? "Posting..." : "Post Review"}
                                             <Send size={16} className="group-hover:translate-x-1 transition-transform" />
@@ -707,7 +782,9 @@ export function Shop() {
                         <div className="flex justify-between items-end mb-10">
                             <div>
                                 <span className="text-gray-400 text-[10px] uppercase font-bold tracking-[0.2em]">Service Starting</span>
-                                <p className="text-4xl font-serif font-bold text-[#1a1a1a] mt-1">₹499</p>
+                                <p className="text-4xl font-serif font-bold text-[#1a1a1a] mt-1">
+                                    {services.length > 0 ? `₹${Math.min(...services.map(s => s.price))}` : "₹—"}
+                                </p>
                             </div>
                             <div className="text-right">
                                 <div className="flex items-center gap-1.5 text-lg font-bold text-gray-900 justify-end">
@@ -776,7 +853,7 @@ export function Shop() {
                     </div>
                     <button 
                         onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(salon.address + ' ' + salon.city)}`, '_blank')}
-                        className="bg-white border border-gray-200 px-6 py-3 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors flex items-center gap-2"
+                        className="bg-white border border-gray-200 px-6 py-3 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 mx-auto md:mx-0"
                     >
                         Get Directions
                     </button>

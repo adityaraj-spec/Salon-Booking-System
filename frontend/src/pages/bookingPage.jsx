@@ -130,7 +130,6 @@ export function BookingPage() {
     const [services, setServices] = useState([]);
     const [staffMembers, setStaffMembers] = useState([]);
     const [servicesLoading, setServicesLoading] = useState(false);
-    const [staffLoading, setStaffLoading] = useState(false);
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -154,7 +153,7 @@ export function BookingPage() {
                 if (staffRes.data.success) setStaffMembers(staffRes.data.data);
                 
             } catch (err) {
-                console.error("Error fetching salon data:", err);
+                // silently fail - user will see empty state
             } finally {
                 setLoading(false);
             }
@@ -177,7 +176,7 @@ export function BookingPage() {
                     setAvailability(response.data.data.availability || {});
                 }
             } catch (err) {
-                console.error("Error fetching availability:", err);
+                // silently fail - slots will show as unavailable
             } finally {
                 setAvailabilityLoading(false);
             }
@@ -339,11 +338,9 @@ export function BookingPage() {
                                                 }`}
                                         >
                                             <div className="relative inline-block mb-3">
-                                                <img 
-                                                    src={`https://i.pravatar.cc/150?u=${staff._id}`} 
-                                                    alt={staff.name} 
-                                                    className="w-12 h-12 md:w-16 md:h-16 rounded-full object-cover border-2 border-white shadow-sm" 
-                                                />
+                                                <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-[#1a1a1a] flex items-center justify-center text-white font-bold text-lg border-2 border-[#D4AF37]/20 mx-auto">
+                                                    {staff.name?.charAt(0).toUpperCase()}
+                                                </div>
                                                 {selectedStaff?._id === staff._id && (
                                                     <div className="absolute -bottom-1 -right-1 bg-[#D4AF37] p-1 rounded-full text-white">
                                                         <Check size={10} strokeWidth={4} />
@@ -453,7 +450,9 @@ export function BookingPage() {
                                 <div className="mb-8 pt-4 border-t border-gray-50">
                                     <p className="text-xs text-gray-400 uppercase tracking-widest mb-2 font-bold">Your Stylist</p>
                                     <div className="flex items-center gap-3">
-                                        <img src={`https://i.pravatar.cc/150?u=${selectedStaff._id}`} className="w-8 h-8 rounded-full" alt="" />
+                                        <div className="w-8 h-8 rounded-full bg-[#1a1a1a] flex items-center justify-center text-white font-bold text-sm border border-[#D4AF37]/20">
+                                            {selectedStaff.name?.charAt(0).toUpperCase()}
+                                        </div>
                                         <span className="text-sm font-bold text-gray-900">{selectedStaff.name}</span>
                                     </div>
                                 </div>

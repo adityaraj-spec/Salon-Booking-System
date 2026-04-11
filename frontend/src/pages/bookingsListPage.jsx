@@ -15,7 +15,7 @@ export function MyBookingsPage() {
                     setBookings(response.data.data);
                 }
             } catch (err) {
-                console.error("Error fetching bookings:", err);
+                // silently fail - empty state is shown
             } finally {
                 setLoading(false);
             }
