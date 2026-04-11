@@ -130,7 +130,7 @@ export function MyBookingsPage() {
                                         <div>
                                             <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">Stylist</p>
                                             <p className="text-sm font-bold text-black truncate max-w-[120px]">
-                                                {booking.staffName || booking.staff?.name || (typeof booking.staff === 'string' && booking.staff.length > 20 ? "Any Available" : booking.staff || "Any Available")}
+                                                {booking.staff?.name || (typeof booking.staff === 'string' && booking.staff.length > 20 ? "Any Available" : booking.staff || "Any Available")}
                                             </p>
                                         </div>
                                     </div>
