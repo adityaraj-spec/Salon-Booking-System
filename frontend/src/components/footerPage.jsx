@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ArrowUp } from 'lucide-react';
+import { ArrowUp, Instagram, Twitter, Facebook, Mail, Phone } from 'lucide-react';
 
 export function Footer() {
     const scrollToTop = () => {
@@ -16,7 +16,7 @@ export function Footer() {
                             SalonNow
                         </h5>
                         <p className="text-sm text-gray-400 font-light leading-loose">
-                            Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.
+                            SalonNow is a mobile application designed to connect customers with beauty and wellness providers for last-minute appointments. Unlike traditional booking systems that schedule days or weeks in advance, this platform focuses on filling immediate service gaps.
                         </p>
                     </div>
 
@@ -31,14 +31,30 @@ export function Footer() {
                         </ul>
                     </div>
 
-                    {/* Column 3 */}
                     <div>
-                        <h5 className="text-xl font-bold mb-6 text-white">Contact Us</h5>
-                        <ul className="space-y-4">
-                            <li className="text-sm text-gray-400">your location here</li>
-                            <li className="text-sm text-gray-400">+12 3456789123</li>
-                            <li className="text-sm text-gray-400">support@example.com</li>
-                        </ul>
+                        <h5 className="text-xl font-bold mb-6 text-white">Connect With Us</h5>
+                        <div className="flex items-center gap-4 mb-8">
+                            <a href="#" className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center text-gray-400 hover:text-[#ff9f43] hover:bg-black transition-all border border-gray-800">
+                                <Instagram size={20} />
+                            </a>
+                            <a href="#" className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center text-gray-400 hover:text-[#ff9f43] hover:bg-black transition-all border border-gray-800">
+                                <svg viewBox="0 0 24 24" aria-hidden="true" className="w-5 h-5 fill-current"><g><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.25h-6.657l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></g></svg>
+                            </a>
+                            <a href="#" className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center text-gray-400 hover:text-[#ff9f43] hover:bg-black transition-all border border-gray-800">
+                                <Facebook size={20} />
+                            </a>
+                        </div>
+                        
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2 text-sm text-gray-400">
+                                <Mail size={16} className="text-[#ff9f43]" />
+                                <span>process.env.EMAIL</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-gray-400">
+                                <Phone size={16} className="text-[#ff9f43]" />
+                                <span>process.env.PHONE</span>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Column 4 */}
