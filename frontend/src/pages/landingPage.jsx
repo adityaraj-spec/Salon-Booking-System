@@ -68,7 +68,7 @@ export function LandingPage() {
                     variants={staggerContainer}
                     initial="hidden"
                     animate="visible"
-                    className="relative z-10 px-6 max-w-4xl mx-auto flex flex-col items-center pt-16"
+                    className="relative z-10 px-6 max-w-4xl mx-auto flex flex-col items-center pt-8"
                 >
                     <motion.h1
                         variants={fadeUpVariants}
@@ -79,7 +79,7 @@ export function LandingPage() {
                     </motion.h1>
                     <motion.p
                         variants={fadeUpVariants}
-                        className={`text-lg md:text-xl mb-10 max-w-2xl font-light transition-colors duration-1000 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}
+                        className={`text-lg md:text-xl mb-6 max-w-2xl font-light transition-colors duration-1000 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}
                     >
                         Discover and book appointments with top-rated salons in your city.<br className="hidden md:block" /> Professional beauty services at your fingertips.
                     </motion.p>
@@ -105,9 +105,9 @@ export function LandingPage() {
             </section>
 
             {/* WHY CHOOSE US SECTION */}
-            <section className="py-24 bg-white px-6">
+            <section className="py-16 bg-white px-6">
                 <div className="max-w-6xl mx-auto">
-                    <div className="text-center mb-16">
+                    <div className="text-center mb-10">
                         <h2 className="text-4xl font-serif font-bold text-[#1a1a1a] mb-4">Why Choose SalonNow?</h2>
                         <p className="text-gray-500 text-lg">We make salon booking simple, secure, and convenient.</p>
                     </div>
@@ -144,9 +144,9 @@ export function LandingPage() {
             </section>
 
             {/* HOW IT WORKS SECTION */}
-            <section className="py-24 bg-white px-6 border-t border-gray-50">
+            <section className="py-16 bg-white px-6 border-t border-gray-50">
                 <div className="max-w-6xl mx-auto">
-                    <div className="text-center mb-20">
+                    <div className="text-center mb-12">
                         <h2 className="text-4xl font-serif font-bold text-[#1a1a1a]">How It Works</h2>
                     </div>
 
@@ -176,12 +176,12 @@ export function LandingPage() {
             </section>
 
             {/* READY TO GET STARTED CTA */}
-            <section className="py-32 bg-[#1f1e1d] px-6 text-center">
+            <section className="py-20 bg-[#1f1e1d] px-6 text-center">
                 <div className="max-w-3xl mx-auto flex flex-col items-center">
                     <h2 className="text-4xl md:text-5xl font-serif font-bold text-white mb-6">
                         Ready to Get Started?
                     </h2>
-                    <p className="text-gray-300 text-lg mb-10 font-light">
+                    <p className="text-gray-300 text-lg mb-8 font-light">
                         Join thousands of satisfied customers who book their beauty appointments with us.
                     </p>
                     <NavLink to="/home" className="bg-white text-black px-8 py-4 rounded-full font-medium flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors">

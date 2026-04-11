@@ -49,11 +49,11 @@ export function SignUpPage() {
     return (
         <div className="min-h-screen grid md:grid-cols-2 bg-white font-sans">
             {/* LEFT SIDE: FORM */}
-            <div className="flex flex-col justify-center items-center px-6 py-10 overflow-y-auto">
-                <div className="w-full max-w-md mt-4 mb-4">
+            <div className="flex flex-col justify-center items-center px-6 py-6 overflow-y-auto">
+                <div className="w-full max-w-md mt-2">
                     {/* Logo Section */}
                     {/* ... (existing logo section) */}
-                    <div className="flex justify-center items-center space-x-2 mb-8 mt-4">
+                    <div className="flex justify-center items-center space-x-2 mb-4">
                         <div className="bg-[#1a1a1a] p-2 rounded-full text-white">
                             <Scissors size={24} />
                         </div>
@@ -61,7 +61,7 @@ export function SignUpPage() {
                     </div>
 
                     {/* Titles */}
-                    <div className="text-center mb-8">
+                    <div className="text-center mb-4">
                         <h2 className="text-3xl font-serif font-bold text-[#1a1a1a] mb-2">Create Account</h2>
                         <p className="text-gray-500 text-sm">Join us to book your beauty appointments</p>
                     </div>

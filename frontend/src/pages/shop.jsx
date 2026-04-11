@@ -239,9 +239,9 @@ export function Shop() {
     }
 
     return (
-        <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-28 pb-10 md:pt-32">
+        <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-20 pb-6 md:pt-24">
             {/* Navigation Breadcrumb */}
-            <NavLink to="/home" className="inline-flex items-center gap-2 text-gray-500 hover:text-[#D4AF37] mb-8 transition-colors text-sm font-medium">
+            <NavLink to="/home" className="inline-flex items-center gap-2 text-gray-500 hover:text-[#D4AF37] mb-6 transition-colors text-sm font-medium">
                 <ArrowLeft size={16} /> Back to Discover
             </NavLink>
 
@@ -265,7 +265,7 @@ export function Shop() {
 
 
             {/* Title & Brand Section */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
                 <div>
                     <div className="flex items-center gap-2 mb-2">
                         <span className="bg-orange-50 text-[#e65c00] text-xs font-bold px-2 py-1 rounded uppercase tracking-wider flex items-center gap-1">
@@ -319,7 +319,7 @@ export function Shop() {
             </div>
 
             {/* Booking.com Style Gallery & Sidebar */}
-            <div className="hidden md:flex flex-col lg:flex-row gap-4 mb-16">
+            <div className="hidden md:flex flex-col lg:flex-row gap-4 mb-10">
                 
                 {/* LEFT: Photo Gallery Section (1 Large + 2 Stacked + 5 Thumbnails) */}
                 <div className="lg:w-[72%] xl:w-[75%] space-y-2">
@@ -499,7 +499,7 @@ export function Shop() {
             <div className="flex flex-col lg:flex-row gap-4">
 
                 {/* LEFT CONTENT */}
-                <div className="lg:w-[72%] xl:w-[75%] space-y-12 order-last lg:order-first">
+                <div className="lg:w-[72%] xl:w-[75%] space-y-8 order-last lg:order-first">
                     <div className="pb-4 border-b border-gray-100">
                         <h2 className="text-2xl md:text-3xl font-serif font-bold text-[#1a1a1a] mb-4">
                             Premium Experience in {salon.city}
@@ -521,7 +521,7 @@ export function Shop() {
                     </div>
 
                     <div className="pb-4 border-b border-gray-100">
-                        <h3 className="text-2xl font-serif font-bold text-[#1a1a1a] mb-6">Location & Contact</h3>
+                        <h3 className="text-2xl font-serif font-bold text-[#1a1a1a] mb-4">Location & Contact</h3>
                         <div className="grid md:grid-cols-1 gap-6">
                             <div className="flex flex-col md:flex-row gap-6">
                                 <div className="flex-1 flex gap-4 items-start bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
@@ -549,8 +549,8 @@ export function Shop() {
 
                     {/* OUR SERVICES SECTION */}
                     {services.length > 0 && (
-                        <div className="py-8 border-b border-gray-100">
-                            <div className="flex items-center justify-between mb-8">
+                        <div className="py-6 border-b border-gray-100">
+                            <div className="flex items-center justify-between mb-6">
                                 <h3 className="text-2xl font-serif font-bold text-[#1a1a1a]">Our Services</h3>
                                 <span className="text-xs font-bold text-gray-400 uppercase tracking-widest bg-gray-50 px-3 py-1 rounded-full">
                                     {services.length} {services.length === 1 ? 'Service' : 'Services'}
@@ -579,8 +579,8 @@ export function Shop() {
 
                     {/* MEET OUR TEAM SECTION */}
                     {staff.length > 0 && (
-                        <div className="py-8 border-b border-gray-100">
-                            <h3 className="text-2xl font-serif font-bold text-[#1a1a1a] mb-8">Meet Our Team</h3>
+                        <div className="py-6 border-b border-gray-100">
+                            <h3 className="text-2xl font-serif font-bold text-[#1a1a1a] mb-6">Meet Our Team</h3>
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
                                 {staff.map((member) => (
                                     <div key={member._id} className="text-center group">
@@ -618,16 +618,16 @@ export function Shop() {
                         </div>
                     </div>
 
-                    <div className="pt-10 border-t border-gray-100">
-                        <h3 className="text-2xl font-serif font-bold text-[#1a1a1a] mb-6">About the Studio</h3>
+                    <div className="pt-8 border-t border-gray-100">
+                        <h3 className="text-2xl font-serif font-bold text-[#1a1a1a] mb-4">About the Studio</h3>
                         <p className="text-gray-600 leading-relaxed text-lg whitespace-pre-line">
                             {salon.description || "Welcome to our premier destination for luxury grooming and beauty. We combine traditional techniques with modern style to give you the perfect look. Our studio features state-of-the-art equipment and a relaxing atmosphere designed for your comfort."}
                         </p>
                     </div>
 
                     {/* REVIEWS SECTION */}
-                    <div className="pt-16 border-t border-gray-100 pb-20">
-                        <div className="flex items-center justify-between mb-10">
+                    <div className="pt-12 border-t border-gray-100 pb-16">
+                        <div className="flex items-center justify-between mb-8">
                             <div>
                                 <h3 className="text-2xl md:text-3xl font-serif font-bold text-[#1a1a1a]">Customer Reviews</h3>
                                 <div className="flex items-center gap-2 mt-1">
@@ -643,7 +643,7 @@ export function Shop() {
                         </div>
 
                         {/* REVIEWS LIST */}
-                        <div className="space-y-8 mb-16">
+                        <div className="space-y-4 mb-10">
                             {reviews.length > 0 ? (
                                 reviews.map((rev) => (
                                     <div key={rev._id} className="group">
@@ -779,7 +779,7 @@ export function Shop() {
                 {/* RIGHT BOOKING CARD */}
                 <div className="lg:w-[28%] xl:w-[25%] relative order-first lg:order-last">
                     <div className="border border-gray-100 rounded-[32px] shadow-xl shadow-black/5 p-6 md:p-8 lg:sticky lg:top-32 bg-white">
-                        <div className="flex justify-between items-end mb-10">
+                        <div className="flex justify-between items-end mb-6">
                             <div>
                                 <span className="text-gray-400 text-[10px] uppercase font-bold tracking-[0.2em]">Service Starting</span>
                                 <p className="text-4xl font-serif font-bold text-[#1a1a1a] mt-1">
@@ -794,7 +794,7 @@ export function Shop() {
                             </div>
                         </div>
 
-                        <div className="space-y-4 mb-10">
+                        <div className="space-y-4 mb-6">
                             <div className="p-4 bg-gray-50/50 border border-gray-100 rounded-2xl flex items-center justify-between text-sm">
                                 <div className="flex items-center gap-3 text-gray-600 font-medium"><Clock size={18} className="text-[#D4AF37]" /> Opening Hours</div>
                                 <span className="font-bold text-[#1a1a1a]">{salon.openingHours || "09:00 AM"} - {salon.closingHours || "09:00 PM"}</span>

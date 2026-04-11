@@ -256,10 +256,10 @@ export function BookingPage() {
     return (
         <div className="flex flex-col bg-[#fafafa] font-sans">
 
-            <main className="flex-1 pt-24">
-                <div className="max-w-[1280px] mx-auto px-6 md:px-10 pb-24">
+            <main className="flex-1 pt-16">
+                <div className="max-w-[1280px] mx-auto px-6 md:px-10 pb-12">
                 {/* Header Section */}
-                <div className="flex items-center gap-4 mb-10">
+                <div className="flex items-center gap-4 mb-6">
                     <NavLink to={`/shop/${id}`} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                         <ArrowLeft size={20} className="text-gray-600" />
                     </NavLink>
@@ -271,17 +271,17 @@ export function BookingPage() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 md:gap-16">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                     {/* LEFT COLUMN: SELECTIONS */}
-                    <div className="lg:col-span-2 space-y-10 md:space-y-16">
+                    <div className="lg:col-span-2 space-y-10">
 
                         {/* 1. Services Section */}
                         <section>
-                            <div className="flex items-center gap-2 mb-6">
+                            <div className="flex items-center gap-2 mb-4">
                                 <span className="bg-[#1a1a1a] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold font-serif">1</span>
                                 <h2 className="text-xl font-serif font-bold text-[#1a1a1a]">Select Services</h2>
                             </div>
-                            <div className="grid gap-4">
+                            <div className="grid gap-2">
                                 {services.length > 0 ? (
                                     services.map(service => (
                                         <div
@@ -322,11 +322,11 @@ export function BookingPage() {
 
                         {/* 2. Staff Section */}
                         <section>
-                            <div className="flex items-center gap-2 mb-6">
+                            <div className="flex items-center gap-2 mb-4">
                                 <span className="bg-[#1a1a1a] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold font-serif">2</span>
                                 <h2 className="text-lg md:text-xl font-serif font-bold text-[#1a1a1a]">Choose Stylist (Optional)</h2>
                             </div>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                 {staffMembers.length > 0 ? (
                                     staffMembers.map(staff => (
                                         <div
@@ -362,7 +362,7 @@ export function BookingPage() {
                         {/* 3. Date & Time Section */}
                         <section className="grid md:grid-cols-2 gap-10 md:gap-8">
                             <div>
-                                <div className="flex items-center gap-2 mb-6">
+                                <div className="flex items-center gap-2 mb-4">
                                     <span className="bg-[#1a1a1a] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold font-serif">3</span>
                                     <h2 className="text-lg md:text-xl font-serif font-bold text-[#1a1a1a]">Pick a Date</h2>
                                 </div>
@@ -372,7 +372,7 @@ export function BookingPage() {
                                 />
                             </div>
                             <div>
-                                <div className="flex items-center gap-2 mb-6">
+                                <div className="flex items-center gap-2 mb-4">
                                     <span className="bg-[#1a1a1a] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold font-serif">4</span>
                                     <h2 className="text-lg md:text-xl font-serif font-bold text-[#1a1a1a]">Select Time</h2>
                                 </div>

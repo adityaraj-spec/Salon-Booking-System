@@ -95,8 +95,8 @@ export function CreateSalonPage() {
                 </div>
             </div>
 
-            <div className="max-w-[1280px] mx-auto px-6 md:px-10 mt-12">
-                <div className="mb-10">
+            <div className="max-w-[1280px] mx-auto px-6 md:px-10 mt-8">
+                <div className="mb-6">
                     <h2 className="text-4xl font-serif font-bold text-[#1a1a1a] mb-3">Register Your Salon</h2>
                     <p className="text-gray-500">Tell us about your business to get started.</p>
                 </div>
@@ -107,9 +107,9 @@ export function CreateSalonPage() {
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-8">
+                <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Basic Info Section */}
-                    <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 space-y-6">
+                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-4">
                         <h3 className="text-lg font-bold text-gray-800 flex items-center">
                             <Store className="mr-2 text-[#D4AF37]" size={20} />
                             Basic Information
@@ -167,7 +167,7 @@ export function CreateSalonPage() {
                     </div>
 
                     {/* Location Section */}
-                    <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 space-y-6">
+                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-4">
                         <h3 className="text-lg font-bold text-gray-800 flex items-center">
                             <MapPin className="mr-2 text-[#D4AF37]" size={20} />
                             Location & Address
@@ -197,7 +197,7 @@ export function CreateSalonPage() {
                     </div>
 
                     {/* Hours Section */}
-                    <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 space-y-6">
+                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-4">
                         <h3 className="text-lg font-bold text-gray-800 flex items-center">
                             <Clock className="mr-2 text-[#D4AF37]" size={20} />
                             Operating Hours
@@ -226,7 +226,7 @@ export function CreateSalonPage() {
                     </div>
 
                     {/* Images Section */}
-                    <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 space-y-6">
+                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-4">
                         <div className="flex justify-between items-center">
                             <h3 className="text-lg font-bold text-gray-800 flex items-center">
                                 <Camera className="mr-2 text-[#D4AF37]" size={20} />

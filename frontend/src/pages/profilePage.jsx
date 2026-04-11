@@ -35,7 +35,7 @@ export function ProfilePage() {
 
     return (
         <main className="flex-1 pb-12">
-            <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-28 md:pt-32 pb-12">
+            <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-20 md:pt-24 pb-8">
                 <div className="bg-white rounded-[32px] overflow-hidden shadow-sm border border-gray-100">
                     {/* Header/Cover */}
                     <div className="h-32 bg-[#1a1a1a] flex items-end px-6 md:px-12 relative">
@@ -54,7 +54,7 @@ export function ProfilePage() {
                     </div>
 
                     <div className="px-6 md:px-12 pt-14 md:pt-16 pb-12">
-                        <div className="flex flex-col md:flex-row justify-between items-start mb-10 gap-4">
+                        <div className="flex flex-col md:flex-row justify-between items-start mb-6 gap-4">
                             <div className="w-full">
                                 {isEditing ? (
                                     <div className="space-y-4 max-w-sm">
@@ -81,7 +81,7 @@ export function ProfilePage() {
                         </div>
 
                         <div className="grid md:grid-cols-2 gap-8">
-                            <div className="space-y-6">
+                            <div className="space-y-4">
                                 <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 pb-2">Information</h3>
                                 
                                 <div className="flex items-center gap-4 group opacity-60">
@@ -138,7 +138,7 @@ export function ProfilePage() {
                                 )}
                             </div>
 
-                            <div className="space-y-6">
+                            <div className="space-y-4">
                                 <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 pb-2">Account Security</h3>
                                 
                                 <div className="flex items-center gap-4 group">

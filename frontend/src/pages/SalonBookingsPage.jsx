@@ -85,9 +85,9 @@ const SalonBookingsPage = () => {
     }
 
     return (
-        <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-28 md:pt-32 pb-12">
+        <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-20 md:pt-24 pb-8">
             <div>
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
                     <div>
                         <h1 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-2">Booking Requests</h1>
                         <p className="text-gray-500">Manage incoming appointments and salon schedule.</p>
@@ -140,17 +140,17 @@ const SalonBookingsPage = () => {
                         <p className="text-gray-500 max-w-sm mx-auto">When customers book services at your salon, they will appear here for review.</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 gap-6">
+                    <div className="grid grid-cols-1 gap-4">
                         {filteredBookings.map((booking) => (
-                            <div key={booking._id} className="bg-white rounded-[32px] p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
-                                <div className="flex flex-col md:flex-row gap-8 items-start">
+                            <div key={booking._id} className="bg-white rounded-[32px] p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+                                <div className="flex flex-col md:flex-row gap-6 items-start">
                                     {/* Left: Customer Initials/Avatar */}
-                                    <div className="w-24 h-24 md:w-32 md:h-32 rounded-3xl bg-[#1A1A1A] flex items-center justify-center text-white text-3xl font-bold border-2 border-[#D4AF37] shrink-0">
+                                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-3xl bg-[#1A1A1A] flex items-center justify-center text-white text-2xl font-bold border-2 border-[#D4AF37] shrink-0">
                                         {booking.customer?.fullName?.charAt(0).toUpperCase()}
                                     </div>
 
                                     {/* Middle: Details */}
-                                    <div className="flex-1 space-y-6">
+                                    <div className="flex-1 space-y-4">
                                         <div className="flex justify-between items-start">
                                             <div>
                                                 <h3 className="text-2xl font-black text-[#D4AF37] mb-1">
@@ -182,7 +182,7 @@ const SalonBookingsPage = () => {
                                         </div>
 
                                         {/* Info Grid */}
-                                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-8 pt-6 border-t border-gray-50">
+                                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 pt-4 border-t border-gray-50">
                                             <div className="flex items-center gap-3">
                                                 <Calendar size={18} className="text-[#D4AF37] shrink-0" />
                                                 <div>
@@ -211,7 +211,7 @@ const SalonBookingsPage = () => {
                                         </div>
 
                                         {/* Action Buttons */}
-                                        <div className="pt-6 border-t border-gray-50 flex gap-3">
+                                        <div className="pt-4 border-t border-gray-50 flex gap-3">
                                             {booking.status === "pending" && (
                                                 <>
                                                     <button

@@ -326,10 +326,10 @@ export function SalonManagementPage() {
     }
 
     return (
-        <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-28 md:pt-32 pb-12 font-sans">
+        <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-20 md:pt-24 pb-8 font-sans">
             <div>
                 {/* Header & Multi-Salon Selector */}
-                <div className="bg-white rounded-[40px] p-8 md:p-12 shadow-sm border border-gray-100 mb-10 relative">
+                <div className="bg-white rounded-[40px] p-6 md:p-10 shadow-sm border border-gray-100 mb-6 relative">
                     <div className="absolute top-0 right-0 w-80 h-80 bg-[#D4AF37]/5 rounded-full -mr-40 -mt-20 blur-3xl"></div>
                     
                     <div className="flex flex-col md:flex-row justify-between items-start lg:items-center gap-8 relative z-10">
@@ -421,7 +421,7 @@ export function SalonManagementPage() {
                     </div>
 
                     {/* Stats Overview */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 pt-10 border-t border-gray-50">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 pt-6 border-t border-gray-50">
                         <div className="bg-gray-50/50 p-6 rounded-3xl border border-transparent hover:border-[#D4AF37]/20 transition-all group">
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3">Service Menu</p>
                             <div className="flex items-end justify-between">
@@ -454,7 +454,7 @@ export function SalonManagementPage() {
 
 
                 {/* Tabs */}
-                <div className="flex flex-wrap gap-2 mb-8 bg-gray-100/50 p-1.5 rounded-2xl w-fit mx-auto md:mx-0">
+                <div className="flex flex-wrap gap-2 mb-4 bg-gray-100/50 p-1.5 rounded-2xl w-fit mx-auto md:mx-0">
                     <button 
                         onClick={() => setTab("services")}
                         className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${tab === "services" ? "bg-white text-[#1a1a1a] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
@@ -486,8 +486,8 @@ export function SalonManagementPage() {
                 </div>
                 
                 {tab === "settings" && (
-                    <div className="bg-white rounded-[40px] p-8 md:p-12 border border-gray-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="mb-8">
+                    <div className="bg-white rounded-[40px] p-6 md:p-10 border border-gray-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="mb-6">
                             <h2 className="text-2xl font-serif font-bold text-gray-900 mb-2">Salon Settings</h2>
                             <p className="text-gray-500 text-sm">Manage your salon's basic information, location, and operational schedule.</p>
                         </div>
@@ -568,8 +568,8 @@ export function SalonManagementPage() {
                 )}
 
                 {tab === "gallery" && (
-                    <div className="bg-white rounded-[40px] p-8 md:p-12 border border-gray-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div className="bg-white rounded-[40px] p-6 md:p-10 border border-gray-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-6">
                             <div>
                                 <h2 className="text-2xl font-serif font-bold text-gray-900 mb-2">Photo Gallery</h2>
                                 <p className="text-gray-500 text-sm">Upload high-quality images to showcase your space to potential clients.</p>
@@ -621,11 +621,11 @@ export function SalonManagementPage() {
                 )}
 
                 {(tab === "services" || tab === "staff") && (
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                     {/* Form Section */}
                     <div className="lg:col-span-4">
-                        <div className="bg-white rounded-[28px] p-8 border border-gray-100 shadow-sm sticky top-32">
-                            <h2 className="text-xl font-serif font-bold text-gray-900 mb-6 flex items-center gap-2">
+                        <div className="bg-white rounded-[28px] p-6 border border-gray-100 shadow-sm sticky top-32">
+                            <h2 className="text-xl font-serif font-bold text-gray-900 mb-4 flex items-center gap-2">
                                 <Plus size={20} className="text-[#D4AF37]" />
                                 {tab === "services" ? "Add New Service" : "Add Team Member"}
                             </h2>
@@ -726,12 +726,12 @@ export function SalonManagementPage() {
 
                     {/* List Section */}
                     <div className="lg:col-span-8">
-                        <div className="space-y-4">
+                        <div className="space-y-2">
                              {tab === "services" ? (
                                  services.length > 0 ? (
                                      <div className="grid sm:grid-cols-2 gap-6">
                                          {services.map(s => (
-                                             <div key={s._id} className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm group hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col items-start justify-between">
+                                             <div key={s._id} className="bg-white p-4 rounded-[32px] border border-gray-100 shadow-sm group hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col items-start justify-between">
                                                  {editingServiceId === s._id ? (
                                                      <div className="w-full space-y-4">
                                                          <input 

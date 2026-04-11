@@ -69,13 +69,13 @@ export function Shops() {
     return (
         <div className="w-full min-h-screen bg-white">
             <div className="max-w-[1280px] mx-auto px-6 md:px-10">
-            <div className="text-center pt-28 pb-10 md:pt-32 md:pb-16">
+            <div className="text-center pt-20 pb-8 md:pt-24 md:pb-12">
 
                 <h1 className="text-4xl md:text-6xl font-serif text-gray-900 mb-4 leading-tight">
                     Discover Your <br className="hidden md:block" />
                     <span className="text-[#D4AF37]">Perfect Salon</span>
                 </h1>
-                <p className="text-gray-500 text-base md:text-lg mb-10 max-w-2xl mx-auto px-4">
+                <p className="text-gray-500 text-base md:text-lg mb-6 max-w-2xl mx-auto px-4">
                     Browse curated salons near you. View real-time availability and book instantly.
                 </p>
 
@@ -112,7 +112,7 @@ export function Shops() {
             </div>
 
             {/* Main Content: Full Width Grid */}
-            <div className="w-full py-8">
+            <div className="w-full py-6">
 
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-20">
@@ -142,7 +142,7 @@ export function Shops() {
                     </div>
                 ) : (
                     <>
-                        <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-16">
+                        <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-10">
                             {salons.map((salon) => (
                                 <div
                                     key={salon._id}
