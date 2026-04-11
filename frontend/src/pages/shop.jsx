@@ -228,10 +228,10 @@ export function Shop() {
         ? salon.images
         : ["https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&q=80"];
 
-    // Fill the gallery array to exactly 5 for the grid layout
+    // Fill the gallery array to exactly 8 for the Booking-style layout
     const galleryImages = [...displayImages];
-    while (galleryImages.length < 5) {
-        galleryImages.push(displayImages[0]);
+    while (galleryImages.length < 8) {
+        galleryImages.push(displayImages[Math.floor(Math.random() * displayImages.length)]);
     }
 
     return (
@@ -314,24 +314,74 @@ export function Shop() {
                 </div>
             </div>
 
-            {/* Image Gallery - Desktop Grid */}
-            <div className="hidden md:grid grid-cols-4 grid-rows-2 gap-3 mb-16 h-[500px]">
-                <div className="col-span-2 row-span-2 overflow-hidden rounded-l-2xl">
-                    <img src={galleryImages[0]} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Salon Main" />
+            {/* Booking.com Style Gallery & Sidebar */}
+            <div className="hidden md:flex flex-col lg:flex-row gap-4 mb-16">
+                
+                {/* LEFT: Photo Gallery Section (1 Large + 2 Stacked + 5 Thumbnails) */}
+                <div className="lg:w-[72%] xl:w-[75%] space-y-2">
+                    {/* Top: 1 Large + 2 Stacked Grid */}
+                    <div className="grid grid-cols-12 gap-2 h-[440px]">
+                        <div className="col-span-8 overflow-hidden rounded-l-md shadow-sm">
+                            <img src={galleryImages[0]} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Salon Main" />
+                        </div>
+                        <div className="col-span-4 flex flex-col gap-2">
+                            <div className="h-[216px] overflow-hidden shadow-sm">
+                                <img src={galleryImages[1]} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700 border-none" alt="Salon 2" />
+                            </div>
+                            <div className="h-[216px] overflow-hidden shadow-sm">
+                                <img src={galleryImages[2]} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700 border-none" alt="Salon 3" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Bottom: 5 Thumbnails Row */}
+                    <div className="grid grid-cols-5 gap-2 h-[120px]">
+                        {galleryImages.slice(3, 8).map((img, idx) => (
+                            <div key={idx} className={`overflow-hidden shadow-sm relative ${idx === 4 ? 'rounded-br-md text-white' : ''}`}>
+                                <img src={img} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt={`Thumbnail ${idx + 1}`} />
+                                {idx === 4 && (
+                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center cursor-pointer">
+                                        <span className="font-bold text-sm hover:underline">+63 photos</span>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
                 </div>
-                <div className="overflow-hidden">
-                    <img src={galleryImages[1]} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Salon 2" />
-                </div>
-                <div className="overflow-hidden rounded-tr-2xl">
-                    <img src={galleryImages[2]} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Salon 3" />
-                </div>
-                <div className="overflow-hidden">
-                    <img src={galleryImages[3]} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Salon 4" />
-                </div>
-                <div className="overflow-hidden rounded-br-2xl text-white relative">
-                    <img src={galleryImages[4]} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Salon 5" />
-                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center cursor-pointer">
-                        <span className="font-bold text-base hover:underline text-center">Show all photos</span>
+
+                {/* RIGHT: Booking Sidebar (Rating + Location + Map) */}
+                <div className="lg:w-[28%] xl:w-[25%] flex flex-col gap-3 h-[568px]">
+                    {/* Rating Card */}
+                    <div className="bg-white border border-gray-200 rounded-md p-3 flex justify-between items-start shadow-sm h-fit">
+                        <div className="flex flex-col">
+                            <span className="font-bold text-[#1a1a1a] text-base leading-tight">Excellent</span>
+                            <span className="text-xs text-gray-500">{reviews.length || 0} reviews</span>
+                        </div>
+                        <div className="bg-[#003b95] text-white w-8 h-8 rounded-t-md rounded-br-md flex items-center justify-center font-bold text-sm">
+                            {(salon.rating > 0 ? salon.rating.toFixed(1) : "8.5")}
+                        </div>
+                    </div>
+
+                    {/* Location Badge Card */}
+                    <div className="bg-white border border-gray-200 rounded-md p-3 flex items-center justify-between shadow-sm h-fit">
+                        <span className="font-bold text-[#1a1a1a] text-sm leading-tight">Great location!</span>
+                        <div className="bg-white border border-gray-200 w-8 h-8 rounded-md flex items-center justify-center font-bold text-sm text-gray-500">
+                            8.3
+                        </div>
+                    </div>
+
+                    {/* Integrated Map (Placeholder linking to bottom map) */}
+                    <div className="flex-1 overflow-hidden rounded-md border border-gray-200 shadow-sm relative group bg-gray-50 cursor-pointer"
+                         onClick={() => document.getElementById('salon-location-section')?.scrollIntoView({ behavior: 'smooth' })}>
+                        <div className="w-full h-full opacity-60 filter grayscale-[0.5]">
+                            <SalonMap salons={[salon]} zoom={15} interactive={false} />
+                        </div>
+                        <div className="absolute inset-0 bg-black/5 group-hover:bg-black/10 transition-colors"></div>
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                            <button className="bg-[#006ce4] text-white px-4 py-2 rounded-md font-bold text-sm shadow-lg whitespace-nowrap opacity-100 transition-opacity">
+                                Show on map
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -396,9 +446,9 @@ export function Shop() {
 
                     <div className="pb-4 border-b border-gray-100">
                         <h3 className="text-2xl font-serif font-bold text-[#1a1a1a] mb-6">Location & Contact</h3>
-                        <div className="grid md:grid-cols-2 gap-6">
-                            <div className="flex flex-col gap-6">
-                                <div className="flex gap-4 items-start bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                        <div className="grid md:grid-cols-1 gap-6">
+                            <div className="flex flex-col md:flex-row gap-6">
+                                <div className="flex-1 flex gap-4 items-start bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
                                     <div className="p-3 bg-gray-50 rounded-xl text-[#D4AF37]"><MapPin size={24} /></div>
                                     <div className="min-w-0">
                                         <p className="text-[#1a1a1a] font-bold text-lg mb-1 truncate">{salon.city}</p>
@@ -406,7 +456,7 @@ export function Shop() {
                                     </div>
                                 </div>
                                 {salon.owner && (
-                                    <div className="flex gap-4 items-start bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                                    <div className="flex-1 flex gap-4 items-start bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
                                         <div className="p-3 bg-gray-50 rounded-xl text-[#D4AF37]"><Phone size={24} /></div>
                                         <div className="min-w-0">
                                             <p className="text-[#1a1a1a] font-bold text-lg mb-1">Contact Salon</p>
@@ -417,9 +467,6 @@ export function Shop() {
                                         </div>
                                     </div>
                                 )}
-                            </div>
-                            <div className="h-[300px] md:h-auto overflow-hidden rounded-[32px] border border-gray-100 shadow-sm ring-1 ring-gray-50">
-                                <SalonMap salons={[salon]} zoom={15} />
                             </div>
                         </div>
                     </div>
@@ -715,6 +762,28 @@ export function Shop() {
                     </div>
                 </div>
 
+            </div>
+
+            {/* FULL WIDTH BOTTOM MAP SECTION */}
+            <div id="salon-location-section" className="mt-16 pt-16 border-t border-gray-100">
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                    <div>
+                        <h3 className="text-3xl font-serif font-bold text-[#1a1a1a] mb-2">Salon Location</h3>
+                        <p className="text-gray-500 flex items-center gap-2">
+                            <MapPin size={16} className="text-[#D4AF37]" />
+                            {salon.address}, {salon.city}
+                        </p>
+                    </div>
+                    <button 
+                        onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(salon.address + ' ' + salon.city)}`, '_blank')}
+                        className="bg-white border border-gray-200 px-6 py-3 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors flex items-center gap-2"
+                    >
+                        Get Directions
+                    </button>
+                </div>
+                <div className="h-[500px] w-full rounded-[32px] overflow-hidden border border-gray-100 shadow-lg ring-1 ring-gray-50 relative">
+                    <SalonMap salons={[salon]} zoom={15} />
+                </div>
             </div>
         </div>
     );
