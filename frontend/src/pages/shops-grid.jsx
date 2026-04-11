@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, Star, MapPin, Users, Clock, Loader2, ChevronLeft, ChevronRight, Phone, Heart } from 'lucide-react';
 import axiosInstance from '../api/axiosConfig';
 
 export function Shops() {
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const cityParam = searchParams.get("city") || "";
+
     const [salons, setSalons] = useState([]);
-    const [city, setCity] = useState("");
+    const [city, setCity] = useState(cityParam);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
@@ -15,7 +18,7 @@ export function Shops() {
     const [totalPages, setTotalPages] = useState(1);
     const [totalSalons, setTotalSalons] = useState(0);
 
-    const fetchSalons = async (targetPage = page) => {
+    const fetchSalons = async (targetPage = page, targetCity = cityParam) => {
         setLoading(true);
         setError("");
         try {
@@ -23,7 +26,7 @@ export function Shops() {
                 page: targetPage,
                 limit: 8 // You can adjust this or make it dynamic
             };
-            if (city) params.city = city;
+            if (targetCity) params.city = targetCity;
 
             const response = await axiosInstance.get("/salons", { params });
 
@@ -46,13 +49,14 @@ export function Shops() {
     };
 
     useEffect(() => {
-        fetchSalons(1);
-    }, []);
+        setCity(cityParam); // Synchronize input field with URL
+        fetchSalons(1, cityParam);
+    }, [cityParam]);
 
     const handleSearch = (e) => {
         e.preventDefault();
-        setPage(1); // Reset to first page on new search
-        fetchSalons(1);
+        setPage(1); // Reset to first page
+        setSearchParams(city ? { city } : {});
     };
 
     const handlePageChange = (newPage) => {
@@ -130,7 +134,7 @@ export function Shops() {
                         <h3 className="text-2xl font-serif font-bold text-gray-900 mb-2">No Salons Found</h3>
                         <p className="text-gray-500">We couldn't find any salons matching your search criteria.</p>
                         <button
-                            onClick={() => { setCity(""); fetchSalons(1); }}
+                            onClick={() => setSearchParams({})}
                             className="mt-6 text-[#D4AF37] font-bold hover:text-[#B48F27] transition-colors"
                         >
                             Clear Filters
