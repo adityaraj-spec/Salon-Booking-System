@@ -438,14 +438,6 @@ export function Shop() {
                         </div>
                     </div>
 
-                    {/* Location Badge Card */}
-                    <div className="bg-white border border-gray-200 rounded-md p-3 flex items-center justify-between shadow-sm h-fit">
-                        <span className="font-bold text-[#1a1a1a] text-sm leading-tight">Great location!</span>
-                        <div className="bg-[#003b95] text-white w-8 h-8 rounded-t-md rounded-br-md flex items-center justify-center font-bold text-sm">
-                            {salon.rating > 0 ? salon.rating.toFixed(1) : ""}
-                        </div>
-                    </div>
-
                     {/* Integrated Map (Placeholder linking to bottom map) */}
                     <div className="flex-1 overflow-hidden rounded-md border border-gray-200 shadow-sm relative group bg-gray-50 cursor-pointer"
                          onClick={() => document.getElementById('salon-location-section')?.scrollIntoView({ behavior: 'smooth' })}>
