@@ -108,7 +108,7 @@ export function Shops() {
             </div>
 
             {/* Main Content: Full Width Grid */}
-            <div className="w-full border-t border-gray-100 py-8">
+            <div className="w-full py-8">
 
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-20">
@@ -138,7 +138,7 @@ export function Shops() {
                     </div>
                 ) : (
                     <>
-                        <div className="w-full grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-6 mb-16">
+                        <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-16">
                             {salons.map((salon) => (
                                 <div
                                     key={salon._id}

@@ -420,10 +420,10 @@ export function Shop() {
             </div>
 
             {/* Main Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 md:gap-16">
+            <div className="flex flex-col lg:flex-row gap-4">
 
                 {/* LEFT CONTENT */}
-                <div className="lg:col-span-2 space-y-12">
+                <div className="lg:w-[72%] xl:w-[75%] space-y-12 order-last lg:order-first">
                     <div className="pb-4 border-b border-gray-100">
                         <h2 className="text-2xl md:text-3xl font-serif font-bold text-[#1a1a1a] mb-4">
                             Premium Experience in {salon.city}
@@ -702,7 +702,7 @@ export function Shop() {
                 </div>
 
                 {/* RIGHT BOOKING CARD */}
-                <div className="relative order-first lg:order-last">
+                <div className="lg:w-[28%] xl:w-[25%] relative order-first lg:order-last">
                     <div className="border border-gray-100 rounded-[32px] shadow-xl shadow-black/5 p-6 md:p-8 lg:sticky lg:top-32 bg-white">
                         <div className="flex justify-between items-end mb-10">
                             <div>

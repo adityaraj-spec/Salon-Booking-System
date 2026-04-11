@@ -10,7 +10,7 @@ router.route("/").get(getSalons);
 router.route("/owner/my-salon").get(verifyJWT, getOwnerSalon);
 router.route("/:id")
     .get(getSalonById)
-    .patch(verifyJWT, updateSalonDetails);
+    .patch(verifyJWT, upload.array("images", 10), updateSalonDetails);
 
 router.route("/register").post(
     verifyJWT, 

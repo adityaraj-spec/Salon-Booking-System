@@ -209,6 +209,19 @@ const updateSalonDetails = asyncHandler(async (req, res) => {
         throw new ApiError(403, "You do not have permission to update this salon");
     }
 
+    // Process new uploaded images
+    const imagesLocalPaths = req.files?.map(file => file.path) || [];
+    const imageUrls = [...(salon.images || [])];
+
+    if (imagesLocalPaths.length > 0) {
+        for (const path of imagesLocalPaths) {
+            const uploaded = await uploadOnCloudinary(path);
+            if (uploaded) {
+                imageUrls.push(uploaded.url);
+            }
+        }
+    }
+
     const updatedSalon = await Salon.findByIdAndUpdate(
         id,
         {
@@ -220,6 +233,7 @@ const updateSalonDetails = asyncHandler(async (req, res) => {
                 openingHours,
                 closingHours,
                 isOpen,
+                images: imageUrls,
                 location: address || city ? {
                     type: "Point",
                     coordinates: await geocodeAddress(`${address || salon.address}, ${city || salon.city}`) || salon.location?.coordinates || [0, 0]

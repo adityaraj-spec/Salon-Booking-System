@@ -30,6 +30,7 @@ export function SalonMap({ salons = [], center = [77.2090, 28.6139], zoom = 12 }
                 style={{ width: '100%', height: '100%' }}
                 mapStyle="mapbox://styles/mapbox/streets-v11"
                 mapboxAccessToken={MAPBOX_TOKEN}
+                cooperativeGestures={true}
             >
                 <FullscreenControl position="top-right" />
                 <NavigationControl position="top-right" />

@@ -21,7 +21,9 @@ import {
     Star,
     CalendarCheck,
     TrendingUp,
-    Upload
+    Upload,
+    Settings,
+    Image as ImageIcon
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
@@ -38,11 +40,11 @@ export function SalonManagementPage() {
     const [services, setServices] = useState([]);
     const [staff, setStaff] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [tab, setTab] = useState("services"); // "services" or "staff"
+    const [tab, setTab] = useState("services"); // "services", "staff", "settings", "gallery"
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSalonSelectorOpen, setIsSalonSelectorOpen] = useState(false);
-    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-    const [salonSettings, setSalonSettings] = useState({ openingHours: "", closingHours: "" });
+    const [salonSettings, setSalonSettings] = useState({ name: "", description: "", openingHours: "", closingHours: "", address: "", city: "" });
+    const [newGalleryImages, setNewGalleryImages] = useState([]);
 
     // Editing States
 
@@ -67,8 +69,12 @@ export function SalonManagementPage() {
                 if (!activeSalon) {
                     setActiveSalon(salonsData[0]);
                     setSalonSettings({ 
+                        name: salonsData[0].name || "",
+                        description: salonsData[0].description || "",
                         openingHours: salonsData[0].openingHours || "", 
-                        closingHours: salonsData[0].closingHours || "" 
+                        closingHours: salonsData[0].closingHours || "",
+                        address: salonsData[0].address || "",
+                        city: salonsData[0].city || ""
                     });
                 }
 
@@ -106,8 +112,12 @@ export function SalonManagementPage() {
         if (activeSalon) {
             fetchSalonDetails(activeSalon._id);
             setSalonSettings({ 
+                name: activeSalon.name || "",
+                description: activeSalon.description || "",
                 openingHours: activeSalon.openingHours || "", 
-                closingHours: activeSalon.closingHours || "" 
+                closingHours: activeSalon.closingHours || "",
+                address: activeSalon.address || "",
+                city: activeSalon.city || ""
             });
         }
     }, [activeSalon]);
@@ -181,11 +191,34 @@ export function SalonManagementPage() {
                 const updatedSalon = response.data.data;
                 setActiveSalon(updatedSalon);
                 setSalons(salons.map(s => s._id === updatedSalon._id ? updatedSalon : s));
-                setIsSettingsOpen(false);
-                showNotification("Business hours updated", "success");
+                showNotification("Salon details updated", "success");
             }
         } catch (error) {
-            showNotification("Failed to update hours", "error");
+            showNotification("Failed to update details", "error");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleGalleryUpload = async (e) => {
+        e.preventDefault();
+        if (newGalleryImages.length === 0) return;
+        setIsSubmitting(true);
+        try {
+            const formData = new FormData();
+            newGalleryImages.forEach(file => {
+                formData.append("images", file);
+            });
+            
+            const response = await axiosInstance.patch(`/salons/${activeSalon._id}`, formData);
+            if (response.data.success) {
+                setActiveSalon(response.data.data);
+                setSalons(salons.map(s => s._id === activeSalon._id ? response.data.data : s));
+                setNewGalleryImages([]);
+                showNotification("Gallery updated successfully!", "success");
+            }
+        } catch (error) {
+            showNotification("Failed to upload images", "error");
         } finally {
             setIsSubmitting(false);
         }
@@ -222,9 +255,7 @@ export function SalonManagementPage() {
                 formData.append("profilePic", staffForm.profilePic);
             }
 
-            const response = await axiosInstance.post("/staff/add", formData, {
-                headers: { "Content-Type": "multipart/form-data" }
-            });
+            const response = await axiosInstance.post("/staff/add", formData);
             if (response.data.success) {
                 setStaff([...staff, response.data.data]);
                 setStaffForm({ name: "", role: "", experience: "", skills: "", profilePic: null });
@@ -249,9 +280,7 @@ export function SalonManagementPage() {
                 formData.append("profilePic", editStaffForm.profilePic);
             }
 
-            const response = await axiosInstance.patch(`/staff/${id}`, formData, {
-                headers: { "Content-Type": "multipart/form-data" }
-            });
+            const response = await axiosInstance.patch(`/staff/${id}`, formData);
             if (response.data.success) {
                 setStaff(staff.map(s => s._id === id ? response.data.data : s));
                 setEditingStaffId(null);
@@ -359,10 +388,10 @@ export function SalonManagementPage() {
                                     </p>
                                     <div className="h-1 w-1 bg-gray-200 rounded-full"></div>
                                     <button 
-                                        onClick={() => setIsSettingsOpen(true)}
+                                        onClick={() => setTab("settings")}
                                         className="text-[10px] font-bold text-gray-400 uppercase tracking-widest hover:text-[#D4AF37] transition-colors"
                                     >
-                                        Edit Hours
+                                        Edit Details
                                     </button>
                                 </div>
                             </div>
@@ -426,24 +455,174 @@ export function SalonManagementPage() {
 
 
                 {/* Tabs */}
-                <div className="flex gap-2 mb-8 bg-gray-100/50 p-1.5 rounded-2xl w-fit mx-auto md:mx-0">
+                <div className="flex flex-wrap gap-2 mb-8 bg-gray-100/50 p-1.5 rounded-2xl w-fit mx-auto md:mx-0">
                     <button 
                         onClick={() => setTab("services")}
-                        className={`flex items-center gap-2 px-8 py-3 rounded-xl font-bold text-sm transition-all ${tab === "services" ? "bg-white text-[#1a1a1a] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${tab === "services" ? "bg-white text-[#1a1a1a] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
                     >
                         <Scissors size={18} />
                         Services List
                     </button>
                     <button 
                         onClick={() => setTab("staff")}
-                        className={`flex items-center gap-2 px-8 py-3 rounded-xl font-bold text-sm transition-all ${tab === "staff" ? "bg-white text-[#1a1a1a] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${tab === "staff" ? "bg-white text-[#1a1a1a] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
                     >
                         <Users size={18} />
                         Team Members
                     </button>
+                    <button 
+                        onClick={() => setTab("settings")}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${tab === "settings" ? "bg-white text-[#1a1a1a] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                    >
+                        <Settings size={18} />
+                        Salon Settings
+                    </button>
+                    <button 
+                        onClick={() => setTab("gallery")}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${tab === "gallery" ? "bg-white text-[#1a1a1a] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                    >
+                        <ImageIcon size={18} />
+                        Gallery
+                    </button>
                 </div>
+                
+                {tab === "settings" && (
+                    <div className="bg-white rounded-[40px] p-8 md:p-12 border border-gray-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="mb-8">
+                            <h2 className="text-2xl font-serif font-bold text-gray-900 mb-2">Salon Settings</h2>
+                            <p className="text-gray-500 text-sm">Manage your salon's basic information, location, and operational schedule.</p>
+                        </div>
+                        <form onSubmit={handleUpdateSalonSettings} className="space-y-6 max-w-3xl">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-1.5 md:col-span-2">
+                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Salon Name</label>
+                                    <input 
+                                        className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all"
+                                        value={salonSettings.name}
+                                        onChange={e => setSalonSettings({...salonSettings, name: e.target.value})}
+                                        placeholder="Salon Name"
+                                        required
+                                    />
+                                </div>
+                                <div className="space-y-1.5 md:col-span-2">
+                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Description</label>
+                                    <textarea 
+                                        className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all resize-none h-32"
+                                        value={salonSettings.description}
+                                        onChange={e => setSalonSettings({...salonSettings, description: e.target.value})}
+                                        placeholder="Tell customers about your salon..."
+                                    />
+                                </div>
+                                <div className="space-y-1.5 md:col-span-2">
+                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Street Address</label>
+                                    <input 
+                                        className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all"
+                                        value={salonSettings.address}
+                                        onChange={e => setSalonSettings({...salonSettings, address: e.target.value})}
+                                        placeholder="123 Main St"
+                                        required
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">City</label>
+                                    <input 
+                                        className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all"
+                                        value={salonSettings.city}
+                                        onChange={e => setSalonSettings({...salonSettings, city: e.target.value})}
+                                        placeholder="Mumbai"
+                                        required
+                                    />
+                                </div>
+                                
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Opens At</label>
+                                        <input 
+                                            className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all"
+                                            value={salonSettings.openingHours}
+                                            onChange={e => setSalonSettings({...salonSettings, openingHours: e.target.value})}
+                                            placeholder="9:00 AM"
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Closes At</label>
+                                        <input 
+                                            className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all"
+                                            value={salonSettings.closingHours}
+                                            onChange={e => setSalonSettings({...salonSettings, closingHours: e.target.value})}
+                                            placeholder="8:00 PM"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="pt-6 border-t border-gray-50">
+                                <button 
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    className="px-8 bg-[#D4AF37] text-white py-4 rounded-2xl font-bold text-sm tracking-widest uppercase hover:bg-[#B8962E] transition-all flex items-center justify-center gap-2 shadow-xl shadow-[#D4AF37]/20"
+                                >
+                                    {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : "Save Changes"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                )}
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                {tab === "gallery" && (
+                    <div className="bg-white rounded-[40px] p-8 md:p-12 border border-gray-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                            <div>
+                                <h2 className="text-2xl font-serif font-bold text-gray-900 mb-2">Photo Gallery</h2>
+                                <p className="text-gray-500 text-sm">Upload high-quality images to showcase your space to potential clients.</p>
+                            </div>
+                        </div>
+
+                        <form onSubmit={handleGalleryUpload} className="mb-12 bg-gray-50/50 border border-dashed border-gray-200 rounded-[32px] p-8 text-center cursor-pointer hover:bg-gray-50 transition-colors">
+                            <input 
+                                type="file" 
+                                multiple
+                                accept="image/*"
+                                onChange={(e) => setNewGalleryImages(Array.from(e.target.files))}
+                                className="hidden"
+                                id="gallery-upload"
+                            />
+                            <label htmlFor="gallery-upload" className="cursor-pointer block">
+                                <div className="w-16 h-16 mx-auto bg-white rounded-full flex items-center justify-center text-[#D4AF37] shadow-sm mb-4">
+                                    <Upload size={24} />
+                                </div>
+                                <h4 className="text-lg font-bold text-gray-900 mb-1">Click to browse images</h4>
+                                <p className="text-sm text-gray-500 mb-6">PNG, JPG up to 5MB each. You selected {newGalleryImages.length} files.</p>
+                            </label>
+                            {newGalleryImages.length > 0 && (
+                                <button 
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-sm uppercase tracking-widest inline-flex items-center gap-2 hover:bg-black transition-colors"
+                                >
+                                    {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : "Upload Images"}
+                                </button>
+                            )}
+                        </form>
+
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {activeSalon?.images?.length > 0 ? (
+                                activeSalon.images.map((img, idx) => (
+                                    <div key={idx} className="aspect-square rounded-2xl overflow-hidden shadow-sm border border-gray-100 group relative">
+                                        <img src={img} alt={`Gallery Image ${idx + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="col-span-full text-center py-12">
+                                    <p className="text-gray-400 italic">No images currently in gallery.</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {(tab === "services" || tab === "staff") && (
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
                     {/* Form Section */}
                     <div className="lg:col-span-4">
                         <div className="bg-white rounded-[28px] p-8 border border-gray-100 shadow-sm sticky top-32">
@@ -700,46 +879,6 @@ export function SalonManagementPage() {
                         </div>
                     </div>
                 </div>
-
-                {/* Hours Settings Modal */}
-                {isSettingsOpen && (
-                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-                        <div className="bg-white rounded-[40px] w-full max-w-md p-10 relative animate-in fade-in zoom-in duration-300">
-                            <button onClick={() => setIsSettingsOpen(false)} className="absolute top-8 right-8 text-gray-400 hover:text-black transition-colors"><X size={24} /></button>
-                            <h3 className="text-3xl font-serif font-black text-gray-900 mb-2">Business Hours</h3>
-                            <p className="text-gray-500 text-sm mb-8">Update your salon's daily operational schedule.</p>
-                            
-                            <form onSubmit={handleUpdateSalonSettings} className="space-y-6">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Opens At</label>
-                                        <input 
-                                            className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm"
-                                            value={salonSettings.openingHours}
-                                            onChange={e => setSalonSettings({...salonSettings, openingHours: e.target.value})}
-                                            placeholder="9:00 AM"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Closes At</label>
-                                        <input 
-                                            className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm"
-                                            value={salonSettings.closingHours}
-                                            onChange={e => setSalonSettings({...salonSettings, closingHours: e.target.value})}
-                                            placeholder="8:00 PM"
-                                        />
-                                    </div>
-                                </div>
-                                <button 
-                                    type="submit"
-                                    disabled={isSubmitting}
-                                    className="w-full bg-[#D4AF37] text-white py-4 rounded-2xl font-bold text-sm tracking-widest uppercase hover:bg-[#B8962E] transition-all flex items-center justify-center gap-2 mt-4 shadow-xl shadow-[#D4AF37]/20"
-                                >
-                                    {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : "Save Settings"}
-                                </button>
-                            </form>
-                        </div>
-                    </div>
                 )}
             </div>
         </div>
