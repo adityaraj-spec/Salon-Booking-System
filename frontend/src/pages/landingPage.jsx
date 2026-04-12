@@ -96,7 +96,7 @@ export function LandingPage() {
         if (user) {
             axiosInstance.get("/users/favorites")
                 .then(res => { if (res.data.success) setUserFavorites(res.data.data.favorites.map(f => f._id || f)); })
-                .catch(() => {});
+                .catch(() => { });
         }
     }, [user]);
 
@@ -331,7 +331,7 @@ export function LandingPage() {
                         <h2 className="text-4xl font-serif font-bold text-[#1a1a1a]">How It Works</h2>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-                        {[["Browse Salons","Explore verified salons near you"],["Choose Service","Select from a range of services"],["Book & Pay","Secure online booking & payment"],["Enjoy Service","Visit salon and enjoy your service"]].map(([title, desc], i) => (
+                        {[["Browse Salons", "Explore verified salons near you"], ["Choose Service", "Select from a range of services"], ["Book & Pay", "Secure online booking & payment"], ["Enjoy Service", "Visit salon and enjoy your service"]].map(([title, desc], i) => (
                             <div key={i}>
                                 <div className="text-6xl font-serif text-[#ffe0cc] font-bold mb-4">{String(i + 1).padStart(2, '0')}</div>
                                 <h3 className="text-lg font-bold text-[#1a1a1a] mb-2 font-serif">{title}</h3>
@@ -395,7 +395,7 @@ export function LandingPage() {
                                     "Join the SalonNow community for exclusive beauty offers."
                                 ].map((step, i) => (
                                     <div key={i} className="flex gap-4 items-start">
-                                        <span className="w-6 h-6 rounded-full bg-[#1a1a1a] text-white text-[10px] flex items-center justify-center shrink-0 mt-0.5">{i+1}</span>
+                                        <span className="w-6 h-6 rounded-full bg-[#1a1a1a] text-white text-[10px] flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
                                         <p className="text-gray-700 text-sm font-medium">{step}</p>
                                     </div>
                                 ))}

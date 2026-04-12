@@ -44,11 +44,11 @@ export function Shops() {
     const { showNotification } = useNotification();
     const [searchParams, setSearchParams] = useSearchParams();
     const cityParam = searchParams.get("city") || "";
+    const stateParam = searchParams.get("state") || "";
 
     const [salons, setSalons] = useState([]);
     const [userFavorites, setUserFavorites] = useState([]);
     const [cityQuery, setCityQuery] = useState(cityParam);
-    const [selectedState, setSelectedState] = useState("");
     const [sortBy, setSortBy] = useState("price");
     const [sortOrder, setSortOrder] = useState("asc");
     const [currentPage, setCurrentPage] = useState(1);
@@ -77,7 +77,7 @@ export function Shops() {
                 limit: 12,
                 page: targetPage,
                 city: targetCity,
-                search: targetState,
+                search: targetState || stateParam,
                 sortBy: sortBy,
                 sortOrder: sortOrder
             };
@@ -145,12 +145,12 @@ export function Shops() {
     // Reset to first page when search filters change
     useEffect(() => {
         setCurrentPage(1);
-    }, [cityParam, selectedState, sortBy, sortOrder]);
+    }, [cityParam, stateParam, sortBy, sortOrder]);
 
     // Fetch salons when search, state, sorting, or page changes
     useEffect(() => {
-        fetchSalons(cityParam, selectedState, currentPage);
-    }, [cityParam, selectedState, sortBy, sortOrder, currentPage]);
+        fetchSalons(cityParam, stateParam, currentPage);
+    }, [cityParam, stateParam, sortBy, sortOrder, currentPage]);
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -209,7 +209,7 @@ export function Shops() {
                                 className="w-full bg-white border border-gray-100 text-gray-700 py-[11px] md:py-[12px] px-4 md:px-5 rounded-full shadow-sm outline-none font-medium text-sm md:text-base cursor-pointer ring-4 ring-[#1A1A1A]/5 hover:border-[#D4AF37] transition-colors flex items-center justify-between gap-2"
                             >
                                 <span className="truncate">
-                                    {INDIAN_STATES.find(s => s.value === (selectedState || ""))?.label || "Select State"}
+                                    {INDIAN_STATES.find(s => s.value === (stateParam || ""))?.label || "Select State"}
                                 </span>
                                 <ChevronDown className={`w-3 h-3 md:w-4 md:h-4 text-gray-500 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                             </button>
@@ -221,14 +221,18 @@ export function Shops() {
                                                 <button
                                                     type="button"
                                                     onClick={() => {
-                                                        setSelectedState(state.value);
-                                                        fetchSalons(cityQuery, state.value);
+                                                        setSearchParams(prev => {
+                                                            const newParams = new URLSearchParams(prev);
+                                                            if (state.value) newParams.set("state", state.value);
+                                                            else newParams.delete("state");
+                                                            return newParams;
+                                                        });
                                                         setIsDropdownOpen(false);
                                                     }}
-                                                    className={`w-full text-left px-5 py-3 text-sm transition-colors hover:bg-gray-50 flex items-center justify-between ${(selectedState || "") === state.value ? 'text-[#D4AF37] font-bold bg-orange-50/50' : 'text-gray-700 font-medium'}`}
+                                                    className={`w-full text-left px-5 py-3 text-sm transition-colors hover:bg-gray-50 flex items-center justify-between ${(stateParam || "") === state.value ? 'text-[#D4AF37] font-bold bg-orange-50/50' : 'text-gray-700 font-medium'}`}
                                                 >
                                                     {state.label}
-                                                    {(selectedState || "") === state.value && <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></div>}
+                                                    {(stateParam || "") === state.value && <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></div>}
                                                 </button>
                                             </li>
                                         ))}
