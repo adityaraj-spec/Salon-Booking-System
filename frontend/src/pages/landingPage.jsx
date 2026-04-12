@@ -18,9 +18,29 @@ const POPULAR_DESTINATIONS = [
     { city: "New Delhi", state: "Delhi", img: "https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=600&q=80" },
     { city: "Mumbai", state: "Maharashtra", img: "https://images.unsplash.com/photo-1567157577867-05ccb1388e66?auto=format&fit=crop&w=600&q=80" },
     { city: "Goa", state: "Goa", img: "https://images.unsplash.com/photo-1614082242765-7c98ca0f3df3?auto=format&fit=crop&w=600&q=80" },
+    { city: "Bangalore", state: "Karnataka", img: "https://images.unsplash.com/photo-1596464716127-f2a82984de30?auto=format&fit=crop&w=600&q=80" },
     { city: "Chennai", state: "Tamil Nadu", img: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=600&q=80" },
     { city: "Kolkata", state: "West Bengal", img: "https://images.unsplash.com/photo-1558431382-27e303142255?auto=format&fit=crop&w=600&q=80" },
-    { city: "Hyderabad", state: "Telangana", img: "https://images.unsplash.com/photo-1626014303765-6370ff25e329?auto=format&fit=crop&w=600&q=80" },
+    { city: "Hyderabad", state: "Telangana", img: "https://images.unsplash.com/photo-1600100397561-433ff982df91?auto=format&fit=crop&w=600&q=80" },
+    { city: "Jaipur", state: "Rajasthan", img: "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=600&q=80" },
+    { city: "Kochi", state: "Kerala", img: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=600&q=80" },
+    { city: "Ahmedabad", state: "Gujarat", img: "https://images.unsplash.com/photo-1621259640428-21d7b054238e?auto=format&fit=crop&w=600&q=80" },
+    { city: "Pune", state: "Maharashtra", img: "https://images.unsplash.com/photo-1562979314-bee7453e911c?auto=format&fit=crop&w=600&q=80" },
+    { city: "Chandigarh", state: "Punjab", img: "https://images.unsplash.com/photo-1595603659228-56df02919420?auto=format&fit=crop&w=600&q=80" },
+    { city: "Shimla", state: "Himachal Pradesh", img: "https://images.unsplash.com/photo-1605649440416-43f942f6f1f9?auto=format&fit=crop&w=600&q=80" },
+    { city: "Rishikesh", state: "Uttarakhand", img: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=600&q=80" },
+    { city: "Lucknow", state: "Uttar Pradesh", img: "https://images.unsplash.com/photo-1571216559385-056dbbf9e9c8?auto=format&fit=crop&w=600&q=80" },
+    { city: "Indore", state: "Madhya Pradesh", img: "https://images.unsplash.com/photo-1590050752117-2346761665a5?auto=format&fit=crop&w=600&q=80" },
+    { city: "Guwahati", state: "Assam", img: "https://images.unsplash.com/photo-1571556094706-e069176395ec?auto=format&fit=crop&w=600&q=80" },
+    { city: "Bhubaneswar", state: "Odisha", img: "https://images.unsplash.com/photo-1588667681979-99d543503b44?auto=format&fit=crop&w=600&q=80" },
+    { city: "Srinagar", state: "Jammu & Kashmir", img: "https://images.unsplash.com/photo-1566114061559-994f7943586b?auto=format&fit=crop&w=600&q=80" },
+    { city: "Patna", state: "Bihar", img: "https://images.unsplash.com/photo-1622312686842-1e7a5067201c?auto=format&fit=crop&w=600&q=80" },
+    { city: "Ranchi", state: "Jharkhand", img: "https://images.unsplash.com/photo-1595818944447-49520892095b?auto=format&fit=crop&w=600&q=80" },
+    { city: "Raipur", state: "Chhattisgarh", img: "https://images.unsplash.com/photo-1596402184320-417d7178b2cd?auto=format&fit=crop&w=600&q=80" },
+    { city: "Amritsar", state: "Punjab", img: "https://images.unsplash.com/photo-1588127333419-b9d7de223dcf?auto=format&fit=crop&w=600&q=80" },
+    { city: "Visakhapatnam", state: "Andhra Pradesh", img: "https://images.unsplash.com/photo-1589133405670-578d930ec7ee?auto=format&fit=crop&w=600&q=80" },
+    { city: "Shillong", state: "Meghalaya", img: "https://images.unsplash.com/photo-1581452932599-2329e4dfd0f1?auto=format&fit=crop&w=600&q=80" },
+    { city: "Gangtok", state: "Sikkim", img: "https://images.unsplash.com/photo-1589133644787-8890259f8073?auto=format&fit=crop&w=600&q=80" }
 ];
 
 const WHY_CHOOSE = [
@@ -93,7 +113,15 @@ export function LandingPage() {
         } catch (e) { showNotification("Failed to update favorites.", "error"); }
     };
 
-    const scroll = (ref, dir) => ref.current?.scrollBy({ left: dir * 320, behavior: "smooth" });
+    const scroll = (ref, dir) => {
+        if (!ref.current) return;
+        const firstChild = ref.current.children[0];
+        if (!firstChild) return;
+        const style = window.getComputedStyle(ref.current);
+        const gap = parseInt(style.gap) || 16;
+        const scrollAmount = firstChild.offsetWidth + gap;
+        ref.current.scrollBy({ left: dir * scrollAmount, behavior: "smooth" });
+    };
 
     const fadeUpVariants = { hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } } };
     const staggerContainer = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.2 } } };
@@ -153,7 +181,7 @@ export function LandingPage() {
                                 <button onClick={() => scroll(featuredSliderRef, -1)} className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition">
                                     <ChevronLeft size={18} className="text-gray-600" />
                                 </button>
-                                <div ref={featuredSliderRef} className="flex gap-4 overflow-x-auto scroll-smooth pb-2 px-1" style={{ scrollbarWidth: 'none' }}>
+                                <div ref={featuredSliderRef} className="flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2 px-1" style={{ scrollbarWidth: 'none' }}>
                                     {featuredSalons.map((salon) => (
                                         <div key={salon._id} className="min-w-[250px] w-[250px] flex-shrink-0 bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition group snap-start cursor-pointer" onClick={() => navigate(`/shop/${salon._id}`)}>
                                             <div className="relative h-40 w-full overflow-hidden flex-shrink-0">
@@ -192,12 +220,12 @@ export function LandingPage() {
             {/* ── POPULAR DESTINATIONS ── */}
             <section className="py-10 px-6 bg-white">
                 <div className="max-w-6xl mx-auto">
-                    <h2 className="text-2xl font-bold text-[#1a1a1a] mb-5">Popular Destinations</h2>
+                    <h2 className="text-2xl font-bold text-[#1a1a1a] mb-5">Find Top Salons in Your Favorite Cities</h2>
                     <div className="relative">
                         <button onClick={() => scroll(destSliderRef, -1)} className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition">
                             <ChevronLeft size={18} className="text-gray-600" />
                         </button>
-                        <div ref={destSliderRef} className="flex gap-4 overflow-x-auto scroll-smooth pb-2 px-1" style={{ scrollbarWidth: 'none' }}>
+                        <div ref={destSliderRef} className="flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2 px-1" style={{ scrollbarWidth: 'none' }}>
                             {POPULAR_DESTINATIONS.map((dest) => (
                                 <NavLink
                                     key={dest.city}
@@ -237,7 +265,7 @@ export function LandingPage() {
                                 <button onClick={() => scroll(cheapSliderRef, -1)} className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition">
                                     <ChevronLeft size={18} className="text-gray-600" />
                                 </button>
-                                <div ref={cheapSliderRef} className="flex gap-4 overflow-x-auto scroll-smooth pb-2 px-1" style={{ scrollbarWidth: 'none' }}>
+                                <div ref={cheapSliderRef} className="flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2 px-1" style={{ scrollbarWidth: 'none' }}>
                                     {cheapestServices.map((service) => (
                                         <div key={service._id} className="min-w-[200px] w-[200px] flex-shrink-0 bg-white border border-gray-100 rounded-xl overflow-hidden flex flex-col hover:shadow-md transition group snap-start cursor-pointer" onClick={() => service.salon?._id && navigate(`/shop/${service.salon._id}`)}>
                                             <div className="relative h-32 w-full overflow-hidden flex-shrink-0">
