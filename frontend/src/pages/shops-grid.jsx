@@ -133,10 +133,15 @@ export function Shops() {
         fetchUserFavorites();
     }, [user]);
 
+    // Sync search input with URL city param only when URL changes
     useEffect(() => {
         setCityQuery(cityParam);
+    }, [cityParam]);
+
+    // Fetch salons when search, state, or sorting changes
+    useEffect(() => {
         fetchSalons(cityParam, selectedState);
-    }, [cityParam, searchParams, sortBy, sortOrder]);
+    }, [cityParam, selectedState, sortBy, sortOrder]);
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -263,6 +268,14 @@ export function Shops() {
                             </div>
                         </div>
                     </div>
+                </div>
+
+                {/* Grid Heading */}
+                <div className="mt-12 mb-4">
+                    <h2 className="text-2xl md:text-3xl font-serif font-bold text-gray-900">
+                        Discover salons in <span className="text-[#D4AF37] capitalize">{cityParam || "your city"}</span>
+                    </h2>
+                    <p className="text-gray-500 text-sm mt-1">Based on your preferences and location</p>
                 </div>
 
                 {/* Salon Grid */}
