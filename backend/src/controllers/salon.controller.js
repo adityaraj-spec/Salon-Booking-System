@@ -4,6 +4,7 @@ import { ApiResponse } from "../utils/apiResponse.js"
 import { Salon } from "../models/salon.models.js"
 import { User } from "../models/user.models.js"
 import { Booking } from "../models/booking.models.js" 
+import { Service } from "../models/service.models.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
 import { sendShopAddedEmail } from "../utils/mailer.js"
 import { emitToAll } from "../socket.js";
@@ -259,4 +260,26 @@ const updateSalonDetails = asyncHandler(async (req, res) => {
     );
 });
 
-export { registerSalon, getSalons, getSalonById, getOwnerSalon, updateSalonDetails }
+const getCheapestSalons = asyncHandler(async (req, res) => {
+    const { limit = 15 } = req.query;
+
+    const basicKeywords = ['haircut', 'beard', 'facial', 'massage', 'shave', 'manicure', 'pedicure', 'waxing', 'threading', 'hair color', 'hair wash', 'hair spa', 'cleanup'];
+    const keywordRegex = basicKeywords.join('|');
+
+    const services = await Service.find({
+        price: { $exists: true, $gt: 0 },
+        name: { $regex: keywordRegex, $options: 'i' }
+    })
+        .populate('salon', 'name city images')
+        .sort({ price: 1 })
+        .limit(parseInt(limit));
+
+    // Filter out any where salon wasn't found
+    const valid = services.filter(s => s.salon);
+
+    return res.status(200).json(
+        new ApiResponse(200, { services: valid }, "Cheapest services fetched successfully")
+    );
+});
+
+export { registerSalon, getSalons, getSalonById, getOwnerSalon, updateSalonDetails, getCheapestSalons }

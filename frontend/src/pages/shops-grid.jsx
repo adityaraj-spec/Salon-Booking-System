@@ -55,6 +55,38 @@ export function Shops() {
     const [error, setError] = useState("");
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
+    const sliderRef = useRef(null);
+    const cheapSliderRef = useRef(null);
+    const [cheapestServices, setCheapestServices] = useState([]);
+
+    // Derive unique cities from fetched salons — only after a state is selected
+    const availableCities = selectedState
+        ? [...new Set(salons.map(s => s.city).filter(Boolean))]
+        : [];
+
+    // Active city pill stays in sync with URL
+    const activeCity = cityParam;
+
+    const handleCityPill = (city) => {
+        setCityQuery(city);
+        setSearchParams(prev => {
+            const p = new URLSearchParams(prev);
+            p.set("city", city);
+            return p;
+        });
+    };
+
+    const scrollSlider = (dir) => {
+        if (sliderRef.current) {
+            sliderRef.current.scrollBy({ left: dir * 320, behavior: "smooth" });
+        }
+    };
+
+    const scrollCheapSlider = (dir) => {
+        if (cheapSliderRef.current) {
+            cheapSliderRef.current.scrollBy({ left: dir * 320, behavior: "smooth" });
+        }
+    };
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -64,6 +96,20 @@ export function Shops() {
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    useEffect(() => {
+        const fetchCheapest = async () => {
+            try {
+                const res = await axiosInstance.get("/salons/cheapest?limit=15");
+                if (res.data.success) {
+                    setCheapestServices(res.data.data.services || []);
+                }
+            } catch (e) {
+                // silently fail – this section is optional
+            }
+        };
+        fetchCheapest();
     }, []);
 
     const fetchSalons = async (targetCity = cityParam, targetState = stateParam) => {
@@ -277,102 +323,212 @@ export function Shops() {
                         </div>
                     ) : (
                         <>
-                            <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-10">
-                                {salons.map((salon) => (
-                                    <div
-                                        key={salon._id}
-                                        className="w-full bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col transition hover:shadow-md group"
-                                    >
-                                        {/* Image Section */}
-                                        <div
-                                            className="relative h-56 w-full overflow-hidden flex-shrink-0 cursor-pointer"
-                                            onClick={() => navigate(`/shop/${salon._id}`)}
-                                        >
-                                            <img
-                                                src={salon.images && salon.images.length > 0 ? salon.images[0] : "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=80"}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                alt={salon.name}
-                                            />
-                                            {/* Heart Icon */}
+                            {/* Booking.com-style slider section */}
+                            <div className="bg-[#fef9ec] border border-[#f0e5c0] rounded-2xl p-5 mb-10">
+                                {/* Header row */}
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                                    <h2 className="text-xl font-bold text-[#1a1a1a]">Best Deals for Salons</h2>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        {availableCities.map(city => (
                                             <button
-                                                className={`absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm transition-all hover:scale-110 active:scale-95 ${userFavorites.includes(salon._id) ? 'text-red-500 hover:bg-white' : 'text-gray-400 hover:text-red-500'
-                                                    }`}
-                                                onClick={(e) => handleToggleFavorite(e, salon._id)}
+                                                key={city}
+                                                onClick={() => handleCityPill(city)}
+                                                className={`px-3 py-1 rounded-full text-xs font-semibold border transition-all ${
+                                                    activeCity === city
+                                                        ? 'bg-[#1a1a1a] text-white border-[#1a1a1a]'
+                                                        : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500'
+                                                }`}
                                             >
-                                                <Heart size={16} strokeWidth={userFavorites.includes(salon._id) ? 1.5 : 2} className={userFavorites.includes(salon._id) ? "fill-red-500" : ""} />
+                                                {city}
                                             </button>
-                                        </div>
-
-                                        {/* Content Section */}
-                                        <div className="p-4 flex flex-col flex-1">
-                                            {/* Salon Type & Stars */}
-                                            <div className="flex items-center gap-1 mb-2">
-                                                <span className="text-xs text-gray-500">Salon</span>
-                                                <div className="flex gap-0.5">
-                                                    {[...Array(5)].map((_, i) => (
-                                                        <Star key={i} size={11} className="fill-[#febb02] text-[#febb02]" />
-                                                    ))}
-                                                </div>
-                                                {/* Top Rated Badge */}
-                                                {salon.rating >= 4.5 && (
-                                                    <span className="ml-1 bg-[#0071c2] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wide">
-                                                        Top Rated
-                                                    </span>
-                                                )}
-                                            </div>
-
-                                            {/* Name */}
-                                            <h3
-                                                className="text-[1.1rem] font-bold text-[#1a1a1a] leading-tight mb-1 cursor-pointer hover:text-[#0071C2] transition-colors"
-                                                onClick={() => navigate(`/shop/${salon._id}`)}
+                                        ))}
+                                        {(activeCity || selectedState) && (
+                                            <button
+                                                onClick={() => { setCityQuery(""); setSelectedState(""); setSearchParams({}); }}
+                                                className="text-[#D4AF37] font-semibold text-xs flex items-center gap-1 hover:underline"
                                             >
-                                                {salon.name}
-                                            </h3>
-
-                                            {/* Location & Phone */}
-                                            <div className="mb-4 flex flex-col gap-1">
-                                                <span className="text-sm text-[#0071c2] flex items-center gap-1">
-                                                    <MapPin size={13} className="shrink-0" />
-                                                    {salon.city ? `${salon.city}, India` : "Location not set"}
-                                                </span>
-                                                <span className="text-sm text-gray-500 flex items-center gap-1">
-                                                    <Phone size={13} className="shrink-0" />
-                                                    {salon.contactNumber || salon.owner?.phonenumber || "+91 Unavailable"}
-                                                </span>
-                                            </div>
-
-                                            {/* Bottom row aligning rating left and timing/seats right */}
-                                            <div className="mt-auto flex items-end justify-between">
-                                                {/* Left: Rating block */}
-                                                <div className="flex items-center gap-2">
-                                                    <div className="bg-[#003b95] text-white px-2 py-2 font-bold flex items-center justify-center rounded-t-md rounded-br-md rounded-bl-sm min-w-[32px] text-sm">
-                                                        {salon.rating || "New"}
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-xs font-bold text-[#1a1a1a] leading-none mb-1">
-                                                            {salon.rating > 4 ? "Excellent" : (salon.rating > 3 ? "Very Good" : "Good")}
-                                                        </span>
-                                                        <span className="text-[11px] text-gray-500 leading-none">
-                                                            {salon.reviews?.length || "0"} reviews
-                                                        </span>
-                                                    </div>
-                                                </div>
-
-                                                {/* Right: Timing and Seats */}
-                                                <div className="text-right flex flex-col items-end">
-                                                    <div className="text-[11px] text-gray-500 mb-1">
-                                                        Timing <span className="font-bold text-gray-800">{salon.openingHours || "09:00"} - {salon.closingHours || "21:00"}</span>
-                                                    </div>
-                                                    <div className="text-xs text-gray-500">
-                                                        Available Seats <span className="text-lg font-bold text-[#1a1a1a] ml-1">{salon.availableSeats || 0}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                                View all <ChevronRight size={14} />
+                                            </button>
+                                        )}
                                     </div>
-                                ))}
+                                </div>
+
+                                {/* Scrollable slider with arrow buttons */}
+                                <div className="relative">
+                                    {/* Left arrow */}
+                                    <button
+                                        onClick={() => scrollSlider(-1)}
+                                        className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition"
+                                    >
+                                        <ChevronLeft size={18} className="text-gray-600" />
+                                    </button>
+
+                                    {/* Card slider track */}
+                                    <div
+                                        ref={sliderRef}
+                                        className="flex gap-4 overflow-x-auto scroll-smooth pb-2 px-1"
+                                        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                                    >
+                                        {salons.map((salon) => (
+                                            <div
+                                                key={salon._id}
+                                                className="min-w-[260px] w-[260px] flex-shrink-0 bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col transition hover:shadow-lg group snap-start"
+                                            >
+                                                {/* Image Section */}
+                                                <div
+                                                    className="relative h-44 w-full overflow-hidden flex-shrink-0 cursor-pointer"
+                                                    onClick={() => navigate(`/shop/${salon._id}`)}
+                                                >
+                                                    <img
+                                                        src={salon.images && salon.images.length > 0 ? salon.images[0] : "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=80"}
+                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                        alt={salon.name}
+                                                    />
+                                                    {/* Heart Icon */}
+                                                    <button
+                                                        className={`absolute top-2.5 right-2.5 w-7 h-7 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm transition-all hover:scale-110 active:scale-95 ${
+                                                            userFavorites.includes(salon._id) ? 'text-red-500 hover:bg-white' : 'text-gray-400 hover:text-red-500'
+                                                        }`}
+                                                        onClick={(e) => handleToggleFavorite(e, salon._id)}
+                                                    >
+                                                        <Heart size={14} strokeWidth={userFavorites.includes(salon._id) ? 1.5 : 2} className={userFavorites.includes(salon._id) ? "fill-red-500" : ""} />
+                                                    </button>
+                                                </div>
+
+                                                {/* Content Section */}
+                                                <div className="p-3 flex flex-col flex-1">
+                                                    {/* Salon Type & Stars */}
+                                                    <div className="flex items-center gap-1 mb-1.5">
+                                                        <span className="text-[10px] text-gray-500">Salon</span>
+                                                        <div className="flex gap-0.5">
+                                                            {[...Array(5)].map((_, i) => (
+                                                                <Star key={i} size={10} className="fill-[#febb02] text-[#febb02]" />
+                                                            ))}
+                                                        </div>
+                                                        {salon.rating >= 4.5 && (
+                                                            <span className="ml-1 bg-[#0071c2] text-white text-[9px] font-bold px-1 py-0.5 rounded-sm tracking-wide">
+                                                                Top Rated
+                                                            </span>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Name */}
+                                                    <h3
+                                                        className="text-sm font-bold text-[#1a1a1a] leading-tight mb-1 cursor-pointer hover:text-[#0071C2] transition-colors line-clamp-1"
+                                                        onClick={() => navigate(`/shop/${salon._id}`)}
+                                                    >
+                                                        {salon.name}
+                                                    </h3>
+
+                                                    {/* Location */}
+                                                    <span className="text-xs text-[#0071c2] flex items-center gap-1 mb-3">
+                                                        <MapPin size={11} className="shrink-0" />
+                                                        {salon.city ? `${salon.city}, India` : "Location not set"}
+                                                    </span>
+
+                                                    {/* Bottom row */}
+                                                    <div className="mt-auto flex items-center justify-between">
+                                                        <div className="flex items-center gap-1.5">
+                                                            <div className="bg-[#003b95] text-white px-1.5 py-1 font-bold flex items-center justify-center rounded-t-md rounded-br-md rounded-bl-sm min-w-[28px] text-xs">
+                                                                {salon.rating || "New"}
+                                                            </div>
+                                                            <span className="text-[10px] font-bold text-[#1a1a1a]">
+                                                                {salon.rating > 4 ? "Excellent" : salon.rating > 3 ? "Very Good" : "Good"}
+                                                            </span>
+                                                        </div>
+                                                        <span className="text-[10px] text-gray-400">{salon.reviews?.length || 0} reviews</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Right arrow */}
+                                    <button
+                                        onClick={() => scrollSlider(1)}
+                                        className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition"
+                                    >
+                                        <ChevronRight size={18} className="text-gray-600" />
+                                    </button>
+                                </div>
                             </div>
 
+                            {/* ── Cheapest Services Section ── */}
+                            {cheapestServices.length > 0 && (
+                                <div className="bg-white border border-gray-100 rounded-2xl p-5 mb-10 shadow-sm">
+                                    {/* Header */}
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h2 className="text-xl font-bold text-[#1a1a1a]">Cheapest Services</h2>
+                                        <span className="text-xs text-gray-400 font-medium">Best prices across salons</span>
+                                    </div>
+
+                                    <div className="relative">
+                                        {/* Left arrow */}
+                                        <button
+                                            onClick={() => scrollCheapSlider(-1)}
+                                            className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition"
+                                        >
+                                            <ChevronLeft size={18} className="text-gray-600" />
+                                        </button>
+
+                                        {/* Service card track */}
+                                        <div
+                                            ref={cheapSliderRef}
+                                            className="flex gap-4 overflow-x-auto scroll-smooth pb-2 px-1"
+                                            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                                        >
+                                            {cheapestServices.map((service) => (
+                                                <div
+                                                    key={service._id}
+                                                    className="min-w-[200px] w-[200px] flex-shrink-0 bg-white border border-gray-100 rounded-xl overflow-hidden flex flex-col transition hover:shadow-md group snap-start cursor-pointer"
+                                                    onClick={() => service.salon?._id && navigate(`/shop/${service.salon._id}`)}
+                                                >
+                                                    {/* Salon image */}
+                                                    <div className="relative h-32 w-full overflow-hidden flex-shrink-0">
+                                                        <img
+                                                            src={service.salon?.images?.[0] || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=80"}
+                                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                            alt={service.name}
+                                                        />
+                                                        {/* Service name badge */}
+                                                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5">
+                                                            <span className="text-white text-xs font-bold capitalize">{service.name}</span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Info */}
+                                                    <div className="p-3 flex flex-col gap-1">
+                                                        <h3 className="text-xs font-semibold text-gray-600 line-clamp-1">{service.salon?.name || "Salon"}</h3>
+                                                        <span className="text-xs text-gray-400 flex items-center gap-1">
+                                                            <MapPin size={10} className="shrink-0 text-[#0071c2]" />
+                                                            {service.salon?.city || "Unknown"}
+                                                        </span>
+                                                        <div className="flex items-center justify-between mt-2">
+                                                            <span className="text-xs text-gray-500">
+                                                                ₹<span className="text-base font-bold text-[#1a1a1a]">{service.price}</span>
+                                                            </span>
+                                                            <button
+                                                                className="bg-white border border-[#D4AF37] text-[#D4AF37] text-[10px] font-bold px-2 py-1 rounded-full hover:bg-[#D4AF37] hover:text-white transition-all"
+                                                                onClick={(e) => { e.stopPropagation(); service.salon?._id && navigate(`/shop/${service.salon._id}`); }}
+                                                            >
+                                                                Book Now
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {/* Right arrow */}
+                                        <button
+                                            onClick={() => scrollCheapSlider(1)}
+                                            className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition"
+                                        >
+                                            <ChevronRight size={18} className="text-gray-600" />
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </>
                     )}
                 </div>
