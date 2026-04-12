@@ -168,48 +168,48 @@ export function Shops() {
                     </p>
 
                     {/* Search Bar & Filter Container */}
-                    <div className="flex flex-col md:flex-row items-center justify-center gap-3 max-w-3xl mx-auto">
-                        <form onSubmit={handleSearch} className="flex flex-row items-center justify-between gap-1 w-full md:w-[65%] bg-white p-1 md:p-1.5 rounded-full shadow-sm border border-gray-100 ring-4 ring-[#1A1A1A]/5">
-                            <div className="flex items-center flex-1 px-4 md:px-5 gap-2 md:gap-3">
+                    <div className="flex flex-row items-center justify-center gap-2 md:gap-3 max-w-3xl mx-auto w-full px-2 md:px-0">
+                        <form onSubmit={handleSearch} className="flex flex-row items-center justify-between gap-1 flex-1 md:w-[65%] bg-white p-1 md:p-1.5 rounded-full shadow-sm border border-gray-100 ring-4 ring-[#1A1A1A]/5">
+                            <div className="flex items-center flex-1 px-3 md:px-5 gap-2 md:gap-3">
                                 <MapPin className="text-[#D4AF37] w-4 h-4 md:w-5 md:h-5 shrink-0" />
                                 <input
                                     type="text"
                                     placeholder="Search by city..."
                                     value={cityQuery}
                                     onChange={(e) => setCityQuery(e.target.value)}
-                                    className="w-full outline-none text-gray-700 placeholder-gray-400 text-sm font-medium py-1.5 bg-transparent"
+                                    className="w-full outline-none text-gray-700 placeholder-gray-400 text-xs md:text-sm font-medium py-1.5 bg-transparent"
                                 />
                             </div>
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="shrink-0 bg-[#1A1A1A] text-white p-2 md:px-4 md:py-2.5 rounded-full font-bold uppercase text-[10px] tracking-widest hover:bg-black active:scale-95 transition-all disabled:opacity-70 flex items-center justify-center gap-1.5"
+                                className="shrink-0 bg-[#1A1A1A] text-white p-2.5 md:px-4 md:py-2.5 rounded-full font-bold uppercase text-[10px] tracking-widest hover:bg-black active:scale-95 transition-all disabled:opacity-70 flex items-center justify-center gap-1.5"
                             >
                                 {loading ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    <Loader2 className="w-3.5 h-3.5 md:w-4 md:h-4 animate-spin" />
                                 ) : (
                                     <>
                                         <div className="hidden md:flex items-center gap-1">
                                             <Search className="w-4 h-4" />
                                             <span>Search</span>
                                         </div>
-                                        <Search className="md:hidden w-4 h-4" />
+                                        <Search className="md:hidden w-3.5 h-3.5" />
                                     </>
                                 )}
                             </button>
                         </form>
 
                         {/* Custom State Dropdown */}
-                        <div className="relative w-full md:w-44" ref={dropdownRef}>
+                        <div className="relative w-[110px] sm:w-36 md:w-44 shrink-0" ref={dropdownRef}>
                             <button
                                 type="button"
                                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                className="w-full bg-white border border-gray-100 text-gray-700 py-2 md:py-[12px] px-5 rounded-full shadow-sm outline-none font-medium text-sm cursor-pointer ring-4 ring-[#1A1A1A]/5 hover:border-[#D4AF37] transition-colors flex items-center justify-between gap-2"
+                                className="w-full bg-white border border-gray-100 text-gray-700 py-[11px] md:py-[12px] px-3 md:px-5 rounded-full shadow-sm outline-none font-medium text-[11px] sm:text-xs md:text-sm cursor-pointer ring-4 ring-[#1A1A1A]/5 hover:border-[#D4AF37] transition-colors flex items-center justify-between gap-1 md:gap-2"
                             >
                                 <span className="truncate">
-                                    {INDIAN_STATES.find(s => s.value === (selectedState || ""))?.label || "All States"}
+                                    {INDIAN_STATES.find(s => s.value === (selectedState || ""))?.label || "State"}
                                 </span>
-                                <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                                <ChevronDown className={`w-3 h-3 md:w-4 md:h-4 text-gray-500 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                             </button>
 
                             {/* Dropdown Menu */}
