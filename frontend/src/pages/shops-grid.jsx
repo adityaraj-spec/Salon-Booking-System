@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, Star, MapPin, Loader2, Phone, Heart, ChevronDown, ArrowUpDown } from 'lucide-react';
+import { Search, Star, MapPin, Loader2, Phone, Heart, ChevronDown, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import axiosInstance from '../api/axiosConfig';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
@@ -51,6 +51,8 @@ export function Shops() {
     const [selectedState, setSelectedState] = useState("");
     const [sortBy, setSortBy] = useState("price");
     const [sortOrder, setSortOrder] = useState("asc");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -67,12 +69,13 @@ export function Shops() {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const fetchSalons = async (targetCity = cityQuery, targetState = selectedState) => {
+    const fetchSalons = async (targetCity = cityQuery, targetState = selectedState, targetPage = currentPage) => {
         setLoading(true);
         setError("");
         try {
             const params = { 
-                limit: 100,
+                limit: 12,
+                page: targetPage,
                 city: targetCity,
                 search: targetState,
                 sortBy: sortBy,
@@ -81,6 +84,7 @@ export function Shops() {
             const response = await axiosInstance.get("/salons", { params });
             if (response.data.success) {
                 setSalons(response.data.data.salons);
+                setTotalPages(response.data.data.pagination.totalPages);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         } catch (err) {
@@ -138,10 +142,15 @@ export function Shops() {
         setCityQuery(cityParam);
     }, [cityParam]);
 
-    // Fetch salons when search, state, or sorting changes
+    // Reset to first page when search filters change
     useEffect(() => {
-        fetchSalons(cityParam, selectedState);
+        setCurrentPage(1);
     }, [cityParam, selectedState, sortBy, sortOrder]);
+
+    // Fetch salons when search, state, sorting, or page changes
+    useEffect(() => {
+        fetchSalons(cityParam, selectedState, currentPage);
+    }, [cityParam, selectedState, sortBy, sortOrder, currentPage]);
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -230,7 +239,7 @@ export function Shops() {
                     </div>
 
                     {/* 3-Column Sorting Row */}
-                    <div className="grid grid-cols-1 md:grid-cols-[200px_1fr_200px] items-center gap-6 mt-10 px-6 py-8 bg-gray-50/50 rounded-[40px] border border-gray-100 shadow-sm">
+                    <div className="grid grid-cols-1 md:grid-cols-[200px_1fr_200px] items-center gap-6 mt-10 px-6 py-6 bg-gray-50/50 rounded-[40px] border border-gray-100 shadow-sm">
                         {/* Column 1: Label */}
                         <div className="flex flex-col gap-1 text-center md:text-left">
                             <h2 className="text-2xl font-serif font-bold text-gray-900 leading-tight">Sort by</h2>
@@ -300,54 +309,105 @@ export function Shops() {
                             <button onClick={() => setSearchParams({})} className="mt-6 text-[#D4AF37] font-bold hover:text-[#B48F27] transition-colors">Clear Filters</button>
                         </div>
                     ) : (
-                        <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-10">
-                            {salons.map((salon) => (
-                                <div key={salon._id} className="w-full bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col transition hover:shadow-md group">
-                                    <div className="relative h-56 w-full overflow-hidden flex-shrink-0 cursor-pointer" onClick={() => navigate(`/shop/${salon._id}`)}>
-                                        <img
-                                            src={salon.images && salon.images.length > 0 ? salon.images[0] : "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=80"}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                            alt={salon.name}
-                                        />
-                                        <button
-                                            className={`absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm transition-all hover:scale-110 active:scale-95 ${userFavorites.includes(salon._id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
-                                            onClick={(e) => handleToggleFavorite(e, salon._id)}
-                                        >
-                                            <Heart size={16} strokeWidth={userFavorites.includes(salon._id) ? 1.5 : 2} className={userFavorites.includes(salon._id) ? "fill-red-500" : ""} />
-                                        </button>
-                                    </div>
-                                    <div className="p-4 flex flex-col flex-1">
-                                        <div className="flex items-center gap-1 mb-2">
-                                            <span className="text-xs text-gray-500">Salon</span>
-                                            <div className="flex gap-0.5">
-                                                {[...Array(5)].map((_, i) => <Star key={i} size={11} className="fill-[#febb02] text-[#febb02]" />)}
+                        <>
+                            <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-10">
+                                {salons.map((salon) => (
+                                    <div key={salon._id} className="w-full bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col transition hover:shadow-md group">
+                                        <div className="relative h-56 w-full overflow-hidden flex-shrink-0 cursor-pointer" onClick={() => navigate(`/shop/${salon._id}`)}>
+                                            <img
+                                                src={salon.images && salon.images.length > 0 ? salon.images[0] : "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=80"}
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                alt={salon.name}
+                                            />
+                                            <button
+                                                className={`absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm transition-all hover:scale-110 active:scale-95 ${userFavorites.includes(salon._id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
+                                                onClick={(e) => handleToggleFavorite(e, salon._id)}
+                                            >
+                                                <Heart size={16} strokeWidth={userFavorites.includes(salon._id) ? 1.5 : 2} className={userFavorites.includes(salon._id) ? "fill-red-500" : ""} />
+                                            </button>
+                                        </div>
+                                        <div className="p-4 flex flex-col flex-1">
+                                            <div className="flex items-center gap-1 mb-2">
+                                                <span className="text-xs text-gray-500">Salon</span>
+                                                <div className="flex gap-0.5">
+                                                    {[...Array(5)].map((_, i) => <Star key={i} size={11} className="fill-[#febb02] text-[#febb02]" />)}
+                                                </div>
+                                                {salon.rating >= 4.5 && <span className="ml-1 bg-[#0071c2] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wide">Top Rated</span>}
                                             </div>
-                                            {salon.rating >= 4.5 && <span className="ml-1 bg-[#0071c2] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wide">Top Rated</span>}
-                                        </div>
-                                        <h3 className="text-[1.1rem] font-bold text-[#1a1a1a] leading-tight mb-1 cursor-pointer hover:text-[#0071C2] transition-colors" onClick={() => navigate(`/shop/${salon._id}`)}>
-                                            {salon.name}
-                                        </h3>
-                                        <div className="mb-4 flex flex-col gap-1">
-                                            <span className="text-sm text-[#0071c2] flex items-center gap-1"><MapPin size={13} className="shrink-0" />{salon.city ? `${salon.city}, India` : "Location not set"}</span>
-                                            <span className="text-sm text-gray-500 flex items-center gap-1"><Phone size={13} className="shrink-0" />{salon.contactNumber || salon.owner?.phonenumber || "+91 Unavailable"}</span>
-                                        </div>
-                                        <div className="mt-auto flex items-end justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <div className="bg-[#003b95] text-white px-2 py-2 font-bold flex items-center justify-center rounded-t-md rounded-br-md rounded-bl-sm min-w-[32px] text-sm">{salon.rating || "New"}</div>
-                                                <div className="flex flex-col">
-                                                    <span className="text-xs font-bold text-[#1a1a1a] leading-none mb-1">{salon.rating > 4 ? "Excellent" : (salon.rating > 3 ? "Very Good" : "Good")}</span>
-                                                    <span className="text-[11px] text-gray-500 leading-none">{salon.reviews?.length || "0"} reviews</span>
+                                            <h3 className="text-[1.1rem] font-bold text-[#1a1a1a] leading-tight mb-1 cursor-pointer hover:text-[#0071C2] transition-colors" onClick={() => navigate(`/shop/${salon._id}`)}>
+                                                {salon.name}
+                                            </h3>
+                                            <div className="mb-4 flex flex-col gap-1">
+                                                <span className="text-sm text-[#0071c2] flex items-center gap-1"><MapPin size={13} className="shrink-0" />{salon.city ? `${salon.city}, India` : "Location not set"}</span>
+                                                <span className="text-sm text-gray-500 flex items-center gap-1"><Phone size={13} className="shrink-0" />{salon.contactNumber || salon.owner?.phonenumber || "+91 Unavailable"}</span>
+                                            </div>
+                                            <div className="mt-auto flex items-end justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="bg-[#003b95] text-white px-2 py-2 font-bold flex items-center justify-center rounded-t-md rounded-br-md rounded-bl-sm min-w-[32px] text-sm">{salon.rating || "New"}</div>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-xs font-bold text-[#1a1a1a] leading-none mb-1">{salon.rating > 4 ? "Excellent" : (salon.rating > 3 ? "Very Good" : "Good")}</span>
+                                                        <span className="text-[11px] text-gray-500 leading-none">{salon.reviews?.length || "0"} reviews</span>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right flex flex-col items-end">
+                                                    <div className="text-[11px] text-gray-500 mb-1">Timing <span className="font-bold text-gray-800">{salon.openingHours || "09:00"} - {salon.closingHours || "21:00"}</span></div>
+                                                    <div className="text-xs text-gray-500">Available Seats <span className="text-lg font-bold text-[#1a1a1a] ml-1">{salon.availableSeats || 0}</span></div>
                                                 </div>
                                             </div>
-                                            <div className="text-right flex flex-col items-end">
-                                                <div className="text-[11px] text-gray-500 mb-1">Timing <span className="font-bold text-gray-800">{salon.openingHours || "09:00"} - {salon.closingHours || "21:00"}</span></div>
-                                                <div className="text-xs text-gray-500">Available Seats <span className="text-lg font-bold text-[#1a1a1a] ml-1">{salon.availableSeats || 0}</span></div>
-                                            </div>
                                         </div>
                                     </div>
+                                ))}
+                            </div>
+
+                            {/* Pagination Controls */}
+                            {totalPages > 1 && (
+                                <div className="flex items-center justify-center gap-2 py-10 border-t border-gray-100 mt-6">
+                                    <button
+                                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                        disabled={currentPage === 1}
+                                        className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed group"
+                                    >
+                                        <ChevronLeft size={20} className="text-gray-600 group-hover:text-[#1a1a1a]" />
+                                    </button>
+
+                                    <div className="flex items-center gap-1.5 mx-2">
+                                        {[...Array(totalPages)].map((_, i) => {
+                                            const pageNumber = i + 1;
+                                            // Show only first, last, and pages around current
+                                            if (
+                                                pageNumber === 1 || 
+                                                pageNumber === totalPages || 
+                                                (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
+                                            ) {
+                                                return (
+                                                    <button
+                                                        key={pageNumber}
+                                                        onClick={() => setCurrentPage(pageNumber)}
+                                                        className={`min-w-[40px] h-10 rounded-full text-sm font-bold transition-all ${currentPage === pageNumber ? 'bg-[#1a1a1a] text-white shadow-lg scale-105' : 'text-gray-500 hover:bg-gray-100'}`}
+                                                    >
+                                                        {pageNumber}
+                                                    </button>
+                                                );
+                                            } else if (
+                                                (pageNumber === 2 && currentPage > 3) || 
+                                                (pageNumber === totalPages - 1 && currentPage < totalPages - 2)
+                                            ) {
+                                                return <span key={pageNumber} className="text-gray-300 px-1">...</span>;
+                                            }
+                                            return null;
+                                        })}
+                                    </div>
+
+                                    <button
+                                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                        disabled={currentPage === totalPages}
+                                        className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed group"
+                                    >
+                                        <ChevronRight size={20} className="text-gray-600 group-hover:text-[#1a1a1a]" />
+                                    </button>
                                 </div>
-                            ))}
-                        </div>
+                            )}
+                        </>
                     )}
                 </div>
             </div>
