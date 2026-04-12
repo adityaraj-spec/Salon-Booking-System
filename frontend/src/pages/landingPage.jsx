@@ -153,13 +153,15 @@ export function LandingPage() {
                     <motion.p variants={fadeUpVariants} className={`text-lg md:text-xl mb-6 max-w-2xl font-light ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
                         Discover and book appointments with top-rated salons in your city.<br className="hidden md:block" /> Professional beauty services at your fingertips.
                     </motion.p>
-                    <motion.div variants={fadeUpVariants} className="flex flex-col sm:flex-row gap-5">
+                    <motion.div variants={fadeUpVariants} className="flex flex-row flex-wrap justify-center gap-4">
                         <NavLink to="/home" className={`px-8 py-4 rounded-full font-medium flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 ${isDark ? 'bg-white text-black hover:bg-gray-100' : 'bg-[#1a1a1a] text-white hover:bg-black'}`}>
                             Browse Salons <ArrowRight size={18} />
                         </NavLink>
-                        <NavLink to="/signup" className={`px-8 py-4 rounded-full font-medium transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 border ${isDark ? 'border-white/80 text-white hover:bg-white/10' : 'border-black/80 text-black hover:bg-black/5'}`}>
-                            Sign Up Now
-                        </NavLink>
+                        {!user && (
+                            <NavLink to="/signup" className={`px-8 py-4 rounded-full font-medium transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 border ${isDark ? 'border-white/80 text-white hover:bg-white/10' : 'border-black/80 text-black hover:bg-black/5'}`}>
+                                Sign Up Now
+                            </NavLink>
+                        )}
                     </motion.div>
                 </motion.div>
             </section>
@@ -359,7 +361,7 @@ export function LandingPage() {
                                 <div className="space-y-4">
                                     {[
                                         { title: "Largest selection of salons", desc: "Choose from a wide range of salons to suit your preferences — from local gems to premium chains." },
-                                        { title: "Best deals and prices", desc: "Get the lowest prices on your bookings with the best salon offers and use our advanced filter options." },
+                                        { title: "Best deals and prices", desc: "Get the lowest prices on your bookings with our curated lists and easy sorting options." },
                                         { title: "Pay at Salon option", desc: "Make your online booking and get the flexibility to pay at the salon directly after your service." },
                                         { title: "Collaborative wishlists", desc: "Plan your grooming together - share your favorite salons with friends and let them add their own." },
                                         { title: "24x7 customer support", desc: "Need assistance? Our dedicated support team is available round the clock for all your booking queries." }
@@ -374,18 +376,18 @@ export function LandingPage() {
                         </div>
 
                         <div className="bg-[#fafafa] p-8 md:p-12 rounded-3xl border border-gray-100 h-fit sticky top-24">
-                            <h2 className="text-2xl font-bold text-[#1a1a1a] mb-6 font-serif">How to search for cheap salons on SalonNow?</h2>
+                            <h2 className="text-2xl font-bold text-[#1a1a1a] mb-6 font-serif">How to book your perfect salon on SalonNow?</h2>
                             <p className="text-gray-600 text-sm leading-relaxed mb-8">
-                                SalonNow offers a wide selection of salons that cater to all types of budgets, making it easier for you to find the perfect grooming services that suit your needs.
+                                Booking a salon session has never been easier. Follow these simple steps to find and book your favorite beauty service:
                             </p>
                             <div className="space-y-6">
                                 {[
-                                    "Log in to the SalonNow app.",
-                                    "Enter the city or area you want to book for.",
-                                    "Choose your preferred date and time.",
-                                    "Select your desired services and hit 'Search Salons'.",
-                                    "Filter by price and sort the results from low to high.",
-                                    "Compare and choose from the best salon options."
+                                    "Enter the city or area you want to visit.",
+                                    "Explore the list of top-rated salons near you.",
+                                    "Use our Price Sort to find the best grooming deals.",
+                                    "Apply filters to narrow down your selection.",
+                                    "Select your salon and book your appointment instantly.",
+                                    "Join the SalonNow community for exclusive beauty offers."
                                 ].map((step, i) => (
                                     <div key={i} className="flex gap-4 items-start">
                                         <span className="w-6 h-6 rounded-full bg-[#1a1a1a] text-white text-[10px] flex items-center justify-center shrink-0 mt-0.5">{i+1}</span>

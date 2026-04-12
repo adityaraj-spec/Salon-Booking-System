@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, Star, MapPin, Loader2, Phone, Heart, ChevronDown } from 'lucide-react';
+import { Search, Star, MapPin, Loader2, Phone, Heart, ChevronDown, ArrowUpDown } from 'lucide-react';
 import axiosInstance from '../api/axiosConfig';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
@@ -37,19 +37,20 @@ const INDIAN_STATES = [
     { value: "West Bengal", label: "West Bengal" },
 ];
 
+
 export function Shops() {
     const navigate = useNavigate();
-    const [searchParams, setSearchParams] = useSearchParams();
-    const cityParam = searchParams.get("city") || "";
-    const stateParam = searchParams.get("state") || "";
-
     const { user } = useAuth();
     const { showNotification } = useNotification();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const cityParam = searchParams.get("city") || "";
 
     const [salons, setSalons] = useState([]);
     const [userFavorites, setUserFavorites] = useState([]);
     const [cityQuery, setCityQuery] = useState(cityParam);
-    const [selectedState, setSelectedState] = useState(stateParam);
+    const [selectedState, setSelectedState] = useState("");
+    const [sortByPrice, setSortByPrice] = useState(false);
+
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -65,20 +66,26 @@ export function Shops() {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const fetchSalons = async (targetCity = cityParam, targetState = stateParam) => {
+    const fetchSalons = async (targetCity = cityQuery, targetState = selectedState) => {
         setLoading(true);
         setError("");
         try {
-            const params = { limit: 100 };
-            if (targetCity) params.city = targetCity;
-            if (targetState) params.search = targetState;
+            const params = { 
+                limit: 100,
+                city: targetCity,
+                search: targetState
+            };
+            if (sortByPrice) {
+                params.sortBy = "price";
+                params.sortOrder = "asc";
+            }
             const response = await axiosInstance.get("/salons", { params });
             if (response.data.success) {
                 setSalons(response.data.data.salons);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         } catch (err) {
-            setError(err.response?.data?.message || "Failed to connect to the server.");
+            setError(err.response?.data?.message || "Failed to find salons matching your criteria.");
         } finally {
             setLoading(false);
         }
@@ -129,9 +136,8 @@ export function Shops() {
 
     useEffect(() => {
         setCityQuery(cityParam);
-        setSelectedState(stateParam);
-        fetchSalons(cityParam, stateParam);
-    }, [cityParam, stateParam]);
+        fetchSalons(cityParam, selectedState);
+    }, [cityParam, searchParams, sortByPrice]);
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -203,12 +209,7 @@ export function Shops() {
                                                     type="button"
                                                     onClick={() => {
                                                         setSelectedState(state.value);
-                                                        setSearchParams(prev => {
-                                                            const newParams = new URLSearchParams(prev);
-                                                            if (state.value) newParams.set("state", state.value);
-                                                            else newParams.delete("state");
-                                                            return newParams;
-                                                        });
+                                                        fetchSalons(cityQuery, state.value);
                                                         setIsDropdownOpen(false);
                                                     }}
                                                     className={`w-full text-left px-5 py-3 text-sm transition-colors hover:bg-gray-50 flex items-center justify-between ${(selectedState || "") === state.value ? 'text-[#D4AF37] font-bold bg-orange-50/50' : 'text-gray-700 font-medium'}`}
@@ -223,6 +224,17 @@ export function Shops() {
                             )}
                         </div>
                     </div>
+
+                    {/* Simple Price Sort Toggle */}
+                    <div className="flex justify-center mt-6">
+                        <button 
+                            onClick={() => setSortByPrice(!sortByPrice)}
+                            className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all shadow-md ${sortByPrice ? 'bg-[#D4AF37] text-white' : 'bg-white text-gray-600 border border-gray-100 hover:bg-gray-50'}`}
+                        >
+                            <ArrowUpDown size={16} />
+                            {sortByPrice ? "Price: Low to High (Active)" : "Sort by Price"}
+                        </button>
+                    </div>
                 </div>
 
                 {/* Salon Grid */}
@@ -235,7 +247,7 @@ export function Shops() {
                     ) : error ? (
                         <div className="text-center py-20">
                             <p className="text-red-500 mb-4">{error}</p>
-                            <button onClick={() => fetchSalons(cityQuery, selectedState)} className="text-[#D4AF37] font-bold border-b-2 border-[#D4AF37] hover:text-[#B48F27] transition-colors">Try Again</button>
+                            <button onClick={() => fetchSalons()} className="text-[#D4AF37] font-bold border-b-2 border-[#D4AF37] hover:text-[#B48F27] transition-colors">Try Again</button>
                         </div>
                     ) : salons.length === 0 ? (
                         <div className="text-center py-20">

@@ -67,7 +67,7 @@ const registerSalon = asyncHandler(async (req, res) => {
 })
 
 const getSalons = asyncHandler(async (req, res) => {
-    const { search, city, page = 1, limit = 8 } = req.query;
+    const { search, city, page = 1, limit = 8, sortBy, sortOrder = "asc" } = req.query;
     
     // Parse pagination parameters
     const currentPage = parseInt(page);
@@ -89,17 +89,42 @@ const getSalons = asyncHandler(async (req, res) => {
     if (city) {
         query.city = { $regex: city, $options: "i" };
     }
-    
-    // Fetch total count for pagination metadata
-    const totalSalons = await Salon.countDocuments(query);
-    const totalPages = Math.ceil(totalSalons / pageLimit);
 
-    // Fetch paginated salons
-    const salons = await Salon.find(query)
-        .populate("owner", "fullName phonenumber")
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(pageLimit);
+    let salons;
+    let totalSalons;
+
+    if (sortBy === "price") {
+        // Use aggregation to sort by minimum service price
+        const pipeline = [
+            { $match: query },
+            {
+                $lookup: {
+                    from: "services",
+                    localField: "_id",
+                    foreignField: "salon",
+                    as: "services"
+                }
+            },
+            {
+                $addFields: {
+                    minPrice: { $min: "$services.price" }
+                }
+            },
+            { $sort: { minPrice: sortOrder === "asc" ? 1 : -1 } },
+            { $skip: skip },
+            { $limit: pageLimit }
+        ];
+        salons = await Salon.aggregate(pipeline);
+        totalSalons = await Salon.countDocuments(query);
+    } else {
+        // Standard fetch
+        totalSalons = await Salon.countDocuments(query);
+        salons = await Salon.find(query)
+            .populate("owner", "fullName phonenumber")
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(pageLimit);
+    }
 
     // --- CALCULATE LIVE AVAILABILITY FOR THE LIST ---
     const now = new Date();
@@ -109,7 +134,10 @@ const getSalons = asyncHandler(async (req, res) => {
     const ampm = hour >= 12 ? "PM" : "AM";
     const timeMatcher = new RegExp(`(^${hour}:|^0${hour}:|^${displayHour}:|^0${displayHour}:).*${ampm}|(^${hour}:|^0${hour}:)`, "i");
 
-    const salonsWithAvailability = await Promise.all(salons.map(async (salon) => {
+    const salonsWithAvailability = await Promise.all(salons.map(async (salonDoc) => {
+        // If it was aggregation (raw obj) or find (mongoose doc)
+        const salon = salonDoc.toObject ? salonDoc.toObject() : salonDoc;
+        
         const activeBookingsCount = await Booking.countDocuments({
             salon: salon._id,
             date: today,
@@ -117,16 +145,16 @@ const getSalons = asyncHandler(async (req, res) => {
             time: { $regex: timeMatcher }
         });
 
-        const totalSeats = salon.totalSeats || 6;
-        const availableSeats = Math.max(0, totalSeats - activeBookingsCount);
+        const totalSeatsValue = salon.totalSeats || 6;
+        const availableSeats = Math.max(0, totalSeatsValue - activeBookingsCount);
 
         return {
-            ...salon.toObject(),
+            ...salon,
             availableSeats
         };
     }));
 
-
+    const totalPages = Math.ceil(totalSalons / pageLimit);
     
     return res.status(200).json(
         new ApiResponse(
