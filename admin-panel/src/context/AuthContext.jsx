@@ -12,6 +12,41 @@ export function AuthProvider({ children }) {
   });
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    
+    if (token) {
+      // Clear token from URL for security
+      window.history.replaceState({}, document.title, window.location.pathname);
+      localStorage.setItem('adminToken', token);
+      
+      const fetchProfile = async () => {
+        setLoading(true);
+        try {
+          const res = await api.get('/users/me');
+          if (res.data.success) {
+            const userData = res.data.data.user;
+            if (userData.role === 'customer' || userData.role === 'staff') {
+              throw new Error('Access Denied. Admin accounts only.');
+            }
+            localStorage.setItem('adminUser', JSON.stringify(userData));
+            setUser(userData);
+          }
+        } catch (error) {
+          console.error('Auto login failed:', error);
+          localStorage.removeItem('adminToken');
+          localStorage.removeItem('adminUser');
+          setUser(null);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      fetchProfile();
+    }
+  }, []);
+
   const login = async (email, password) => {
     setLoading(true);
     try {

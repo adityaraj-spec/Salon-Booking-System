@@ -28,6 +28,10 @@ export function LoginPage() {
             });
 
             if (response.status === 200 || response.status === 201) {
+                // Store authToken to be passed to admin panel
+                const token = response.data.data.accessToken;
+                if (token) localStorage.setItem('authToken', token);
+
                 login(response.data.data.user);
                 showNotification("Welcome back! Login successful.", "success");
                 // Redirect directly to home after login as per user request

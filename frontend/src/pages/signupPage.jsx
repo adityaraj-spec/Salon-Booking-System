@@ -28,6 +28,10 @@ export function SignUpPage() {
             });
 
             if (response.status === 200 || response.status === 201) {
+                // Store authToken to be passed to admin panel later if needed
+                const token = response.data.data.accessToken;
+                if (token) localStorage.setItem('authToken', token);
+
                 login(response.data.data.user);
                 showNotification("Account created successfully! Welcome to SalonNow.", "success");
                 // Assuming successful registration logs the user in (setting cookies)
