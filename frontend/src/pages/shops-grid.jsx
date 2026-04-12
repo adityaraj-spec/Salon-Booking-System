@@ -224,35 +224,43 @@ export function Shops() {
                         </div>
                     </div>
 
-                    {/* Premium Sorting Row */}
-                    <div className="flex flex-wrap items-center justify-between gap-6 mt-8 px-4 bg-gray-50/50 p-6 rounded-3xl border border-gray-100">
-                        <div className="flex flex-col gap-2">
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Sort Results</span>
-                            <div className="flex bg-white p-1 rounded-full border border-gray-100 shadow-sm flex-wrap">
+                    {/* 3-Column Sorting Row */}
+                    <div className="grid grid-cols-1 md:grid-cols-[200px_1fr_200px] items-center gap-6 mt-10 px-6 py-8 bg-gray-50/50 rounded-[40px] border border-gray-100 shadow-sm">
+                        {/* Column 1: Label */}
+                        <div className="flex flex-col gap-1 text-center md:text-left">
+                            <h2 className="text-2xl font-serif font-bold text-gray-900 leading-tight">Sort by</h2>
+                        </div>
+
+                        {/* Column 2: Buttons (Wide) */}
+                        <div className="flex justify-center">
+                            <div className="flex bg-white p-1.5 rounded-full border border-gray-100 shadow-sm flex-wrap justify-center gap-1 group">
                                 <button 
                                     onClick={() => { setSortBy("price"); setSortOrder("asc"); }}
-                                    className={`px-5 py-2 rounded-full text-xs font-bold transition-all ${sortBy === "price" && sortOrder === "asc" ? 'bg-[#1a1a1a] text-white shadow-md' : 'text-gray-400 hover:text-gray-600'}`}
+                                    className={`px-6 py-2.5 rounded-full text-xs font-bold transition-all duration-300 ${sortBy === "price" && sortOrder === "asc" ? 'bg-[#1a1a1a] text-white shadow-lg scale-105' : 'text-gray-400 hover:text-[#1a1a1a] hover:bg-gray-50'}`}
                                 >
                                     Price: Low to High
                                 </button>
                                 <button 
                                     onClick={() => { setSortBy("price"); setSortOrder("desc"); }}
-                                    className={`px-5 py-2 rounded-full text-xs font-bold transition-all ${sortBy === "price" && sortOrder === "desc" ? 'bg-[#1a1a1a] text-white shadow-md' : 'text-gray-400 hover:text-gray-600'}`}
+                                    className={`px-6 py-2.5 rounded-full text-xs font-bold transition-all duration-300 ${sortBy === "price" && sortOrder === "desc" ? 'bg-[#1a1a1a] text-white shadow-lg scale-105' : 'text-gray-400 hover:text-[#1a1a1a] hover:bg-gray-50'}`}
                                 >
                                     Price: High to Low
                                 </button>
                                 <button 
                                     onClick={() => { setSortBy("rating"); setSortOrder("desc"); }}
-                                    className={`px-5 py-2 rounded-full text-xs font-bold transition-all ${sortBy === "rating" ? 'bg-[#1a1a1a] text-white shadow-md' : 'text-gray-400 hover:text-gray-600'}`}
+                                    className={`px-6 py-2.5 rounded-full text-xs font-bold transition-all duration-300 ${sortBy === "rating" ? 'bg-[#1a1a1a] text-white shadow-lg scale-105' : 'text-gray-400 hover:text-[#1a1a1a] hover:bg-gray-50'}`}
                                 >
                                     Top Rated
                                 </button>
                             </div>
                         </div>
                         
+                        {/* Column 3: Total Count */}
                         <div className="flex flex-col items-center md:items-end gap-1">
-                            <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Salons Found</div>
-                            <div className="text-3xl font-serif font-bold text-gray-900 leading-none">{salons.length}</div>
+                            <div className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em]">Salons Found</div>
+                            <div className="flex items-baseline gap-1">
+                                <span className="text-4xl font-serif font-bold text-[#D4AF37] leading-none">{salons.length}</span>
+                            </div>
                         </div>
                     </div>
                 </div>

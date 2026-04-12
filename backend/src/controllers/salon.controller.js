@@ -116,8 +116,16 @@ const getSalons = asyncHandler(async (req, res) => {
         ];
         salons = await Salon.aggregate(pipeline);
         totalSalons = await Salon.countDocuments(query);
+    } else if (sortBy === "rating") {
+        // Sort by Rating
+        totalSalons = await Salon.countDocuments(query);
+        salons = await Salon.find(query)
+            .populate("owner", "fullName phonenumber")
+            .sort({ rating: -1 })
+            .skip(skip)
+            .limit(pageLimit);
     } else {
-        // Standard fetch
+        // Standard fetch (default to newest)
         totalSalons = await Salon.countDocuments(query);
         salons = await Salon.find(query)
             .populate("owner", "fullName phonenumber")
