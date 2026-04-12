@@ -17,6 +17,14 @@ const salonSchema = new mongoose.Schema({
     required: true,
     index: true
   },
+  state: {
+    type: String,
+    required: false
+  },
+  pincode: {
+    type: String,
+    required: false
+  },
   description: String,
   address: String,
   images: [String],

@@ -11,7 +11,7 @@ import { geocodeAddress } from "../utils/geocoding.js";
 
 
 const registerSalon = asyncHandler(async (req, res) => {
-    const { name, city, description, address, contactNumber, openingHours, closingHours, totalSeats } = req.body
+    const { name, city, state, pincode, description, address, contactNumber, openingHours, closingHours, totalSeats } = req.body
 
     if (!name || !address || !city) {
         throw new ApiError(400, "Name, address, and city are required")
@@ -32,6 +32,8 @@ const registerSalon = asyncHandler(async (req, res) => {
     const salon = await Salon.create({
         name,
         city,
+        state,
+        pincode,
         description,
         address,
         contactNumber: contactNumber || req.user.phonenumber,
@@ -42,7 +44,7 @@ const registerSalon = asyncHandler(async (req, res) => {
         owner: req.user?._id,
         location: {
             type: "Point",
-            coordinates: await geocodeAddress(`${address}, ${city}`) || [0, 0]
+            coordinates: await geocodeAddress(`${address}, ${city}, ${state}, ${pincode}`) || [0, 0]
         }
     })
 
@@ -78,7 +80,8 @@ const getSalons = asyncHandler(async (req, res) => {
             { name: { $regex: search, $options: "i" } },
             { description: { $regex: search, $options: "i" } },
             { address: { $regex: search, $options: "i" } },
-            { city: { $regex: search, $options: "i" } }
+            { city: { $regex: search, $options: "i" } },
+            { state: { $regex: search, $options: "i" } }
         ];
     }
     
@@ -198,7 +201,7 @@ const getOwnerSalon = asyncHandler(async (req, res) => {
 
 const updateSalonDetails = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { name, city, address, description, openingHours, closingHours, isOpen } = req.body;
+    const { name, city, state, pincode, address, description, openingHours, closingHours, isOpen } = req.body;
 
     const salon = await Salon.findById(id);
     if (!salon) {
@@ -228,15 +231,17 @@ const updateSalonDetails = asyncHandler(async (req, res) => {
             $set: {
                 name,
                 city,
+                state,
+                pincode,
                 address,
                 description,
                 openingHours,
                 closingHours,
                 isOpen,
                 images: imageUrls,
-                location: address || city ? {
+                location: address || city || state || pincode ? {
                     type: "Point",
-                    coordinates: await geocodeAddress(`${address || salon.address}, ${city || salon.city}`) || salon.location?.coordinates || [0, 0]
+                    coordinates: await geocodeAddress(`${address || salon.address}, ${city || salon.city}, ${state || salon.state}, ${pincode || salon.pincode}`) || salon.location?.coordinates || [0, 0]
                 } : salon.location
             }
         },

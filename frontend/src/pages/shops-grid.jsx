@@ -1,43 +1,92 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, Star, MapPin, Users, Clock, Loader2, ChevronLeft, ChevronRight, Phone, Heart } from 'lucide-react';
+import { Search, Star, MapPin, Users, Clock, Loader2, ChevronLeft, ChevronRight, Phone, Heart, ChevronDown } from 'lucide-react';
 import axiosInstance from '../api/axiosConfig';
+
+const INDIAN_STATES = [
+    { value: "", label: "Select State" },
+    // States
+    { value: "Andhra Pradesh", label: "Andhra Pradesh" },
+    { value: "Arunachal Pradesh", label: "Arunachal Pradesh" },
+    { value: "Assam", label: "Assam" },
+    { value: "Bihar", label: "Bihar" },
+    { value: "Chhattisgarh", label: "Chhattisgarh" },
+    { value: "Goa", label: "Goa" },
+    { value: "Gujarat", label: "Gujarat" },
+    { value: "Haryana", label: "Haryana" },
+    { value: "Himachal Pradesh", label: "Himachal Pradesh" },
+    { value: "Jharkhand", label: "Jharkhand" },
+    { value: "Karnataka", label: "Karnataka" },
+    { value: "Kerala", label: "Kerala" },
+    { value: "Madhya Pradesh", label: "Madhya Pradesh" },
+    { value: "Maharashtra", label: "Maharashtra" },
+    { value: "Manipur", label: "Manipur" },
+    { value: "Meghalaya", label: "Meghalaya" },
+    { value: "Mizoram", label: "Mizoram" },
+    { value: "Nagaland", label: "Nagaland" },
+    { value: "Odisha", label: "Odisha" },
+    { value: "Punjab", label: "Punjab" },
+    { value: "Rajasthan", label: "Rajasthan" },
+    { value: "Sikkim", label: "Sikkim" },
+    { value: "Tamil Nadu", label: "Tamil Nadu" },
+    { value: "Telangana", label: "Telangana" },
+    { value: "Tripura", label: "Tripura" },
+    { value: "Uttar Pradesh", label: "Uttar Pradesh" },
+    { value: "Uttarakhand", label: "Uttarakhand" },
+    { value: "West Bengal", label: "West Bengal" },
+    // Union Territories
+    { value: "Andaman and Nicobar Islands", label: "Andaman and Nicobar" },
+    { value: "Chandigarh", label: "Chandigarh" },
+    { value: "Dadra and Nagar Haveli", label: "Dadra and Nagar Haveli" },
+    { value: "Daman and Diu", label: "Daman and Diu" },
+    { value: "Delhi", label: "Delhi" },
+    { value: "Jammu and Kashmir", label: "Jammu and Kashmir" },
+    { value: "Ladakh", label: "Ladakh" },
+    { value: "Lakshadweep", label: "Lakshadweep" },
+    { value: "Puducherry", label: "Puducherry" }
+];
 
 export function Shops() {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const cityParam = searchParams.get("city") || "";
+    const stateParam = searchParams.get("state") || "";
 
     const [salons, setSalons] = useState([]);
-    const [city, setCity] = useState(cityParam);
+    const [cityQuery, setCityQuery] = useState(cityParam);
+    const [selectedState, setSelectedState] = useState(stateParam);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef(null);
 
-    // Pagination State
-    const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [totalSalons, setTotalSalons] = useState(0);
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
-    const fetchSalons = async (targetPage = page, targetCity = cityParam) => {
+    const fetchSalons = async (targetCity = cityParam, targetState = stateParam) => {
         setLoading(true);
         setError("");
         try {
             const params = {
-                page: targetPage,
-                limit: 8 // You can adjust this or make it dynamic
+                limit: 100 // Removed pagination limit
             };
             if (targetCity) params.city = targetCity;
+            if (targetState) params.search = targetState; // Use backend's search param to match state in address
 
             const response = await axiosInstance.get("/salons", { params });
 
             if (response.data.success) {
-                const { salons: fetchedSalons, pagination } = response.data.data;
+                const { salons: fetchedSalons } = response.data.data;
                 setSalons(fetchedSalons);
-                setTotalPages(pagination.totalPages);
-                setTotalSalons(pagination.totalSalons);
-                setPage(pagination.currentPage);
 
-                // Scroll to top when page changes
+                // Scroll to top when params change
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         } catch (err) {
@@ -49,21 +98,19 @@ export function Shops() {
     };
 
     useEffect(() => {
-        setCity(cityParam); // Synchronize input field with URL
-        fetchSalons(1, cityParam);
-    }, [cityParam]);
+        setCityQuery(cityParam); // Synchronize input field with URL
+        setSelectedState(stateParam);
+        fetchSalons(cityParam, stateParam);
+    }, [cityParam, stateParam]);
 
     const handleSearch = (e) => {
         e.preventDefault();
-        setPage(1); // Reset to first page
-        setSearchParams(city ? { city } : {});
-    };
-
-    const handlePageChange = (newPage) => {
-        if (newPage >= 1 && newPage <= totalPages) {
-            setPage(newPage);
-            fetchSalons(newPage);
-        }
+        setSearchParams(prev => {
+            const newParams = new URLSearchParams(prev);
+            if (cityQuery) newParams.set("city", cityQuery);
+            else newParams.delete("city");
+            return newParams;
+        });
     };
 
     return (
@@ -79,36 +126,85 @@ export function Shops() {
                     Browse curated salons near you. View real-time availability and book instantly.
                 </p>
 
-                {/* Search Bar Container */}
-                <form onSubmit={handleSearch} className="flex flex-row items-center justify-between gap-1 max-w-2xl mx-auto bg-white p-1 md:p-2 rounded-full shadow-sm border border-gray-100 ring-4 ring-[#1A1A1A]/5">
-                    <div className="flex items-center flex-1 px-4 md:px-6 gap-2 md:gap-3">
-                        <MapPin className="text-[#D4AF37] w-4 h-4 md:w-5 md:h-5 shrink-0" />
-                        <input
-                            type="text"
-                            placeholder="Search by city..."
-                            value={city}
-                            onChange={(e) => setCity(e.target.value)}
-                            className="w-full outline-none text-gray-700 placeholder-gray-400 text-sm md:text-base font-medium py-2 bg-transparent"
-                        />
-                    </div>
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="shrink-0 bg-[#1A1A1A] text-white p-3 md:px-5 md:py-4 rounded-full font-bold uppercase text-[10px] md:text-xs tracking-widest hover:bg-black active:scale-95 transition-all disabled:opacity-70 flex items-center justify-center gap-2"
-                    >
-                        {loading ? (
-                            <Loader2 className="w-5 h-5 animate-spin" />
-                        ) : (
-                            <>
-                                <div className="hidden md:flex items-center gap-1">
-                                    <Search className="w-5 h-5" />
-                                    <span>Search</span>
-                                </div>
-                                <Search className="md:hidden w-5 h-5" />
-                            </>
+                {/* Search Bar & Filter Container */}
+                <div className="flex flex-col md:flex-row items-center justify-center gap-3 max-w-3xl mx-auto">
+                    <form onSubmit={handleSearch} className="flex flex-row items-center justify-between gap-1 w-full md:w-[65%] bg-white p-1 md:p-1.5 rounded-full shadow-sm border border-gray-100 ring-4 ring-[#1A1A1A]/5">
+                        <div className="flex items-center flex-1 px-4 md:px-5 gap-2 md:gap-3">
+                            <MapPin className="text-[#D4AF37] w-4 h-4 md:w-5 md:h-5 shrink-0" />
+                            <input
+                                type="text"
+                                placeholder="Search by city..."
+                                value={cityQuery}
+                                onChange={(e) => setCityQuery(e.target.value)}
+                                className="w-full outline-none text-gray-700 placeholder-gray-400 text-sm font-medium py-1.5 bg-transparent"
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="shrink-0 bg-[#1A1A1A] text-white p-2 md:px-4 md:py-2.5 rounded-full font-bold uppercase text-[10px] tracking-widest hover:bg-black active:scale-95 transition-all disabled:opacity-70 flex items-center justify-center gap-1.5"
+                        >
+                            {loading ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                                <>
+                                    <div className="hidden md:flex items-center gap-1">
+                                        <Search className="w-4 h-4" />
+                                        <span>Search</span>
+                                    </div>
+                                    <Search className="md:hidden w-4 h-4" />
+                                </>
+                            )}
+                        </button>
+                    </form>
+                    
+                    {/* Custom State Dropdown */}
+                    <div className="relative w-full md:w-44" ref={dropdownRef}>
+                        <button
+                            type="button"
+                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                            className="w-full bg-white border border-gray-100 text-gray-700 py-2 md:py-[12px] px-5 rounded-full shadow-sm outline-none font-medium text-sm cursor-pointer ring-4 ring-[#1A1A1A]/5 hover:border-[#D4AF37] transition-colors flex items-center justify-between gap-2"
+                        >
+                            <span className="truncate">
+                                {INDIAN_STATES.find(s => s.value === (selectedState || ""))?.label || "All States"}
+                            </span>
+                            <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                        </button>
+
+                        {/* Dropdown Menu */}
+                        {isDropdownOpen && (
+                            <div className="absolute z-50 w-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                                <ul className="max-h-64 overflow-y-auto py-2 scroll-smooth">
+                                    {INDIAN_STATES.map((state) => (
+                                        <li key={state.value}>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setSelectedState(state.value);
+                                                    setSearchParams(prev => {
+                                                        const newParams = new URLSearchParams(prev);
+                                                        if (state.value) newParams.set("state", state.value);
+                                                        else newParams.delete("state");
+                                                        return newParams;
+                                                    });
+                                                    setIsDropdownOpen(false);
+                                                }}
+                                                className={`w-full text-left px-5 py-3 text-sm transition-colors hover:bg-gray-50 flex items-center justify-between ${
+                                                    (selectedState || "") === state.value ? 'text-[#D4AF37] font-bold bg-orange-50/50' : 'text-gray-700 font-medium'
+                                                }`}
+                                            >
+                                                {state.label}
+                                                {(selectedState || "") === state.value && (
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></div>
+                                                )}
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
                         )}
-                    </button>
-                </form>
+                    </div>
+                </div>
             </div>
 
             {/* Main Content: Full Width Grid */}
@@ -122,7 +218,7 @@ export function Shops() {
                 ) : error ? (
                     <div className="text-center py-20">
                         <p className="text-red-500 mb-4">{error}</p>
-                        <button onClick={() => fetchSalons(page)} className="text-[#D4AF37] font-bold border-b-2 border-[#D4AF37] hover:text-[#B48F27] transition-colors">
+                        <button onClick={() => fetchSalons(cityQuery, selectedState)} className="text-[#D4AF37] font-bold border-b-2 border-[#D4AF37] hover:text-[#B48F27] transition-colors">
                             Try Again
                         </button>
                     </div>
@@ -234,41 +330,6 @@ export function Shops() {
                             ))}
                         </div>
 
-                        {/* Pagination Controls */}
-                        {totalPages > 1 && (
-                            <div className="flex items-center justify-center gap-2 pb-12">
-                                <button
-                                    onClick={() => handlePageChange(page - 1)}
-                                    disabled={page === 1}
-                                    className="p-3 rounded-full border border-gray-200 text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-                                >
-                                    <ChevronLeft size={20} />
-                                </button>
-
-                                <div className="flex items-center gap-2">
-                                    {[...Array(totalPages)].map((_, i) => (
-                                        <button
-                                            key={i + 1}
-                                            onClick={() => handlePageChange(i + 1)}
-                                            className={`w-10 h-10 rounded-full font-bold text-sm transition-all ${page === i + 1
-                                                ? "bg-[#1A1A1A] text-white"
-                                                : "text-gray-500 hover:bg-gray-50"
-                                                }`}
-                                        >
-                                            {i + 1}
-                                        </button>
-                                    ))}
-                                </div>
-
-                                <button
-                                    onClick={() => handlePageChange(page + 1)}
-                                    disabled={page === totalPages}
-                                    className="p-3 rounded-full border border-gray-200 text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-                                >
-                                    <ChevronRight size={20} />
-                                </button>
-                            </div>
-                        )}
                     </>
                 )}
                 </div>

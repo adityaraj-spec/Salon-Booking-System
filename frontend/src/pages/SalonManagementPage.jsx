@@ -42,7 +42,7 @@ export function SalonManagementPage() {
     const [tab, setTab] = useState("services"); // "services", "staff", "settings", "gallery"
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSalonSelectorOpen, setIsSalonSelectorOpen] = useState(false);
-    const [salonSettings, setSalonSettings] = useState({ name: "", description: "", openingHours: "", closingHours: "", address: "", city: "" });
+    const [salonSettings, setSalonSettings] = useState({ name: "", description: "", openingHours: "", closingHours: "", address: "", city: "", state: "", pincode: "" });
     const [newGalleryImages, setNewGalleryImages] = useState([]);
 
     // Editing States
@@ -73,7 +73,9 @@ export function SalonManagementPage() {
                         openingHours: salonsData[0].openingHours || "", 
                         closingHours: salonsData[0].closingHours || "",
                         address: salonsData[0].address || "",
-                        city: salonsData[0].city || ""
+                        city: salonsData[0].city || "",
+                        state: salonsData[0].state || "",
+                        pincode: salonsData[0].pincode || ""
                     });
                 }
 
@@ -116,7 +118,9 @@ export function SalonManagementPage() {
                 openingHours: activeSalon.openingHours || "", 
                 closingHours: activeSalon.closingHours || "",
                 address: activeSalon.address || "",
-                city: activeSalon.city || ""
+                city: activeSalon.city || "",
+                state: activeSalon.state || "",
+                pincode: activeSalon.pincode || ""
             });
         }
     }, [activeSalon]);
@@ -522,15 +526,82 @@ export function SalonManagementPage() {
                                         required
                                     />
                                 </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">City</label>
-                                    <input 
-                                        className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all"
-                                        value={salonSettings.city}
-                                        onChange={e => setSalonSettings({...salonSettings, city: e.target.value})}
-                                        placeholder="Mumbai"
-                                        required
-                                    />
+                                <div className="grid grid-cols-2 gap-4 md:col-span-2">
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">State</label>
+                                        <select 
+                                            required
+                                            className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all appearance-none cursor-pointer"
+                                            value={salonSettings.state}
+                                            onChange={e => setSalonSettings({...salonSettings, state: e.target.value})}
+                                            style={{
+                                                backgroundImage: "url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231A1A1A%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')",
+                                                backgroundRepeat: 'no-repeat',
+                                                backgroundPosition: 'right 1.25rem top 50%',
+                                                backgroundSize: '0.65rem auto',
+                                                paddingRight: '2.5rem'
+                                            }}
+                                        >
+                                            <option value="">Select State</option>
+                                            <option value="Andhra Pradesh">Andhra Pradesh</option>
+                                            <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                                            <option value="Assam">Assam</option>
+                                            <option value="Bihar">Bihar</option>
+                                            <option value="Chhattisgarh">Chhattisgarh</option>
+                                            <option value="Goa">Goa</option>
+                                            <option value="Gujarat">Gujarat</option>
+                                            <option value="Haryana">Haryana</option>
+                                            <option value="Himachal Pradesh">Himachal Pradesh</option>
+                                            <option value="Jharkhand">Jharkhand</option>
+                                            <option value="Karnataka">Karnataka</option>
+                                            <option value="Kerala">Kerala</option>
+                                            <option value="Madhya Pradesh">Madhya Pradesh</option>
+                                            <option value="Maharashtra">Maharashtra</option>
+                                            <option value="Manipur">Manipur</option>
+                                            <option value="Meghalaya">Meghalaya</option>
+                                            <option value="Mizoram">Mizoram</option>
+                                            <option value="Nagaland">Nagaland</option>
+                                            <option value="Odisha">Odisha</option>
+                                            <option value="Punjab">Punjab</option>
+                                            <option value="Rajasthan">Rajasthan</option>
+                                            <option value="Sikkim">Sikkim</option>
+                                            <option value="Tamil Nadu">Tamil Nadu</option>
+                                            <option value="Telangana">Telangana</option>
+                                            <option value="Tripura">Tripura</option>
+                                            <option value="Uttar Pradesh">Uttar Pradesh</option>
+                                            <option value="Uttarakhand">Uttarakhand</option>
+                                            <option value="West Bengal">West Bengal</option>
+                                            <option value="Andaman and Nicobar Islands">Andaman and Nicobar</option>
+                                            <option value="Chandigarh">Chandigarh</option>
+                                            <option value="Dadra and Nagar Haveli">Dadra and Nagar Haveli</option>
+                                            <option value="Daman and Diu">Daman and Diu</option>
+                                            <option value="Delhi">Delhi</option>
+                                            <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                                            <option value="Ladakh">Ladakh</option>
+                                            <option value="Lakshadweep">Lakshadweep</option>
+                                            <option value="Puducherry">Puducherry</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">City</label>
+                                        <input 
+                                            className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all"
+                                            value={salonSettings.city}
+                                            onChange={e => setSalonSettings({...salonSettings, city: e.target.value})}
+                                            placeholder="Mumbai"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5 md:col-span-2">
+                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Pincode / Zip Code</label>
+                                        <input 
+                                            className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all"
+                                            value={salonSettings.pincode}
+                                            onChange={e => setSalonSettings({...salonSettings, pincode: e.target.value})}
+                                            placeholder="400053"
+                                            required
+                                        />
+                                    </div>
                                 </div>
                                 
                                 <div className="grid grid-cols-2 gap-4">
