@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useLocation, NavLink } from 'react-router-dom';
-import { Scissors, LogOut, ChevronDown, User, Calendar, Settings, Menu, X, Bell, CheckCircle2, Clock, LayoutDashboard } from "lucide-react";
+import { Scissors, LogOut, ChevronDown, User, Calendar, Settings, Menu, X, Bell, CheckCircle2, Clock, LayoutDashboard, Heart } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
 import { useUI } from "../context/UIContext";
@@ -306,6 +306,15 @@ export function NavBar() {
                                     </NavLink>
                                     
                                     <NavLink 
+                                        to="/favorites" 
+                                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-colors"
+                                        onClick={() => setIsMenuOpen(false)}
+                                    >
+                                        <Heart size={18} />
+                                        My Favorites
+                                    </NavLink>
+                                    
+                                    <NavLink 
                                         to="/settings" 
                                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-colors"
                                         onClick={() => setIsMenuOpen(false)}
@@ -454,6 +463,16 @@ export function NavBar() {
                         onClick={() => setIsMobileMenuOpen(false)}
                     >
                         My Bookings
+                    </NavLink>
+
+                    <NavLink 
+                        to="/favorites" 
+                        className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all ${
+                            isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37]"
+                        }`}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                        My Favorites
                     </NavLink>
 
                     {user ? (

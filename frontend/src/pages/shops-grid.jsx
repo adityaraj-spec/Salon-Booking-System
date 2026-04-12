@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, Star, MapPin, Users, Clock, Loader2, ChevronLeft, ChevronRight, Phone, Heart, ChevronDown } from 'lucide-react';
 import axiosInstance from '../api/axiosConfig';
+import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 
 const INDIAN_STATES = [
     { value: "", label: "Select State" },
@@ -42,7 +44,11 @@ export function Shops() {
     const cityParam = searchParams.get("city") || "";
     const stateParam = searchParams.get("state") || "";
 
+    const { user } = useAuth();
+    const { showNotification } = useNotification();
+
     const [salons, setSalons] = useState([]);
+    const [userFavorites, setUserFavorites] = useState([]);
     const [cityQuery, setCityQuery] = useState(cityParam);
     const [selectedState, setSelectedState] = useState(stateParam);
     const [loading, setLoading] = useState(true);
@@ -87,6 +93,51 @@ export function Shops() {
         }
     };
 
+    const handleToggleFavorite = async (e, salonId) => {
+        e.stopPropagation();
+        if (!user) {
+            showNotification("Please log in to save favorites.", "error");
+            navigate("/login");
+            return;
+        }
+
+        try {
+            const response = await axiosInstance.post(`/users/favorites/${salonId}`);
+            if (response.data.success) {
+                const isFavorited = response.data.data.isFavorited;
+                if (isFavorited) {
+                    setUserFavorites(prev => [...prev, salonId]);
+                    showNotification("Added to favorites!", "success");
+                } else {
+                    setUserFavorites(prev => prev.filter(id => id !== salonId));
+                    showNotification("Removed from favorites.", "info");
+                }
+            }
+        } catch (error) {
+            console.error("Error toggling favorite:", error);
+            showNotification("Failed to update favorites.", "error");
+        }
+    };
+
+    useEffect(() => {
+        const fetchUserFavorites = async () => {
+            if (user) {
+                try {
+                    const response = await axiosInstance.get("/users/favorites");
+                    if (response.data.success) {
+                        const favoriteIds = response.data.data.favorites.map(f => f._id || f);
+                        setUserFavorites(favoriteIds);
+                    }
+                } catch (error) {
+                    console.error("Error fetching favorites:", error);
+                }
+            } else {
+                setUserFavorites([]);
+            }
+        };
+        fetchUserFavorites();
+    }, [user]);
+
     useEffect(() => {
         setCityQuery(cityParam); // Synchronize input field with URL
         setSelectedState(stateParam);
@@ -117,8 +168,8 @@ export function Shops() {
                 </p>
 
                 {/* Search Bar & Filter Container */}
-                <div className="flex flex-col md:flex-row items-center justify-center gap-3 max-w-3xl mx-auto">
-                    <form onSubmit={handleSearch} className="flex flex-row items-center justify-between gap-1 w-full md:w-[65%] bg-white p-1 md:p-1.5 rounded-full shadow-sm border border-gray-100 ring-4 ring-[#1A1A1A]/5">
+                <form onSubmit={handleSearch} className="flex flex-col md:flex-row items-center justify-center gap-3 max-w-4xl mx-auto w-full px-4 md:px-0">
+                    <div className="flex flex-row items-center justify-between gap-1 w-full md:flex-1 bg-white p-1 md:p-1.5 rounded-full shadow-sm border border-gray-100 ring-4 ring-[#1A1A1A]/5">
                         <div className="flex items-center flex-1 px-4 md:px-5 gap-2 md:gap-3">
                             <MapPin className="text-[#D4AF37] w-4 h-4 md:w-5 md:h-5 shrink-0" />
                             <input
@@ -126,37 +177,20 @@ export function Shops() {
                                 placeholder="Search by city..."
                                 value={cityQuery}
                                 onChange={(e) => setCityQuery(e.target.value)}
-                                className="w-full outline-none text-gray-700 placeholder-gray-400 text-sm font-medium py-1.5 bg-transparent"
+                                className="w-full outline-none text-gray-700 placeholder-gray-400 text-sm font-medium py-2 md:py-1.5 bg-transparent"
                             />
                         </div>
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="shrink-0 bg-[#1A1A1A] text-white p-2 md:px-4 md:py-2.5 rounded-full font-bold uppercase text-[10px] tracking-widest hover:bg-black active:scale-95 transition-all disabled:opacity-70 flex items-center justify-center gap-1.5"
-                        >
-                            {loading ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                                <>
-                                    <div className="hidden md:flex items-center gap-1">
-                                        <Search className="w-4 h-4" />
-                                        <span>Search</span>
-                                    </div>
-                                    <Search className="md:hidden w-4 h-4" />
-                                </>
-                            )}
-                        </button>
-                    </form>
+                    </div>
                     
                     {/* Custom State Dropdown */}
-                    <div className="relative w-full md:w-44" ref={dropdownRef}>
+                    <div className="relative w-full md:w-48" ref={dropdownRef}>
                         <button
                             type="button"
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                            className="w-full bg-white border border-gray-100 text-gray-700 py-2 md:py-[12px] px-5 rounded-full shadow-sm outline-none font-medium text-sm cursor-pointer ring-4 ring-[#1A1A1A]/5 hover:border-[#D4AF37] transition-colors flex items-center justify-between gap-2"
+                            className="w-full bg-white border border-gray-100 text-gray-700 py-3 md:py-[12px] px-5 rounded-full shadow-sm outline-none font-medium text-sm cursor-pointer ring-4 ring-[#1A1A1A]/5 hover:border-[#D4AF37] transition-colors flex items-center justify-between gap-2"
                         >
                             <span className="truncate">
-                                {INDIAN_STATES.find(s => s.value === (selectedState || ""))?.label || "All States"}
+                                {INDIAN_STATES.find(s => s.value === (selectedState || ""))?.label || "Select State"}
                             </span>
                             <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                         </button>
@@ -194,7 +228,23 @@ export function Shops() {
                             </div>
                         )}
                     </div>
-                </div>
+
+                    {/* Submit Button */}
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="mt-3 md:mt-0 bg-[#1A1A1A] text-white p-3 md:px-6 md:py-[12px] rounded-full font-bold uppercase text-[10px] tracking-widest hover:bg-black active:scale-95 transition-all disabled:opacity-70 flex items-center justify-center gap-2 shadow-lg mx-auto md:mx-0 w-32 shrink-0"
+                    >
+                        {loading ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                            <>
+                                <Search className="w-3.5 h-3.5" />
+                                <span>Search</span>
+                            </>
+                        )}
+                    </button>
+                </form>
             </div>
 
             {/* Main Content: Full Width Grid */}
@@ -245,8 +295,13 @@ export function Shops() {
                                             alt={salon.name}
                                         />
                                         {/* Heart Icon */}
-                                        <button className="absolute top-3 right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 shadow-sm transition-colors" onClick={(e) => { e.stopPropagation(); /* Add to wishlist logic */ }}>
-                                            <Heart size={16} strokeWidth={2} />
+                                        <button 
+                                            className={`absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm transition-all hover:scale-110 active:scale-95 ${
+                                                userFavorites.includes(salon._id) ? 'text-red-500 hover:bg-white' : 'text-gray-400 hover:text-red-500'
+                                            }`} 
+                                            onClick={(e) => handleToggleFavorite(e, salon._id)}
+                                        >
+                                            <Heart size={16} strokeWidth={userFavorites.includes(salon._id) ? 1.5 : 2} className={userFavorites.includes(salon._id) ? "fill-red-500" : ""} />
                                         </button>
                                     </div>
 

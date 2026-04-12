@@ -11,6 +11,7 @@ import { ProfilePage } from "./pages/profilePage.jsx"
 import { MyBookingsPage } from "./pages/bookingsListPage.jsx"
 import SalonBookingsPage from "./pages/SalonBookingsPage.jsx";
 import { SalonManagementPage } from "./pages/SalonManagementPage.jsx";
+import { FavoritesPage } from "./pages/FavoritesPage.jsx";
 import MainLayout from "./layouts/MainLayout.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { SocketProvider } from "./context/SocketContext.jsx";
@@ -42,6 +43,7 @@ function App() {
                   <Route path="bookings" element={<MyBookingsPage />} />
                   <Route path="salon/dashboard" element={<SalonBookingsPage />} />
                   <Route path="salon/manage" element={<SalonManagementPage />} />
+                  <Route path="favorites" element={<FavoritesPage />} />
                 </Route>
                 
                 {/* Auth pages (no layout) */}

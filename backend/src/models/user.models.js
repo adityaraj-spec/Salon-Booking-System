@@ -37,7 +37,11 @@ const userSchema = new mongoose.Schema({
   },
   refreshToken: {
     type: String,
-  }
+  },
+  favorites: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Salon"
+  }]
 }, { timestamps: true });
 
 userSchema.pre("save", async function () {

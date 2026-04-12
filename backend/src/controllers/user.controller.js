@@ -193,10 +193,59 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, user, "Account details updated successfully"))
 })
 
+const toggleFavorite = asyncHandler(async (req, res) => {
+    const { salonId } = req.params;
+    const userId = req.user._id;
+
+    if (!salonId) {
+        throw new ApiError(400, "Salon ID is required");
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    const isFavorited = user.favorites.includes(salonId);
+
+    if (isFavorited) {
+        // Remove from favorites
+        user.favorites = user.favorites.filter(id => id.toString() !== salonId.toString());
+    } else {
+        // Add to favorites
+        user.favorites.push(salonId);
+    }
+
+    await user.save({ validateBeforeSave: false });
+
+    return res.status(200).json(
+        new ApiResponse(200, { isFavorited: !isFavorited, favorites: user.favorites }, "Favorites updated successfully")
+    );
+});
+
+const getFavorites = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+
+    const user = await User.findById(userId).populate({
+        path: 'favorites',
+        select: 'name city state address contactNumber images rating reviews openingHours closingHours availableSeats' // Include necessary salon fields
+    });
+
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200, { favorites: user.favorites }, "Favorites fetched successfully")
+    );
+});
+
 export {
     registerUser,
     loginUser,
     logoutUser,
     updateUserRole,
-    updateAccountDetails
+    updateAccountDetails,
+    toggleFavorite,
+    getFavorites
 }
