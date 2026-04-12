@@ -199,15 +199,14 @@ export function Shops() {
                             </button>
                         </form>
 
-                        {/* Custom State Dropdown */}
                         <div className="relative w-[110px] sm:w-36 md:w-44 shrink-0" ref={dropdownRef}>
                             <button
                                 type="button"
                                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                className="w-full bg-white border border-gray-100 text-gray-700 py-[11px] md:py-[12px] px-3 md:px-5 rounded-full shadow-sm outline-none font-medium text-[11px] sm:text-xs md:text-sm cursor-pointer ring-4 ring-[#1A1A1A]/5 hover:border-[#D4AF37] transition-colors flex items-center justify-between gap-1 md:gap-2"
-                            >
-                                <span className="truncate">
-                                    {INDIAN_STATES.find(s => s.value === (selectedState || ""))?.label || "State"}
+                                className="w-full bg-white border border-gray-100 text-gray-700 py-[11px] md:py-[12px] px-4 md:px-5 rounded-full shadow-sm outline-none font-medium text-sm md:text-base cursor-pointer ring-4 ring-[#1A1A1A]/5 hover:border-[#D4AF37] transition-colors flex items-center justify-between gap-2"
+                              >  
+                              <span className="truncate">
+                                    {INDIAN_STATES.find(s => s.value === (selectedState || ""))?.label || "Select State"}
                                 </span>
                                 <ChevronDown className={`w-3 h-3 md:w-4 md:h-4 text-gray-500 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                             </button>
