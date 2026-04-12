@@ -32,7 +32,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["customer", "staff", "salonOwner"],
+    enum: ["customer", "staff", "salonOwner", "super_admin"],
     default: "customer"
   },
   refreshToken: {

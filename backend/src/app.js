@@ -10,6 +10,8 @@ import reviewRouter from "./routes/review.routes.js";
 import notificationRouter from "./routes/notification.routes.js";
 import serviceRouter from "./routes/service.routes.js";
 import staffRouter from "./routes/staff.routes.js";
+import adminRouter from "./routes/admin.routes.js";
+import ownerRouter from "./routes/owner.routes.js";
 import ApiError from "./utils/apiError.js";
 
 const app = express();
@@ -32,6 +34,8 @@ app.use("/api/v1/reviews", reviewRouter);
 app.use("/api/v1/notifications", notificationRouter);
 app.use("/api/v1/services", serviceRouter);
 app.use("/api/v1/staff", staffRouter);
+app.use("/api/v1/admin", adminRouter);
+app.use("/api/v1/owner", ownerRouter);
 
 // common error handling middleware
 app.use((err, req, res, next) => {
