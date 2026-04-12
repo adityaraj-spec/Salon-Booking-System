@@ -324,17 +324,30 @@ export function NavBar() {
                                     </NavLink>
                                     
                                     {user?.role === "salonOwner" && (
-                                        <button 
-                                            onClick={() => {
-                                                setIsMenuOpen(false);
-                                                const token = localStorage.getItem('authToken');
-                                                window.open(`http://localhost:5174?token=${token}`, '_blank');
-                                            }}
-                                            className="w-full flex items-center justify-start gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-colors"
-                                        >
-                                            <LayoutDashboard size={18} />
-                                            Owner Dashboard
-                                        </button>
+                                        <>
+                                            <button 
+                                                onClick={() => {
+                                                    setIsMenuOpen(false);
+                                                    const token = localStorage.getItem('authToken');
+                                                    window.open(`http://localhost:5174?token=${token}`, '_blank');
+                                                }}
+                                                className="w-full flex items-center justify-start gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-colors"
+                                            >
+                                                <LayoutDashboard size={18} />
+                                                Owner Dashboard
+                                            </button>
+                                            <button 
+                                                onClick={() => {
+                                                    setIsMenuOpen(false);
+                                                    const token = localStorage.getItem('authToken');
+                                                    window.open(`http://localhost:5174/owner/salon?token=${token}`, '_blank');
+                                                }}
+                                                className="w-full flex items-center justify-start gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-colors"
+                                            >
+                                                <Scissors size={18} />
+                                                Edit Salon
+                                            </button>
+                                        </>
                                     )}
                                     
                                     <div className="h-px bg-gray-100 my-1 mx-2"></div>
@@ -455,6 +468,16 @@ export function NavBar() {
                                 className="w-full flex items-center justify-start gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
                             >
                                 Admin Dashboard
+                            </button>
+                            <button 
+                                onClick={() => {
+                                    setIsMobileMenuOpen(false);
+                                    const token = localStorage.getItem('authToken');
+                                    window.open(`http://localhost:5174/owner/salon?token=${token}`, '_blank');
+                                }}
+                                className="w-full flex items-center justify-start gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
+                            >
+                                Edit Salon
                             </button>
                         </>
                     )}
