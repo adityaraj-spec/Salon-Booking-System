@@ -49,7 +49,8 @@ export function Shops() {
     const [userFavorites, setUserFavorites] = useState([]);
     const [cityQuery, setCityQuery] = useState(cityParam);
     const [selectedState, setSelectedState] = useState("");
-    const [sortByPrice, setSortByPrice] = useState(false);
+    const [sortBy, setSortBy] = useState("price");
+    const [sortOrder, setSortOrder] = useState("asc");
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -73,12 +74,10 @@ export function Shops() {
             const params = { 
                 limit: 100,
                 city: targetCity,
-                search: targetState
+                search: targetState,
+                sortBy: sortBy,
+                sortOrder: sortOrder
             };
-            if (sortByPrice) {
-                params.sortBy = "price";
-                params.sortOrder = "asc";
-            }
             const response = await axiosInstance.get("/salons", { params });
             if (response.data.success) {
                 setSalons(response.data.data.salons);
@@ -137,7 +136,7 @@ export function Shops() {
     useEffect(() => {
         setCityQuery(cityParam);
         fetchSalons(cityParam, selectedState);
-    }, [cityParam, searchParams, sortByPrice]);
+    }, [cityParam, searchParams, sortBy, sortOrder]);
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -225,15 +224,36 @@ export function Shops() {
                         </div>
                     </div>
 
-                    {/* Simple Price Sort Toggle */}
-                    <div className="flex justify-center mt-6">
-                        <button 
-                            onClick={() => setSortByPrice(!sortByPrice)}
-                            className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all shadow-md ${sortByPrice ? 'bg-[#D4AF37] text-white' : 'bg-white text-gray-600 border border-gray-100 hover:bg-gray-50'}`}
-                        >
-                            <ArrowUpDown size={16} />
-                            {sortByPrice ? "Price: Low to High (Active)" : "Sort by Price"}
-                        </button>
+                    {/* Premium Sorting Row */}
+                    <div className="flex flex-wrap items-center justify-between gap-6 mt-8 px-4 bg-gray-50/50 p-6 rounded-3xl border border-gray-100">
+                        <div className="flex flex-col gap-2">
+                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Sort Results</span>
+                            <div className="flex bg-white p-1 rounded-full border border-gray-100 shadow-sm flex-wrap">
+                                <button 
+                                    onClick={() => { setSortBy("price"); setSortOrder("asc"); }}
+                                    className={`px-5 py-2 rounded-full text-xs font-bold transition-all ${sortBy === "price" && sortOrder === "asc" ? 'bg-[#1a1a1a] text-white shadow-md' : 'text-gray-400 hover:text-gray-600'}`}
+                                >
+                                    Price: Low to High
+                                </button>
+                                <button 
+                                    onClick={() => { setSortBy("price"); setSortOrder("desc"); }}
+                                    className={`px-5 py-2 rounded-full text-xs font-bold transition-all ${sortBy === "price" && sortOrder === "desc" ? 'bg-[#1a1a1a] text-white shadow-md' : 'text-gray-400 hover:text-gray-600'}`}
+                                >
+                                    Price: High to Low
+                                </button>
+                                <button 
+                                    onClick={() => { setSortBy("rating"); setSortOrder("desc"); }}
+                                    className={`px-5 py-2 rounded-full text-xs font-bold transition-all ${sortBy === "rating" ? 'bg-[#1a1a1a] text-white shadow-md' : 'text-gray-400 hover:text-gray-600'}`}
+                                >
+                                    Top Rated
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div className="flex flex-col items-center md:items-end gap-1">
+                            <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Salons Found</div>
+                            <div className="text-3xl font-serif font-bold text-gray-900 leading-none">{salons.length}</div>
+                        </div>
                     </div>
                 </div>
 
