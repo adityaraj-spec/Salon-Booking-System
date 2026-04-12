@@ -335,6 +335,72 @@ export function LandingPage() {
                 </div>
             </section>
 
+
+            {/* ── SEO INFORMATIONAL SECTION ── */}
+            <section className="py-20 bg-white px-6 border-t border-gray-100">
+                <div className="max-w-6xl mx-auto">
+                    <div className="grid md:grid-cols-2 gap-16">
+                        <div className="space-y-8">
+                            <div>
+                                <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">Online Salon Booking with SalonNow</h2>
+                                <p className="text-gray-600 leading-relaxed text-sm">
+                                    SalonNow is a leading beauty and wellness platform that ensures easy and hassle-free salon bookings. With its user-friendly interface and extensive selection of salons, our platform enables users to find the perfect grooming and self-care services with just a few clicks.
+                                </p>
+                                <p className="text-gray-600 leading-relaxed text-sm mt-4">
+                                    Moreover, the platform provides an array of convenient features, including the ability to effortlessly share salon wishlists, the flexibility to pay at the salon, and 24x7 customer support to ensure a seamless experience for all beauty seekers.
+                                </p>
+                            </div>
+
+                            <div>
+                                <h2 className="text-2xl font-bold text-[#1a1a1a] mb-6">Why book salons online with SalonNow?</h2>
+                                <p className="text-gray-600 leading-relaxed text-sm mb-6">
+                                    SalonNow has emerged as the go-to platform for hair, skin, and spa bookings. From luxury spa retreats to budget-friendly grooming centers, we ensure a safe and professional salon experience across India.
+                                </p>
+                                <div className="space-y-4">
+                                    {[
+                                        { title: "Largest selection of salons", desc: "Choose from a wide range of salons to suit your preferences — from local gems to premium chains." },
+                                        { title: "Best deals and prices", desc: "Get the lowest prices on your bookings with the best salon offers and use our advanced filter options." },
+                                        { title: "Pay at Salon option", desc: "Make your online booking and get the flexibility to pay at the salon directly after your service." },
+                                        { title: "Collaborative wishlists", desc: "Plan your grooming together - share your favorite salons with friends and let them add their own." },
+                                        { title: "24x7 customer support", desc: "Need assistance? Our dedicated support team is available round the clock for all your booking queries." }
+                                    ].map((item, i) => (
+                                        <div key={i} className="flex flex-col gap-1">
+                                            <h3 className="font-bold text-[#1a1a1a] text-sm">{item.title}</h3>
+                                            <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-[#fafafa] p-8 md:p-12 rounded-3xl border border-gray-100 h-fit sticky top-24">
+                            <h2 className="text-2xl font-bold text-[#1a1a1a] mb-6 font-serif">How to search for cheap salons on SalonNow?</h2>
+                            <p className="text-gray-600 text-sm leading-relaxed mb-8">
+                                SalonNow offers a wide selection of salons that cater to all types of budgets, making it easier for you to find the perfect grooming services that suit your needs.
+                            </p>
+                            <div className="space-y-6">
+                                {[
+                                    "Log in to the SalonNow app.",
+                                    "Enter the city or area you want to book for.",
+                                    "Choose your preferred date and time.",
+                                    "Select your desired services and hit 'Search Salons'.",
+                                    "Filter by price and sort the results from low to high.",
+                                    "Compare and choose from the best salon options."
+                                ].map((step, i) => (
+                                    <div key={i} className="flex gap-4 items-start">
+                                        <span className="w-6 h-6 rounded-full bg-[#1a1a1a] text-white text-[10px] flex items-center justify-center shrink-0 mt-0.5">{i+1}</span>
+                                        <p className="text-gray-700 text-sm font-medium">{step}</p>
+                                    </div>
+                                ))}
+                            </div>
+                            <p className="text-gray-500 text-xs mt-10 italic border-t border-gray-200 pt-6">
+                                You can easily compare prices of several salons and read reviews before making a reservation. Booking budget-friendly salons has never been simpler.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* ── CTA ── */}
             <section className="py-20 bg-[#1f1e1d] px-6 text-center">
                 <div className="max-w-3xl mx-auto flex flex-col items-center">
