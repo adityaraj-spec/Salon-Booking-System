@@ -34,16 +34,6 @@ const INDIAN_STATES = [
     { value: "Uttar Pradesh", label: "Uttar Pradesh" },
     { value: "Uttarakhand", label: "Uttarakhand" },
     { value: "West Bengal", label: "West Bengal" },
-    // Union Territories
-    { value: "Andaman and Nicobar Islands", label: "Andaman and Nicobar" },
-    { value: "Chandigarh", label: "Chandigarh" },
-    { value: "Dadra and Nagar Haveli", label: "Dadra and Nagar Haveli" },
-    { value: "Daman and Diu", label: "Daman and Diu" },
-    { value: "Delhi", label: "Delhi" },
-    { value: "Jammu and Kashmir", label: "Jammu and Kashmir" },
-    { value: "Ladakh", label: "Ladakh" },
-    { value: "Lakshadweep", label: "Lakshadweep" },
-    { value: "Puducherry", label: "Puducherry" }
 ];
 
 export function Shops() {
