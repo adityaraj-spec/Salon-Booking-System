@@ -204,8 +204,8 @@ export function Shops() {
                                 type="button"
                                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                                 className="w-full bg-white border border-gray-100 text-gray-700 py-[11px] md:py-[12px] px-4 md:px-5 rounded-full shadow-sm outline-none font-medium text-sm md:text-base cursor-pointer ring-4 ring-[#1A1A1A]/5 hover:border-[#D4AF37] transition-colors flex items-center justify-between gap-2"
-                              >  
-                              <span className="truncate">
+                            >
+                                <span className="truncate">
                                     {INDIAN_STATES.find(s => s.value === (selectedState || ""))?.label || "Select State"}
                                 </span>
                                 <ChevronDown className={`w-3 h-3 md:w-4 md:h-4 text-gray-500 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
@@ -213,8 +213,8 @@ export function Shops() {
 
                             {/* Dropdown Menu */}
                             {isDropdownOpen && (
-                                <div className="absolute z-50 w-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                                    <ul className="max-h-64 overflow-y-auto py-2 scroll-smooth">
+                                <div className="absolute z-50 min-w-[200px] right-0 md:auto md:left-0 mt-2 bg-white border border-gray-100 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <ul className="max-h-64 overflow-y-auto overflow-x-hidden py-2 scroll-smooth w-full">
                                         {INDIAN_STATES.map((state) => (
                                             <li key={state.value}>
                                                 <button
