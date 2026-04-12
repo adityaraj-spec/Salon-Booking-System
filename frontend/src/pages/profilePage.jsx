@@ -76,7 +76,7 @@ export function ProfilePage() {
                                 )}
                             </div>
                             <span className="bg-[#f9f5e8] text-[#D4AF37] px-4 py-1 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-widest border border-[#D4AF37]/20">
-                                {user.role}
+                                {user.role === 'unassigned' ? 'Not Selected' : user.role}
                             </span>
                         </div>
 
@@ -147,7 +147,7 @@ export function ProfilePage() {
                                     </div>
                                     <div>
                                         <p className="text-xs text-gray-400 font-medium">Role Access</p>
-                                        <p className="text-[#1a1a1a] font-bold">Verified {user.role}</p>
+                                        <p className="text-[#1a1a1a] font-bold">Verified {user.role === 'unassigned' ? 'User' : user.role}</p>
                                     </div>
                                 </div>
 
