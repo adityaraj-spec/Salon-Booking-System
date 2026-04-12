@@ -36,12 +36,12 @@ export default function Sidebar({ role }) {
   };
 
   return (
-    <aside className="fixed top-0 left-0 h-full w-64 bg-gray-900 text-white flex flex-col z-40 shadow-xl">
+    <aside className="fixed top-0 left-0 h-full w-64 bg-[#1a1a1a] text-white flex flex-col z-40 shadow-xl border-r border-[#D4AF37]/10">
       {/* Logo */}
-      <div className="px-6 py-5 border-b border-gray-800">
+      <div className="px-6 py-6 border-b border-gray-800">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center">
-            <ScissorsIcon size={18} className="text-white" />
+          <div className="w-10 h-10 bg-[#f9f5e8] rounded-full border border-[#D4AF37]/20 flex items-center justify-center">
+            <ScissorsIcon size={20} className="text-[#D4AF37]" />
           </div>
           <div>
             <p className="font-bold text-white text-sm leading-none">SalonNow</p>
@@ -59,9 +59,9 @@ export default function Sidebar({ role }) {
             key={to}
             to={to}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group ${
+              `flex items-center gap-3 px-3 py-3 rounded-2xl text-sm font-medium transition-all group ${
                 isActive
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
+                  ? 'bg-[#f9f5e8] text-[#1a1a1a] shadow-lg shadow-[#D4AF37]/10 border border-[#D4AF37]/20'
                   : 'text-gray-400 hover:bg-gray-800 hover:text-white'
               }`
             }
@@ -75,8 +75,8 @@ export default function Sidebar({ role }) {
 
       {/* User info + logout */}
       <div className="px-3 py-4 border-t border-gray-800">
-        <div className="flex items-center gap-3 px-3 py-2.5 mb-2 rounded-xl bg-gray-800">
-          <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
+        <div className="flex items-center gap-3 px-3 py-2.5 mb-2 rounded-2xl bg-gray-800 border border-[#D4AF37]/10">
+          <div className="w-8 h-8 rounded-full bg-[#D4AF37] flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-md">
             {user?.fullName?.charAt(0).toUpperCase() || 'A'}
           </div>
           <div className="flex-1 min-w-0">
@@ -86,9 +86,9 @@ export default function Sidebar({ role }) {
         </div>
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all text-sm font-medium"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all font-bold text-[10px] uppercase tracking-widest"
         >
-          <LogOut size={17} />
+          <LogOut size={16} />
           Logout
         </button>
       </div>

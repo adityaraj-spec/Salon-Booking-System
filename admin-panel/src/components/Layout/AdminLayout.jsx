@@ -4,11 +4,11 @@ import Header from './Header';
 
 export default function AdminLayout({ role }) {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#fcfcfc]">
       <Sidebar role={role} />
       <Header />
       <main className="ml-64 pt-16 min-h-screen">
-        <div className="p-6">
+        <div className="p-8">
           <Outlet />
         </div>
       </main>

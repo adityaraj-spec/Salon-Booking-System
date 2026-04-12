@@ -26,15 +26,15 @@ function InlinePrice({ value, onSave }) {
 
   if (editing) {
     return (
-      <div className="flex items-center gap-1.5">
-        <span className="text-gray-400 text-sm">₹</span>
+      <div className="flex items-center gap-1.5 p-1 bg-white rounded-xl shadow-lg border border-[#D4AF37]/20">
+        <span className="text-[#D4AF37] text-xs font-black ml-2">₹</span>
         <input ref={inputRef} type="number" value={val} onChange={e => setVal(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') cancel(); }}
-          className="w-20 px-2 py-1 border-2 border-blue-400 rounded-lg text-sm font-bold focus:outline-none" />
-        <button onClick={save} disabled={saving} className="p-1 text-green-600 hover:bg-green-50 rounded-md transition-colors">
+          className="w-20 px-2 py-1.5 border-none rounded-lg text-sm font-black focus:outline-none bg-gray-50/50" />
+        <button onClick={save} disabled={saving} className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors">
           <Check size={14} />
         </button>
-        <button onClick={cancel} className="p-1 text-red-500 hover:bg-red-50 rounded-md transition-colors">
+        <button onClick={cancel} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
           <X size={14} />
         </button>
       </div>
@@ -44,9 +44,9 @@ function InlinePrice({ value, onSave }) {
   return (
     <div onDoubleClick={start}
       title="Double-click to edit price"
-      className="flex items-center gap-1 cursor-pointer group hover:bg-blue-50 px-2 py-1 rounded-lg transition-colors w-fit">
-      <span className="text-sm font-bold text-gray-900">₹{value}</span>
-      <Pencil size={11} className="text-gray-300 group-hover:text-blue-500 transition-colors" />
+      className="flex items-center gap-2 cursor-pointer group hover:bg-[#D4AF37]/5 px-3 py-1.5 rounded-full transition-all border border-transparent hover:border-[#D4AF37]/10 w-fit">
+      <span className="text-sm font-black font-serif text-[#1a1a1a]">₹{value}</span>
+      <Pencil size={11} className="text-gray-300 group-hover:text-[#D4AF37] transition-colors" />
     </div>
   );
 }
@@ -83,20 +83,20 @@ function ServiceForm({ initial, onSave, onClose }) {
         {[['name','Service Name *',true,'text'],['category','Category','false','text'],
           ['price','Price (₹)',false,'number'],['duration','Duration (mins)',false,'number']].map(([k,label,req,type]) => (
           <div key={k}>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">{label}</label>
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 pl-1">{label}</label>
             <input type={type} value={form[k]} onChange={e => set(k, e.target.value)} required={req === true}
-              className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 bg-gray-50" />
+              className="w-full px-4 py-3 border-none rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 bg-gray-50/50" />
           </div>
         ))}
       </div>
       <div>
-        <label className="block text-xs font-semibold text-gray-600 mb-1">Description</label>
+        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 pl-1">Description</label>
         <textarea value={form.description} onChange={e => set('description', e.target.value)}
-          rows={3} className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 bg-gray-50 resize-none" />
+          rows={3} className="w-full px-4 py-3 border-none rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 bg-gray-50/50 resize-none" />
       </div>
-      <div className="flex gap-3 pt-2">
-        <button type="button" onClick={onClose} className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">Cancel</button>
-        <button type="submit" disabled={saving} className="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-60">
+      <div className="flex gap-4 pt-4">
+        <button type="button" onClick={onClose} className="flex-1 px-6 py-4 bg-gray-50 rounded-full text-[10px] font-black uppercase tracking-widest text-gray-600 hover:bg-gray-100 transition-all">Cancel</button>
+        <button type="submit" disabled={saving} className="flex-1 px-6 py-4 bg-[#1a1a1a] hover:bg-black text-white rounded-full text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-black/10 disabled:opacity-60">
           {saving ? 'Saving...' : (initial ? 'Update' : 'Create Service')}
         </button>
       </div>
@@ -146,26 +146,29 @@ export default function MyServices() {
   };
 
   const columns = [
-    { key: 'name', label: 'Service Name', render: (v) => <span className="font-semibold text-gray-900">{v}</span> },
+    { key: 'name', label: 'Service Name', render: (v) => <span className="font-bold text-[#1a1a1a]">{v}</span> },
     { key: 'category', label: 'Category', render: (v) => v
-      ? <span className="bg-purple-50 text-purple-700 text-xs font-semibold px-2.5 py-1 rounded-full">{v}</span>
+      ? <span className="bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest">{v}</span>
       : '—' },
     { key: 'price', label: 'Price', render: (v, row) => (
       <InlinePrice value={v} onSave={(newPrice) => handlePriceSave(row._id, newPrice)} />
     )},
-    { key: 'duration', label: 'Duration', render: (v) => v ? `${v} min` : '—' },
+    { key: 'duration', label: 'Duration', render: (v) => v ? <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{v} min</span> : '—' },
   ];
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-6 mb-8 mt-2">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">My Services</h2>
-          <p className="text-sm text-gray-400">Double-click any price to edit inline. Changes reflect on main site immediately.</p>
+          <h2 className="text-2xl font-serif font-black text-[#1a1a1a] flex items-center gap-2">
+            My Services
+            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
+          </h2>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-2">Double-click any price to edit inline. Changes reflect on main site immediately.</p>
         </div>
         <button onClick={() => setModal({ open: true, service: null })}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-lg shadow-blue-600/20 transition-colors">
-          <Plus size={16} /> Add Service
+          className="flex items-center gap-3 bg-[#1a1a1a] hover:bg-black text-white px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-xl shadow-black/10 hover:scale-[1.02]">
+          <Plus size={16} className="text-[#D4AF37]" /> Add Service
         </button>
       </div>
 
@@ -175,12 +178,12 @@ export default function MyServices() {
         actions={(row) => (
           <>
             <button onClick={() => setModal({ open: true, service: row })}
-              className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-              <Pencil size={15} />
+              className="p-2 text-gray-400 hover:text-[#D4AF37] hover:bg-[#D4AF37]/10 rounded-xl transition-all shadow-sm">
+              <Pencil size={14} />
             </button>
             <button onClick={() => setConfirm({ open: true, id: row._id })}
-              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-              <Trash2 size={15} />
+              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all shadow-sm">
+              <Trash2 size={14} />
             </button>
           </>
         )}

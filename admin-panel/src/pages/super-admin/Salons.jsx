@@ -40,10 +40,10 @@ function SalonForm({ initial, owners, onSave, onClose }) {
 
   const F = ({ label, k, type = 'text', placeholder, required }) => (
     <div>
-      <label className="block text-xs font-semibold text-gray-600 mb-1">{label}</label>
+      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 pl-1">{label}</label>
       <input type={type} value={form[k]} onChange={e => set(k, e.target.value)}
         placeholder={placeholder} required={required}
-        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 bg-gray-50" />
+        className="w-full px-4 py-3 border-none rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 bg-gray-50/50 transition-all font-sans" />
     </div>
   );
 
@@ -60,23 +60,23 @@ function SalonForm({ initial, owners, onSave, onClose }) {
       </div>
       <F label="Address *" k="address" required />
       <div>
-        <label className="block text-xs font-semibold text-gray-600 mb-1">Description</label>
+        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 pl-1">Description</label>
         <textarea value={form.description} onChange={e => set('description', e.target.value)}
-          rows={3} className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 bg-gray-50 resize-none" />
+          rows={3} className="w-full px-4 py-3 border-none rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 bg-gray-50/50 resize-none transition-all" />
       </div>
       <div>
-        <label className="block text-xs font-semibold text-gray-600 mb-1">Assign Owner *</label>
+        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 pl-1">Assign Owner *</label>
         <select value={form.ownerId} onChange={e => set('ownerId', e.target.value)} required
-          className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 bg-gray-50">
+          className="w-full px-4 py-3 border-none rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 bg-gray-50/50 transition-all">
           <option value="">Select an owner</option>
           {owners.map(o => <option key={o._id} value={o._id}>{o.fullName} ({o.email})</option>)}
         </select>
       </div>
-      <div className="flex gap-3 pt-2">
-        <button type="button" onClick={onClose} className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+      <div className="flex gap-4 pt-4">
+        <button type="button" onClick={onClose} className="flex-1 px-6 py-4 bg-gray-50 rounded-full text-[10px] font-black uppercase tracking-widest text-gray-600 hover:bg-gray-100 transition-all">
           Cancel
         </button>
-        <button type="submit" disabled={saving} className="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-60">
+        <button type="submit" disabled={saving} className="flex-1 px-6 py-4 bg-[#1a1a1a] hover:bg-black text-white rounded-full text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-black/10 disabled:opacity-60">
           {saving ? 'Saving...' : (initial ? 'Update Salon' : 'Create Salon')}
         </button>
       </div>
@@ -126,20 +126,20 @@ export default function SuperSalons() {
 
   const columns = [
     { key: 'name', label: 'Salon Name', render: (v, row) => (
-      <div className="flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center shrink-0">
-          <Store size={14} className="text-orange-500" />
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-[14px] bg-[#D4AF37]/10 flex items-center justify-center shrink-0 border border-[#D4AF37]/10">
+          <Store size={18} className="text-[#D4AF37]" />
         </div>
         <div>
-          <p className="font-semibold text-gray-900 text-sm">{v}</p>
-          <p className="text-xs text-gray-400">{row.city}</p>
+          <p className="font-bold text-[#1a1a1a] text-sm">{v}</p>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{row.city}</p>
         </div>
       </div>
     )},
     { key: 'owner', label: 'Owner', render: (v) => v?.fullName || '—' },
     { key: 'contactNumber', label: 'Phone' },
     { key: 'isOpen', label: 'Status', render: (v) => (
-      <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${v ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+      <span className={`text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest ${v ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}`}>
         {v ? 'Active' : 'Inactive'}
       </span>
     )},
@@ -148,16 +148,19 @@ export default function SuperSalons() {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-6 mb-8 mt-2">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Salons</h2>
-          <p className="text-sm text-gray-400">{total} salons registered on the platform</p>
+          <h2 className="text-2xl font-serif font-black text-[#1a1a1a] flex items-center gap-2">
+            Salon Registry
+            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
+          </h2>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-2">{total} salons registered on the platform</p>
         </div>
         <button
           onClick={() => setModal({ open: true, salon: null })}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-lg shadow-blue-600/20 transition-colors"
+          className="flex items-center gap-3 bg-[#1a1a1a] hover:bg-black text-white px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-xl shadow-black/10 hover:scale-[1.02]"
         >
-          <Plus size={16} /> Add Salon
+          <Plus size={16} className="text-[#D4AF37]" /> Register New Salon
         </button>
       </div>
 
@@ -169,12 +172,12 @@ export default function SuperSalons() {
         actions={(row) => (
           <>
             <button onClick={() => setModal({ open: true, salon: row })}
-              className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-              <Pencil size={15} />
+              className="p-2 text-gray-400 hover:text-[#D4AF37] hover:bg-[#D4AF37]/10 rounded-xl transition-all shadow-sm">
+              <Pencil size={14} />
             </button>
             <button onClick={() => setConfirm({ open: true, id: row._id })}
-              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-              <Trash2 size={15} />
+              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all shadow-sm">
+              <Trash2 size={14} />
             </button>
           </>
         )}

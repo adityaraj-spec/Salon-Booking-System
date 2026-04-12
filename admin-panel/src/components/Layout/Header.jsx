@@ -22,8 +22,8 @@ export default function Header() {
   return (
     <header className="fixed top-0 left-64 right-0 h-16 bg-white border-b border-gray-100 flex items-center justify-between px-6 z-30 shadow-sm">
       <div>
-        <h1 className="text-lg font-bold text-gray-900">{title}</h1>
-        <p className="text-xs text-gray-400">
+        <h1 className="text-xl font-serif font-black text-[#1a1a1a]">{title}</h1>
+        <p className="text-[11px] font-bold text-[#D4AF37] uppercase tracking-widest mt-1">
           {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
         </p>
       </div>
@@ -32,8 +32,8 @@ export default function Header() {
           <Bell size={20} />
         </button>
         <div className="w-px h-6 bg-gray-200" />
-        <span className="text-xs text-gray-400 font-medium">
-          {import.meta.env.VITE_APP_NAME}
+        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+          {import.meta.env.VITE_APP_NAME || "SalonNow"}
         </span>
       </div>
     </header>

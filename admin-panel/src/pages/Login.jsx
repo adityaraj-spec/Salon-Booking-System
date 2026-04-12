@@ -26,15 +26,15 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-white font-sans flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl mb-4 shadow-lg shadow-blue-600/30">
-            <Scissors size={28} className="text-white" />
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-[#1a1a1a] rounded-full mb-4 shadow-xl shadow-black/10 border-2 border-[#D4AF37]">
+            <Scissors size={28} className="text-[#D4AF37]" />
           </div>
-          <h1 className="text-3xl font-bold text-white">SalonNow</h1>
-          <p className="text-gray-400 mt-1 text-sm">Admin Panel — Authorized Access Only</p>
+          <h1 className="text-3xl font-serif font-black text-[#1a1a1a] tracking-wide">Salon<span className="text-[#D4AF37]">Now</span></h1>
+          <p className="text-[#D4AF37] font-bold text-[10px] uppercase tracking-[0.2em] mt-2">Admin Panel &mdash; Authorized Access Only</p>
         </div>
 
         {/* Card */}
@@ -57,7 +57,7 @@ export default function Login() {
                 value={form.email}
                 onChange={(e) => setForm(p => ({ ...p, email: e.target.value }))}
                 placeholder="admin@salonnow.com"
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all bg-gray-50"
+                className="w-full px-4 py-3 border-none rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 transition-all bg-gray-50 font-bold"
               />
             </div>
             <div>
@@ -69,7 +69,7 @@ export default function Login() {
                   value={form.password}
                   onChange={(e) => setForm(p => ({ ...p, password: e.target.value }))}
                   placeholder="••••••••"
-                  className="w-full px-4 py-3 pr-11 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all bg-gray-50"
+                  className="w-full px-4 py-3 pr-11 border-none rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 transition-all bg-gray-50 font-bold"
                 />
                 <button
                   type="button"
@@ -84,7 +84,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold text-sm transition-all shadow-lg shadow-blue-600/20 hover:shadow-blue-600/30 disabled:opacity-60 mt-2"
+              className="w-full bg-[#1a1a1a] hover:bg-black text-white py-4 rounded-full font-bold text-xs uppercase tracking-widest transition-all shadow-xl shadow-black/10 disabled:opacity-60 mt-4"
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>

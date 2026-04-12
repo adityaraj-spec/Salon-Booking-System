@@ -13,11 +13,11 @@ import StatCard from '../../components/UI/StatCard';
 import LoadingSpinner from '../../components/UI/LoadingSpinner';
 
 const STATUS_BADGE = {
-  pending:   'bg-yellow-100 text-yellow-700',
-  confirmed: 'bg-blue-100 text-blue-700',
-  completed: 'bg-green-100 text-green-700',
-  cancelled: 'bg-red-100 text-red-700',
-  rejected:  'bg-gray-100 text-gray-600',
+  pending:   'bg-amber-100 text-amber-700 font-bold uppercase tracking-widest',
+  confirmed: 'bg-[#D4AF37]/10 text-[#D4AF37] font-bold uppercase tracking-widest',
+  completed: 'bg-emerald-100 text-emerald-700 font-bold uppercase tracking-widest',
+  cancelled: 'bg-red-100 text-red-700 font-bold uppercase tracking-widest',
+  rejected:  'bg-gray-100 text-gray-600 font-bold uppercase tracking-widest',
 };
 
 export default function SuperAdminDashboard() {
@@ -47,54 +47,68 @@ export default function SuperAdminDashboard() {
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-          <h3 className="font-bold text-gray-800 mb-4">Revenue (Last 7 Days)</h3>
-          <ResponsiveContainer width="100%" height={220}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm">
+          <h3 className="font-serif font-black text-[#1a1a1a] text-lg mb-8 flex items-center gap-2">
+            Global Revenue
+            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
+          </h3>
+          <ResponsiveContainer width="100%" height={240}>
             <LineChart data={dailyBookings || []}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="_id" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} width={55} tickFormatter={v => `₹${v}`} />
-              <Tooltip formatter={v => [`₹${v}`, 'Revenue']} />
-              <Line type="monotone" dataKey="revenue" stroke="#2563EB" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#f8f8f8" vertical={false} />
+              <XAxis dataKey="_id" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold' }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold' }} width={65} tickFormatter={v => `₹${v}`} />
+              <Tooltip 
+                contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}
+              />
+              <Line type="monotone" dataKey="revenue" stroke="#D4AF37" strokeWidth={4} dot={{ r: 5, fill: '#D4AF37', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 7 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
-        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-          <h3 className="font-bold text-gray-800 mb-4">Bookings (Last 7 Days)</h3>
-          <ResponsiveContainer width="100%" height={220}>
+        <div className="bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm">
+          <h3 className="font-serif font-black text-[#1a1a1a] text-lg mb-8 flex items-center gap-2">
+            Booking Volume
+            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
+          </h3>
+          <ResponsiveContainer width="100%" height={240}>
             <BarChart data={dailyBookings || []}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="_id" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Bar dataKey="count" fill="#2563EB" radius={[4,4,0,0]} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#f8f8f8" vertical={false} />
+              <XAxis dataKey="_id" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold' }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold' }} />
+              <Tooltip 
+                contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}
+                cursor={{ fill: '#fcfcfc' }}
+              />
+              <Bar dataKey="count" fill="#1a1a1a" radius={[6,6,0,0]} barSize={28} />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
 
       {/* Recent Bookings + Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Bookings */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold text-gray-800">Recent Bookings</h3>
-            <button onClick={() => navigate('/super-admin/bookings')} className="text-xs text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1">
+        <div className="lg:col-span-2 bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="font-serif font-black text-[#1a1a1a] text-lg flex items-center gap-2">
+              Platform Feed
+              <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
+            </h3>
+            <button onClick={() => navigate('/super-admin/bookings')} className="text-[10px] text-[#D4AF37] hover:text-[#B8962E] font-black uppercase tracking-widest flex items-center gap-1 transition-colors">
               View all <ArrowRight size={12} />
             </button>
           </div>
           <div className="space-y-2">
             {(recentBookings || []).length === 0 && <p className="text-sm text-gray-400 text-center py-6">No bookings yet</p>}
             {(recentBookings || []).map(b => (
-              <div key={b._id} className="flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0">
+              <div key={b._id} className="flex items-center justify-between py-4 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-all px-2 rounded-xl">
                 <div>
-                  <p className="text-sm font-semibold text-gray-800">{b.customer?.fullName || 'Guest'}</p>
-                  <p className="text-xs text-gray-400">{b.salon?.name} • {b.date}</p>
+                  <p className="text-sm font-bold text-[#1a1a1a]">{b.customer?.fullName || 'Guest'}</p>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{b.salon?.name} • {b.date}</p>
                 </div>
-                <div className="flex items-center gap-3">
-                  {b.totalAmount && <span className="text-sm font-bold text-gray-900">₹{b.totalAmount}</span>}
-                  <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${STATUS_BADGE[b.status]}`}>
+                <div className="flex items-center gap-4">
+                  {b.totalAmount && <span className="font-serif font-black text-[#1a1a1a]">₹{b.totalAmount}</span>}
+                  <span className={`text-[10px] font-black px-3 py-1.5 rounded-full ${STATUS_BADGE[b.status]}`}>
                     {b.status}
                   </span>
                 </div>
@@ -104,9 +118,13 @@ export default function SuperAdminDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-          <h3 className="font-bold text-gray-800 mb-4">Quick Actions</h3>
-          <div className="space-y-2">
+        <div className="bg-[#1a1a1a] rounded-[32px] p-8 shadow-2xl shadow-black/20 text-white relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37] opacity-[0.05] rounded-full blur-2xl -mr-16 -mt-16"></div>
+          <h3 className="font-serif font-black text-white text-lg mb-8 relative z-10 flex items-center gap-2">
+            Command
+            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
+          </h3>
+          <div className="space-y-3 relative z-10">
             {[
               { label: 'Add New Salon', to: '/super-admin/salons', icon: Store },
               { label: 'Add New Service', to: '/super-admin/services', icon: BarChart2 },
@@ -116,13 +134,13 @@ export default function SuperAdminDashboard() {
               <button
                 key={to}
                 onClick={() => navigate(to)}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-blue-50 text-left transition-colors group"
+                className="w-full flex items-center gap-4 px-5 py-4 rounded-[20px] bg-white/5 hover:bg-[#D4AF37] text-left transition-all group"
               >
-                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-600 transition-colors">
-                  <Icon size={15} className="text-blue-600 group-hover:text-white transition-colors" />
+                <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                  <Icon size={18} className="text-[#D4AF37] group-hover:text-white transition-colors" />
                 </div>
-                <span className="text-sm font-medium text-gray-700 group-hover:text-blue-700 transition-colors">{label}</span>
-                <ArrowRight size={14} className="ml-auto text-gray-300 group-hover:text-blue-400 transition-colors" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300 group-hover:text-white transition-colors">{label}</span>
+                <ArrowRight size={14} className="ml-auto text-white/20 group-hover:text-white transition-colors" />
               </button>
             ))}
           </div>

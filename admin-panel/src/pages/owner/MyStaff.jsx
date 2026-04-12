@@ -38,20 +38,20 @@ function StaffForm({ initial, onSave, onClose }) {
         {[['name','Name *',true,'text'],['role','Role / Title',false,'text'],
           ['experience','Experience (Years)',false,'number']].map(([k,label,req,type]) => (
           <div key={k}>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">{label}</label>
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 pl-1">{label}</label>
             <input type={type} value={form[k]} onChange={e => set(k, e.target.value)} required={req === true}
-              className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 bg-gray-50" />
+              className="w-full px-4 py-3 border-none rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 bg-gray-50/50" />
           </div>
         ))}
       </div>
       <div>
-        <label className="block text-xs font-semibold text-gray-600 mb-1">Skills (comma separated)</label>
+        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 pl-1">Skills (comma separated)</label>
         <textarea value={form.skills} onChange={e => set('skills', e.target.value)} placeholder="e.g. Haircut, Coloring, Styling"
-          rows={2} className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 bg-gray-50 resize-none" />
+          rows={2} className="w-full px-4 py-3 border-none rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 bg-gray-50/50 resize-none" />
       </div>
-      <div className="flex gap-3 pt-2">
-        <button type="button" onClick={onClose} className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">Cancel</button>
-        <button type="submit" disabled={saving} className="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-60">
+      <div className="flex gap-4 pt-4">
+        <button type="button" onClick={onClose} className="flex-1 px-6 py-4 bg-gray-50 rounded-full text-[10px] font-black uppercase tracking-widest text-gray-600 hover:bg-gray-100 transition-all">Cancel</button>
+        <button type="submit" disabled={saving} className="flex-1 px-6 py-4 bg-[#1a1a1a] hover:bg-black text-white rounded-full text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-black/10 disabled:opacity-60">
           {saving ? 'Saving...' : (initial ? 'Update' : 'Add Staff')}
         </button>
       </div>
@@ -88,26 +88,29 @@ export default function MyStaff() {
   };
 
   const columns = [
-    { key: 'name', label: 'Name', render: (v) => <span className="font-semibold text-gray-900">{v}</span> },
-    { key: 'role', label: 'Role', render: (v) => v || '—' },
-    { key: 'experience', label: 'Experience', render: (v) => v ? `${v} years` : '—' },
+    { key: 'name', label: 'Name', render: (v) => <span className="font-bold text-[#1a1a1a]">{v}</span> },
+    { key: 'role', label: 'Role', render: (v) => <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{v || '—'}</span> },
+    { key: 'experience', label: 'Experience', render: (v) => v ? <span className="font-serif font-black text-[#1a1a1a]">{v} years</span> : '—' },
     { key: 'skills', label: 'Skills', render: (v) => (
-      <div className="flex flex-wrap gap-1">
-        {(v || []).map((s, i) => <span key={i} className="bg-gray-100 text-gray-600 text-[10px] uppercase font-bold px-2 py-0.5 rounded-md">{s}</span>)}
+      <div className="flex flex-wrap gap-1.5">
+        {(v || []).map((s, i) => <span key={i} className="bg-[#D4AF37]/10 text-[#D4AF37] text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest">{s}</span>)}
       </div>
     )},
   ];
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-6 mb-8 mt-2">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">My Staff</h2>
-          <p className="text-sm text-gray-400">Manage your salon's team members</p>
+          <h2 className="text-2xl font-serif font-black text-[#1a1a1a] flex items-center gap-2">
+            My Staff
+            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
+          </h2>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-2">Manage your salon's team members</p>
         </div>
         <button onClick={() => setModal({ open: true, staff: null })}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-lg shadow-blue-600/20 transition-colors">
-          <Plus size={16} /> Add Staff
+          className="flex items-center gap-3 bg-[#1a1a1a] hover:bg-black text-white px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-xl shadow-black/10 hover:scale-[1.02]">
+          <Plus size={16} className="text-[#D4AF37]" /> Add Staff
         </button>
       </div>
 
@@ -115,12 +118,12 @@ export default function MyStaff() {
         actions={(row) => (
           <>
             <button onClick={() => setModal({ open: true, staff: row })}
-              className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-              <Pencil size={15} />
+              className="p-2 text-gray-400 hover:text-[#D4AF37] hover:bg-[#D4AF37]/10 rounded-xl transition-all shadow-sm">
+              <Pencil size={14} />
             </button>
             <button onClick={() => setConfirm({ open: true, id: row._id })}
-              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-              <Trash2 size={15} />
+              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all shadow-sm">
+              <Trash2 size={14} />
             </button>
           </>
         )}

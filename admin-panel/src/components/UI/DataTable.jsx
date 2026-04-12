@@ -30,7 +30,7 @@ export default function DataTable({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-[28px] border border-gray-100 shadow-xl shadow-black/5 overflow-hidden transition-all">
       {/* Top toolbar */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50 gap-4">
         {onSearch && (
@@ -40,7 +40,7 @@ export default function DataTable({
               value={searchVal}
               onChange={handleSearch}
               placeholder={searchPlaceholder}
-              className="w-full pl-9 pr-4 py-2 text-sm bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-all"
+              className="w-full pl-9 pr-4 py-3 text-sm bg-gray-50/50 border-none rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 transition-all font-medium"
             />
           </div>
         )}
@@ -49,11 +49,11 @@ export default function DataTable({
           <select
             value={limit}
             onChange={(e) => onLimitChange?.(Number(e.target.value))}
-            className="border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            className="border-none bg-gray-50 rounded-xl px-3 py-1.5 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30"
           >
             {[10, 25, 50].map(n => <option key={n} value={n}>{n}</option>)}
           </select>
-          <span>rows</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest">rows</span>
         </div>
       </div>
 
@@ -61,13 +61,13 @@ export default function DataTable({
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-gray-50 border-b border-gray-100">
+            <tr className="bg-gray-50/50 border-b border-gray-50">
               {columns.map(col => (
-                <th key={col.key} className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                <th key={col.key} className="text-left px-5 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] whitespace-nowrap">
                   {col.label}
                 </th>
               ))}
-              {actions && <th className="text-right px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>}
+              {actions && <th className="text-right px-5 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Actions</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
@@ -96,7 +96,7 @@ export default function DataTable({
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between px-5 py-3.5 border-t border-gray-50 text-sm text-gray-500">
+      <div className="flex items-center justify-between px-6 py-4 border-t border-gray-50 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
         <span>Showing {from}–{to} of {total}</span>
         <div className="flex items-center gap-1.5">
           <button
@@ -114,8 +114,8 @@ export default function DataTable({
               <button
                 key={p}
                 onClick={() => onPageChange?.(p)}
-                className={`min-w-[32px] h-8 rounded-lg text-sm font-medium transition-colors ${
-                  p === page ? 'bg-blue-600 text-white shadow-sm' : 'hover:bg-gray-100 text-gray-600'
+                className={`min-w-[32px] h-8 rounded-xl text-xs font-bold transition-all ${
+                  p === page ? 'bg-[#1a1a1a] text-white shadow-lg shadow-black/10' : 'hover:bg-gray-100 text-gray-600'
                 }`}
               >
                 {p}

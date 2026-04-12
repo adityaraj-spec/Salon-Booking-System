@@ -28,54 +28,62 @@ export default function SuperReports() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-bold text-gray-900">Revenue Reports</h2>
-        <p className="text-sm text-gray-400">Platform-wide financial overview</p>
+      <div className="mb-8 mt-2">
+        <h2 className="text-2xl font-serif font-black text-[#1a1a1a] flex items-center gap-2">
+          Financial Analytics
+          <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
+        </h2>
+        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-2">Platform-wide financial performance and revenue metrics</p>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm flex flex-wrap items-end gap-4">
+      <div className="bg-white rounded-[28px] border border-gray-100 p-6 shadow-sm flex flex-wrap items-end gap-6 shadow-xl shadow-black/5">
         <div>
-          <label className="block text-xs font-semibold text-gray-500 mb-1">From</label>
+          <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 pl-1">From Date</label>
           <input type="date" value={from} onChange={e => setFrom(e.target.value)}
-            className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
+            className="bg-gray-50/50 border-none rounded-2xl px-5 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 transition-all font-sans" />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-gray-500 mb-1">To</label>
+          <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 pl-1">To Date</label>
           <input type="date" value={to} onChange={e => setTo(e.target.value)}
-            className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
+            className="bg-gray-50/50 border-none rounded-2xl px-5 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 transition-all font-sans" />
         </div>
         <button onClick={fetch} disabled={loading}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl text-sm font-semibold transition-colors disabled:opacity-60">
-          {loading ? 'Loading...' : 'Apply Filter'}
+          className="bg-[#1a1a1a] hover:bg-black text-white px-8 py-3.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-black/10 disabled:opacity-60">
+          {loading ? 'Processing...' : 'Generate Analytics'}
         </button>
-        <button onClick={() => { setFrom(''); setTo(''); }} className="text-sm text-gray-400 hover:text-gray-700 transition-colors">Clear</button>
+        <button onClick={() => { setFrom(''); setTo(''); }} className="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-red-500 transition-colors py-3.5 px-4 mb-0.5">Reset</button>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-          <p className="text-sm text-gray-500 mb-1">Total Revenue</p>
-          <p className="text-3xl font-bold text-green-600">₹{totalRevenue.toLocaleString()}</p>
+      <div className="grid grid-cols-2 gap-6">
+        <div className="bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm group hover:shadow-xl hover:shadow-[#D4AF37]/5 transition-all">
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3">Total Platform Revenue</p>
+          <p className="text-4xl font-serif font-black text-[#1a1a1a]">₹{totalRevenue.toLocaleString()}</p>
         </div>
-        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-          <p className="text-sm text-gray-500 mb-1">Total Bookings</p>
-          <p className="text-3xl font-bold text-blue-600">{totalBookings}</p>
+        <div className="bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm group hover:shadow-xl hover:shadow-[#D4AF37]/5 transition-all">
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3">Gross Booking Volume</p>
+          <p className="text-4xl font-serif font-black text-[#D4AF37]">{totalBookings}</p>
         </div>
       </div>
 
       {/* Chart */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-        <h3 className="font-bold text-gray-800 mb-4">Revenue Over Time</h3>
+      <div className="bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm">
+        <h3 className="font-serif font-black text-[#1a1a1a] text-lg mb-8 flex items-center gap-2">
+          Revenue Growth Trend
+          <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
+        </h3>
         {revenue.length === 0
-          ? <p className="text-sm text-gray-400 text-center py-12">No data for selected period</p>
-          : <ResponsiveContainer width="100%" height={280}>
+          ? <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center py-20">No data available for the selected range</p>
+          : <ResponsiveContainer width="100%" height={340}>
               <LineChart data={revenue}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="_id" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `₹${v}`} width={65} />
-                <Tooltip formatter={v => [`₹${v}`, 'Revenue']} />
-                <Line type="monotone" dataKey="revenue" stroke="#2563EB" strokeWidth={2.5} dot={{ r: 4 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#f8f8f8" vertical={false} />
+                <XAxis dataKey="_id" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold' }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold' }} tickFormatter={v => `₹${v}`} width={80} />
+                <Tooltip 
+                   contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}
+                />
+                <Line type="monotone" dataKey="revenue" stroke="#D4AF37" strokeWidth={4} dot={{ r: 6, fill: '#D4AF37', strokeWidth: 3, stroke: '#fff' }} activeDot={{ r: 8, strokeWidth: 0 }} />
               </LineChart>
             </ResponsiveContainer>
         }
@@ -83,21 +91,21 @@ export default function SuperReports() {
 
       {/* Table */}
       {revenue.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-[28px] border border-gray-100 shadow-xl shadow-black/5 overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-100">
+            <thead className="bg-gray-50/50 border-b border-gray-50">
               <tr>
-                {['Date', 'Bookings', 'Revenue'].map(h => (
-                  <th key={h} className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">{h}</th>
+                {['Report Date', 'Booking Count', 'Gross Revenue'].map(h => (
+                  <th key={h} className="text-left px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {revenue.map(r => (
-                <tr key={r._id} className="hover:bg-gray-50/50">
-                  <td className="px-5 py-3 text-gray-700">{r._id}</td>
-                  <td className="px-5 py-3 font-bold text-blue-600">{r.count}</td>
-                  <td className="px-5 py-3 font-bold text-green-600">₹{r.revenue.toLocaleString()}</td>
+                <tr key={r._id} className="hover:bg-gray-50/50 transition-all">
+                  <td className="px-8 py-4 font-bold text-gray-600">{r._id}</td>
+                  <td className="px-8 py-4 font-black font-serif text-[#1a1a1a]">{r.count} Bookings</td>
+                  <td className="px-8 py-4 font-black font-serif text-[#D4AF37] text-base">₹{r.revenue.toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>

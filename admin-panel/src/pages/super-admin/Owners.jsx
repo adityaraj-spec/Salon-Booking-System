@@ -28,16 +28,16 @@ function OwnerForm({ onSave, onClose }) {
       {[['fullName','Full Name',true],['email','Email',true],['username','Username',true],
         ['phonenumber','Phone Number',true],['password','Password',true]].map(([k,label,req]) => (
         <div key={k}>
-          <label className="block text-xs font-semibold text-gray-600 mb-1">{label}</label>
+          <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 pl-1">{label}</label>
           <input type={k === 'password' ? 'password' : k === 'email' ? 'email' : 'text'}
             value={form[k]} onChange={e => set(k, e.target.value)} required={req}
-            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 bg-gray-50" />
+            className="w-full px-4 py-3 border-none rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 bg-gray-50/50 transition-all" />
         </div>
       ))}
-      <div className="flex gap-3 pt-2">
-        <button type="button" onClick={onClose} className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">Cancel</button>
-        <button type="submit" disabled={saving} className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-60">
-          {saving ? 'Creating...' : 'Create Owner'}
+      <div className="flex gap-4 pt-4">
+        <button type="button" onClick={onClose} className="flex-1 px-6 py-4 bg-gray-50 rounded-full text-[10px] font-black uppercase tracking-widest text-gray-600 hover:bg-gray-100 transition-all">Cancel</button>
+        <button type="submit" disabled={saving} className="flex-1 px-6 py-4 bg-[#1a1a1a] hover:bg-black text-white rounded-full text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-black/10 disabled:opacity-60">
+          {saving ? 'Creating...' : 'Create Owner Account'}
         </button>
       </div>
     </form>
@@ -79,32 +79,35 @@ export default function SuperOwners() {
 
   const columns = [
     { key: 'fullName', label: 'Name', render: (v, row) => (
-      <div className="flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-xs font-bold">{v?.charAt(0)}</div>
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center text-[#D4AF37] text-[10px] font-black uppercase tracking-widest border border-[#D4AF37]/10">{v?.charAt(0)}</div>
         <div>
-          <p className="font-semibold text-gray-900 text-sm">{v}</p>
-          <p className="text-xs text-gray-400">{row.email}</p>
+          <p className="font-bold text-[#1a1a1a] text-sm">{v}</p>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{row.email}</p>
         </div>
       </div>
     )},
-    { key: 'phonenumber', label: 'Phone' },
+    { key: 'phonenumber', label: 'Phone', render: (v) => <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{v || '—'}</span> },
     { key: 'salon', label: 'Assigned Salon', render: (v) => v
-      ? <div className="flex items-center gap-1.5 text-sm text-blue-600"><Store size={13} />{v.name}</div>
-      : <span className="text-xs text-gray-400">Not assigned</span>
+      ? <div className="flex items-center gap-1.5 text-xs font-bold text-[#D4AF37]"><Store size={14} />{v.name}</div>
+      : <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest italic">Not assigned</span>
     },
     { key: 'createdAt', label: 'Joined', render: (v) => v ? new Date(v).toLocaleDateString('en-IN') : '—' },
   ];
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-6 mb-8 mt-2">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Salon Owners</h2>
-          <p className="text-sm text-gray-400">{total} owners registered</p>
+          <h2 className="text-2xl font-serif font-black text-[#1a1a1a] flex items-center gap-2">
+            Salon Owners
+            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
+          </h2>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-2">{total} verified owners registered</p>
         </div>
         <button onClick={() => setAddModal(true)}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-lg shadow-blue-600/20 transition-colors">
-          <Plus size={16} /> Add Owner
+          className="flex items-center gap-3 bg-[#1a1a1a] hover:bg-black text-white px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-xl shadow-black/10 hover:scale-[1.02]">
+          <Plus size={16} className="text-[#D4AF37]" /> Create New Owner
         </button>
       </div>
 
@@ -113,8 +116,8 @@ export default function SuperOwners() {
         searchPlaceholder="Search by name or email..."
         actions={(row) => (
           <button onClick={() => setConfirm({ open: true, id: row._id })}
-            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-            <Trash2 size={15} />
+            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all shadow-sm">
+            <Trash2 size={14} />
           </button>
         )}
       />

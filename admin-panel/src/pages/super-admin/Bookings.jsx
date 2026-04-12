@@ -4,11 +4,11 @@ import api from '../../services/api';
 import DataTable from '../../components/UI/DataTable';
 
 const STATUS_BADGE = {
-  pending:   'bg-yellow-100 text-yellow-700',
-  confirmed: 'bg-blue-100 text-blue-700',
-  completed: 'bg-green-100 text-green-700',
-  cancelled: 'bg-red-100 text-red-600',
-  rejected:  'bg-gray-100 text-gray-600',
+  pending:   'bg-amber-100 text-amber-700 font-bold uppercase tracking-widest',
+  confirmed: 'bg-[#D4AF37]/10 text-[#D4AF37] font-bold uppercase tracking-widest',
+  completed: 'bg-emerald-100 text-emerald-700 font-bold uppercase tracking-widest',
+  cancelled: 'bg-red-100 text-red-600 font-bold uppercase tracking-widest',
+  rejected:  'bg-gray-100 text-gray-600 font-bold uppercase tracking-widest',
 };
 
 const ALL_STATUSES = ['pending', 'confirmed', 'completed', 'cancelled', 'rejected'];
@@ -44,43 +44,46 @@ export default function SuperBookings() {
   const columns = [
     { key: 'customer', label: 'Customer', render: (v) => (
       <div>
-        <p className="font-semibold text-gray-900 text-sm">{v?.fullName || 'Guest'}</p>
-        <p className="text-xs text-gray-400">{v?.email}</p>
+        <p className="font-bold text-[#1a1a1a] text-sm">{v?.fullName || 'Guest'}</p>
+        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{v?.email}</p>
       </div>
     )},
     { key: 'salon', label: 'Salon', render: (v) => v?.name || '—' },
     { key: 'serviceNames', label: 'Services', render: (v) => (
-      <div className="flex flex-wrap gap-1">
+      <div className="flex flex-wrap gap-1.5">
         {(v || []).slice(0, 2).map((s, i) => (
-          <span key={i} className="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-md">{s}</span>
+          <span key={i} className="bg-gray-50 text-gray-500 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest">{s}</span>
         ))}
-        {v?.length > 2 && <span className="text-xs text-gray-400">+{v.length - 2}</span>}
+        {v?.length > 2 && <span className="text-[10px] font-black text-[#D4AF37] ml-1">+{v.length - 2} MORE</span>}
       </div>
     )},
     { key: 'date', label: 'Date & Time', render: (v, row) => (
       <span className="text-sm text-gray-700">{v} {row.time ? `@ ${row.time}` : ''}</span>
     )},
-    { key: 'totalAmount', label: 'Amount', render: (v) => v ? <span className="font-bold text-gray-900">₹{v}</span> : '—' },
+    { key: 'totalAmount', label: 'Amount', render: (v) => v ? <span className="font-serif font-black text-[#1a1a1a]">₹{v}</span> : '—' },
     { key: 'status', label: 'Status', render: (v, row) => (
       <select value={v} onChange={e => updateStatus(row._id, e.target.value)}
-        className={`text-xs font-semibold px-2.5 py-1.5 rounded-lg border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${STATUS_BADGE[v]}`}>
-        {ALL_STATUSES.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+        className={`text-[9px] font-black px-3 py-2 rounded-full border-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 transition-all ${STATUS_BADGE[v]}`}>
+        {ALL_STATUSES.map(s => <option key={s} value={s}>{s.toUpperCase()}</option>)}
       </select>
     )},
   ];
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      <div className="flex items-center justify-between flex-wrap gap-6 mb-8 mt-2">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Bookings</h2>
-          <p className="text-sm text-gray-400">{total} total bookings across all salons</p>
+          <h2 className="text-2xl font-serif font-black text-[#1a1a1a] flex items-center gap-2">
+            Platform Bookings
+            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
+          </h2>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-2">{total} total bookings across all salons</p>
         </div>
         <div className="flex items-center gap-3">
           <select value={status} onChange={e => { setStatus(e.target.value); setPage(1); }}
-            className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+            className="bg-white border-none rounded-full px-6 py-2.5 text-[10px] font-black uppercase tracking-widest text-gray-600 focus:outline-none shadow-sm transition-all focus:ring-2 focus:ring-[#D4AF37]/30">
             <option value="">All Statuses</option>
-            {ALL_STATUSES.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+            {ALL_STATUSES.map(s => <option key={s} value={s}>{s.toUpperCase()}</option>)}
           </select>
         </div>
       </div>

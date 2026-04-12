@@ -58,24 +58,30 @@ export default function MySalon() {
 
   const F = ({ label, k, type = 'text', required, placeholder, colSpan = '' }) => (
     <div className={colSpan}>
-      <label className="block text-xs font-semibold text-gray-600 mb-1">{label}</label>
+      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 pl-1">{label}</label>
       <input type={type} value={form[k] || ''} onChange={e => set(k, e.target.value)}
         required={required} placeholder={placeholder}
-        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 bg-gray-50 transition-all" />
+        className="w-full px-4 py-3 border-none rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 bg-gray-50/50 transition-all" />
     </div>
   );
 
   return (
     <div className="space-y-6 max-w-4xl">
-      <div>
-        <h2 className="text-xl font-bold text-gray-900">My Salon</h2>
-        <p className="text-sm text-gray-400">Update your salon information. Changes are reflected on the main website immediately.</p>
+      <div className="mb-8 mt-2">
+        <h2 className="text-2xl font-serif font-black text-[#1a1a1a] flex items-center gap-2">
+          My Salon
+          <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
+        </h2>
+        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-2">Update your salon information. Changes are reflected on the main website immediately.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Basic Info */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-          <h3 className="font-bold text-gray-700 mb-4 text-sm uppercase tracking-wide">Basic Information</h3>
+        <div className="bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm">
+          <h3 className="font-serif font-black text-[#1a1a1a] text-lg mb-6 flex items-center gap-2 uppercase tracking-tight">
+            Basic Information
+            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <F label="Salon Name *" k="name" required />
             <F label="Contact Number" k="contactNumber" type="tel" />
@@ -84,22 +90,25 @@ export default function MySalon() {
             <F label="Pincode" k="pincode" />
             <F label="Total Seats" k="totalSeats" type="number" />
           </div>
-          <div className="mt-4">
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Address</label>
+          <div className="mt-6">
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 pl-1">Address</label>
             <input value={form.address || ''} onChange={e => set('address', e.target.value)}
-              className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 bg-gray-50" />
+              className="w-full px-4 py-3 border-none rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 bg-gray-50/50 transition-all" />
           </div>
-          <div className="mt-4">
-            <label className="block text-xs font-semibold text-gray-600 mb-1">Description</label>
+          <div className="mt-6">
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 pl-1">Description</label>
             <textarea value={form.description || ''} onChange={e => set('description', e.target.value)}
               rows={4} placeholder="Describe your salon..."
-              className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 bg-gray-50 resize-none" />
+              className="w-full px-4 py-3 border-none rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 bg-gray-50/50 resize-none transition-all" />
           </div>
         </div>
 
         {/* Hours */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-          <h3 className="font-bold text-gray-700 mb-4 text-sm uppercase tracking-wide">Working Hours</h3>
+        <div className="bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm">
+          <h3 className="font-serif font-black text-[#1a1a1a] text-lg mb-6 flex items-center gap-2 uppercase tracking-tight">
+            Working Hours
+            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
+          </h3>
           <div className="grid grid-cols-2 gap-4">
             <F label="Opening Time" k="openingHours" placeholder="09:00 AM" />
             <F label="Closing Time" k="closingHours" placeholder="09:00 PM" />
@@ -107,8 +116,11 @@ export default function MySalon() {
         </div>
 
         {/* Images */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-          <h3 className="font-bold text-gray-700 mb-4 text-sm uppercase tracking-wide">Gallery Images</h3>
+        <div className="bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm">
+          <h3 className="font-serif font-black text-[#1a1a1a] text-lg mb-6 flex items-center gap-2 uppercase tracking-tight">
+            Gallery Images
+            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
+          </h3>
           {/* Existing */}
           {(salon.images || []).length > 0 && (
             <div className="flex flex-wrap gap-3 mb-4">
@@ -119,27 +131,27 @@ export default function MySalon() {
           )}
           {/* New previews */}
           {previews.length > 0 && (
-            <div className="flex flex-wrap gap-3 mb-4">
+            <div className="flex flex-wrap gap-4 mb-6 pt-6 border-t border-gray-50">
               {previews.map((p, i) => (
-                <div key={i} className="relative">
-                  <img src={p} alt="" className="w-24 h-24 rounded-xl object-cover border-2 border-blue-300 shadow-sm" />
-                  <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">NEW</span>
+                <div key={i} className="relative group">
+                  <img src={p} alt="" className="w-24 h-24 rounded-2xl object-cover border-2 border-[#D4AF37] shadow-xl shadow-black/5" />
+                  <span className="absolute -top-2 -right-2 bg-[#D4AF37] text-white text-[8px] font-black px-2 py-1 rounded-full shadow-lg">NEW</span>
                 </div>
               ))}
             </div>
           )}
-          <label className="flex items-center gap-2 cursor-pointer bg-gray-50 hover:bg-blue-50 border-2 border-dashed border-gray-200 hover:border-blue-300 rounded-xl px-5 py-3.5 transition-all w-fit">
-            <ImagePlus size={18} className="text-gray-400" />
-            <span className="text-sm text-gray-500 font-medium">Upload New Images</span>
+          <label className="flex items-center gap-3 cursor-pointer bg-gray-50/50 hover:bg-[#D4AF37]/5 border-2 border-dashed border-gray-100 hover:border-[#D4AF37]/30 rounded-[24px] px-8 py-6 transition-all w-fit group">
+            <ImagePlus size={20} className="text-gray-400 group-hover:text-[#D4AF37] transition-colors" />
+            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest group-hover:text-[#1a1a1a] transition-colors">Upload New Photos</span>
             <input type="file" accept="image/*" multiple onChange={handleImages} className="hidden" />
           </label>
         </div>
 
         {/* Submit */}
         <button type="submit" disabled={saving}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold text-sm shadow-lg shadow-blue-600/20 transition-all disabled:opacity-60">
-          <Save size={16} />
-          {saving ? 'Saving Changes...' : 'Save Changes'}
+          className="flex items-center gap-3 bg-[#1a1a1a] hover:bg-black text-white px-10 py-5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl shadow-black/10 transition-all disabled:opacity-60 hover:scale-[1.02]">
+          <Save size={18} className="text-[#D4AF37]" />
+          {saving ? 'Saving Changes...' : 'Save Salon Details'}
         </button>
       </form>
     </div>
