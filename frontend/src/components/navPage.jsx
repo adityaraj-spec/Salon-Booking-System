@@ -294,7 +294,7 @@ export function NavBar() {
                                                 Profile
                                             </NavLink>
 
-                                            {user?.role === "user" && (
+                                            {user?.role === "customer" && (
                                                 <>
                                                     <NavLink
                                                         to="/bookings"
@@ -475,7 +475,7 @@ export function NavBar() {
                         </>
                     )}
 
-                    {user?.role === "user" && (
+                    {user?.role === "customer" && (
                         <>
                             <NavLink
                                 to="/bookings"
