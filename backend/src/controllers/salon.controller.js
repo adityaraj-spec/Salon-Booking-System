@@ -5,7 +5,7 @@ import { Salon } from "../models/salon.models.js"
 import { User } from "../models/user.models.js"
 import { Booking } from "../models/booking.models.js" 
 import { Service } from "../models/service.models.js"
-import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js"
+import { uploadOnCloudinary } from "../utils/cloudinary.js"
 import { ROLES } from "../constants.js"
 import { sendShopAddedEmail } from "../utils/mailer.js"
 import { emitToAll } from "../socket.js";
