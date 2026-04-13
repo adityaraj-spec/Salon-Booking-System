@@ -73,7 +73,7 @@ export function Shops() {
         setLoading(true);
         setError("");
         try {
-            const params = { 
+            const params = {
                 limit: 12,
                 page: targetPage,
                 city: targetCity,
@@ -203,7 +203,7 @@ export function Shops() {
                                 )}
                             </button>
                         </form>
-                        
+
                         {/* State Dropdown */}
                         <div className="relative w-full sm:w-48 shrink-0" ref={dropdownRef}>
                             <button
@@ -255,19 +255,19 @@ export function Shops() {
                         {/* Column 2: Buttons (Wide) */}
                         <div className="flex justify-center">
                             <div className="flex bg-white p-1.5 rounded-full border border-gray-100 shadow-sm flex-wrap justify-center gap-1 group">
-                                <button 
+                                <button
                                     onClick={() => { setSortBy("price"); setSortOrder("asc"); }}
                                     className={`px-6 py-2.5 rounded-full text-xs font-bold transition-all duration-300 ${sortBy === "price" && sortOrder === "asc" ? 'bg-[#1a1a1a] text-white shadow-lg scale-105' : 'text-gray-400 hover:text-[#1a1a1a] hover:bg-gray-50'}`}
                                 >
                                     Price: Low to High
                                 </button>
-                                <button 
+                                <button
                                     onClick={() => { setSortBy("price"); setSortOrder("desc"); }}
                                     className={`px-6 py-2.5 rounded-full text-xs font-bold transition-all duration-300 ${sortBy === "price" && sortOrder === "desc" ? 'bg-[#1a1a1a] text-white shadow-lg scale-105' : 'text-gray-400 hover:text-[#1a1a1a] hover:bg-gray-50'}`}
                                 >
                                     Price: High to Low
                                 </button>
-                                <button 
+                                <button
                                     onClick={() => { setSortBy("rating"); setSortOrder("desc"); }}
                                     className={`px-6 py-2.5 rounded-full text-xs font-bold transition-all duration-300 ${sortBy === "rating" ? 'bg-[#1a1a1a] text-white shadow-lg scale-105' : 'text-gray-400 hover:text-[#1a1a1a] hover:bg-gray-50'}`}
                                 >
@@ -275,7 +275,7 @@ export function Shops() {
                                 </button>
                             </div>
                         </div>
-                        
+
                         {/* Column 3: Total Count */}
                         <div className="flex flex-col items-center md:items-end gap-1">
                             <div className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em]">Salons Found</div>
@@ -382,8 +382,8 @@ export function Shops() {
                                             const pageNumber = i + 1;
                                             // Show only first, last, and pages around current
                                             if (
-                                                pageNumber === 1 || 
-                                                pageNumber === totalPages || 
+                                                pageNumber === 1 ||
+                                                pageNumber === totalPages ||
                                                 (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
                                             ) {
                                                 return (
@@ -396,7 +396,7 @@ export function Shops() {
                                                     </button>
                                                 );
                                             } else if (
-                                                (pageNumber === 2 && currentPage > 3) || 
+                                                (pageNumber === 2 && currentPage > 3) ||
                                                 (pageNumber === totalPages - 1 && currentPage < totalPages - 2)
                                             ) {
                                                 return <span key={pageNumber} className="text-gray-300 px-1">...</span>;
