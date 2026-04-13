@@ -3,7 +3,7 @@ import ApiError from "../utils/apiError.js"
 import { ApiResponse } from "../utils/apiResponse.js"
 import { Salon } from "../models/salon.models.js"
 import { User } from "../models/user.models.js"
-import { Booking } from "../models/booking.models.js" 
+import { Booking } from "../models/booking.models.js"
 import { Service } from "../models/service.models.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
 import { ROLES } from "../constants.js"
@@ -69,14 +69,14 @@ const registerSalon = asyncHandler(async (req, res) => {
 
 const getSalons = asyncHandler(async (req, res) => {
     const { search, city, page = 1, limit = 8, sortBy, sortOrder = "asc", topRated } = req.query;
-    
+
     // Parse pagination parameters
     const currentPage = parseInt(page);
     const pageLimit = parseInt(limit);
     const skip = (currentPage - 1) * pageLimit;
 
     let query = {};
-    
+
     if (search) {
         query.$or = [
             { name: { $regex: search, $options: "i" } },
@@ -86,7 +86,7 @@ const getSalons = asyncHandler(async (req, res) => {
             { state: { $regex: search, $options: "i" } }
         ];
     }
-    
+
     if (city) {
         query.city = { $regex: city, $options: "i" };
     }
@@ -150,7 +150,7 @@ const getSalons = asyncHandler(async (req, res) => {
     const salonsWithAvailability = await Promise.all(salons.map(async (salonDoc) => {
         // If it was aggregation (raw obj) or find (mongoose doc)
         const salon = salonDoc.toObject ? salonDoc.toObject() : salonDoc;
-        
+
         const activeBookingsCount = await Booking.countDocuments({
             salon: salon._id,
             date: today,
@@ -168,19 +168,19 @@ const getSalons = asyncHandler(async (req, res) => {
     }));
 
     const totalPages = Math.ceil(totalSalons / pageLimit);
-    
+
     return res.status(200).json(
         new ApiResponse(
-            200, 
-            { 
-                salons: salonsWithAvailability, 
-                pagination: { 
-                    totalSalons, 
-                    totalPages, 
-                    currentPage, 
-                    limit: pageLimit 
-                } 
-            }, 
+            200,
+            {
+                salons: salonsWithAvailability,
+                pagination: {
+                    totalSalons,
+                    totalPages,
+                    currentPage,
+                    limit: pageLimit
+                }
+            },
             "Salons fetched successfully"
         )
     );
@@ -203,12 +203,12 @@ const getSalonById = asyncHandler(async (req, res) => {
     // 1. Get current date (matching backend Booking format: YYYY-MM-DD or similar)
     const now = new Date();
     const today = now.toISOString().split('T')[0]; // "2024-04-06"
-    
+
     // 2. Identify current hour for matching "time" string
     const hour = now.getHours(); // 0-23
     const displayHour = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
     const ampm = hour >= 12 ? "PM" : "AM";
-    
+
     // Flexible regex for "2:XX PM" or "14:XX"
     const timeMatcher = new RegExp(`(^${hour}:|^0${hour}:|^${displayHour}:|^0${displayHour}:).*${ampm}|(^${hour}:|^0${hour}:)`, "i");
 
@@ -235,7 +235,7 @@ const getSalonById = asyncHandler(async (req, res) => {
 
 const getOwnerSalon = asyncHandler(async (req, res) => {
     const salons = await Salon.find({ owner: req.user?._id });
-    
+
     return res.status(200).json(
         new ApiResponse(200, salons, "Owner salons fetched successfully")
     );
