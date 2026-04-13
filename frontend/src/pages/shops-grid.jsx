@@ -26,14 +26,14 @@ export function Shops() {
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    
+
     // Independent Preferences
     const [preferTopRated, setPreferTopRated] = useState(topRatedParam);
-    const [sortBy, setSortBy] = useState(sortByParam); 
+    const [sortBy, setSortBy] = useState(sortByParam);
     const [sortOrder, setSortOrder] = useState("asc");
 
     const [isSortModalOpen, setIsSortModalOpen] = useState(false);
-    
+
     // Smart Location State (Modal Internal)
     const [selectedState, setSelectedState] = useState(null); // { name, isoCode }
     const [stateSearch, setStateSearch] = useState(stateParam || "");
@@ -130,10 +130,15 @@ export function Shops() {
         fetchUserFavorites();
     }, [user]);
 
-    // Sync search input with URL params only when URL changes
+    // Reset all filters on mount (Hard Refresh)
     useEffect(() => {
-        setCityQuery(cityParam);
-    }, [cityParam]);
+        setSearchParams({}, { replace: true });
+        setCityQuery("");
+        setStateSearch("");
+        setCitySearch("");
+        setPreferTopRated(false);
+        setSortBy("rating");
+    }, []);
 
     // Reset to first page when search filters change
     useEffect(() => {
@@ -203,8 +208,8 @@ export function Shops() {
                             title="Discovery Settings"
                             onClick={() => setIsSortModalOpen(true)}
                             className={`w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-full transition-all border shrink-0 relative ${isSortModalOpen
-                                    ? "bg-[#1A1A1A] text-white border-[#1A1A1A] shadow-md ring-4 ring-[#1A1A1A]/5"
-                                    : "bg-white text-gray-700 border-gray-100 shadow-sm ring-4 ring-[#1A1A1A]/5 hover:border-gray-200"
+                                ? "bg-[#1A1A1A] text-white border-[#1A1A1A] shadow-md ring-4 ring-[#1A1A1A]/5"
+                                : "bg-white text-gray-700 border-gray-100 shadow-sm ring-4 ring-[#1A1A1A]/5 hover:border-gray-200"
                                 }`}
                         >
                             <SlidersHorizontal className={`w-4 h-4 md:w-5 md:h-5 ${stateParam ? "text-[#D4AF37]" : ""}`} />
@@ -240,13 +245,13 @@ export function Shops() {
                                 animate={{ scale: 1, y: 0, opacity: 1 }}
                                 exit={{ scale: 0.9, y: 20, opacity: 0 }}
                                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                                className="bg-white w-full max-w-lg rounded-[40px] overflow-hidden shadow-2xl relative"
+                                className="bg-white w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl relative"
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 {/* Modal Header */}
-                                <div className="px-8 pt-8 pb-6 flex items-center justify-between border-b border-gray-50">
+                                <div className="px-6 pt-6 pb-4 flex items-center justify-between border-b border-gray-50">
                                     <div>
-                                        <h2 className="text-2xl font-serif font-bold text-gray-900">Discovery Settings</h2>
+                                        <h2 className="text-xl font-serif font-bold text-gray-900">Discovery Settings</h2>
                                         <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-1">Refine your search</p>
                                     </div>
                                     <button
@@ -257,37 +262,36 @@ export function Shops() {
                                     </button>
                                 </div>
 
-                                <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto no-scrollbar">
-
+                                <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto no-scrollbar">
                                     {/* Location Selectors (Form + Dropdown) */}
-                                    <div className="space-y-6">
-                                        <div className="flex items-center gap-2 px-2">
-                                            <MapPin size={16} className="text-[#D4AF37]" />
-                                            <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Discovery Location</h3>
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-2 px-1">
+                                            <MapPin size={14} className="text-[#D4AF37]" />
+                                            <h3 className="text-[11px] font-black text-gray-900 uppercase tracking-widest">Discovery Location</h3>
                                         </div>
-                                        
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                                        <div className="grid grid-cols-2 gap-3">
                                             {/* State Selector */}
                                             <div className="relative" ref={stateListRef}>
-                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1 mb-1 block">State</label>
+                                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest pl-1 mb-1 block">State</label>
                                                 <div className="relative">
-                                                    <input 
-                                                        type="text" 
-                                                        placeholder="Search State..." 
+                                                    <input
+                                                        type="text"
+                                                        placeholder="State..."
                                                         value={stateSearch}
                                                         onChange={(e) => {
                                                             setStateSearch(e.target.value);
                                                             setIsStateListOpen(true);
                                                         }}
                                                         onFocus={() => setIsStateListOpen(true)}
-                                                        className="w-full bg-white border border-gray-100 px-5 py-4 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] outline-none transition-all pr-12"
+                                                        className="w-full bg-white border border-gray-100 px-4 py-3 rounded-xl text-sm font-medium focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] outline-none transition-all pr-10"
                                                     />
-                                                    <Search size={14} className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-300" />
+                                                    <Search size={12} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300" />
                                                 </div>
-                                                
+
                                                 <AnimatePresence>
                                                     {isStateListOpen && (
-                                                        <motion.div 
+                                                        <motion.div
                                                             initial={{ opacity: 0, y: -10 }}
                                                             animate={{ opacity: 1, y: 0 }}
                                                             exit={{ opacity: 0, y: -10 }}
@@ -317,11 +321,11 @@ export function Shops() {
 
                                             {/* City Selector */}
                                             <div className="relative" ref={cityListRef}>
-                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1 mb-1 block">City</label>
+                                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest pl-1 mb-1 block">City</label>
                                                 <div className="relative">
-                                                    <input 
-                                                        type="text" 
-                                                        placeholder={selectedState ? "Search City..." : "Select State First"} 
+                                                    <input
+                                                        type="text"
+                                                        placeholder={selectedState ? "City..." : "Wait..."}
                                                         disabled={!selectedState}
                                                         value={citySearch}
                                                         onChange={(e) => {
@@ -329,14 +333,14 @@ export function Shops() {
                                                             setIsCityListOpen(true);
                                                         }}
                                                         onFocus={() => setIsCityListOpen(true)}
-                                                        className="w-full bg-white border border-gray-100 px-5 py-4 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] outline-none transition-all pr-12 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                                                        className="w-full bg-white border border-gray-100 px-4 py-3 rounded-xl text-sm font-medium focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] outline-none transition-all pr-10 disabled:bg-gray-50 disabled:cursor-not-allowed"
                                                     />
-                                                    <Map size={14} className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-300" />
+                                                    <Map size={12} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300" />
                                                 </div>
-                                                
+
                                                 <AnimatePresence>
                                                     {isCityListOpen && selectedState && (
-                                                        <motion.div 
+                                                        <motion.div
                                                             initial={{ opacity: 0, y: -10 }}
                                                             animate={{ opacity: 1, y: 0 }}
                                                             exit={{ opacity: 0, y: -10 }}
@@ -365,62 +369,62 @@ export function Shops() {
                                     </div>
 
                                     {/* Preference Sections - Independent Selection */}
-                                    <div className="space-y-6 pt-4 border-t border-gray-50">
-                                        <div className="flex items-center gap-2 px-2">
-                                            <SlidersHorizontal size={16} className="text-[#D4AF37]" />
-                                            <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Service Preferences</h3>
+                                    <div className="space-y-4 pt-4 border-t border-gray-50">
+                                        <div className="flex items-center gap-2 px-1">
+                                            <SlidersHorizontal size={14} className="text-[#D4AF37]" />
+                                            <h3 className="text-[11px] font-black text-gray-900 uppercase tracking-widest">Service Preferences</h3>
                                         </div>
-                                        
-                                        <div className="grid grid-cols-1 gap-3">
+
+                                        <div className="grid grid-cols-1 gap-2">
                                             {/* Top Rated Toggle */}
                                             <button
                                                 onClick={() => setPreferTopRated(!preferTopRated)}
-                                                className={`w-full px-6 py-5 rounded-3xl text-sm font-bold transition-all flex items-center justify-between border ${preferTopRated 
-                                                    ? 'bg-[#1a1a1a] text-white border-[#1a1a1a] shadow-lg scale-[1.01]' 
+                                                className={`w-full px-5 py-3.5 rounded-2xl text-sm font-bold transition-all flex items-center justify-between border ${preferTopRated
+                                                    ? 'bg-[#1a1a1a] text-white border-[#1a1a1a] shadow-lg'
                                                     : 'bg-white text-gray-600 border-gray-100 hover:bg-gray-50'
-                                                }`}
+                                                    }`}
                                             >
                                                 <div className="flex items-center gap-3">
-                                                    <Star size={18} className={preferTopRated ? "text-[#D4AF37]" : "text-gray-300"} fill={preferTopRated ? "#D4AF37" : "transparent"} />
+                                                    <Star size={16} className={preferTopRated ? "text-[#D4AF37]" : "text-gray-300"} fill={preferTopRated ? "#D4AF37" : "transparent"} />
                                                     <div className="text-left">
-                                                        <p className="leading-none">Top Rated Salons</p>
-                                                        <p className={`text-[10px] mt-1 font-medium ${preferTopRated ? 'text-gray-400' : 'text-gray-400'}`}>Show only 4.0+ star ratings</p>
+                                                        <p className="leading-none text-xs">Top Rated Salons</p>
+                                                        <p className="text-[9px] mt-1 font-medium text-gray-400">4.0+ star ratings</p>
                                                     </div>
                                                 </div>
-                                                {preferTopRated && <div className="w-2 h-2 rounded-full bg-[#D4AF37]"></div>}
+                                                {preferTopRated && <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></div>}
                                             </button>
 
                                             {/* Price Sort Toggle */}
                                             <button
                                                 onClick={() => setSortBy(sortBy === "price" ? "rating" : "price")}
-                                                className={`w-full px-6 py-5 rounded-3xl text-sm font-bold transition-all flex items-center justify-between border ${sortBy === "price" 
-                                                    ? 'bg-[#1a1a1a] text-white border-[#1a1a1a] shadow-lg scale-[1.01]' 
+                                                className={`w-full px-5 py-3.5 rounded-2xl text-sm font-bold transition-all flex items-center justify-between border ${sortBy === "price"
+                                                    ? 'bg-[#1a1a1a] text-white border-[#1a1a1a] shadow-lg'
                                                     : 'bg-white text-gray-600 border-gray-100 hover:bg-gray-50'
-                                                }`}
+                                                    }`}
                                             >
                                                 <div className="flex items-center gap-3">
-                                                    <ArrowUpDown size={18} className={sortBy === "price" ? "text-[#D4AF37]" : "text-gray-300"} />
+                                                    <ArrowUpDown size={16} className={sortBy === "price" ? "text-[#D4AF37]" : "text-gray-300"} />
                                                     <div className="text-left">
-                                                        <p className="leading-none">Best Value</p>
-                                                        <p className={`text-[10px] mt-1 font-medium ${sortBy === "price" ? 'text-gray-400' : 'text-gray-400'}`}>Sort from lowest price first</p>
+                                                        <p className="leading-none text-xs">Best Value</p>
+                                                        <p className="text-[9px] mt-1 font-medium text-gray-400">Lowest price first</p>
                                                     </div>
                                                 </div>
-                                                {sortBy === "price" && <div className="w-2 h-2 rounded-full bg-[#D4AF37]"></div>}
+                                                {sortBy === "price" && <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></div>}
                                             </button>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Stats Section - Moved to Bottom */}
-                                <div className="p-8 bg-gray-50/50 border-t border-gray-100">
-                                    <div className="flex items-center justify-between p-6 bg-white rounded-3xl border border-gray-100 mb-6">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-14 h-14 rounded-2xl bg-[#D4AF37] flex items-center justify-center shadow-lg shadow-[#D4AF37]/20">
-                                                <span className="text-2xl font-serif font-black text-white">{salons.length}</span>
+                                {/* Bottom Section */}
+                                <div className="p-6 bg-gray-50/50 border-t border-gray-100">
+                                    <div className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 mb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-xl bg-[#D4AF37] flex items-center justify-center shadow-lg shadow-[#D4AF37]/20">
+                                                <span className="text-lg font-serif font-black text-white">{salons.length}</span>
                                             </div>
                                             <div>
-                                                <p className="text-[10px] text-[#D4AF37] font-black uppercase tracking-[0.2em] leading-none mb-1">Total Results</p>
-                                                <p className="text-lg font-bold text-gray-900 leading-none">Salons matches</p>
+                                                <p className="text-[9px] text-[#D4AF37] font-black uppercase tracking-widest leading-none mb-0.5">Total</p>
+                                                <p className="text-sm font-bold text-gray-900 leading-none">Salons found</p>
                                             </div>
                                         </div>
                                     </div>
@@ -434,7 +438,7 @@ export function Shops() {
                                                 else newParams.delete("state");
                                                 if (citySearch) newParams.set("city", citySearch);
                                                 else newParams.delete("city");
-                                                
+
                                                 newParams.set("topRated", preferTopRated);
                                                 newParams.set("sortBy", sortBy);
                                                 return newParams;
@@ -442,7 +446,7 @@ export function Shops() {
                                             setCityQuery(citySearch);
                                             setIsSortModalOpen(false);
                                         }}
-                                        className="w-full bg-[#1a1a1a] text-white py-5 rounded-[24px] font-bold text-sm uppercase tracking-[0.2em] shadow-xl hover:bg-black active:scale-[0.98] transition-all"
+                                        className="w-full bg-[#1a1a1a] text-white py-4 rounded-2xl font-bold text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-black active:scale-[0.98] transition-all"
                                     >
                                         Apply Settings
                                     </button>
