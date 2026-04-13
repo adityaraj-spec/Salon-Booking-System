@@ -8,9 +8,9 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Attach token from localStorage on every request
+// Attach token from sessionStorage on every request
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('adminToken');
+  const token = sessionStorage.getItem('adminToken');
   if (token) {
     config.headers['Authorization'] = `Bearer ${token}`;
   }
@@ -22,8 +22,8 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('adminToken');
-      localStorage.removeItem('adminUser');
+      sessionStorage.removeItem('adminToken');
+      sessionStorage.removeItem('adminUser');
       window.location.href = '/login';
     }
     return Promise.reject(error);

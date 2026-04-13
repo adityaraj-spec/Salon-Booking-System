@@ -8,9 +8,9 @@ export function AuthProvider({ children }) {
   const hasTokenInUrl = new URLSearchParams(window.location.search).has('token');
 
   const [user, setUser] = useState(() => {
-    if (hasTokenInUrl) return null; // Ignore stale localStorage if a new token is incoming
+    if (hasTokenInUrl) return null; // Ignore stale sessionStorage if a new token is incoming
     try {
-      const stored = localStorage.getItem('adminUser');
+      const stored = sessionStorage.getItem('adminUser');
       return stored ? JSON.parse(stored) : null;
     } catch { return null; }
   });
@@ -26,8 +26,8 @@ export function AuthProvider({ children }) {
       window.history.replaceState({}, document.title, window.location.pathname);
       
       // CRITICAL: Clear potentially stale user data before fetching new profile
-      localStorage.removeItem('adminUser');
-      localStorage.setItem('adminToken', token);
+      sessionStorage.removeItem('adminUser');
+      sessionStorage.setItem('adminToken', token);
       
       const fetchProfile = async () => {
         setLoading(true);
@@ -38,13 +38,13 @@ export function AuthProvider({ children }) {
             if (userData.role === 'customer' || userData.role === 'staff') {
               throw new Error('Access Denied. Admin accounts only.');
             }
-            localStorage.setItem('adminUser', JSON.stringify(userData));
+            sessionStorage.setItem('adminUser', JSON.stringify(userData));
             setUser(userData);
           }
         } catch (error) {
           console.error('Auto login failed:', error);
-          localStorage.removeItem('adminToken');
-          localStorage.removeItem('adminUser');
+          sessionStorage.removeItem('adminToken');
+          sessionStorage.removeItem('adminUser');
           setUser(null);
         } finally {
           setLoading(false);
@@ -65,8 +65,8 @@ export function AuthProvider({ children }) {
         throw new Error('Access Denied. Admin accounts only.');
       }
 
-      localStorage.setItem('adminToken', accessToken);
-      localStorage.setItem('adminUser', JSON.stringify(userData));
+      sessionStorage.setItem('adminToken', accessToken);
+      sessionStorage.setItem('adminUser', JSON.stringify(userData));
       setUser(userData);
       return userData;
     } finally {
@@ -76,8 +76,8 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try { await api.post('/users/logout'); } catch { /* silent */ }
-    localStorage.removeItem('adminToken');
-    localStorage.removeItem('adminUser');
+    sessionStorage.removeItem('adminToken');
+    sessionStorage.removeItem('adminUser');
     setUser(null);
   };
 
