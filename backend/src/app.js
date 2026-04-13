@@ -15,6 +15,7 @@ import ownerRouter from "./routes/owner.routes.js";
 import ApiError from "./utils/apiError.js";
 
 const app = express();
+app.set("trust proxy", 1);
 
 app.use(cors({
     origin: (process.env.CORS_ORIGIN || "").split(","),

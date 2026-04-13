@@ -57,9 +57,11 @@ const registerUser = asyncHandler(async (req, res) => {
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id)
 
+    const isProduction = process.env.NODE_ENV === "production" || process.env.FRONTEND_URL?.includes('onrender.com');
     const options = {
         httpOnly: true,
-        secure: true
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax"
     }
 
     // Trigger welcome email silently
@@ -96,9 +98,11 @@ const loginUser = asyncHandler(async (req, res) => {
 
     const loggedInUSer = await User.findById(user._id).select("-password -refreshToken")
 
+    const isProduction = process.env.NODE_ENV === "production" || process.env.FRONTEND_URL?.includes('onrender.com');
     const options = {
         httpOnly: true,
-        secure: false // Set to true in production with HTTPS
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax"
     }
 
     // Trigger login email silently
@@ -132,9 +136,11 @@ const logoutUser = asyncHandler(async (req, res) => {
         }
     )
 
+    const isProduction = process.env.NODE_ENV === "production" || process.env.FRONTEND_URL?.includes('onrender.com');
     const options = {
         httpOnly: true,
-        secure: false
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax"
     }
 
     return res
