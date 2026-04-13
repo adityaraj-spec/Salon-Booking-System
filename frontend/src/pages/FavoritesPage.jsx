@@ -24,7 +24,6 @@ export function FavoritesPage() {
             }
         } catch (err) {
             setError(err.response?.data?.message || "Failed to load favorites.");
-            console.error(err);
         } finally {
             setLoading(false);
         }
@@ -47,7 +46,6 @@ export function FavoritesPage() {
                 }
             }
         } catch (error) {
-            console.error("Error toggling favorite:", error);
             showNotification("Failed to update favorites.", "error");
         }
     };

@@ -19,12 +19,11 @@ export function RoleSelectionPage() {
             if (response.status === 200 || response.status === 201) {
                 updateUserRole(role);
                 navigate("/home");
-            } else {
-                console.error("Failed to update role");
             }
         } catch (error) {
-            console.error("Error updating role:", error);
+            // silently fail — user stays on page and can retry
         } finally {
+            setLoading(null);
         }
     };
 

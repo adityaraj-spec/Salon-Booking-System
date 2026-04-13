@@ -36,7 +36,6 @@ function App() {
                   <Route path="home" element={<Shops />} />
                   <Route path="role-selection" element={<RoleSelectionPage />} />
                   <Route path="create-salon" element={<CreateSalonPage />} />
-                  <Route path="shops" element={<Shops />} />
                   <Route path="shop/:id" element={<Shop />} />
                   <Route path="booking/:id" element={<BookingPage />} />
                   <Route path="profile" element={<ProfilePage />} />

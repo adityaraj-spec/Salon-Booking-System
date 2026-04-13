@@ -33,7 +33,7 @@ const SalonBookingsPage = () => {
                 setBookings(response.data.data);
             }
         } catch (error) {
-            console.error("Error fetching salon bookings:", error);
+            // silently fail — empty state shown
         } finally {
             setLoading(false);
         }
@@ -52,7 +52,6 @@ const SalonBookingsPage = () => {
                 showNotification(`Booking status updated to ${newStatus}`, "success");
             }
         } catch (error) {
-            console.error("Error updating status:", error);
             showNotification("Failed to update status. Please try again.", "error");
         }
     };

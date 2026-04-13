@@ -12,9 +12,7 @@ export const SocketProvider = ({ children }) => {
 
     useEffect(() => {
         if (user) {
-            // Initialize socket connection
-            // In production, this should use an environment variable for the URL
-            const newSocket = io('http://localhost:8000', {
+            const newSocket = io(import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000', {
                 query: { userId: user._id },
                 withCredentials: true
             });

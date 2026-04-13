@@ -85,7 +85,6 @@ export function SalonManagementPage() {
                 navigate("/create-salon");
             }
         } catch (error) {
-            console.error("Error fetching salons:", error);
             showNotification("Failed to load salon details.", "error");
         } finally {
             setLoading(false);
@@ -102,7 +101,7 @@ export function SalonManagementPage() {
             if (servRes.data.success) setServices(servRes.data.data);
             if (staffRes.data.success) setStaff(staffRes.data.data);
         } catch (error) {
-            console.error("Error fetching salon items:", error);
+            // silently fail — salon data still shown, items are empty
         }
     };
 

@@ -43,7 +43,6 @@ export function Shop() {
                     setSalon(response.data.data);
                 }
             } catch (err) {
-                console.error("Error fetching salon details:", err);
                 setError("Failed to load salon details. Please try again later.");
             } finally {
                 setLoading(false);
@@ -57,7 +56,7 @@ export function Shop() {
                     setReviews(response.data.data);
                 }
             } catch (err) {
-                console.error("Error fetching reviews:", err);
+                // silently fail — reviews are non-critical
             }
         };
 
@@ -68,7 +67,7 @@ export function Shop() {
                     setServices(response.data.data);
                 }
             } catch (err) {
-                console.error("Error fetching services:", err);
+                // silently fail — services are listed as empty
             }
         };
 
@@ -79,7 +78,7 @@ export function Shop() {
                     setStaff(response.data.data);
                 }
             } catch (err) {
-                console.error("Error fetching staff:", err);
+                // silently fail — staff is listed as empty
             }
         };
 
@@ -157,7 +156,7 @@ export function Shop() {
                 setSalon((prev) => ({ ...prev, rating: 0 }));
             }
         } catch (err) {
-            console.error("Error deleting review:", err);
+            // silently fail — review already removed from UI state
         } finally {
             setIsDeletingReview(null);
         }
@@ -185,8 +184,7 @@ export function Shop() {
         try {
             await axiosInstance.post(`/reviews/${reviewId}/like`);
         } catch (err) {
-            console.error("Error toggling like:", err);
-            // Revert on failure
+            // revert optimistic update on failure
             setReviews((prev) =>
                 prev.map((r) => {
                     if (r._id !== reviewId) return r;

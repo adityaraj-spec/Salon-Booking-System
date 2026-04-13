@@ -1,15 +1,18 @@
+/* ============================================
+   App Root Layout — SalonNow Frontend
+   ============================================ */
+
 #root {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-
-  /* REMOVE these */
   max-width: 100%;
   overflow-x: hidden;
   margin: 0;
   padding: 0;
   text-align: left;
 }
+
 .main-content {
   margin-top: 80px;
 }

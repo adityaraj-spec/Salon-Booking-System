@@ -35,7 +35,7 @@ export function NavBar() {
                         setHasSalon(true);
                     }
                 } catch (error) {
-                    console.error("Error checking salon ownership:", error);
+                    // silently fail — hasSalon defaults to false
                 }
             }
         };
@@ -93,7 +93,7 @@ export function NavBar() {
                 // We'll call logout to ensure the frontend state matches the backend
                 logout();
             } else {
-                console.error("Error fetching notifications:", error);
+                // silently fail for other errors
             }
         }
     };
@@ -130,7 +130,7 @@ export function NavBar() {
             setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
             setUnreadCount(prev => Math.max(0, prev - 1));
         } catch (error) {
-            console.error("Error marking notification as read:", error);
+            // silently fail — notification state already updated optimistically
         }
     };
 
@@ -140,7 +140,7 @@ export function NavBar() {
             setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
             setUnreadCount(0);
         } catch (error) {
-            console.error("Error marking all as read:", error);
+            // silently fail — UI already reflects read state
         }
     };
 
@@ -331,7 +331,7 @@ export function NavBar() {
                                                         onClick={() => {
                                                             setIsMenuOpen(false);
                                                             const token = localStorage.getItem('authToken');
-                                                            window.open(`http://localhost:5174?token=${token}`, '_blank');
+                                                            window.open(`${import.meta.env.VITE_ADMIN_URL || 'http://localhost:5174'}?token=${token}`, '_blank');
                                                         }}
                                                         className="w-full flex items-center justify-start gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-colors"
                                                     >
@@ -457,7 +457,7 @@ export function NavBar() {
                                 onClick={() => {
                                     setIsMobileMenuOpen(false);
                                     const token = localStorage.getItem('authToken');
-                                    window.open(`http://localhost:5174?token=${token}`, '_blank');
+                                    window.open(`${import.meta.env.VITE_ADMIN_URL || 'http://localhost:5174'}?token=${token}`, '_blank');
                                 }}
                                 className="w-full flex items-center justify-start gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
                             >
