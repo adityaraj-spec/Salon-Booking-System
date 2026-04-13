@@ -34,7 +34,7 @@ function StaffForm({ initial, onSave, onClose }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {[['name','Name *',true,'text'],['role','Role / Title',false,'text'],
           ['experience','Experience (Years)',false,'number']].map(([k,label,req,type]) => (
           <div key={k}>

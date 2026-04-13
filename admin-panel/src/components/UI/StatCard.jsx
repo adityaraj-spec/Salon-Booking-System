@@ -8,15 +8,15 @@ export default function StatCard({ label, value, icon: Icon, color = 'blue', sub
   };
 
   return (
-    <div className="bg-white rounded-[28px] border border-gray-100 p-6 shadow-sm hover:shadow-xl hover:shadow-black/5 hover:-translate-y-1 transition-all duration-300 group">
-      <div className="flex items-start justify-between mb-4">
-        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">{label}</p>
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center border shadow-sm ${colors[color]}`}>
-          <Icon size={18} />
+    <div className="bg-white rounded-[28px] border border-gray-100 p-4 md:p-6 shadow-sm hover:shadow-xl hover:shadow-black/5 hover:-translate-y-1 transition-all duration-300 group">
+      <div className="flex items-start justify-between mb-3 md:mb-4">
+        <p className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">{label}</p>
+        <div className={`w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center border shadow-sm ${colors[color]}`}>
+          <Icon size={16} className="md:w-[18px] md:h-[18px]" />
         </div>
       </div>
-      <p className="text-3xl font-serif font-black text-[#1a1a1a]">{value}</p>
-      {sub && <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">{sub}</p>}
+      <p className="text-2xl md:text-3xl font-serif font-black text-[#1a1a1a]">{value}</p>
+      {sub && <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1.5 md:mt-2">{sub}</p>}
     </div>
   );
 }

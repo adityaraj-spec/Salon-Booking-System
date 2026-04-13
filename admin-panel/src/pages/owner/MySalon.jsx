@@ -109,7 +109,7 @@ export default function MySalon() {
             Working Hours
             <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <F label="Opening Time" k="openingHours" placeholder="09:00 AM" />
             <F label="Closing Time" k="closingHours" placeholder="09:00 PM" />
           </div>

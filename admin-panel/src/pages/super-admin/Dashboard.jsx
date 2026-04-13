@@ -70,33 +70,33 @@ export default function SuperAdminDashboard() {
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm">
-          <h3 className="font-serif font-black text-[#1a1a1a] text-lg mb-8 flex items-center gap-2">
+        <div className="bg-white rounded-[32px] border border-gray-100 p-5 md:p-8 shadow-sm">
+          <h3 className="font-serif font-black text-[#1a1a1a] text-lg mb-6 md:mb-8 flex items-center gap-2">
             Global Revenue
             <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
           </h3>
           <ResponsiveContainer width="100%" height={240}>
             <LineChart data={dailyBookings || []}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f8f8f8" vertical={false} />
-              <XAxis dataKey="_id" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold' }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold' }} width={65} tickFormatter={v => `₹${v}`} />
+              <XAxis dataKey="_id" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 'bold' }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 'bold' }} width={45} tickFormatter={v => `₹${v}`} />
               <Tooltip 
                 contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}
               />
-              <Line type="monotone" dataKey="revenue" stroke="#D4AF37" strokeWidth={4} dot={{ r: 5, fill: '#D4AF37', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 7 }} />
+              <Line type="monotone" dataKey="revenue" stroke="#D4AF37" strokeWidth={4} dot={{ r: 4, fill: '#D4AF37', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 6 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
-        <div className="bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm">
-          <h3 className="font-serif font-black text-[#1a1a1a] text-lg mb-8 flex items-center gap-2">
+        <div className="bg-white rounded-[32px] border border-gray-100 p-5 md:p-8 shadow-sm">
+          <h3 className="font-serif font-black text-[#1a1a1a] text-lg mb-6 md:mb-8 flex items-center gap-2">
             Booking Volume
             <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
           </h3>
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={dailyBookings || []}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f8f8f8" vertical={false} />
-              <XAxis dataKey="_id" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold' }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold' }} />
+              <XAxis dataKey="_id" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 'bold' }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 'bold' }} width={30} />
               <Tooltip 
                 contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}
                 cursor={{ fill: '#fcfcfc' }}
@@ -110,8 +110,8 @@ export default function SuperAdminDashboard() {
       {/* Recent Bookings + Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Bookings */}
-        <div className="lg:col-span-2 bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm">
-          <div className="flex items-center justify-between mb-8">
+        <div className="lg:col-span-2 bg-white rounded-[32px] border border-gray-100 p-5 md:p-8 shadow-sm">
+          <div className="flex items-center justify-between mb-6 md:mb-8">
             <h3 className="font-serif font-black text-[#1a1a1a] text-lg flex items-center gap-2">
               Platform Feed
               <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
@@ -120,17 +120,17 @@ export default function SuperAdminDashboard() {
               View all <ArrowRight size={12} />
             </button>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1">
             {(recentBookings || []).length === 0 && <p className="text-sm text-gray-400 text-center py-6">No bookings yet</p>}
             {(recentBookings || []).map(b => (
-              <div key={b._id} className="flex items-center justify-between py-4 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-all px-2 rounded-xl">
-                <div>
-                  <p className="text-sm font-bold text-[#1a1a1a]">{b.customer?.fullName || 'Guest'}</p>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{b.salon?.name} • {b.date}</p>
+              <div key={b._id} className="flex items-center justify-between py-3.5 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-all px-2 rounded-xl">
+                <div className="min-w-0 pr-2">
+                  <p className="text-sm font-bold text-[#1a1a1a] truncate">{b.customer?.fullName || 'Guest'}</p>
+                  <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1 truncate">{b.salon?.name} • {b.date}</p>
                 </div>
-                <div className="flex items-center gap-4">
-                  {b.totalAmount && <span className="font-serif font-black text-[#1a1a1a]">₹{b.totalAmount}</span>}
-                  <span className={`text-[10px] font-black px-3 py-1.5 rounded-full ${STATUS_BADGE[b.status]}`}>
+                <div className="flex items-center gap-2 md:gap-4 shrink-0">
+                  {b.totalAmount && <span className="font-serif font-black text-[#1a1a1a] text-sm md:text-base">₹{b.totalAmount}</span>}
+                  <span className={`text-[8px] md:text-[10px] font-black px-2.5 py-1 rounded-full ${STATUS_BADGE[b.status]}`}>
                     {b.status}
                   </span>
                 </div>

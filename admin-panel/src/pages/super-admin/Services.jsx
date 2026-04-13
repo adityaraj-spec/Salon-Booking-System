@@ -79,7 +79,7 @@ function ServiceForm({ initial, salons, onSave, onClose }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {[['name','Service Name *',true,'text'],['category','Category','false','text'],
           ['price','Price (₹)',false,'number'],['duration','Duration (mins)',false,'number']].map(([k,label,req,type]) => (
           <div key={k}>

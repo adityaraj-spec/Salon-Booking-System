@@ -32,9 +32,9 @@ export default function DataTable({
   return (
     <div className="bg-white rounded-[28px] border border-gray-100 shadow-xl shadow-black/5 overflow-hidden transition-all">
       {/* Top toolbar */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50 gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 md:px-5 py-4 border-b border-gray-50 gap-4">
         {onSearch && (
-          <div className="relative max-w-sm flex-1">
+          <div className="relative w-full sm:max-w-sm">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               value={searchVal}
@@ -44,7 +44,7 @@ export default function DataTable({
             />
           </div>
         )}
-        <div className="flex items-center gap-2 ml-auto text-sm text-gray-500">
+        <div className="flex items-center gap-2 ml-auto sm:ml-0 text-sm text-gray-500">
           <span>Show</span>
           <select
             value={limit}
@@ -58,16 +58,16 @@ export default function DataTable({
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto scrollbar-hide">
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50/50 border-b border-gray-50">
               {columns.map(col => (
-                <th key={col.key} className="text-left px-5 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] whitespace-nowrap">
+                <th key={col.key} className="text-left px-4 md:px-5 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] whitespace-nowrap">
                   {col.label}
                 </th>
               ))}
-              {actions && <th className="text-right px-5 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Actions</th>}
+              {actions && <th className="text-right px-4 md:px-5 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Actions</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
@@ -79,12 +79,12 @@ export default function DataTable({
               data.map((row, idx) => (
                 <tr key={row._id || idx} className="hover:bg-gray-50/50 transition-colors">
                   {columns.map(col => (
-                    <td key={col.key} className="px-5 py-3.5 text-gray-700 whitespace-nowrap">
+                    <td key={col.key} className="px-4 md:px-5 py-3.5 text-gray-700 whitespace-nowrap">
                       {col.render ? col.render(row[col.key], row) : (row[col.key] ?? '—')}
                     </td>
                   ))}
                   {actions && (
-                    <td className="px-5 py-3.5 text-right">
+                    <td className="px-4 md:px-5 py-3.5 text-right">
                       <div className="flex items-center justify-end gap-2">{actions(row)}</div>
                     </td>
                   )}

@@ -49,7 +49,7 @@ function SalonForm({ initial, owners, onSave, onClose }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <F label="Salon Name *" k="name" required />
         <F label="City *" k="city" required />
         <F label="State" k="state" />

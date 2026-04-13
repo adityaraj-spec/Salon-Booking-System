@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   LayoutDashboard, Store, Scissors, Calendar, Users, UserCheck,
-  BarChart2, Settings, LogOut, Scissors as ScissorsIcon, ChevronRight
+  BarChart2, Settings, LogOut, Scissors as ScissorsIcon, ChevronRight, X
 } from 'lucide-react';
 
 const SUPER_ADMIN_NAV = [
@@ -25,7 +25,7 @@ const OWNER_NAV = [
   { to: '/owner/reports', icon: BarChart2, label: 'Reports' },
 ];
 
-export default function Sidebar({ role }) {
+export default function Sidebar({ role, isOpen, onClose }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const navItems = role === 'super_admin' ? SUPER_ADMIN_NAV : OWNER_NAV;
@@ -36,9 +36,9 @@ export default function Sidebar({ role }) {
   };
 
   return (
-    <aside className="fixed top-0 left-0 h-full w-64 bg-[#1a1a1a] text-white flex flex-col z-40 shadow-xl border-r border-[#D4AF37]/10">
-      {/* Logo */}
-      <div className="px-6 py-6 border-b border-gray-800">
+    <aside className={`fixed top-0 left-0 h-full w-64 bg-[#1a1a1a] text-white flex flex-col z-50 shadow-xl border-r border-[#D4AF37]/10 transition-transform duration-300 transform ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+      {/* Logo & Close Button */}
+      <div className="px-6 py-6 border-b border-gray-800 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-[#f9f5e8] rounded-full border border-[#D4AF37]/20 flex items-center justify-center">
             <ScissorsIcon size={20} className="text-[#D4AF37]" />
@@ -50,6 +50,14 @@ export default function Sidebar({ role }) {
             </p>
           </div>
         </div>
+        
+        {/* Mobile Close */}
+        <button 
+          onClick={onClose}
+          className="lg:hidden p-2 hover:bg-gray-800 rounded-xl text-gray-400 transition-colors"
+        >
+          <X size={20} />
+        </button>
       </div>
 
       {/* Navigation */}
@@ -58,10 +66,11 @@ export default function Sidebar({ role }) {
           <NavLink
             key={to}
             to={to}
+            onClick={onClose}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-3 rounded-2xl text-sm font-medium transition-all group ${
                 isActive
-                  ? 'bg-[#f9f5e8] text-[#1a1a1a] shadow-lg shadow-[#D4AF37]/10 border border-[#D4AF37]/20'
+                   ? 'bg-[#f9f5e8] text-[#1a1a1a] shadow-lg shadow-[#D4AF37]/10 border border-[#D4AF37]/20'
                   : 'text-gray-400 hover:bg-gray-800 hover:text-white'
               }`
             }
