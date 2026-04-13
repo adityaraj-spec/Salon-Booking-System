@@ -334,17 +334,14 @@ export function NavBar() {
                                                         <LayoutDashboard size={18} />
                                                         Owner Dashboard
                                                     </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            setIsMenuOpen(false);
-                                                            const token = localStorage.getItem('authToken');
-                                                            window.open(`http://localhost:5174/owner/salon?token=${token}`, '_blank');
-                                                        }}
+                                                    <NavLink
+                                                        to="/salon/manage"
                                                         className="w-full flex items-center justify-start gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-colors"
+                                                        onClick={() => setIsMenuOpen(false)}
                                                     >
                                                         <Scissors size={18} />
                                                         Edit Salon
-                                                    </button>
+                                                    </NavLink>
                                                 </>
                                             )}
 
@@ -462,16 +459,15 @@ export function NavBar() {
                             >
                                 Admin Dashboard
                             </button>
-                            <button
-                                onClick={() => {
-                                    setIsMobileMenuOpen(false);
-                                    const token = localStorage.getItem('authToken');
-                                    window.open(`http://localhost:5174/owner/salon?token=${token}`, '_blank');
-                                }}
-                                className="w-full flex items-center justify-start gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
+                            <NavLink
+                                to="/salon/manage"
+                                className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all ${isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37]"
+                                    }`}
+                                onClick={() => setIsMobileMenuOpen(false)}
                             >
+                                <Scissors size={18} className="shrink-0" />
                                 Edit Salon
-                            </button>
+                            </NavLink>
                         </>
                     )}
 

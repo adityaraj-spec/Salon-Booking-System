@@ -22,6 +22,7 @@ import {
     TrendingUp,
     Upload,
     Settings,
+    MapPin,
     Image as ImageIcon
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
@@ -333,23 +334,40 @@ export function SalonManagementPage() {
         <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-20 md:pt-24 pb-8 font-sans">
             <div>
                 {/* Header & Multi-Salon Selector */}
-                <div className="bg-white rounded-[40px] p-6 md:p-10 shadow-sm border border-gray-100 mb-6 relative">
+                {/* Header & Multi-Salon Selector - Redesigned 3-Column Layout */}
+                <div className="bg-white rounded-[40px] p-6 lg:p-10 shadow-sm border border-gray-100 mb-8 relative overflow-hidden flex flex-col lg:flex-row gap-8 lg:gap-12">
+                    {/* Background decoration */}
                     <div className="absolute top-0 right-0 w-80 h-80 bg-[#D4AF37]/5 rounded-full -mr-40 -mt-20 blur-3xl"></div>
                     
-                    <div className="flex flex-col md:flex-row justify-between items-start lg:items-center gap-8 relative z-10">
-                        <div className="flex items-center gap-6">
-                            <div className="w-20 h-20 bg-[#1a1a1a] rounded-[28px] flex items-center justify-center text-white border-2 border-[#D4AF37] shadow-xl shadow-[#D4AF37]/10">
-                                <Store size={36} />
+                    {/* COLUMN 1: Visual (Image) */}
+                    <div className="w-full lg:w-72 h-72 lg:h-auto rounded-[32px] overflow-hidden shrink-0 shadow-lg border border-white relative group">
+                        {activeSalon?.images?.[0] ? (
+                            <img 
+                                src={activeSalon.images[0]} 
+                                alt={activeSalon.name} 
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                            />
+                        ) : (
+                            <div className="w-full h-full bg-[#1a1a1a] flex items-center justify-center text-white">
+                                <Store size={48} />
                             </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                    </div>
+
+                    {/* COLUMN 2: SALON INFO (Middle) */}
+                    <div className="flex-1 flex flex-col justify-center py-2 relative z-10">
+                        <div className="space-y-6">
                             <div>
-                                <div className="relative">
+                                <div className="relative inline-block group">
                                     <button 
                                         onClick={() => setIsSalonSelectorOpen(!isSalonSelectorOpen)}
-                                        className="flex items-center gap-3 text-3xl md:text-4xl font-serif font-black text-gray-900 group"
+                                        className="flex items-center gap-3 text-3xl md:text-5xl font-serif font-black text-gray-900 group"
                                     >
-                                        {activeSalon?.name}
-                                        <ChevronDown size={28} className={`text-[#D4AF37] transition-transform duration-300 ${isSalonSelectorOpen ? 'rotate-180' : ''}`} />
+                                        {activeSalon?.name || "Salon Name"}
+                                        <ChevronDown size={32} className={`text-[#D4AF37] transition-transform duration-300 ${isSalonSelectorOpen ? 'rotate-180' : ''}`} />
                                     </button>
+                                    <span className="block h-1.5 w-16 bg-[#D4AF37] mt-3 rounded-full group-hover:w-32 transition-all duration-500"></span>
                                     
                                     {isSalonSelectorOpen && (
                                         <div className="absolute top-full left-0 mt-4 w-72 bg-white rounded-3xl shadow-2xl border border-gray-100 p-3 z-50 animate-in fade-in zoom-in slide-in-from-top-1 px-4">
@@ -362,10 +380,10 @@ export function SalonManagementPage() {
                                                             setActiveSalon(s);
                                                             setIsSalonSelectorOpen(false);
                                                         }}
-                                                        className={`w-full text-left p-3 rounded-2xl flex items-center justify-between transition-all ${activeSalon._id === s._id ? 'bg-[#D4AF37]/10 text-gray-900' : 'hover:bg-gray-50 text-gray-500'}`}
+                                                        className={`w-full text-left p-3 rounded-2xl flex items-center justify-between transition-all ${activeSalon?._id === s._id ? 'bg-[#D4AF37]/10 text-gray-900' : 'hover:bg-gray-50 text-gray-500'}`}
                                                     >
                                                         <span className="font-bold text-sm">{s.name}</span>
-                                                        {activeSalon._id === s._id && <Star size={12} className="fill-[#D4AF37] text-[#D4AF37]" />}
+                                                        {activeSalon?._id === s._id && <Star size={12} className="fill-[#D4AF37] text-[#D4AF37]" />}
                                                     </button>
                                                 ))}
                                             </div>
@@ -379,79 +397,83 @@ export function SalonManagementPage() {
                                         </div>
                                     )}
                                 </div>
-                                <div className="flex flex-wrap items-center gap-6 mt-3">
-                                    <p className="text-gray-400 flex items-center gap-2 font-bold text-[11px] uppercase tracking-wider">
-                                        <Zap size={14} className="text-[#D4AF37]" />
-                                        Elite Dashboard
-                                    </p>
-                                    <div className="h-1 w-1 bg-gray-200 rounded-full"></div>
-                                    <p className="text-gray-700 flex items-center gap-2 font-bold text-xs">
-                                        <Phone size={14} className="text-[#D4AF37]" />
-                                        {activeSalon?.contactNumber || "Contact not set"}
-                                    </p>
-                                    <div className="h-1 w-1 bg-gray-200 rounded-full"></div>
-                                    <button 
-                                        onClick={() => setTab("settings")}
-                                        className="text-[10px] font-bold text-gray-400 uppercase tracking-widest hover:text-[#D4AF37] transition-colors"
-                                    >
-                                        Edit Details
-                                    </button>
+                            </div>
+
+                            <div className="flex items-start gap-4 text-gray-500 bg-gray-50/80 w-fit px-5 py-3.5 rounded-3xl border border-gray-100 shadow-sm max-w-sm lg:max-w-md">
+                                <MapPin size={22} className="text-[#D4AF37] shrink-0 mt-0.5" />
+                                <div className="flex flex-col">
+                                    <span className="text-sm md:text-base font-bold tracking-tight text-gray-900 leading-snug">{activeSalon?.address || "No address provided"}</span>
+                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1.5">{activeSalon?.city || "Location details"}</span>
                                 </div>
                             </div>
-                        </div>
-                        
-                        <div className="flex flex-wrap gap-4 w-full md:w-auto">
-                            {/* Live Status Toggle */}
-                            <div className="bg-gray-50 p-2 rounded-2xl flex items-center gap-3">
-                                <span className={`text-[10px] font-black uppercase tracking-widest pl-2 ${activeSalon?.isOpen ? 'text-emerald-500' : 'text-red-400'}`}>
-                                    {activeSalon?.isOpen ? 'Live Now' : 'Offline'}
-                                </span>
+
+                            <div className="flex flex-wrap items-center gap-6">
+                                <div className="bg-gray-50 p-2.5 rounded-2xl flex items-center gap-3 border border-gray-100 shadow-sm">
+                                    <span className={`text-[10px] font-black uppercase tracking-widest pl-2 ${activeSalon?.isOpen ? 'text-emerald-500' : 'text-red-400'}`}>
+                                        {activeSalon?.isOpen ? 'Live Now' : 'Offline'}
+                                    </span>
+                                    <button 
+                                        onClick={handleUpdateSalonStatus}
+                                        className={`w-12 h-6 rounded-full relative transition-all duration-300 ${activeSalon?.isOpen ? 'bg-emerald-500' : 'bg-gray-300'}`}
+                                    >
+                                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all duration-300 ${activeSalon?.isOpen ? 'left-7' : 'left-1'}`}></div>
+                                    </button>
+                                </div>
                                 <button 
-                                    onClick={handleUpdateSalonStatus}
-                                    className={`w-12 h-6 rounded-full relative transition-all duration-300 ${activeSalon?.isOpen ? 'bg-emerald-500' : 'bg-gray-300'}`}
+                                    onClick={() => setTab("settings")}
+                                    className="px-5 py-2.5 bg-white border border-gray-200 rounded-2xl text-[10px] font-black text-gray-400 uppercase tracking-widest hover:border-[#D4AF37] hover:text-[#D4AF37] transition-all flex items-center gap-2 shadow-sm group"
                                 >
-                                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all duration-300 ${activeSalon?.isOpen ? 'left-7' : 'left-1'}`}></div>
+                                    <Settings size={14} className="group-hover:rotate-90 transition-transform duration-500" />
+                                    Edit Details
                                 </button>
                             </div>
-                            
-                            <NavLink 
-                                to="/salon/dashboard"
-                                className="flex-1 md:flex-none flex items-center justify-center gap-3 px-8 py-4 bg-[#1A1A1A] text-white rounded-2xl font-bold text-xs uppercase tracking-[0.2em] hover:bg-black hover:scale-[1.02] transition-all shadow-xl shadow-black/10"
-                            >
-                                <CalendarCheck size={18} className="text-[#D4AF37]" />
-                                View Bookings
-                            </NavLink>
                         </div>
                     </div>
 
-                    {/* Stats Overview */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 pt-6 border-t border-gray-50">
-                        <div className="bg-gray-50/50 p-6 rounded-3xl border border-transparent hover:border-[#D4AF37]/20 transition-all group">
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3">Service Menu</p>
-                            <div className="flex items-end justify-between">
-                                <h4 className="text-3xl font-serif font-black text-gray-900">{services.length}</h4>
-                                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm text-amber-500">
-                                    <Scissors size={20} />
+                    {/* COLUMN 3: STATS & ACTIONS (Right) */}
+                    <div className="lg:w-[38%] bg-gray-50/50 rounded-[40px] p-6 lg:p-8 border border-gray-100 flex flex-col justify-center gap-6 relative z-10">
+                        <div className="grid grid-cols-2 gap-4">
+                            {/* Service Menu Stat */}
+                            <div className="bg-white p-4 lg:p-5 rounded-3xl shadow-sm border border-gray-50 flex items-center gap-4 hover:shadow-md transition-shadow">
+                                <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-500 shadow-sm border border-amber-100/50 shrink-0">
+                                    <Scissors size={24} />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1 leading-none">Services</p>
+                                    <h4 className="text-xl lg:text-2xl font-serif font-black text-gray-900">{services.length}</h4>
                                 </div>
                             </div>
-                        </div>
-                        <div className="bg-gray-50/50 p-6 rounded-3xl border border-transparent hover:border-[#D4AF37]/20 transition-all">
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3">Master Stylists</p>
-                            <div className="flex items-end justify-between">
-                                <h4 className="text-3xl font-serif font-black text-gray-900">{staff.length}</h4>
-                                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm text-emerald-500">
-                                    <Users size={20} />
+
+                            {/* Staff Stat */}
+                            <div className="bg-white p-4 lg:p-5 rounded-3xl shadow-sm border border-gray-50 flex items-center gap-4 hover:shadow-md transition-shadow">
+                                <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-500 shadow-sm border border-emerald-100/50 shrink-0">
+                                    <Users size={24} />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1 leading-none">Stylists</p>
+                                    <h4 className="text-xl lg:text-2xl font-serif font-black text-gray-900">{staff.length}</h4>
                                 </div>
                             </div>
-                        </div>
-                        <div className="bg-gray-50/50 p-6 rounded-3xl border border-transparent hover:border-[#D4AF37]/20 transition-all">
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3">Active Performance</p>
-                            <div className="flex items-end justify-between">
-                                <h4 className="text-3xl font-serif font-black text-gray-900">Good</h4>
-                                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm text-blue-500">
-                                    <TrendingUp size={20} />
+
+                            {/* Performance Stat */}
+                            <div className="bg-white p-4 lg:p-5 rounded-3xl shadow-sm border border-gray-50 flex items-center gap-4 hover:shadow-md transition-shadow">
+                                <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 shadow-sm border border-blue-100/50 shrink-0">
+                                    <TrendingUp size={24} />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1 leading-none">Status</p>
+                                    <h4 className="text-xl lg:text-2xl font-serif font-black text-gray-900">Good</h4>
                                 </div>
                             </div>
+
+                            {/* View Bookings Button (Integrated into grid) */}
+                            <NavLink 
+                                to="/salon/dashboard"
+                                className="bg-[#1A1A1A] hover:bg-black text-white p-4 lg:p-5 rounded-3xl shadow-xl shadow-black/10 flex flex-col items-center justify-center gap-2 group transition-all"
+                            >
+                                <CalendarCheck size={26} className="text-[#D4AF37] group-hover:scale-110 transition-transform duration-300" />
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] leading-none">Bookings</span>
+                            </NavLink>
                         </div>
                     </div>
                 </div>
