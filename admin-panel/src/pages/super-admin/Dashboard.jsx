@@ -23,16 +23,38 @@ const STATUS_BADGE = {
 export default function SuperAdminDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     api.get('/admin/dashboard')
       .then(r => setData(r.data.data))
-      .catch(console.error)
+      .catch(err => {
+        console.error('Dashboard error:', err);
+        setError(err.response?.data?.message || err.message || 'Failed to load dashboard');
+      })
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <LoadingSpinner text="Loading dashboard..." />;
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] bg-white rounded-[32px] border border-red-100 p-12 text-center">
+        <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-6">
+          <Store size={32} />
+        </div>
+        <h2 className="text-2xl font-serif font-black text-[#1a1a1a] mb-2">Access Restricted</h2>
+        <p className="text-gray-500 max-w-sm mb-8">{error}</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="px-8 py-3 bg-[#1a1a1a] text-white rounded-full font-bold text-sm hover:bg-black transition-all"
+        >
+          Retry Connection
+        </button>
+      </div>
+    );
+  }
 
   const { stats, dailyBookings, recentBookings } = data || {};
 

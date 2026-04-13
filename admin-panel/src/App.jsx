@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AdminLayout from './components/Layout/AdminLayout';
+import LoadingSpinner from './components/UI/LoadingSpinner';
 import Login from './pages/Login';
 
 // Super Admin Pages
@@ -32,7 +33,15 @@ function ProtectedRoute({ children, allowedRoles }) {
 }
 
 function AppRoutes() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#fcfcfc]">
+        <LoadingSpinner text="Authenticating..." />
+      </div>
+    );
+  }
 
   return (
     <Routes>

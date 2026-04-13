@@ -4,13 +4,18 @@ import api from '../services/api';
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
+  // Check for token in URL immediately during initialization
+  const hasTokenInUrl = new URLSearchParams(window.location.search).has('token');
+
   const [user, setUser] = useState(() => {
+    if (hasTokenInUrl) return null; // Ignore stale localStorage if a new token is incoming
     try {
       const stored = localStorage.getItem('adminUser');
       return stored ? JSON.parse(stored) : null;
     } catch { return null; }
   });
-  const [loading, setLoading] = useState(false);
+  
+  const [loading, setLoading] = useState(hasTokenInUrl); // Wait for profile fetch if token present
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -19,6 +24,9 @@ export function AuthProvider({ children }) {
     if (token) {
       // Clear token from URL for security
       window.history.replaceState({}, document.title, window.location.pathname);
+      
+      // CRITICAL: Clear potentially stale user data before fetching new profile
+      localStorage.removeItem('adminUser');
       localStorage.setItem('adminToken', token);
       
       const fetchProfile = async () => {

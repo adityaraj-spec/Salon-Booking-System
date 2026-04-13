@@ -8,7 +8,11 @@ export const verifySuperAdmin = asyncHandler(async (req, _, next) => {
     if (!req.user) {
         throw new ApiError(401, "Unauthorized - Please login");
     }
-    if (req.user.role !== "super_admin") {
+
+    const role = req.user.role?.trim().toLowerCase();
+    
+    if (role !== "super_admin") {
+        console.error(`[AdminAuth] 403 Forbidden: User ${req.user._id} has role "${req.user.role}" but super_admin is required.`);
         throw new ApiError(403, "Forbidden - Super Admin access required");
     }
     next();
@@ -21,7 +25,11 @@ export const verifySalonOwner = asyncHandler(async (req, _, next) => {
     if (!req.user) {
         throw new ApiError(401, "Unauthorized - Please login");
     }
-    if (req.user.role !== "salonOwner" && req.user.role !== "super_admin") {
+
+    const role = req.user.role?.trim().toLowerCase();
+
+    if (role !== "salonowner" && role !== "super_admin") {
+        console.error(`[AdminAuth] 403 Forbidden: User ${req.user._id} has role "${req.user.role}" but salonOwner or super_admin is required.`);
         throw new ApiError(403, "Forbidden - Salon Owner access required");
     }
     next();
