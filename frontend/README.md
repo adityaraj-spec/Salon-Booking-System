@@ -1,16 +1,33 @@
-# React + Vite
+# SalonNow - Main Website & Customer Portal
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the public-facing React application for SalonNow. It serves as both the primary discovery portal for customers and the integrated "Lite" management storefront for salon owners.
 
-Currently, two official plugins are available:
+## 🎨 Key Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### For Customers
+- **Discovery Engine**: Robust search, category filtering, and "Top Rated" sorting to find the perfect salon experience.
+- **Interactive Salon Map**: Mapbox integration displaying location pins for all registered salons in a city.
+- **Seamless Booking Flow**: Real-time calendar and time-slot selection for immediate appointment scheduling without double-bookings.
+- **Responsive Aesthetics**: A modern, glassmorphism-inspired UI with smooth transitions and offcanvas mobile navigation.
 
-## React Compiler
+### For Salon Owners
+- **Integrated Owner Dashboard (Lite)**: Salon owners have a conditional "Manage This Salon" shortcut on their public page.
+- **Storefront Editor**: Quickly edit operating hours, upload gallery photos, and tweak basic details directly from the main site without opening a separate admin panel.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠️ Tech Stack
+- **Framework**: React (Vite)
+- **Styling**: TailwindCSS & Custom Vanilla CSS
+- **State/Routing**: React Router DOM & Context API
+- **Maps**: Mapbox GL JS
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 👨‍💻 Local Setup
+1. Clone `frontend/.env.example` to `frontend/.env` and add your Mapbox Token along with the Backend API URLs.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+   *The app will be accessible at `http://localhost:5173`.*

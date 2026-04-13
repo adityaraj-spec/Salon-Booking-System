@@ -162,9 +162,6 @@ export function LandingPage() {
                                 <NavLink to="/signup" className={`w-full sm:w-auto px-8 py-4 rounded-full font-bold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 border text-center ${isDark ? 'border-white/80 text-white hover:bg-white/10' : 'border-black/80 text-black hover:bg-black/5'}`}>
                                     Sign Up Now
                                 </NavLink>
-                                <NavLink to="/login" className={`w-full sm:w-auto px-8 py-4 rounded-full font-bold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 border text-center ${isDark ? 'border-[#ff9f43]/50 text-[#ff9f43] hover:bg-[#ff9f43]/10' : 'border-[#ff9f43]/80 text-[#ff9f43] hover:bg-[#ff9f43]/5'}`}>
-                                    Sign In
-                                </NavLink>
                             </div>
                         )}
                     </motion.div>
