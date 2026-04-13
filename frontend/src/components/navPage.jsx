@@ -294,23 +294,27 @@ export function NavBar() {
                                                 Profile
                                             </NavLink>
 
-                                            <NavLink
-                                                to="/bookings"
-                                                className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-colors"
-                                                onClick={() => setIsMenuOpen(false)}
-                                            >
-                                                <Calendar size={18} />
-                                                Booking Details
-                                            </NavLink>
+                                            {user?.role === "user" && (
+                                                <>
+                                                    <NavLink
+                                                        to="/bookings"
+                                                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-colors"
+                                                        onClick={() => setIsMenuOpen(false)}
+                                                    >
+                                                        <Calendar size={18} />
+                                                        Booking Details
+                                                    </NavLink>
 
-                                            <NavLink
-                                                to="/favorites"
-                                                className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-colors"
-                                                onClick={() => setIsMenuOpen(false)}
-                                            >
-                                                <Heart size={18} />
-                                                My Favorites
-                                            </NavLink>
+                                                    <NavLink
+                                                        to="/favorites"
+                                                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-colors"
+                                                        onClick={() => setIsMenuOpen(false)}
+                                                    >
+                                                        <Heart size={18} />
+                                                        My Favorites
+                                                    </NavLink>
+                                                </>
+                                            )}
 
                                             <NavLink
                                                 to="/settings"
@@ -471,23 +475,27 @@ export function NavBar() {
                         </>
                     )}
 
-                    <NavLink
-                        to="/bookings"
-                        className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all ${isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37]"
-                            }`}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                        My Bookings
-                    </NavLink>
+                    {user?.role === "user" && (
+                        <>
+                            <NavLink
+                                to="/bookings"
+                                className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all ${isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37]"
+                                    }`}
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                My Bookings
+                            </NavLink>
 
-                    <NavLink
-                        to="/favorites"
-                        className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all ${isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37]"
-                            }`}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                        My Favorites
-                    </NavLink>
+                            <NavLink
+                                to="/favorites"
+                                className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all ${isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37]"
+                                    }`}
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                My Favorites
+                            </NavLink>
+                        </>
+                    )}
 
                     {user ? (
                         <>
