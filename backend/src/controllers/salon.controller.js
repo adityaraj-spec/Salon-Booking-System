@@ -67,7 +67,7 @@ const registerSalon = asyncHandler(async (req, res) => {
 })
 
 const getSalons = asyncHandler(async (req, res) => {
-    const { search, city, page = 1, limit = 8, sortBy, sortOrder = "asc" } = req.query;
+    const { search, city, page = 1, limit = 8, sortBy, sortOrder = "asc", topRated } = req.query;
     
     // Parse pagination parameters
     const currentPage = parseInt(page);
@@ -88,6 +88,11 @@ const getSalons = asyncHandler(async (req, res) => {
     
     if (city) {
         query.city = { $regex: city, $options: "i" };
+    }
+
+    // New: Top Rated Filter (Threshold 4.0)
+    if (topRated === "true" || topRated === true) {
+        query.rating = { $gte: 4.0 };
     }
 
     let salons;
@@ -116,20 +121,19 @@ const getSalons = asyncHandler(async (req, res) => {
         ];
         salons = await Salon.aggregate(pipeline);
         totalSalons = await Salon.countDocuments(query);
-    } else if (sortBy === "rating") {
-        // Sort by Rating
-        totalSalons = await Salon.countDocuments(query);
-        salons = await Salon.find(query)
-            .populate("owner", "fullName phonenumber")
-            .sort({ rating: -1 })
-            .skip(skip)
-            .limit(pageLimit);
     } else {
-        // Standard fetch (default to newest)
+        // Handle other sorts
+        let sortCriteria = { createdAt: -1 };
+        if (sortBy === "rating") {
+            sortCriteria = { rating: -1 };
+        } else if (sortBy === "city") {
+            sortCriteria = { city: sortOrder === "asc" ? 1 : -1 };
+        }
+
         totalSalons = await Salon.countDocuments(query);
         salons = await Salon.find(query)
             .populate("owner", "fullName phonenumber")
-            .sort({ createdAt: -1 })
+            .sort(sortCriteria)
             .skip(skip)
             .limit(pageLimit);
     }

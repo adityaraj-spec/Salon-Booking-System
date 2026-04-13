@@ -1,41 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, Star, MapPin, Loader2, Phone, Heart, ChevronDown, ArrowUpDown, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react';
+import { Search, Star, MapPin, Loader2, Phone, Heart, ChevronDown, ArrowUpDown, ChevronLeft, ChevronRight, SlidersHorizontal, Filter, X, Map } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { State, City } from 'country-state-city';
 import axiosInstance from '../api/axiosConfig';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
-
-const INDIAN_STATES = [
-    { value: "", label: "Select State" },
-    { value: "Andhra Pradesh", label: "Andhra Pradesh" },
-    { value: "Arunachal Pradesh", label: "Arunachal Pradesh" },
-    { value: "Assam", label: "Assam" },
-    { value: "Bihar", label: "Bihar" },
-    { value: "Chhattisgarh", label: "Chhattisgarh" },
-    { value: "Goa", label: "Goa" },
-    { value: "Gujarat", label: "Gujarat" },
-    { value: "Haryana", label: "Haryana" },
-    { value: "Himachal Pradesh", label: "Himachal Pradesh" },
-    { value: "Jharkhand", label: "Jharkhand" },
-    { value: "Karnataka", label: "Karnataka" },
-    { value: "Kerala", label: "Kerala" },
-    { value: "Madhya Pradesh", label: "Madhya Pradesh" },
-    { value: "Maharashtra", label: "Maharashtra" },
-    { value: "Manipur", label: "Manipur" },
-    { value: "Meghalaya", label: "Meghalaya" },
-    { value: "Mizoram", label: "Mizoram" },
-    { value: "Nagaland", label: "Nagaland" },
-    { value: "Odisha", label: "Odisha" },
-    { value: "Punjab", label: "Punjab" },
-    { value: "Rajasthan", label: "Rajasthan" },
-    { value: "Sikkim", label: "Sikkim" },
-    { value: "Tamil Nadu", label: "Tamil Nadu" },
-    { value: "Telangana", label: "Telangana" },
-    { value: "Tripura", label: "Tripura" },
-    { value: "Uttar Pradesh", label: "Uttar Pradesh" },
-    { value: "Uttarakhand", label: "Uttarakhand" },
-    { value: "West Bengal", label: "West Bengal" },
-];
 
 
 export function Shops() {
@@ -45,24 +15,46 @@ export function Shops() {
     const [searchParams, setSearchParams] = useSearchParams();
     const cityParam = searchParams.get("city") || "";
     const stateParam = searchParams.get("state") || "";
+    const topRatedParam = searchParams.get("topRated") === "true";
+    const sortByParam = searchParams.get("sortBy") || "rating";
 
     const [salons, setSalons] = useState([]);
     const [userFavorites, setUserFavorites] = useState([]);
     const [cityQuery, setCityQuery] = useState(cityParam);
-    const [sortBy, setSortBy] = useState("price");
-    const [sortOrder, setSortOrder] = useState("asc");
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    
+    // Independent Preferences
+    const [preferTopRated, setPreferTopRated] = useState(topRatedParam);
+    const [sortBy, setSortBy] = useState(sortByParam); 
+    const [sortOrder, setSortOrder] = useState("asc");
+
+    const [isSortModalOpen, setIsSortModalOpen] = useState(false);
+    
+    // Smart Location State (Modal Internal)
+    const [selectedState, setSelectedState] = useState(null); // { name, isoCode }
+    const [stateSearch, setStateSearch] = useState(stateParam || "");
+    const [citySearch, setCitySearch] = useState(cityParam || "");
+    const [isStateListOpen, setIsStateListOpen] = useState(false);
+    const [isCityListOpen, setIsCityListOpen] = useState(false);
+
     const dropdownRef = useRef(null);
+    const stateListRef = useRef(null);
+    const cityListRef = useRef(null);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setIsDropdownOpen(false);
+                // Reserved for future dropdowns
+            }
+            if (stateListRef.current && !stateListRef.current.contains(event.target)) {
+                setIsStateListOpen(false);
+            }
+            if (cityListRef.current && !cityListRef.current.contains(event.target)) {
+                setIsCityListOpen(false);
             }
         };
         document.addEventListener("mousedown", handleClickOutside);
@@ -79,7 +71,8 @@ export function Shops() {
                 city: targetCity,
                 search: targetState || stateParam,
                 sortBy: sortBy,
-                sortOrder: sortOrder
+                sortOrder: sortOrder,
+                topRated: preferTopRated
             };
             const response = await axiosInstance.get("/salons", { params });
             if (response.data.success) {
@@ -137,7 +130,7 @@ export function Shops() {
         fetchUserFavorites();
     }, [user]);
 
-    // Sync search input with URL city param only when URL changes
+    // Sync search input with URL params only when URL changes
     useEffect(() => {
         setCityQuery(cityParam);
     }, [cityParam]);
@@ -145,12 +138,12 @@ export function Shops() {
     // Reset to first page when search filters change
     useEffect(() => {
         setCurrentPage(1);
-    }, [cityParam, stateParam, sortBy, sortOrder]);
+    }, [cityParam, stateParam, sortBy, sortOrder, preferTopRated]);
 
     // Fetch salons when search, state, sorting, or page changes
     useEffect(() => {
         fetchSalons(cityParam, stateParam, currentPage);
-    }, [cityParam, stateParam, sortBy, sortOrder, currentPage]);
+    }, [cityParam, stateParam, sortBy, sortOrder, currentPage, preferTopRated]);
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -174,9 +167,9 @@ export function Shops() {
                         Browse curated salons near you. View real-time availability and book instantly.
                     </p>
 
-                    {/* Search Bar & Filter */}
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-3xl mx-auto w-full px-2 md:px-0">
-                        <form onSubmit={handleSearch} className="flex items-center justify-between gap-1 w-full sm:flex-1 bg-white p-1 md:p-1.5 rounded-full shadow-sm border border-gray-100 ring-4 ring-[#1A1A1A]/5">
+                    {/* Search Bar & Unified Filter Trigger */}
+                    <div className="flex items-center justify-center gap-3 md:gap-4 max-w-3xl mx-auto w-full px-4 md:px-0">
+                        <form onSubmit={handleSearch} className="flex items-center justify-between gap-1 flex-1 bg-white p-1 md:p-1.5 rounded-full shadow-sm border border-gray-100 ring-4 ring-[#1A1A1A]/5">
                             <div className="flex items-center flex-1 px-3 md:px-5 gap-2">
                                 <MapPin className="text-[#D4AF37] w-4 h-4 shrink-0" />
                                 <input
@@ -204,88 +197,23 @@ export function Shops() {
                             </button>
                         </form>
 
-                        {/* State Dropdown */}
-                        <div className="relative w-full sm:w-48 shrink-0" ref={dropdownRef}>
-                            <button
-                                type="button"
-                                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                className="w-full bg-white border border-gray-100 text-gray-700 py-[12px] md:py-[14px] px-6 md:px-5 rounded-full shadow-sm outline-none font-medium text-sm md:text-base cursor-pointer ring-4 ring-[#1A1A1A]/5 hover:border-[#D4AF37] transition-colors flex items-center justify-between gap-2"
-                            >
-                                <span className="truncate">
-                                    {INDIAN_STATES.find(s => s.value === (stateParam || ""))?.label || "Select State"}
+                        {/* Unified Filter/Sort Button */}
+                        <button
+                            type="button"
+                            title="Discovery Settings"
+                            onClick={() => setIsSortModalOpen(true)}
+                            className={`w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-full transition-all border shrink-0 relative ${isSortModalOpen
+                                    ? "bg-[#1A1A1A] text-white border-[#1A1A1A] shadow-md ring-4 ring-[#1A1A1A]/5"
+                                    : "bg-white text-gray-700 border-gray-100 shadow-sm ring-4 ring-[#1A1A1A]/5 hover:border-gray-200"
+                                }`}
+                        >
+                            <SlidersHorizontal className={`w-4 h-4 md:w-5 md:h-5 ${stateParam ? "text-[#D4AF37]" : ""}`} />
+                            {stateParam && (
+                                <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#D4AF37] text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                                    !
                                 </span>
-                                <ChevronDown className={`w-3 h-3 md:w-4 md:h-4 text-gray-500 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
-                            </button>
-                            {isDropdownOpen && (
-                                <div className="absolute z-50 min-w-[200px] right-0 left-0 sm:left-auto mt-2 bg-white border border-gray-100 rounded-2xl shadow-2xl overflow-hidden">
-                                    <ul className="max-h-64 overflow-y-auto overflow-x-hidden py-2 w-full">
-                                        {INDIAN_STATES.map((state) => (
-                                            <li key={state.value}>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setSearchParams(prev => {
-                                                            const newParams = new URLSearchParams(prev);
-                                                            if (state.value) newParams.set("state", state.value);
-                                                            else newParams.delete("state");
-                                                            return newParams;
-                                                        });
-                                                        setIsDropdownOpen(false);
-                                                    }}
-                                                    className={`w-full text-left px-5 py-3 text-sm transition-colors hover:bg-gray-50 flex items-center justify-between ${(stateParam || "") === state.value ? 'text-[#D4AF37] font-bold bg-orange-50/50' : 'text-gray-700 font-medium'}`}
-                                                >
-                                                    {state.label}
-                                                    {(stateParam || "") === state.value && <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></div>}
-                                                </button>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
                             )}
-                        </div>
-                    </div>
-
-                    {/* Conventional Sorting Bar */}
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-10 px-6 py-4 bg-white rounded-2xl border border-gray-100 shadow-sm ring-1 ring-gray-50">
-                        {/* Results Count */}
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-[#D4AF37]/10 flex items-center justify-center">
-                                <span className="text-lg font-serif font-black text-[#D4AF37]">{salons.length}</span>
-                            </div>
-                            <div>
-                                <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.15em] leading-none mb-1">Total Results</p>
-                                <p className="text-sm font-bold text-gray-900 leading-none">Salons available</p>
-                            </div>
-                        </div>
-
-                        {/* Sorting Options */}
-                        <div className="flex items-center gap-4 md:gap-8 overflow-x-auto no-scrollbar w-full sm:w-auto p-1">
-                            <div className="flex items-center gap-2 text-gray-400 shrink-0">
-                                <SlidersHorizontal size={14} className="text-[#D4AF37]" />
-                                <span className="text-[10px] font-black uppercase tracking-widest">Sort by</span>
-                            </div>
-                            
-                            <div className="flex items-center gap-1 md:gap-2 bg-gray-50/50 p-1 rounded-xl border border-gray-100/50">
-                                <button
-                                    onClick={() => { setSortBy("price"); setSortOrder("asc"); }}
-                                    className={`px-4 py-2 rounded-lg text-[10px] md:text-xs font-bold whitespace-nowrap transition-all duration-300 ${sortBy === "price" && sortOrder === "asc" ? 'bg-[#1a1a1a] text-white shadow-md' : 'text-gray-500 hover:text-[#1a1a1a] hover:bg-white'}`}
-                                >
-                                    Price: Low to High
-                                </button>
-                                <button
-                                    onClick={() => { setSortBy("price"); setSortOrder("desc"); }}
-                                    className={`px-4 py-2 rounded-lg text-[10px] md:text-xs font-bold whitespace-nowrap transition-all duration-300 ${sortBy === "price" && sortOrder === "desc" ? 'bg-[#1a1a1a] text-white shadow-md' : 'text-gray-500 hover:text-[#1a1a1a] hover:bg-white'}`}
-                                >
-                                    Price: High to Low
-                                </button>
-                                <button
-                                    onClick={() => { setSortBy("rating"); setSortOrder("desc"); }}
-                                    className={`px-4 py-2 rounded-lg text-[10px] md:text-xs font-bold whitespace-nowrap transition-all duration-300 ${sortBy === "rating" ? 'bg-[#1a1a1a] text-white shadow-md' : 'text-gray-500 hover:text-[#1a1a1a] hover:bg-white'}`}
-                                >
-                                    Top Rated
-                                </button>
-                            </div>
-                        </div>
+                        </button>
                     </div>
                 </div>
 
@@ -296,6 +224,233 @@ export function Shops() {
                     </h2>
                     <p className="text-gray-500 text-sm mt-1">Based on your preferences and location</p>
                 </div>
+
+                {/* Discovery Settings Modal */}
+                <AnimatePresence>
+                    {isSortModalOpen && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-black/80 backdrop-blur-xl"
+                            onClick={() => setIsSortModalOpen(false)}
+                        >
+                            <motion.div
+                                initial={{ scale: 0.9, y: 20, opacity: 0 }}
+                                animate={{ scale: 1, y: 0, opacity: 1 }}
+                                exit={{ scale: 0.9, y: 20, opacity: 0 }}
+                                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                                className="bg-white w-full max-w-lg rounded-[40px] overflow-hidden shadow-2xl relative"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                {/* Modal Header */}
+                                <div className="px-8 pt-8 pb-6 flex items-center justify-between border-b border-gray-50">
+                                    <div>
+                                        <h2 className="text-2xl font-serif font-bold text-gray-900">Discovery Settings</h2>
+                                        <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-1">Refine your search</p>
+                                    </div>
+                                    <button
+                                        onClick={() => setIsSortModalOpen(false)}
+                                        className="w-10 h-10 flex items-center justify-center bg-gray-50 rounded-full text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-all"
+                                    >
+                                        <X size={20} />
+                                    </button>
+                                </div>
+
+                                <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto no-scrollbar">
+
+                                    {/* Location Selectors (Form + Dropdown) */}
+                                    <div className="space-y-6">
+                                        <div className="flex items-center gap-2 px-2">
+                                            <MapPin size={16} className="text-[#D4AF37]" />
+                                            <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Discovery Location</h3>
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {/* State Selector */}
+                                            <div className="relative" ref={stateListRef}>
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1 mb-1 block">State</label>
+                                                <div className="relative">
+                                                    <input 
+                                                        type="text" 
+                                                        placeholder="Search State..." 
+                                                        value={stateSearch}
+                                                        onChange={(e) => {
+                                                            setStateSearch(e.target.value);
+                                                            setIsStateListOpen(true);
+                                                        }}
+                                                        onFocus={() => setIsStateListOpen(true)}
+                                                        className="w-full bg-white border border-gray-100 px-5 py-4 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] outline-none transition-all pr-12"
+                                                    />
+                                                    <Search size={14} className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-300" />
+                                                </div>
+                                                
+                                                <AnimatePresence>
+                                                    {isStateListOpen && (
+                                                        <motion.div 
+                                                            initial={{ opacity: 0, y: -10 }}
+                                                            animate={{ opacity: 1, y: 0 }}
+                                                            exit={{ opacity: 0, y: -10 }}
+                                                            className="absolute z-[110] left-0 right-0 mt-2 bg-white border border-gray-100 rounded-2xl shadow-2xl overflow-hidden max-h-48 overflow-y-auto no-scrollbar"
+                                                        >
+                                                            {State.getStatesOfCountry('IN')
+                                                                .filter(s => s.name.toLowerCase().includes(stateSearch.toLowerCase()))
+                                                                .map(state => (
+                                                                    <button
+                                                                        key={state.isoCode}
+                                                                        onClick={() => {
+                                                                            setSelectedState(state);
+                                                                            setStateSearch(state.name);
+                                                                            setIsStateListOpen(false);
+                                                                            setCitySearch(""); // Clear city on state change
+                                                                        }}
+                                                                        className="w-full text-left px-5 py-3 text-sm hover:bg-gray-50 transition-colors font-medium text-gray-700 block border-b border-gray-50 last:border-0"
+                                                                    >
+                                                                        {state.name}
+                                                                    </button>
+                                                                ))
+                                                            }
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
+                                            </div>
+
+                                            {/* City Selector */}
+                                            <div className="relative" ref={cityListRef}>
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1 mb-1 block">City</label>
+                                                <div className="relative">
+                                                    <input 
+                                                        type="text" 
+                                                        placeholder={selectedState ? "Search City..." : "Select State First"} 
+                                                        disabled={!selectedState}
+                                                        value={citySearch}
+                                                        onChange={(e) => {
+                                                            setCitySearch(e.target.value);
+                                                            setIsCityListOpen(true);
+                                                        }}
+                                                        onFocus={() => setIsCityListOpen(true)}
+                                                        className="w-full bg-white border border-gray-100 px-5 py-4 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] outline-none transition-all pr-12 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                                                    />
+                                                    <Map size={14} className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-300" />
+                                                </div>
+                                                
+                                                <AnimatePresence>
+                                                    {isCityListOpen && selectedState && (
+                                                        <motion.div 
+                                                            initial={{ opacity: 0, y: -10 }}
+                                                            animate={{ opacity: 1, y: 0 }}
+                                                            exit={{ opacity: 0, y: -10 }}
+                                                            className="absolute z-[110] left-0 right-0 mt-2 bg-white border border-gray-100 rounded-2xl shadow-2xl overflow-hidden max-h-48 overflow-y-auto no-scrollbar"
+                                                        >
+                                                            {City.getCitiesOfState('IN', selectedState.isoCode)
+                                                                .filter(c => c.name.toLowerCase().includes(citySearch.toLowerCase()))
+                                                                .map(city => (
+                                                                    <button
+                                                                        key={city.name}
+                                                                        onClick={() => {
+                                                                            setCitySearch(city.name);
+                                                                            setIsCityListOpen(false);
+                                                                        }}
+                                                                        className="w-full text-left px-5 py-3 text-sm hover:bg-gray-50 transition-colors font-medium text-gray-700 block border-b border-gray-50 last:border-0"
+                                                                    >
+                                                                        {city.name}
+                                                                    </button>
+                                                                ))
+                                                            }
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Preference Sections - Independent Selection */}
+                                    <div className="space-y-6 pt-4 border-t border-gray-50">
+                                        <div className="flex items-center gap-2 px-2">
+                                            <SlidersHorizontal size={16} className="text-[#D4AF37]" />
+                                            <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Service Preferences</h3>
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-1 gap-3">
+                                            {/* Top Rated Toggle */}
+                                            <button
+                                                onClick={() => setPreferTopRated(!preferTopRated)}
+                                                className={`w-full px-6 py-5 rounded-3xl text-sm font-bold transition-all flex items-center justify-between border ${preferTopRated 
+                                                    ? 'bg-[#1a1a1a] text-white border-[#1a1a1a] shadow-lg scale-[1.01]' 
+                                                    : 'bg-white text-gray-600 border-gray-100 hover:bg-gray-50'
+                                                }`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <Star size={18} className={preferTopRated ? "text-[#D4AF37]" : "text-gray-300"} fill={preferTopRated ? "#D4AF37" : "transparent"} />
+                                                    <div className="text-left">
+                                                        <p className="leading-none">Top Rated Salons</p>
+                                                        <p className={`text-[10px] mt-1 font-medium ${preferTopRated ? 'text-gray-400' : 'text-gray-400'}`}>Show only 4.0+ star ratings</p>
+                                                    </div>
+                                                </div>
+                                                {preferTopRated && <div className="w-2 h-2 rounded-full bg-[#D4AF37]"></div>}
+                                            </button>
+
+                                            {/* Price Sort Toggle */}
+                                            <button
+                                                onClick={() => setSortBy(sortBy === "price" ? "rating" : "price")}
+                                                className={`w-full px-6 py-5 rounded-3xl text-sm font-bold transition-all flex items-center justify-between border ${sortBy === "price" 
+                                                    ? 'bg-[#1a1a1a] text-white border-[#1a1a1a] shadow-lg scale-[1.01]' 
+                                                    : 'bg-white text-gray-600 border-gray-100 hover:bg-gray-50'
+                                                }`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <ArrowUpDown size={18} className={sortBy === "price" ? "text-[#D4AF37]" : "text-gray-300"} />
+                                                    <div className="text-left">
+                                                        <p className="leading-none">Best Value</p>
+                                                        <p className={`text-[10px] mt-1 font-medium ${sortBy === "price" ? 'text-gray-400' : 'text-gray-400'}`}>Sort from lowest price first</p>
+                                                    </div>
+                                                </div>
+                                                {sortBy === "price" && <div className="w-2 h-2 rounded-full bg-[#D4AF37]"></div>}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Stats Section - Moved to Bottom */}
+                                <div className="p-8 bg-gray-50/50 border-t border-gray-100">
+                                    <div className="flex items-center justify-between p-6 bg-white rounded-3xl border border-gray-100 mb-6">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-14 h-14 rounded-2xl bg-[#D4AF37] flex items-center justify-center shadow-lg shadow-[#D4AF37]/20">
+                                                <span className="text-2xl font-serif font-black text-white">{salons.length}</span>
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] text-[#D4AF37] font-black uppercase tracking-[0.2em] leading-none mb-1">Total Results</p>
+                                                <p className="text-lg font-bold text-gray-900 leading-none">Salons matches</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Apply Button */}
+                                    <button
+                                        onClick={() => {
+                                            setSearchParams(prev => {
+                                                const newParams = new URLSearchParams(prev);
+                                                if (stateSearch) newParams.set("state", stateSearch);
+                                                else newParams.delete("state");
+                                                if (citySearch) newParams.set("city", citySearch);
+                                                else newParams.delete("city");
+                                                
+                                                newParams.set("topRated", preferTopRated);
+                                                newParams.set("sortBy", sortBy);
+                                                return newParams;
+                                            });
+                                            setCityQuery(citySearch);
+                                            setIsSortModalOpen(false);
+                                        }}
+                                        className="w-full bg-[#1a1a1a] text-white py-5 rounded-[24px] font-bold text-sm uppercase tracking-[0.2em] shadow-xl hover:bg-black active:scale-[0.98] transition-all"
+                                    >
+                                        Apply Settings
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 {/* Salon Grid */}
                 <div className="w-full py-6">
