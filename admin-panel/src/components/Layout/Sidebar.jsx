@@ -81,7 +81,9 @@ export default function Sidebar({ role }) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-white text-xs font-semibold truncate">{user?.fullName}</p>
-            <p className="text-gray-400 text-[10px] truncate capitalize">{user?.role?.replace('_', ' ')}</p>
+            <p className="text-gray-400 text-[10px] truncate uppercase tracking-widest font-bold mt-0.5">
+              {user?.role?.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+            </p>
           </div>
         </div>
         <button

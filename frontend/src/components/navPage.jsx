@@ -170,7 +170,7 @@ export function NavBar() {
                             Discover
                         </NavLink>
 
-                        {user?.role === "salonOwner" && (
+                        {(user?.role === "salonOwner" || user?.role === "super_admin") && (
                             <div className="flex items-center gap-6">
                                 {!hasSalon && (
                                     <NavLink to="/create-salon" className="bg-[#1a1a1a] hover:bg-black text-white px-5 py-2 rounded-full font-medium text-xs tracking-widest uppercase transition-colors flex items-center gap-2">
@@ -271,8 +271,8 @@ export function NavBar() {
                                             <p className="text-xs font-bold text-gray-900 leading-none mb-1 capitalize truncate max-w-[100px]">
                                                 {user.fullName?.split(' ')[0] || "User"}
                                             </p>
-                                            <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider leading-none">
-                                                {user.role}
+                                            <p className="text-[10px] font-medium text-[#D4AF37] uppercase tracking-[0.2em] leading-none mt-1">
+                                                {user.role?.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                                             </p>
                                         </div>
                                         <ChevronDown size={16} className={`text-gray-400 transition-transform duration-300 ${isMenuOpen ? "rotate-180" : ""}`} />
@@ -325,7 +325,7 @@ export function NavBar() {
                                                 Settings
                                             </NavLink>
 
-                                            {user?.role === "salonOwner" && (
+                                            {(user?.role === "salonOwner" || user?.role === "super_admin") && (
                                                 <>
                                                     <button
                                                         onClick={() => {
@@ -433,7 +433,7 @@ export function NavBar() {
                         Discover
                     </NavLink>
 
-                    {user?.role === "salonOwner" && (
+                    {(user?.role === "salonOwner" || user?.role === "super_admin") && (
                         <>
                             {!hasSalon && (
                                 <NavLink
