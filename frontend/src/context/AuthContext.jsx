@@ -13,8 +13,13 @@ export const AuthProvider = ({ children }) => {
         // Here you could fetch the current user if you had a /me endpoint
         // For now, let's assume session is handled by cookies
         const storedUser = localStorage.getItem("user");
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
+        if (storedUser && storedUser !== "undefined") {
+            try {
+                setUser(JSON.parse(storedUser));
+            } catch (error) {
+                console.error("Failed to parse stored user", error);
+                localStorage.removeItem("user");
+            }
         }
         setLoading(false);
     }, []);
