@@ -1,6 +1,9 @@
 import nodemailer from 'nodemailer';
 
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+const FRONTEND_URL = process.env.FRONTEND_URL;
+if (!FRONTEND_URL) {
+    console.warn("WARNING: FRONTEND_URL is not defined leaning on environment vars. Email links may fail.");
+}
 
 const createTransporter = async () => {
     const smtpUser = process.env.SMTP_USER?.trim();

@@ -5,7 +5,8 @@ import { Salon } from "../models/salon.models.js"
 import { User } from "../models/user.models.js"
 import { Booking } from "../models/booking.models.js" 
 import { Service } from "../models/service.models.js"
-import { uploadOnCloudinary } from "../utils/cloudinary.js"
+import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js"
+import { ROLES } from "../constants.js"
 import { sendShopAddedEmail } from "../utils/mailer.js"
 import { emitToAll } from "../socket.js";
 import { geocodeAddress } from "../utils/geocoding.js";
@@ -54,7 +55,7 @@ const registerSalon = asyncHandler(async (req, res) => {
     }
 
     // Ensure user role is salonOwner
-    await User.findByIdAndUpdate(req.user?._id, { $set: { role: "salonOwner" } })
+    await User.findByIdAndUpdate(req.user?._id, { $set: { role: ROLES.OWNER } })
 
     // Trigger shop registered email silently
     if (req.user) {

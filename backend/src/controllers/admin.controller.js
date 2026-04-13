@@ -6,14 +6,18 @@ import { Salon } from "../models/salon.models.js";
 import { Service } from "../models/service.models.js";
 import { Booking } from "../models/booking.models.js";
 import { Staff } from "../models/staff.models.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js";
+import { ROLES } from "../constants.js";
+import { sendShopAddedEmail } from "../utils/mailer.js";
+import { emitToAll } from "../socket.js";
+import { geocodeAddress } from "../utils/geocoding.js";
 
 // ─── DASHBOARD ───────────────────────────────────────────────────────────────
 
 const getDashboard = asyncHandler(async (req, res) => {
     const [totalSalons, totalCustomers, totalBookings, revenueAgg] = await Promise.all([
         Salon.countDocuments(),
-        User.countDocuments({ role: "customer" }),
+        User.countDocuments({ role: ROLES.CUSTOMER }),
         Booking.countDocuments(),
         Booking.aggregate([
             { $match: { status: { $in: ["completed", "confirmed"] } } },
@@ -101,7 +105,7 @@ const createSalon = asyncHandler(async (req, res) => {
     });
 
     // Ensure owner has salonOwner role
-    await User.findByIdAndUpdate(owner, { $set: { role: "salonOwner" } });
+    await User.findByIdAndUpdate(owner, { $set: { role: ROLES.OWNER } });
 
     return res.status(201).json(new ApiResponse(201, salon, "Salon created successfully"));
 });
@@ -218,7 +222,7 @@ const getAllCustomers = asyncHandler(async (req, res) => {
 
 const getAllOwners = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, search = "" } = req.query;
-    const query = { role: "salonOwner" };
+    const query = { role: ROLES.OWNER };
     if (search) {
         query.$or = [
             { fullName: { $regex: search, $options: "i" } },
@@ -252,7 +256,7 @@ const createOwner = asyncHandler(async (req, res) => {
     const existedUser = await User.findOne({ $or: [{ username }, { email }] });
     if (existedUser) throw new ApiError(409, "User with email or username already exists");
 
-    const owner = await User.create({ fullName, email, username, password, phonenumber, role: "salonOwner" });
+    const owner = await User.create({ fullName, email, username, password, phonenumber, role: ROLES.OWNER });
     const created = await User.findById(owner._id).select("-password -refreshToken");
     return res.status(201).json(new ApiResponse(201, created, "Owner created successfully"));
 });

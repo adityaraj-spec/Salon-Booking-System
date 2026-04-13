@@ -147,7 +147,7 @@ const logoutUser = asyncHandler(async (req, res) => {
 const updateUserRole = asyncHandler(async (req, res) => {
     const { role } = req.body
 
-    if (!role || !["customer", "salonOwner"].includes(role)) {
+    if (!role || ![ROLES.CUSTOMER, ROLES.OWNER].includes(role)) {
         throw new ApiError(400, "Invalid role")
     }
 

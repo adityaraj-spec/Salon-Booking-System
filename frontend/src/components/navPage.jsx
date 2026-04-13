@@ -331,7 +331,7 @@ export function NavBar() {
                                                         onClick={() => {
                                                             setIsMenuOpen(false);
                                                             const token = localStorage.getItem('authToken');
-                                                            window.open(`${import.meta.env.VITE_ADMIN_URL || 'http://localhost:5174'}?token=${token}`, '_blank');
+                                                            window.open(`${import.meta.env.VITE_ADMIN_URL}?token=${token}`, '_blank');
                                                         }}
                                                         className="w-full flex items-center justify-start gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-colors"
                                                     >
@@ -457,7 +457,7 @@ export function NavBar() {
                                 onClick={() => {
                                     setIsMobileMenuOpen(false);
                                     const token = localStorage.getItem('authToken');
-                                    window.open(`${import.meta.env.VITE_ADMIN_URL || 'http://localhost:5174'}?token=${token}`, '_blank');
+                                    window.open(`${import.meta.env.VITE_ADMIN_URL}?token=${token}`, '_blank');
                                 }}
                                 className="w-full flex items-center justify-start gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
                             >

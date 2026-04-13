@@ -1,5 +1,6 @@
 import ApiError from "../utils/apiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { ROLES } from "../constants.js";
 
 /**
  * Middleware: Only allows super_admin role
@@ -9,10 +10,11 @@ export const verifySuperAdmin = asyncHandler(async (req, _, next) => {
         throw new ApiError(401, "Unauthorized - Please login");
     }
 
-    const role = req.user.role?.toString().trim().toLowerCase();
+    const role = req.user.role?.toString().trim();
     
-    if (role !== "super_admin") {
-        console.warn(`[AdminAuth] Access Denied: User ${req.user._id} (${req.user.email}) lacks super_admin role. (Actual: ${req.user.role})`);
+    // Check against constant (case-insensitive for safety)
+    if (role?.toLowerCase() !== ROLES.ADMIN.toLowerCase()) {
+        console.warn(`[AdminAuth] Access Denied: User ${req.user._id} (${req.user.email}) lacks ${ROLES.ADMIN} role. (Actual: ${req.user.role})`);
         throw new ApiError(403, "Forbidden - Super Admin access required");
     }
     next();
@@ -28,8 +30,8 @@ export const verifySalonOwner = asyncHandler(async (req, _, next) => {
 
     const role = req.user.role?.toString().trim().toLowerCase();
 
-    // Standardize 'salonowner' match (the model enum is lowercase 'salonOwner' or 'salonowner' depending on DB state)
-    if (role !== "salonowner" && role !== "super_admin") {
+    // Check against constants (case-insensitive)
+    if (role !== ROLES.OWNER.toLowerCase() && role !== ROLES.ADMIN.toLowerCase()) {
         console.warn(`[AdminAuth] Access Denied: User ${req.user._id} (${req.user.email}) lacks owner/admin role. (Actual: ${req.user.role})`);
         throw new ApiError(403, "Forbidden - Salon Owner access required");
     }
