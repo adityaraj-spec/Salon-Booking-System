@@ -238,10 +238,22 @@ export function Shop() {
 
     return (
         <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-20 pb-6 md:pt-24">
-            {/* Navigation Breadcrumb */}
-            <NavLink to="/home" className="inline-flex items-center gap-2 text-gray-500 hover:text-[#D4AF37] mb-6 transition-colors text-sm font-medium">
-                <ArrowLeft size={16} /> Back to Discover
-            </NavLink>
+            <div className="flex items-center justify-between mb-6">
+                <NavLink to="/home" className="inline-flex items-center gap-2 text-gray-500 hover:text-[#D4AF37] transition-colors text-sm font-medium">
+                    <ArrowLeft size={16} /> Back to Discover
+                </NavLink>
+
+                {/* Owner Magic Button: Only visible if isOwner */}
+                {user?._id === salon?.owner && (
+                    <NavLink 
+                        to="/salon-management" 
+                        className="inline-flex items-center gap-2.5 px-6 py-2.5 bg-[#1a1a1a] text-white rounded-full text-xs font-black uppercase tracking-widest hover:bg-black transition-all shadow-xl shadow-black/10 hover:scale-105"
+                    >
+                        <Settings size={14} className="text-[#D4AF37]" />
+                        Manage This Salon
+                    </NavLink>
+                )}
+            </div>
 
             {/* Salon Closed Banner */}
             {salon.isOpen === false && (

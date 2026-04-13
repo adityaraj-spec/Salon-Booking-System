@@ -17,9 +17,12 @@ const addStaff = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Salon not found");
     }
 
-    // Security: Only owner can add staff
-    if (salon.owner.toString() !== req.user._id.toString()) {
-        throw new ApiError(403, "You do not have permission to add staff to this salon");
+    // Security: Only owner or Super Admin can add staff
+    const isOwner = salon.owner.toString() === req.user._id.toString();
+    const isSuperAdmin = req.user.role?.toString().trim().toLowerCase() === "super_admin";
+
+    if (!isOwner && !isSuperAdmin) {
+        throw new ApiError(403, "Access Denied: You do not have permission to add staff to this salon");
     }
 
     let profilePicUrl = "";
@@ -69,8 +72,11 @@ const deleteStaff = asyncHandler(async (req, res) => {
     }
 
     const salon = await Salon.findById(staff.salon);
-    if (salon.owner.toString() !== req.user._id.toString()) {
-        throw new ApiError(403, "You do not have permission to delete this staff member");
+    const isOwner = salon.owner.toString() === req.user._id.toString();
+    const isSuperAdmin = req.user.role?.toString().trim().toLowerCase() === "super_admin";
+
+    if (!isOwner && !isSuperAdmin) {
+        throw new ApiError(403, "Access Denied: You do not have permission to delete this staff member");
     }
 
     await Staff.findByIdAndDelete(staffId);
@@ -90,8 +96,11 @@ const updateStaff = asyncHandler(async (req, res) => {
     }
 
     const salon = await Salon.findById(staff.salon);
-    if (salon.owner.toString() !== req.user._id.toString()) {
-        throw new ApiError(403, "You do not have permission to update this staff member");
+    const isOwner = salon.owner.toString() === req.user._id.toString();
+    const isSuperAdmin = req.user.role?.toString().trim().toLowerCase() === "super_admin";
+
+    if (!isOwner && !isSuperAdmin) {
+        throw new ApiError(403, "Access Denied: You do not have permission to update this staff member");
     }
 
     let profilePicUrl = staff.profilePic;

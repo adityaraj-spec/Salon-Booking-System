@@ -9,10 +9,10 @@ export const verifySuperAdmin = asyncHandler(async (req, _, next) => {
         throw new ApiError(401, "Unauthorized - Please login");
     }
 
-    const role = req.user.role?.trim().toLowerCase();
+    const role = req.user.role?.toString().trim().toLowerCase();
     
     if (role !== "super_admin") {
-        console.error(`[AdminAuth] 403 Forbidden: User ${req.user._id} has role "${req.user.role}" but super_admin is required.`);
+        console.warn(`[AdminAuth] Access Denied: User ${req.user._id} (${req.user.email}) lacks super_admin role. (Actual: ${req.user.role})`);
         throw new ApiError(403, "Forbidden - Super Admin access required");
     }
     next();
@@ -26,10 +26,11 @@ export const verifySalonOwner = asyncHandler(async (req, _, next) => {
         throw new ApiError(401, "Unauthorized - Please login");
     }
 
-    const role = req.user.role?.trim().toLowerCase();
+    const role = req.user.role?.toString().trim().toLowerCase();
 
+    // Standardize 'salonowner' match (the model enum is lowercase 'salonOwner' or 'salonowner' depending on DB state)
     if (role !== "salonowner" && role !== "super_admin") {
-        console.error(`[AdminAuth] 403 Forbidden: User ${req.user._id} has role "${req.user.role}" but salonOwner or super_admin is required.`);
+        console.warn(`[AdminAuth] Access Denied: User ${req.user._id} (${req.user.email}) lacks owner/admin role. (Actual: ${req.user.role})`);
         throw new ApiError(403, "Forbidden - Salon Owner access required");
     }
     next();

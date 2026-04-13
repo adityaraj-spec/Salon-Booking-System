@@ -16,9 +16,12 @@ const addService = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Salon not found");
     }
 
-    // Security: Only owner can add services
-    if (salon.owner.toString() !== req.user._id.toString()) {
-        throw new ApiError(403, "You do not have permission to add services to this salon");
+    // Security: Only owner or Super Admin can add services
+    const isOwner = salon.owner.toString() === req.user._id.toString();
+    const isSuperAdmin = req.user.role?.toString().trim().toLowerCase() === "super_admin";
+
+    if (!isOwner && !isSuperAdmin) {
+        throw new ApiError(403, "Access Denied: You do not have permission to add services to this salon");
     }
 
     const service = await Service.create({
@@ -57,8 +60,11 @@ const deleteService = asyncHandler(async (req, res) => {
     }
 
     const salon = await Salon.findById(service.salon);
-    if (salon.owner.toString() !== req.user._id.toString()) {
-        throw new ApiError(403, "You do not have permission to delete this service");
+    const isOwner = salon.owner.toString() === req.user._id.toString();
+    const isSuperAdmin = req.user.role?.toString().trim().toLowerCase() === "super_admin";
+
+    if (!isOwner && !isSuperAdmin) {
+        throw new ApiError(403, "Access Denied: You do not have permission to delete this service");
     }
 
     await Service.findByIdAndDelete(serviceId);
@@ -78,8 +84,11 @@ const updateService = asyncHandler(async (req, res) => {
     }
 
     const salon = await Salon.findById(service.salon);
-    if (salon.owner.toString() !== req.user._id.toString()) {
-        throw new ApiError(403, "You do not have permission to update this service");
+    const isOwner = salon.owner.toString() === req.user._id.toString();
+    const isSuperAdmin = req.user.role?.toString().trim().toLowerCase() === "super_admin";
+
+    if (!isOwner && !isSuperAdmin) {
+        throw new ApiError(403, "Access Denied: You do not have permission to update this service");
     }
 
     const updatedService = await Service.findByIdAndUpdate(

@@ -249,8 +249,12 @@ const updateSalonDetails = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Salon not found");
     }
 
-    if (salon.owner.toString() !== req.user._id.toString()) {
-        throw new ApiError(403, "You do not have permission to update this salon");
+    // Ownership verification: Allow owner OR super_admin access
+    const isOwner = salon.owner.toString() === req.user._id.toString();
+    const isSuperAdmin = req.user.role?.toString().trim().toLowerCase() === "super_admin";
+
+    if (!isOwner && !isSuperAdmin) {
+        throw new ApiError(403, "Access Denied: You do not have permission to update this salon");
     }
 
     // Process new uploaded images
