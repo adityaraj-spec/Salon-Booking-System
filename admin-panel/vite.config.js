@@ -8,7 +8,17 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  base: '/',  // This ensures assets load correctly on refresh
   server: {
-    port: 5174
-  }
+    port: 5174,  // Change to 3001 for admin panel to avoid conflicts
+  },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
+  },
 })
