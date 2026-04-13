@@ -175,8 +175,8 @@ export function Shops() {
                     </p>
 
                     {/* Search Bar & Filter */}
-                    <div className="flex flex-row items-center justify-center gap-2 md:gap-3 max-w-3xl mx-auto w-full px-2 md:px-0">
-                        <form onSubmit={handleSearch} className="flex flex-row items-center justify-between gap-1 flex-1 bg-white p-1 md:p-1.5 rounded-full shadow-sm border border-gray-100 ring-4 ring-[#1A1A1A]/5">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-3xl mx-auto w-full px-2 md:px-0">
+                        <form onSubmit={handleSearch} className="flex items-center justify-between gap-1 w-full sm:flex-1 bg-white p-1 md:p-1.5 rounded-full shadow-sm border border-gray-100 ring-4 ring-[#1A1A1A]/5">
                             <div className="flex items-center flex-1 px-3 md:px-5 gap-2">
                                 <MapPin className="text-[#D4AF37] w-4 h-4 shrink-0" />
                                 <input
@@ -190,23 +190,26 @@ export function Shops() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="shrink-0 bg-[#1A1A1A] text-white p-2.5 md:px-4 md:py-2.5 rounded-full font-bold uppercase text-[10px] tracking-widest hover:bg-black active:scale-95 transition-all disabled:opacity-70 flex items-center justify-center gap-1.5"
+                                className="shrink-0 bg-[#1A1A1A] text-white p-2.5 md:px-6 md:py-3 rounded-full font-bold uppercase text-[10px] tracking-widest hover:bg-black active:scale-95 transition-all disabled:opacity-70 flex items-center justify-center gap-2"
                             >
                                 {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : (
                                     <>
-                                        <div className="hidden md:flex items-center gap-1"><Search className="w-4 h-4" /><span>Search</span></div>
-                                        <Search className="md:hidden w-3.5 h-3.5" />
+                                        <div className="hidden md:flex items-center gap-1.5"><Search className="w-4 h-4" /><span>Search Salons</span></div>
+                                        <div className="md:hidden flex items-center gap-1.5 px-2">
+                                            <Search className="w-4 h-4" />
+                                            <span className="sm:hidden font-bold">Search</span>
+                                        </div>
                                     </>
                                 )}
                             </button>
                         </form>
-
+                        
                         {/* State Dropdown */}
-                        <div className="relative w-[135px] sm:w-40 md:w-48 shrink-0" ref={dropdownRef}>
+                        <div className="relative w-full sm:w-48 shrink-0" ref={dropdownRef}>
                             <button
                                 type="button"
                                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                className="w-full bg-white border border-gray-100 text-gray-700 py-[11px] md:py-[12px] px-4 md:px-5 rounded-full shadow-sm outline-none font-medium text-sm md:text-base cursor-pointer ring-4 ring-[#1A1A1A]/5 hover:border-[#D4AF37] transition-colors flex items-center justify-between gap-2"
+                                className="w-full bg-white border border-gray-100 text-gray-700 py-[12px] md:py-[14px] px-6 md:px-5 rounded-full shadow-sm outline-none font-medium text-sm md:text-base cursor-pointer ring-4 ring-[#1A1A1A]/5 hover:border-[#D4AF37] transition-colors flex items-center justify-between gap-2"
                             >
                                 <span className="truncate">
                                     {INDIAN_STATES.find(s => s.value === (stateParam || ""))?.label || "Select State"}
@@ -214,7 +217,7 @@ export function Shops() {
                                 <ChevronDown className={`w-3 h-3 md:w-4 md:h-4 text-gray-500 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                             </button>
                             {isDropdownOpen && (
-                                <div className="absolute z-50 min-w-[200px] right-0 mt-2 bg-white border border-gray-100 rounded-2xl shadow-2xl overflow-hidden">
+                                <div className="absolute z-50 min-w-[200px] right-0 left-0 sm:left-auto mt-2 bg-white border border-gray-100 rounded-2xl shadow-2xl overflow-hidden">
                                     <ul className="max-h-64 overflow-y-auto overflow-x-hidden py-2 w-full">
                                         {INDIAN_STATES.map((state) => (
                                             <li key={state.value}>

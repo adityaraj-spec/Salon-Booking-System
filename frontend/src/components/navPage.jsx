@@ -201,7 +201,7 @@ export function NavBar() {
                                     </button>
 
                                     {isNotificationsOpen && (
-                                        <div className="absolute right-0 mt-3 w-80 md:w-96 bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden z-[60] animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+                                        <div className="absolute right-[-24px] md:right-0 mt-3 w-[calc(100vw-32px)] sm:w-80 md:w-96 bg-white rounded-[32px] shadow-2xl border border-gray-100 overflow-hidden z-[60] animate-in fade-in zoom-in-95 duration-200 origin-top-right">
                                             <div className="p-5 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
                                                 <h3 className="font-bold text-gray-900">Notifications</h3>
                                                 {unreadCount > 0 && (
@@ -396,12 +396,12 @@ export function NavBar() {
 
             {/* Mobile Menu Sidebar & Backdrop - OUTSIDE the <nav> element to fix stacking context issues */}
             <div
-                className={`fixed inset-0 bg-black/60 backdrop-blur-md z-[110] transition-opacity duration-300 md:hidden ${isMobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+                className={`fixed inset-0 bg-black/40 backdrop-blur-xl z-[110] transition-opacity duration-500 md:hidden ${isMobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
                     }`}
                 onClick={() => setIsMobileMenuOpen(false)}
             />
 
-            <div className={`fixed inset-y-0 right-0 w-[280px] bg-white z-[120] shadow-2xl transform transition-transform duration-300 ease-in-out md:hidden flex flex-col ${isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
+            <div className={`fixed inset-y-0 right-0 w-[300px] bg-white/95 backdrop-blur-2xl z-[120] shadow-[-20px_0_50px_rgba(0,0,0,0.1)] transform transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] md:hidden flex flex-col ${isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
                 }`}>
                 {/* Sidebar Header */}
                 <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-white">

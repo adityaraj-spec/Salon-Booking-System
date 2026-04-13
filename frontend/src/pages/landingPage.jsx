@@ -153,19 +153,19 @@ export function LandingPage() {
                     <motion.p variants={fadeUpVariants} className={`text-lg md:text-xl mb-6 max-w-2xl font-light ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
                         Discover and book appointments with top-rated salons in your city.<br className="hidden md:block" /> Professional beauty services at your fingertips.
                     </motion.p>
-                    <motion.div variants={fadeUpVariants} className="flex flex-row flex-wrap justify-center gap-4">
-                        <NavLink to="/home" className={`px-8 py-4 rounded-full font-medium flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 ${isDark ? 'bg-white text-black hover:bg-gray-100' : 'bg-[#1a1a1a] text-white hover:bg-black'}`}>
+                    <motion.div variants={fadeUpVariants} className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 w-full sm:w-auto">
+                        <NavLink to="/home" className={`w-full sm:w-auto px-8 py-4 rounded-full font-bold flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 ${isDark ? 'bg-white text-black hover:bg-gray-100' : 'bg-[#1a1a1a] text-white hover:bg-black'}`}>
                             Browse Salons <ArrowRight size={18} />
                         </NavLink>
                         {!user && (
-                            <>
-                                <NavLink to="/signup" className={`px-8 py-4 rounded-full font-medium transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 border ${isDark ? 'border-white/80 text-white hover:bg-white/10' : 'border-black/80 text-black hover:bg-black/5'}`}>
+                            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                                <NavLink to="/signup" className={`w-full sm:w-auto px-8 py-4 rounded-full font-bold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 border text-center ${isDark ? 'border-white/80 text-white hover:bg-white/10' : 'border-black/80 text-black hover:bg-black/5'}`}>
                                     Sign Up Now
                                 </NavLink>
-                                <NavLink to="/login" className={`px-8 py-4 rounded-full font-medium transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 border ${isDark ? 'border-[#ff9f43]/50 text-[#ff9f43] hover:bg-[#ff9f43]/10' : 'border-[#ff9f43]/80 text-[#ff9f43] hover:bg-[#ff9f43]/5'}`}>
+                                <NavLink to="/login" className={`w-full sm:w-auto px-8 py-4 rounded-full font-bold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 border text-center ${isDark ? 'border-[#ff9f43]/50 text-[#ff9f43] hover:bg-[#ff9f43]/10' : 'border-[#ff9f43]/80 text-[#ff9f43] hover:bg-[#ff9f43]/5'}`}>
                                     Sign In
                                 </NavLink>
-                            </>
+                            </div>
                         )}
                     </motion.div>
                 </motion.div>
