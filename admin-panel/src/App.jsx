@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -5,23 +6,23 @@ import AdminLayout from './components/Layout/AdminLayout';
 import LoadingSpinner from './components/UI/LoadingSpinner';
 import Login from './pages/Login';
 
-// Super Admin Pages
-import SuperDashboard from './pages/super-admin/Dashboard';
-import SuperSalons from './pages/super-admin/Salons';
-import SuperServices from './pages/super-admin/Services';
-import SuperBookings from './pages/super-admin/Bookings';
-import SuperCustomers from './pages/super-admin/Customers';
-import SuperOwners from './pages/super-admin/Owners';
-import SuperReports from './pages/super-admin/Reports';
-import SuperSettings from './pages/super-admin/Settings';
+// Super Admin Pages (Lazy Loaded)
+const SuperDashboard = lazy(() => import('./pages/super-admin/Dashboard'));
+const SuperSalons = lazy(() => import('./pages/super-admin/Salons'));
+const SuperServices = lazy(() => import('./pages/super-admin/Services'));
+const SuperBookings = lazy(() => import('./pages/super-admin/Bookings'));
+const SuperCustomers = lazy(() => import('./pages/super-admin/Customers'));
+const SuperOwners = lazy(() => import('./pages/super-admin/Owners'));
+const SuperReports = lazy(() => import('./pages/super-admin/Reports'));
+const SuperSettings = lazy(() => import('./pages/super-admin/Settings'));
 
-// Owner Pages
-import OwnerDashboard from './pages/owner/Dashboard';
-import MySalon from './pages/owner/MySalon';
-import MyServices from './pages/owner/MyServices';
-import MyBookings from './pages/owner/MyBookings';
-import MyStaff from './pages/owner/MyStaff';
-import MyReports from './pages/owner/MyReports';
+// Owner Pages (Lazy Loaded)
+const OwnerDashboard = lazy(() => import('./pages/owner/Dashboard'));
+const MySalon = lazy(() => import('./pages/owner/MySalon'));
+const MyServices = lazy(() => import('./pages/owner/MyServices'));
+const MyBookings = lazy(() => import('./pages/owner/MyBookings'));
+const MyStaff = lazy(() => import('./pages/owner/MyStaff'));
+const MyReports = lazy(() => import('./pages/owner/MyReports'));
 
 function ProtectedRoute({ children, allowedRoles }) {
   const { user } = useAuth();
@@ -44,54 +45,60 @@ function AppRoutes() {
   }
 
   return (
-    <Routes>
-      <Route
-        path="/login"
-        element={user
-          ? <Navigate to={user.role === 'super_admin' ? '/super-admin/dashboard' : '/owner/dashboard'} replace />
-          : <Login />}
-      />
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-[#fcfcfc]">
+        <LoadingSpinner text="Loading page..." />
+      </div>
+    }>
+      <Routes>
+        <Route
+          path="/login"
+          element={user
+            ? <Navigate to={user.role === 'super_admin' ? '/super-admin/dashboard' : '/owner/dashboard'} replace />
+            : <Login />}
+        />
 
-      {/* Super Admin Routes */}
-      <Route path="/super-admin" element={
-        <ProtectedRoute allowedRoles={['super_admin']}>
-          <AdminLayout role="super_admin" />
-        </ProtectedRoute>
-      }>
-        <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard" element={<SuperDashboard />} />
-        <Route path="salons" element={<SuperSalons />} />
-        <Route path="services" element={<SuperServices />} />
-        <Route path="bookings" element={<SuperBookings />} />
-        <Route path="customers" element={<SuperCustomers />} />
-        <Route path="owners" element={<SuperOwners />} />
-        <Route path="reports" element={<SuperReports />} />
-        <Route path="settings" element={<SuperSettings />} />
-      </Route>
+        {/* Super Admin Routes */}
+        <Route path="/super-admin" element={
+          <ProtectedRoute allowedRoles={['super_admin']}>
+            <AdminLayout role="super_admin" />
+          </ProtectedRoute>
+        }>
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<SuperDashboard />} />
+          <Route path="salons" element={<SuperSalons />} />
+          <Route path="services" element={<SuperServices />} />
+          <Route path="bookings" element={<SuperBookings />} />
+          <Route path="customers" element={<SuperCustomers />} />
+          <Route path="owners" element={<SuperOwners />} />
+          <Route path="reports" element={<SuperReports />} />
+          <Route path="settings" element={<SuperSettings />} />
+        </Route>
 
-      {/* Owner Routes */}
-      <Route path="/owner" element={
-        <ProtectedRoute allowedRoles={['salonOwner', 'super_admin']}>
-          <AdminLayout role="owner" />
-        </ProtectedRoute>
-      }>
-        <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard" element={<OwnerDashboard />} />
-        <Route path="salon" element={<MySalon />} />
-        <Route path="services" element={<MyServices />} />
-        <Route path="bookings" element={<MyBookings />} />
-        <Route path="staff" element={<MyStaff />} />
-        <Route path="reports" element={<MyReports />} />
-      </Route>
+        {/* Owner Routes */}
+        <Route path="/owner" element={
+          <ProtectedRoute allowedRoles={['salonOwner', 'super_admin']}>
+            <AdminLayout role="owner" />
+          </ProtectedRoute>
+        }>
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<OwnerDashboard />} />
+          <Route path="salon" element={<MySalon />} />
+          <Route path="services" element={<MyServices />} />
+          <Route path="bookings" element={<MyBookings />} />
+          <Route path="staff" element={<MyStaff />} />
+          <Route path="reports" element={<MyReports />} />
+        </Route>
 
-      {/* Default redirect */}
-      <Route path="/" element={
-        user
-          ? <Navigate to={user.role === 'super_admin' ? '/super-admin/dashboard' : '/owner/dashboard'} replace />
-          : <Navigate to="/login" replace />
-      } />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        {/* Default redirect */}
+        <Route path="/" element={
+          user
+            ? <Navigate to={user.role === 'super_admin' ? '/super-admin/dashboard' : '/owner/dashboard'} replace />
+            : <Navigate to="/login" replace />
+        } />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
   );
 }
 

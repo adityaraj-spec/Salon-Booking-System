@@ -18,10 +18,11 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          // Split heavy vendor libs into separate chunks for better caching
+          // Split heavy vendor libs into separate chunks for better caching and performance
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-mapbox': ['mapbox-gl'],  // react-map-gl excluded (non-standard exports)
+          'vendor-mapbox': ['mapbox-gl'],
           'vendor-motion': ['framer-motion'],
+          'vendor-geo': ['country-state-city'],
         },
       },
     },
