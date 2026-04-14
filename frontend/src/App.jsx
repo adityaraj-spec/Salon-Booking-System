@@ -7,6 +7,7 @@ import { NotificationProvider } from "./context/NotificationContext.jsx";
 import { UIProvider } from "./context/UIContext.jsx";
 import { Notification } from "./components/Notification.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
+import RoleProtectedRoute from "./components/RoleProtectedRoute.jsx";
 import './App.css'
 
 // Lazy load pages to reduce initial bundle size
@@ -47,17 +48,20 @@ function App() {
                 <Routes>
                   {/* Layout Wrapper for standard pages */}
                   <Route element={<MainLayout />}>
-                    <Route index element={<LandingPage />} />
-                    <Route path="home" element={<Shops />} />
                     <Route path="role-selection" element={<RoleSelectionPage />} />
-                    <Route path="create-salon" element={<CreateSalonPage />} />
-                    <Route path="shop/:id" element={<Shop />} />
-                    <Route path="booking/:id" element={<BookingPage />} />
-                    <Route path="profile" element={<ProfilePage />} />
-                    <Route path="bookings" element={<MyBookingsPage />} />
-                    <Route path="salon/dashboard" element={<SalonBookingsPage />} />
-                    <Route path="salon/manage" element={<SalonManagementPage />} />
-                    <Route path="favorites" element={<FavoritesPage />} />
+                    
+                    <Route element={<RoleProtectedRoute />}>
+                      <Route index element={<LandingPage />} />
+                      <Route path="home" element={<Shops />} />
+                      <Route path="create-salon" element={<CreateSalonPage />} />
+                      <Route path="shop/:id" element={<Shop />} />
+                      <Route path="booking/:id" element={<BookingPage />} />
+                      <Route path="profile" element={<ProfilePage />} />
+                      <Route path="bookings" element={<MyBookingsPage />} />
+                      <Route path="salon/dashboard" element={<SalonBookingsPage />} />
+                      <Route path="salon/manage" element={<SalonManagementPage />} />
+                      <Route path="favorites" element={<FavoritesPage />} />
+                    </Route>
                   </Route>
                   
                   {/* Auth pages (no layout) */}

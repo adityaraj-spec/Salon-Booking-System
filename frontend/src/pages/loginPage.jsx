@@ -32,10 +32,15 @@ export function LoginPage() {
                 const token = response.data.data.accessToken;
                 if (token) localStorage.setItem('authToken', token);
 
-                login(response.data.data.user);
+                const user = response.data.data.user;
+                login(user);
                 showNotification("Welcome back! Login successful.", "success");
-                // Redirect directly to home after login as per user request
-                navigate("/home", { replace: true });
+                
+                if (user.role === 'unassigned') {
+                    navigate("/role-selection", { replace: true });
+                } else {
+                    navigate("/home", { replace: true });
+                }
             } else {
                 const msg = response.data.message || "Login failed";
                 setError(msg);
