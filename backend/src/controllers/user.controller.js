@@ -4,6 +4,7 @@ import { ApiResponse } from "../utils/apiResponse.js"
 import { User } from "../models/user.models.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
 import { sendWelcomeEmail, sendLoginEmail, sendLogoutEmail } from "../utils/mailer.js"
+import { ROLES } from "../constants.js"
 
 const generateAccessAndRefreshToken = async (userId) => {
     try {
