@@ -6,6 +6,7 @@ import { Service } from "../models/service.models.js";
 import { Booking } from "../models/booking.models.js";
 import { Staff } from "../models/staff.models.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { sendProfileUpdateEmail, sendManagementUpdateEmail } from "../utils/mailer.js";
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
@@ -98,6 +99,10 @@ const updateOwnerSalon = asyncHandler(async (req, res) => {
     if (newImageUrls.length > 0) updates.images = [...(salon.images || []), ...newImageUrls];
 
     const updated = await Salon.findByIdAndUpdate(salon._id, { $set: updates }, { new: true });
+
+    // Trigger notification email
+    sendProfileUpdateEmail(req.user.email, req.user.fullName, updated.name);
+
     return res.status(200).json(new ApiResponse(200, updated, "Salon updated successfully"));
 });
 
@@ -126,6 +131,10 @@ const createOwnerService = asyncHandler(async (req, res) => {
     const { name, category, price, duration, description } = req.body;
     if (!name) throw new ApiError(400, "Service name is required");
     const service = await Service.create({ name, category, price, duration, description, salon: salon._id });
+
+    // Trigger notification email
+    sendManagementUpdateEmail(req.user.email, req.user.fullName, "Created new service", name, "Service");
+
     return res.status(201).json(new ApiResponse(201, service, "Service created"));
 });
 
@@ -137,6 +146,10 @@ const updateOwnerService = asyncHandler(async (req, res) => {
     if (!service) throw new ApiError(404, "Service not found or unauthorized");
 
     const updated = await Service.findByIdAndUpdate(id, { $set: req.body }, { new: true });
+
+    // Trigger notification email
+    sendManagementUpdateEmail(req.user.email, req.user.fullName, "Updated service details", updated.name, "Service");
+
     return res.status(200).json(new ApiResponse(200, updated, "Service updated"));
 });
 
@@ -201,6 +214,10 @@ const createOwnerStaff = asyncHandler(async (req, res) => {
     const { name, role, experience, skills } = req.body;
     if (!name) throw new ApiError(400, "Staff name is required");
     const staff = await Staff.create({ name, role, experience, skills, salon: salon._id });
+
+    // Trigger notification email
+    sendManagementUpdateEmail(req.user.email, req.user.fullName, `Added new staff member: ${role || 'Stylist'}`, name, "Staff");
+
     return res.status(201).json(new ApiResponse(201, staff, "Staff member added"));
 });
 
@@ -210,6 +227,10 @@ const updateOwnerStaff = asyncHandler(async (req, res) => {
     const staff = await Staff.findOne({ _id: id, salon: salon._id });
     if (!staff) throw new ApiError(404, "Staff not found or unauthorized");
     const updated = await Staff.findByIdAndUpdate(id, { $set: req.body }, { new: true });
+
+    // Trigger notification email
+    sendManagementUpdateEmail(req.user.email, req.user.fullName, "Updated staff profile", updated.name, "Staff");
+
     return res.status(200).json(new ApiResponse(200, updated, "Staff updated"));
 });
 

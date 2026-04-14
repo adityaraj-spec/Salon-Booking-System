@@ -8,9 +8,25 @@ import { Booking } from "../models/booking.models.js";
 import { Staff } from "../models/staff.models.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ROLES } from "../constants.js";
-import { sendShopAddedEmail } from "../utils/mailer.js";
+import { sendShopAddedEmail, testEmailConfiguration, sendWelcomeEmail } from "../utils/mailer.js";
 import { emitToAll } from "../socket.js";
 import { geocodeAddress } from "../utils/geocoding.js";
+
+// ─── DIAGNOSTICS ─────────────────────────────────────────────────────────────
+
+const testEmailConfig = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+    if (!email) throw new ApiError(400, "Target email is required");
+
+    console.log(`[Admin] Triggering SMTP test to ${email}...`);
+    const result = await testEmailConfiguration(email);
+
+    if (result.success) {
+        return res.status(200).json(new ApiResponse(200, result.info, "Test email sent successfully! Check your inbox."));
+    } else {
+        throw new ApiError(500, `SMTP Error: ${result.error}`);
+    }
+});
 
 // ─── DASHBOARD ───────────────────────────────────────────────────────────────
 
@@ -106,6 +122,12 @@ const createSalon = asyncHandler(async (req, res) => {
 
     // Ensure owner has salonOwner role
     await User.findByIdAndUpdate(owner, { $set: { role: ROLES.OWNER } });
+
+    // Trigger notification email to the salon owner
+    const ownerDetails = await User.findById(owner);
+    if (ownerDetails) {
+        sendShopAddedEmail(ownerDetails.email, ownerDetails.fullName, salon.name);
+    }
 
     return res.status(201).json(new ApiResponse(201, salon, "Salon created successfully"));
 });
@@ -258,6 +280,12 @@ const createOwner = asyncHandler(async (req, res) => {
 
     const owner = await User.create({ fullName, email, username, password, phonenumber, role: ROLES.OWNER });
     const created = await User.findById(owner._id).select("-password -refreshToken");
+
+    // Trigger welcome email to the new owner
+    if (created) {
+        sendWelcomeEmail(created.email, created.fullName);
+    }
+
     return res.status(201).json(new ApiResponse(201, created, "Owner created successfully"));
 });
 
@@ -294,6 +322,7 @@ const getRevenueReport = asyncHandler(async (req, res) => {
 });
 
 export {
+    testEmailConfig,
     getDashboard,
     getAllSalons, createSalon, deleteSalon,
     getAllServices, createService, updateService, deleteService,

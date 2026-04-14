@@ -3,6 +3,7 @@ import { verifyJWT } from "../middleware/auth.middleware.js";
 import { verifySuperAdmin } from "../middleware/adminAuth.middleware.js";
 import { upload } from "../middleware/multer.middleware.js";
 import {
+    testEmailConfig,
     getDashboard,
     getAllSalons, createSalon, deleteSalon,
     getAllServices, createService, updateService, deleteService,
@@ -19,6 +20,9 @@ router.use(verifyJWT, verifySuperAdmin);
 
 // Dashboard
 router.get("/dashboard", getDashboard);
+
+// Diagnostics
+router.post("/test-email", testEmailConfig);
 
 // Salons
 router.get("/salons", getAllSalons);

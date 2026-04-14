@@ -3,7 +3,7 @@ import ApiError from "../utils/apiError.js"
 import { ApiResponse } from "../utils/apiResponse.js"
 import { User } from "../models/user.models.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
-import { sendWelcomeEmail, sendLoginEmail } from "../utils/mailer.js"
+import { sendWelcomeEmail, sendLoginEmail, sendLogoutEmail } from "../utils/mailer.js"
 
 const generateAccessAndRefreshToken = async (userId) => {
     try {
@@ -142,6 +142,9 @@ const logoutUser = asyncHandler(async (req, res) => {
         secure: isProduction,
         sameSite: isProduction ? "none" : "lax"
     }
+
+    // Trigger logout email silently
+    sendLogoutEmail(req.user.email, req.user.fullName);
 
     return res
         .status(200)

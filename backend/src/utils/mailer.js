@@ -8,17 +8,23 @@ if (!FRONTEND_URL) {
 const createTransporter = async () => {
     const smtpUser = process.env.SMTP_USER?.trim();
     const smtpPass = process.env.SMTP_PASS?.trim();
+    const smtpHost = process.env.SMTP_HOST?.trim() || "smtp.gmail.com";
+    const smtpPort = parseInt(process.env.SMTP_PORT || "587");
+    const smtpSecure = process.env.SMTP_SECURE === "true";
 
     if (smtpUser && smtpPass) {
-        console.log(`Mail transporter: using Gmail (${smtpUser})`);
+        console.log(`[Mailer] Initializing with ${smtpHost}:${smtpPort} (User: ${smtpUser})`);
         return nodemailer.createTransport({
-            host: process.env.SMTP_HOST || "smtp.gmail.com",
-            port: parseInt(process.env.SMTP_PORT || "587"),
-            secure: process.env.SMTP_SECURE === "true",
+            host: smtpHost,
+            port: smtpPort,
+            secure: smtpSecure,
             auth: { user: smtpUser, pass: smtpPass },
+            // Add debugging for production issues
+            debug: process.env.NODE_ENV !== 'production',
+            logger: process.env.NODE_ENV !== 'production',
         });
     } else {
-        console.log("No SMTP credentials found. Generating Ethereal test account...");
+        console.warn("[Mailer] No SMTP credentials found. Falling back to Ethereal test account.");
         const testAccount = await nodemailer.createTestAccount();
         return nodemailer.createTransport({
             host: "smtp.ethereal.email",
@@ -33,21 +39,41 @@ const sendMail = async (to, subject, htmlContent) => {
     try {
         const mailTransporter = await createTransporter();
         const smtpUser = process.env.SMTP_USER?.trim();
+        
         const info = await mailTransporter.sendMail({
-            from: `SalonNow <${smtpUser || 'no-reply@salonnow.app'}>`,
+            from: `"SalonNow" <${smtpUser || 'no-reply@salonnow.app'}>`,
             to,
             subject,
             html: htmlContent,
         });
-        console.log(`Email sent: "${subject}" to ${to}`);
+
+        console.log(`[Mailer] SUCCESS: "${subject}" sent to ${to}`);
         if (!smtpUser) {
-            console.log(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
+            console.log(`[Mailer] Ethereal Preview: ${nodemailer.getTestMessageUrl(info)}`);
         }
-        return info;
+        return { success: true, info };
     } catch (error) {
-        console.error("Error sending email:", error.message);
-        return null;
+        console.error("[Mailer] ERROR:", error.message);
+        return { success: false, error: error.message };
     }
+};
+
+// ─── Diagnostic Function ──────────────────────────────────────────────────────
+export const testEmailConfiguration = async (targetEmail) => {
+    const html = `
+    <div style="font-family:sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+        <h2 style="color: #D4AF37;">SMTP Configuration Test</h2>
+        <p>If you are reading this, your mailing system is correctly configured on your deployment platform!</p>
+        <hr/>
+        <p><strong>Environment Check:</strong></p>
+        <ul>
+            <li><strong>SMTP_HOST:</strong> ${process.env.SMTP_HOST || 'smtp.gmail.com (default)'}</li>
+            <li><strong>SMTP_PORT:</strong> ${process.env.SMTP_PORT || '587 (default)'}</li>
+            <li><strong>SMTP_USER:</strong> ${process.env.SMTP_USER ? 'SET (Active)' : 'MISSING (Fallback active)'}</li>
+            <li><strong>FRONTEND_URL:</strong> ${process.env.FRONTEND_URL || 'NOT SET'}</li>
+        </ul>
+    </div>`;
+    return sendMail(targetEmail, "SalonNow - SMTP Configuration Test", html);
 };
 
 // ─── Welcome Email ────────────────────────────────────────────────────────────
@@ -105,6 +131,29 @@ export const sendLoginEmail = async (email, name) => {
       </div>
     </div>`;
     return sendMail(email, "Successfully Logged In to SalonNow", html);
+};
+
+// ─── Logout Email ─────────────────────────────────────────────────────────────
+export const sendLogoutEmail = async (email, name) => {
+    const html = `
+    <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #f0f0f0;">
+      <div style="background:#1a1a1a;padding:32px 40px;text-align:center;">
+        <div style="display:inline-block;background:#D4AF37;border-radius:50%;width:64px;height:64px;text-align:center;line-height:64px;margin-bottom:16px;font-size:32px;color:#1a1a1a;font-weight:900;">&#10005;</div>
+        <h1 style="color:#ffffff;margin:0;font-size:26px;font-weight:700;letter-spacing:1px;">Salon<span style="color:#D4AF37;">Now</span></h1>
+      </div>
+      <div style="padding:40px;">
+        <h2 style="color:#1a1a1a;font-size:22px;margin:0 0 12px;text-align:center;">See you soon, ${name}!</h2>
+        <p style="color:#555555;font-size:15px;line-height:1.7;text-align:center;margin:0 0 28px;">
+          You've successfully logged out of your SalonNow account. We've enjoyed having you! Don't forget to check back for new services and deals.
+        </p>
+        <div style="text-align:center;margin-bottom:32px;">
+          <a href="${FRONTEND_URL}/home" style="display:inline-block;background:#D4AF37;color:#1a1a1a;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">RETURN TO SITE</a>
+        </div>
+        <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
+        <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Team &nbsp;&bull;&nbsp; Always here for your style needs</p>
+      </div>
+    </div>`;
+    return sendMail(email, "Logged Out of SalonNow", html);
 };
 
 // ─── Shop Added Email ─────────────────────────────────────────────────────────
@@ -277,4 +326,56 @@ export const sendBookingPendingEmail = async (email, name, shopName, bookingTime
       </div>
     </div>`;
     return sendMail(email, "Your SalonNow booking request is pending review", html);
+};
+
+// ─── Profile Update Email ─────────────────────────────────────────────────────
+export const sendProfileUpdateEmail = async (email, name, salonName) => {
+    const html = `
+    <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #f0f0f0;">
+      <div style="background:#1a1a1a;padding:32px 40px;text-align:center;">
+        <div style="display:inline-block;background:#D4AF37;border-radius:50%;width:64px;height:64px;text-align:center;line-height:64px;margin-bottom:16px;font-size:28px;color:#1a1a1a;">&#9881;</div>
+        <h1 style="color:#ffffff;margin:0;font-size:26px;font-weight:700;letter-spacing:1px;">Salon<span style="color:#D4AF37;">Now</span></h1>
+      </div>
+      <div style="padding:40px;">
+        <h2 style="color:#1a1a1a;font-size:22px;margin:0 0 12px;text-align:center;">Salon Profile Updated</h2>
+        <p style="color:#555555;font-size:15px;line-height:1.7;text-align:center;margin:0 0 24px;">
+          Hi <strong>${name}</strong>, this is a confirmation that the profile for <strong>${salonName}</strong> has been successfully updated on the platform.
+        </p>
+        <div style="background:#f9f9f9;padding:20px;border-radius:12px;text-align:center;margin-bottom:28px;">
+          <p style="margin:0;color:#666;font-size:13px;">If you did not perform this action, please contact support immediately.</p>
+        </div>
+        <div style="text-align:center;margin-bottom:32px;">
+          <a href="${FRONTEND_URL}/salon/manage" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">REVIEW CHANGES</a>
+        </div>
+        <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
+        <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Security Team</p>
+      </div>
+    </div>`;
+    return sendMail(email, `Profile Updated: ${salonName}`, html);
+};
+
+// ─── Management Update Email (Services/Staff) ─────────────────────────────────
+export const sendManagementUpdateEmail = async (email, name, action, itemName, category) => {
+    const html = `
+    <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #f0f0f0;">
+      <div style="background:#1a1a1a;padding:32px 40px;text-align:center;">
+        <div style="display:inline-block;background:#D4AF37;border-radius:50%;width:64px;height:64px;text-align:center;line-height:64px;margin-bottom:16px;font-size:28px;color:#1a1a1a;">&#128203;</div>
+        <h1 style="color:#ffffff;margin:0;font-size:26px;font-weight:700;letter-spacing:1px;">Salon<span style="color:#D4AF37;">Now</span></h1>
+      </div>
+      <div style="padding:40px;">
+        <h2 style="color:#1a1a1a;font-size:22px;margin:0 0 12px;text-align:center;">${category} Management Update</h2>
+        <p style="color:#555555;font-size:15px;line-height:1.7;text-align:center;margin:0 0 24px;">
+          Hi <strong>${name}</strong>, a ${category.toLowerCase()} action was performed on your salon dashboard:
+        </p>
+        <div style="background:#f9f5e8;border-left:4px solid #D4AF37;padding:16px 20px;margin-bottom:28px;">
+          <p style="margin:0 0 4px;color:#999;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Action</p>
+          <p style="margin:0 0 12px;color:#1a1a1a;font-size:16px;font-weight:700;">${action}</p>
+          <p style="margin:0 0 4px;color:#999;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Item</p>
+          <p style="margin:0;color:#1a1a1a;font-size:16px;font-weight:700;">${itemName}</p>
+        </div>
+        <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
+        <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Dashboard Team</p>
+      </div>
+    </div>`;
+    return sendMail(email, `${category} Alert: ${action}`, html);
 };
