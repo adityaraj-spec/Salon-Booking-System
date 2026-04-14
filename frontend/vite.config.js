@@ -14,9 +14,15 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
+    chunkSizeWarningLimit: 1000, // suppress warning for large libs like mapbox-gl, framer-motion
     rollupOptions: {
       output: {
-        manualChunks: undefined,
+        manualChunks: {
+          // Split heavy vendor libs into separate chunks for better caching
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-mapbox': ['mapbox-gl'],  // react-map-gl excluded (non-standard exports)
+          'vendor-motion': ['framer-motion'],
+        },
       },
     },
   },
