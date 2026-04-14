@@ -66,7 +66,7 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 
     // Trigger welcome email silently
-    sendWelcomeEmail(createdUser.email, createdUser.fullName);
+    await sendWelcomeEmail(createdUser.email, createdUser.fullName);
 
     return res
         .status(201)
@@ -107,7 +107,7 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 
     // Trigger login email silently
-    sendLoginEmail(loggedInUSer.email, loggedInUSer.fullName);
+    await sendLoginEmail(loggedInUSer.email, loggedInUSer.fullName);
 
     return res
         .status(200)
@@ -145,7 +145,7 @@ const logoutUser = asyncHandler(async (req, res) => {
     }
 
     // Trigger logout email silently
-    sendLogoutEmail(req.user.email, req.user.fullName);
+    await sendLogoutEmail(req.user.email, req.user.fullName);
 
     return res
         .status(200)

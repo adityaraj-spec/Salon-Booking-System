@@ -59,7 +59,7 @@ const registerSalon = asyncHandler(async (req, res) => {
 
     // Trigger shop registered email silently
     if (req.user) {
-        sendShopAddedEmail(req.user.email, req.user.fullName, salon.name);
+        await sendShopAddedEmail(req.user.email, req.user.fullName, salon.name);
     }
 
     return res.status(201).json(

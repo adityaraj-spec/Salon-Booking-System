@@ -57,7 +57,7 @@ const createBooking = asyncHandler(async (req, res) => {
     // Notify customer appropriately
     const bookingTime = `${date} at ${time}`;
     if (initialStatus === "confirmed") {
-        sendBookingConfirmationEmail(
+        await sendBookingConfirmationEmail(
             req.user.email, 
             req.user.fullName, 
             salon.name, 
@@ -67,7 +67,7 @@ const createBooking = asyncHandler(async (req, res) => {
             serviceNames || []
         );
     } else {
-        sendBookingPendingEmail(
+        await sendBookingPendingEmail(
             req.user.email, 
             req.user.fullName, 
             salon.name, 
@@ -183,7 +183,7 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
     });
 
     // Trigger booking status email
-    sendBookingStatusEmail(
+    await sendBookingStatusEmail(
         booking.customer.email,
         booking.customer.fullName,
         booking.salon.name,
