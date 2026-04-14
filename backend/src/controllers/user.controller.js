@@ -156,13 +156,18 @@ const logoutUser = asyncHandler(async (req, res) => {
 
 const updateUserRole = asyncHandler(async (req, res) => {
     const { role } = req.body
+    
+    // Explicitly check if user is attached by verifyJWT middleware
+    if (!req.user?._id) {
+        throw new ApiError(401, "Authentication required to update role")
+    }
 
     if (!role || ![ROLES.CUSTOMER, ROLES.OWNER].includes(role)) {
         throw new ApiError(400, "Invalid role")
     }
 
     const user = await User.findByIdAndUpdate(
-        req.user?._id,
+        req.user._id,
         {
             $set: {
                 role: role
@@ -183,12 +188,17 @@ const updateUserRole = asyncHandler(async (req, res) => {
 const updateAccountDetails = asyncHandler(async (req, res) => {
     const { fullName, phonenumber } = req.body
 
+    // Explicitly check if user is attached by verifyJWT middleware
+    if (!req.user?._id) {
+        throw new ApiError(401, "Authentication required to update account details")
+    }
+
     if (!fullName || !phonenumber) {
         throw new ApiError(400, "Full name and phone number are required")
     }
 
     const user = await User.findByIdAndUpdate(
-        req.user?._id,
+        req.user._id,
         {
             $set: {
                 fullName,

@@ -40,6 +40,10 @@ app.use("/api/v1/owner", ownerRouter);
 
 // common error handling middleware
 app.use((err, req, res, next) => {
+    // Log error for debugging in server logs
+    console.error(`Error [${err.statusCode || 500}]:`, err.message);
+    if (err.stack) console.error(err.stack);
+
     if (err instanceof ApiError) {
         return res.status(err.statusCode).json({
             success: false,

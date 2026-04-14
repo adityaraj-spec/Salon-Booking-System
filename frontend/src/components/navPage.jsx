@@ -125,22 +125,40 @@ export function NavBar() {
 
 
     const markAsRead = async (id) => {
+        // Optimistic update
+        const originalNotifications = [...notifications];
+        const originalUnreadCount = unreadCount;
+
+        setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
+        setUnreadCount(prev => Math.max(0, prev - 1));
+
         try {
             await axiosInstance.patch(`/notifications/${id}/read`);
-            setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
-            setUnreadCount(prev => Math.max(0, prev - 1));
         } catch (error) {
-            // silently fail — notification state already updated optimistically
+            console.error("Failed to mark notification as read:", error);
+            // Revert state on error
+            setNotifications(originalNotifications);
+            setUnreadCount(originalUnreadCount);
+            showNotification("Failed to update notification. Please try again.", "error");
         }
     };
 
     const markAllAsRead = async () => {
+        // Optimistic update
+        const originalNotifications = [...notifications];
+        const originalUnreadCount = unreadCount;
+
+        setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+        setUnreadCount(0);
+
         try {
             await axiosInstance.patch("/notifications/mark-all-read");
-            setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-            setUnreadCount(0);
         } catch (error) {
-            // silently fail — UI already reflects read state
+            console.error("Failed to mark all notifications as read:", error);
+            // Revert state on error
+            setNotifications(originalNotifications);
+            setUnreadCount(originalUnreadCount);
+            showNotification("Failed to update notifications. Please try again.", "error");
         }
     };
 

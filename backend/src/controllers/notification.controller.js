@@ -16,14 +16,15 @@ const getNotifications = asyncHandler(async (req, res) => {
 const markAsRead = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    const notification = await Notification.findByIdAndUpdate(
-        id,
+    // Use findOneAndUpdate to ensure the notification belongs to the user
+    const notification = await Notification.findOneAndUpdate(
+        { _id: id, recipient: req.user?._id },
         { $set: { isRead: true } },
         { new: true }
     );
 
     if (!notification) {
-        throw new ApiError(404, "Notification not found");
+        throw new ApiError(404, "Notification not found or access denied");
     }
 
     return res.status(200).json(
@@ -32,13 +33,13 @@ const markAsRead = asyncHandler(async (req, res) => {
 });
 
 const markAllAsRead = asyncHandler(async (req, res) => {
-    await Notification.updateMany(
+    const result = await Notification.updateMany(
         { recipient: req.user?._id, isRead: false },
         { $set: { isRead: true } }
     );
 
     return res.status(200).json(
-        new ApiResponse(200, null, "All notifications marked as read")
+        new ApiResponse(200, { modifiedCount: result.modifiedCount }, "All notifications marked as read")
     );
 });
 
