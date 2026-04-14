@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { TableRowSkeleton } from './Skeleton';
+
 
 /**
  * DataTable — Generic, paginated, searchable table.
@@ -72,7 +74,9 @@ export default function DataTable({
           </thead>
           <tbody className="divide-y divide-gray-50">
             {loading ? (
-              <tr><td colSpan={columns.length + (actions ? 1 : 0)} className="text-center py-12 text-gray-400">Loading...</td></tr>
+              [...Array(limit)].map((_, i) => (
+                <tr key={i}><td colSpan={columns.length + (actions ? 1 : 0)} className="p-0"><TableRowSkeleton cols={columns.length + (actions ? 1 : 0)} /></td></tr>
+              ))
             ) : data.length === 0 ? (
               <tr><td colSpan={columns.length + (actions ? 1 : 0)} className="text-center py-12 text-gray-400">No records found</td></tr>
             ) : (

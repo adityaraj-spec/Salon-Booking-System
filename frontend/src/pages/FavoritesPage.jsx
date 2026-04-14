@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, NavLink } from 'react-router-dom';
-import { Star, MapPin, Loader2, Phone, Heart, Search } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Star, MapPin, Phone, Heart, Search } from 'lucide-react';
 import axiosInstance from '../api/axiosConfig';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
+import { SalonCardSkeleton } from '../components/skeletons/index.jsx';
+
 
 export function FavoritesPage() {
     const navigate = useNavigate();
@@ -78,8 +80,8 @@ export function FavoritesPage() {
                 </div>
 
                 {loading ? (
-                    <div className="flex flex-col items-center justify-center py-20">
-                        <Loader2 className="w-10 h-10 text-[#D4AF37] animate-spin mb-4" />
+                    <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {[...Array(8)].map((_, i) => <SalonCardSkeleton key={i} />)}
                     </div>
                 ) : error ? (
                     <div className="text-center py-20">

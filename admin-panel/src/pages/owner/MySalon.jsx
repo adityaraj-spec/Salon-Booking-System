@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { ImagePlus, Save } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
-import LoadingSpinner from '../../components/UI/LoadingSpinner';
+import { FormSkeleton } from '../../components/UI/Skeleton';
+
 
 export default function MySalon() {
   const [salon, setSalon] = useState(null);
@@ -53,7 +54,7 @@ export default function MySalon() {
     } finally { setSaving(false); }
   };
 
-  if (loading) return <LoadingSpinner text="Loading salon details..." />;
+  if (loading) return <FormSkeleton fields={6} />;
   if (!salon) return <div className="text-center py-12 text-gray-400">No salon found. Please contact the administrator.</div>;
 
   const F = ({ label, k, type = 'text', required, placeholder, colSpan = '' }) => (

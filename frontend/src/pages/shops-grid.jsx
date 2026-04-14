@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, Star, MapPin, Loader2, Phone, Heart, ChevronDown, ArrowUpDown, ChevronLeft, ChevronRight, SlidersHorizontal, Filter, X, Map } from 'lucide-react';
+import { Search, Star, MapPin, Phone, Heart, ArrowUpDown, ChevronLeft, ChevronRight, SlidersHorizontal, X, Map } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { State, City } from 'country-state-city';
 import axiosInstance from '../api/axiosConfig';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
+import { SalonCardSkeleton } from '../components/skeletons/index.jsx';
 
 
 export function Shops() {
@@ -459,9 +460,8 @@ export function Shops() {
                 {/* Salon Grid */}
                 <div className="w-full py-6">
                     {loading ? (
-                        <div className="flex flex-col items-center justify-center py-20">
-                            <Loader2 className="w-12 h-12 text-[#D4AF37] animate-spin mb-4" />
-                            <p className="text-gray-500 animate-pulse">Finding the best salons for you...</p>
+                        <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-10">
+                            {[...Array(12)].map((_, i) => <SalonCardSkeleton key={i} />)}
                         </div>
                     ) : error ? (
                         <div className="text-center py-20">

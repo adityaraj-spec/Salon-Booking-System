@@ -6,6 +6,7 @@ import { useUI } from "../context/UIContext";
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 import axiosInstance from '../api/axiosConfig';
+import { MiniSalonCardSkeleton, DestinationCardSkeleton } from '../components/skeletons/index.jsx';
 
 const heroImages = [
     { url: "/adam-winger-KVVjmb3IIL8-unsplash.jpg", isDark: true },
@@ -61,6 +62,7 @@ export function LandingPage() {
     const [featuredSalons, setFeaturedSalons] = useState([]);
     const [cheapestServices, setCheapestServices] = useState([]);
     const [userFavorites, setUserFavorites] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     const featuredSliderRef = useRef(null);
     const cheapSliderRef = useRef(null);
@@ -80,6 +82,7 @@ export function LandingPage() {
 
     useEffect(() => {
         const fetchData = async () => {
+            setLoading(true);
             try {
                 const [salonsRes, cheapRes] = await Promise.all([
                     axiosInstance.get("/salons?limit=12"),
@@ -88,6 +91,7 @@ export function LandingPage() {
                 if (salonsRes.data.success) setFeaturedSalons(salonsRes.data.data.salons);
                 if (cheapRes.data.success) setCheapestServices(cheapRes.data.data.services || []);
             } catch (e) { /* silent */ }
+            finally { setLoading(false); }
         };
         fetchData();
     }, []);
@@ -171,7 +175,7 @@ export function LandingPage() {
 
 
             {/* ── BEST DEALS SLIDER ── */}
-            {featuredSalons.length > 0 && (
+            {(loading || featuredSalons.length > 0) && (
                 <section className="py-10 px-6">
                     <div className="max-w-6xl mx-auto">
                         <div className="bg-[#fef9ec] border border-[#f0e5c0] rounded-2xl p-5">
@@ -186,31 +190,35 @@ export function LandingPage() {
                                     <ChevronLeft size={18} className="text-gray-600" />
                                 </button>
                                 <div ref={featuredSliderRef} className="flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2 px-1" style={{ scrollbarWidth: 'none' }}>
-                                    {featuredSalons.map((salon) => (
-                                        <div key={salon._id} className="min-w-[250px] w-[250px] flex-shrink-0 bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition group snap-start cursor-pointer" onClick={() => navigate(`/shop/${salon._id}`)}>
-                                            <div className="relative h-40 w-full overflow-hidden flex-shrink-0">
-                                                <img src={salon.images?.[0] || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=80"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={salon.name} />
-                                                <button className={`absolute top-2.5 right-2.5 w-7 h-7 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm transition-all hover:scale-110 ${userFavorites.includes(salon._id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`} onClick={(e) => handleToggleFavorite(e, salon._id)}>
-                                                    <Heart size={14} strokeWidth={userFavorites.includes(salon._id) ? 1.5 : 2} className={userFavorites.includes(salon._id) ? "fill-red-500" : ""} />
-                                                </button>
-                                            </div>
-                                            <div className="p-3 flex flex-col flex-1">
-                                                <div className="flex items-center gap-1 mb-1">
-                                                    <span className="text-[10px] text-gray-500">Salon</span>
-                                                    <div className="flex gap-0.5">{[...Array(5)].map((_, i) => <Star key={i} size={10} className="fill-[#febb02] text-[#febb02]" />)}</div>
+                                    {loading ? (
+                                        [...Array(6)].map((_, i) => <MiniSalonCardSkeleton key={i} />)
+                                    ) : (
+                                        featuredSalons.map((salon) => (
+                                            <div key={salon._id} className="min-w-[250px] w-[250px] flex-shrink-0 bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition group snap-start cursor-pointer" onClick={() => navigate(`/shop/${salon._id}`)}>
+                                                <div className="relative h-40 w-full overflow-hidden flex-shrink-0">
+                                                    <img src={salon.images?.[0] || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=80"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={salon.name} />
+                                                    <button className={`absolute top-2.5 right-2.5 w-7 h-7 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm transition-all hover:scale-110 ${userFavorites.includes(salon._id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`} onClick={(e) => handleToggleFavorite(e, salon._id)}>
+                                                        <Heart size={14} strokeWidth={userFavorites.includes(salon._id) ? 1.5 : 2} className={userFavorites.includes(salon._id) ? "fill-red-500" : ""} />
+                                                    </button>
                                                 </div>
-                                                <h3 className="text-sm font-bold text-[#1a1a1a] mb-1 line-clamp-1 hover:text-[#0071C2] transition-colors">{salon.name}</h3>
-                                                <span className="text-xs text-[#0071c2] flex items-center gap-1 mb-2"><MapPin size={11} className="shrink-0" />{salon.city ? `${salon.city}, India` : "Location not set"}</span>
-                                                <div className="mt-auto flex items-center justify-between">
-                                                    <div className="flex items-center gap-1.5">
-                                                        <div className="bg-[#003b95] text-white px-1.5 py-1 font-bold rounded-t-md rounded-br-md rounded-bl-sm min-w-[28px] text-xs text-center">{salon.rating || "New"}</div>
-                                                        <span className="text-[10px] font-bold text-[#1a1a1a]">{salon.rating > 4 ? "Excellent" : salon.rating > 3 ? "Very Good" : "Good"}</span>
+                                                <div className="p-3 flex flex-col flex-1">
+                                                    <div className="flex items-center gap-1 mb-1">
+                                                        <span className="text-[10px] text-gray-500">Salon</span>
+                                                        <div className="flex gap-0.5">{[...Array(5)].map((_, i) => <Star key={i} size={10} className="fill-[#febb02] text-[#febb02]" />)}</div>
                                                     </div>
-                                                    <span className="text-[10px] text-gray-400">{salon.reviews?.length || 0} reviews</span>
+                                                    <h3 className="text-sm font-bold text-[#1a1a1a] mb-1 line-clamp-1 hover:text-[#0071C2] transition-colors">{salon.name}</h3>
+                                                    <span className="text-xs text-[#0071c2] flex items-center gap-1 mb-2"><MapPin size={11} className="shrink-0" />{salon.city ? `${salon.city}, India` : "Location not set"}</span>
+                                                    <div className="mt-auto flex items-center justify-between">
+                                                        <div className="flex items-center gap-1.5">
+                                                            <div className="bg-[#003b95] text-white px-1.5 py-1 font-bold rounded-t-md rounded-br-md rounded-bl-sm min-w-[28px] text-xs text-center">{salon.rating || "New"}</div>
+                                                            <span className="text-[10px] font-bold text-[#1a1a1a]">{salon.rating > 4 ? "Excellent" : salon.rating > 3 ? "Very Good" : "Good"}</span>
+                                                        </div>
+                                                        <span className="text-[10px] text-gray-400">{salon.reviews?.length || 0} reviews</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))
+                                    )}
                                 </div>
                                 <button onClick={() => scroll(featuredSliderRef, 1)} className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition">
                                     <ChevronRight size={18} className="text-gray-600" />
@@ -257,7 +265,7 @@ export function LandingPage() {
             </section>
 
             {/* ── CHEAPEST SERVICES SLIDER ── */}
-            {cheapestServices.length > 0 && (
+            {(loading || cheapestServices.length > 0) && (
                 <section className="py-10 px-6">
                     <div className="max-w-6xl mx-auto">
                         <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
@@ -270,26 +278,30 @@ export function LandingPage() {
                                     <ChevronLeft size={18} className="text-gray-600" />
                                 </button>
                                 <div ref={cheapSliderRef} className="flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2 px-1" style={{ scrollbarWidth: 'none' }}>
-                                    {cheapestServices.map((service) => (
-                                        <div key={service._id} className="min-w-[200px] w-[200px] flex-shrink-0 bg-white border border-gray-100 rounded-xl overflow-hidden flex flex-col hover:shadow-md transition group snap-start cursor-pointer" onClick={() => service.salon?._id && navigate(`/shop/${service.salon._id}`)}>
-                                            <div className="relative h-32 w-full overflow-hidden flex-shrink-0">
-                                                <img src={service.salon?.images?.[0] || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=80"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={service.name} />
-                                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5">
-                                                    <span className="text-white text-xs font-bold capitalize">{service.name}</span>
+                                    {loading ? (
+                                        [...Array(6)].map((_, i) => <MiniSalonCardSkeleton key={i} />)
+                                    ) : (
+                                        cheapestServices.map((service) => (
+                                            <div key={service._id} className="min-w-[200px] w-[200px] flex-shrink-0 bg-white border border-gray-100 rounded-xl overflow-hidden flex flex-col hover:shadow-md transition group snap-start cursor-pointer" onClick={() => service.salon?._id && navigate(`/shop/${service.salon._id}`)}>
+                                                <div className="relative h-32 w-full overflow-hidden flex-shrink-0">
+                                                    <img src={service.salon?.images?.[0] || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=80"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={service.name} />
+                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5">
+                                                        <span className="text-white text-xs font-bold capitalize">{service.name}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="p-3 flex flex-col gap-1">
+                                                    <h3 className="text-xs font-semibold text-gray-600 line-clamp-1">{service.salon?.name || "Salon"}</h3>
+                                                    <span className="text-xs text-gray-400 flex items-center gap-1"><MapPin size={10} className="shrink-0 text-[#0071c2]" />{service.salon?.city || "Unknown"}</span>
+                                                    <div className="flex items-center justify-between mt-2">
+                                                        <span className="text-xs text-gray-500">₹<span className="text-base font-bold text-[#1a1a1a]">{service.price}</span></span>
+                                                        <button className="bg-white border border-[#D4AF37] text-[#D4AF37] text-[10px] font-bold px-2 py-1 rounded-full hover:bg-[#D4AF37] hover:text-white transition-all" onClick={(e) => { e.stopPropagation(); service.salon?._id && navigate(`/shop/${service.salon._id}`); }}>
+                                                            Book Now
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="p-3 flex flex-col gap-1">
-                                                <h3 className="text-xs font-semibold text-gray-600 line-clamp-1">{service.salon?.name || "Salon"}</h3>
-                                                <span className="text-xs text-gray-400 flex items-center gap-1"><MapPin size={10} className="shrink-0 text-[#0071c2]" />{service.salon?.city || "Unknown"}</span>
-                                                <div className="flex items-center justify-between mt-2">
-                                                    <span className="text-xs text-gray-500">₹<span className="text-base font-bold text-[#1a1a1a]">{service.price}</span></span>
-                                                    <button className="bg-white border border-[#D4AF37] text-[#D4AF37] text-[10px] font-bold px-2 py-1 rounded-full hover:bg-[#D4AF37] hover:text-white transition-all" onClick={(e) => { e.stopPropagation(); service.salon?._id && navigate(`/shop/${service.salon._id}`); }}>
-                                                        Book Now
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
+                                        ))
+                                    )}
                                 </div>
                                 <button onClick={() => scroll(cheapSliderRef, 1)} className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition">
                                     <ChevronRight size={18} className="text-gray-600" />

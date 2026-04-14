@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, NavLink, useNavigate } from "react-router-dom";
-import { Star, MapPin, Users, Clock, ShieldCheck, Sparkles, Loader2, ArrowLeft, MessageSquare, Send, Trash2, Heart, Phone, Scissors, Award, ChevronLeft, ChevronRight, X, Images } from "lucide-react";
+import { Star, MapPin, Users, Clock, ShieldCheck, Sparkles, ArrowLeft, MessageSquare, Send, Trash2, Heart, Phone, Scissors, Award, ChevronLeft, ChevronRight, X, Images, Settings } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
 import axiosInstance from "../api/axiosConfig";
 import { SalonMap } from "../components/SalonMap";
+import { ShopDetailSkeleton } from "../components/skeletons/index.jsx";
 
 export function Shop() {
     const { user } = useAuth();
@@ -202,14 +203,8 @@ export function Shop() {
         }
     };
 
-    if (loading) {
-        return (
-            <div className="min-h-[60vh] flex flex-col items-center justify-center">
-                <Loader2 className="w-12 h-12 text-[#D4AF37] animate-spin mb-4" />
-                <p className="text-gray-500 animate-pulse">Loading salon details...</p>
-            </div>
-        );
-    }
+    if (loading) return <ShopDetailSkeleton />;
+
 
     if (error || !salon) {
         return (

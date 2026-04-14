@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axiosInstance from "../api/axiosConfig";
-import { Calendar, Clock, MapPin, Loader2, Scissors, CheckCircle2, Phone, User } from "lucide-react";
+import { Calendar, Clock, MapPin, Scissors, CheckCircle2, Phone, User } from "lucide-react";
+import { BookingCardSkeleton } from "../components/skeletons/index.jsx";
 
 
 export function MyBookingsPage() {
@@ -25,9 +26,17 @@ export function MyBookingsPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-[#fafafa]">
-                <Loader2 className="w-12 h-12 text-[#D4AF37] animate-spin" />
-            </div>
+            <main className="flex-1 pb-20">
+                <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-20 md:pt-24 pb-10">
+                    <div className="mb-6">
+                        <div className="skeleton h-9 w-48 rounded-lg" />
+                        <div className="skeleton h-4 w-72 rounded-full mt-3" />
+                    </div>
+                    <div className="grid gap-4">
+                        {[...Array(4)].map((_, i) => <BookingCardSkeleton key={i} />)}
+                    </div>
+                </div>
+            </main>
         );
     }
 

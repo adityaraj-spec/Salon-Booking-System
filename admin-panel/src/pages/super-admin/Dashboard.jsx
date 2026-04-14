@@ -10,7 +10,8 @@ import {
 } from 'recharts';
 import api from '../../services/api';
 import StatCard from '../../components/UI/StatCard';
-import LoadingSpinner from '../../components/UI/LoadingSpinner';
+import { DashboardSkeleton } from '../../components/UI/Skeleton';
+
 
 const STATUS_BADGE = {
   pending:   'bg-amber-100 text-amber-700 font-bold uppercase tracking-widest',
@@ -36,7 +37,7 @@ export default function SuperAdminDashboard() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <LoadingSpinner text="Loading dashboard..." />;
+  if (loading) return <DashboardSkeleton />;
 
   if (error) {
     return (

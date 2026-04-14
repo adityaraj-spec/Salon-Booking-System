@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
+import { ReportSkeleton } from '../../components/UI/Skeleton';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer
@@ -11,20 +12,27 @@ export default function MyReports() {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [loading, setLoading] = useState(false);
+  const [initLoading, setInitLoading] = useState(true);
 
-  const fetch = async () => {
-    setLoading(true);
+  const fetch = async (isInitial = false) => {
+    if (isInitial) setInitLoading(true);
+    else setLoading(true);
     try {
       const r = await api.get('/owner/reports', { params: { from, to } });
       setRevenue(r.data.data.revenue || []);
     } catch { toast.error('Failed to load reports'); }
-    finally { setLoading(false); }
+    finally { 
+      setLoading(false); 
+      setInitLoading(false);
+    }
   };
 
-  useEffect(() => { fetch(); }, []);
+  useEffect(() => { fetch(true); }, []);
 
   const totalRevenue = revenue.reduce((sum, r) => sum + (r.revenue || 0), 0);
   const totalBookings = revenue.reduce((sum, r) => sum + (r.count || 0), 0);
+
+  if (initLoading) return <ReportSkeleton />;
 
   return (
     <div className="space-y-6">

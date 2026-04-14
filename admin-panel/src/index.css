@@ -40,3 +40,17 @@ button, a, select, [role="button"], input[type="submit"], input[type="button"], 
 ::-webkit-scrollbar-track { @apply bg-gray-100; }
 ::-webkit-scrollbar-thumb { @apply bg-[#D4AF37] opacity-60 rounded-full; }
 ::-webkit-scrollbar-thumb:hover { @apply bg-[#B8962E]; }
+
+/* ── Skeleton Loading System ── */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f5f5f5 25%, #e0e0e0 50%, #f5f5f5 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: 8px;
+}
+
