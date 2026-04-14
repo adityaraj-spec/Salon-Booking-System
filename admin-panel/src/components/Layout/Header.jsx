@@ -39,7 +39,7 @@ export default function Header({ toggleSidebar }) {
         
         <div>
           <h1 className="text-lg md:text-xl font-serif font-black text-[#1a1a1a] leading-tight">{title}</h1>
-          <p className="hidden md:block text-[11px] font-bold text-[#D4AF37] uppercase tracking-widest mt-1">
+          <p className="hidden md:block text-[11px] font-bold text-[#D4AF37] mt-1">
             {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
         </div>
@@ -51,10 +51,10 @@ export default function Header({ toggleSidebar }) {
         </button>
         <div className="w-px h-6 bg-gray-200" />
         <div className="flex flex-col items-end">
-          <span className="text-[9px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none">
+          <span className="text-[9px] md:text-[10px] text-gray-400 font-bold leading-none">
             {import.meta.env.VITE_APP_NAME || "SalonNow"}
           </span>
-          <span className="text-[8px] md:text-[9px] text-[#D4AF37] font-black uppercase tracking-[0.2em] mt-1">
+          <span className="text-[8px] md:text-[9px] text-[#D4AF37] font-black mt-1">
             {formatRole(user?.role)}
           </span>
         </div>

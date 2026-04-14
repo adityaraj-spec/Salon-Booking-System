@@ -40,15 +40,15 @@ export default function OwnerDashboard() {
         <div className="bg-[#1a1a1a] rounded-[32px] p-8 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-2xl shadow-black/10 border border-[#D4AF37]/10 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-[#D4AF37] opacity-[0.03] rounded-full blur-3xl -mr-32 -mt-32"></div>
           <div className="relative z-10">
-            <p className="text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.2em] mb-2">Authenticated Salon</p>
+            <p className="text-[#D4AF37] text-xs font-bold mb-2">Authenticated Salon</p>
             <h2 className="text-3xl font-serif font-black">{salon.name}</h2>
-            <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-2 flex items-center gap-2">
+            <p className="text-gray-400 text-xs font-medium mt-2 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
               {salon.city}{salon.state ? `, ${salon.state}` : ''}
             </p>
           </div>
           <button onClick={() => navigate('/owner/salon')}
-            className="relative z-10 flex items-center gap-3 bg-[#D4AF37] hover:bg-[#B8962E] text-white px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-xl shadow-[#D4AF37]/20 hover:scale-[1.02]">
+            className="relative z-10 flex items-center gap-3 bg-[#D4AF37] hover:bg-[#B8962E] text-white px-8 py-4 rounded-full text-xs font-bold transition-all shadow-xl shadow-[#D4AF37]/20 hover:scale-[1.02]">
             Salon Settings <ArrowRight size={14} />
           </button>
         </div>
@@ -89,7 +89,7 @@ export default function OwnerDashboard() {
               Recent Bookings
               <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
             </h3>
-            <button onClick={() => navigate('/owner/bookings')} className="text-[10px] text-[#D4AF37] font-black uppercase tracking-widest flex items-center gap-1 hover:text-[#B8962E] transition-colors">
+            <button onClick={() => navigate('/owner/bookings')} className="text-xs text-[#D4AF37] font-bold flex items-center gap-1 hover:text-[#B8962E] transition-colors">
               View all <ArrowRight size={12} />
             </button>
           </div>
@@ -101,7 +101,7 @@ export default function OwnerDashboard() {
                   <p className="text-sm font-semibold text-gray-800">{b.customer?.fullName || 'Guest'}</p>
                   <p className="text-xs text-gray-400">{b.date} {b.time ? `@ ${b.time}` : ''}</p>
                 </div>
-                <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${STATUS_BADGE[b.status]}`}>
+                <span className={`text-[10px] font-bold px-2 py-1 rounded-full capitalize ${STATUS_BADGE[b.status]}`}>
                   {b.status}
                 </span>
               </div>
@@ -128,7 +128,7 @@ export default function OwnerDashboard() {
               <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-[#D4AF37] shadow-sm group-hover:bg-[#1a1a1a] transition-all">
                 <Icon size={20} />
               </div>
-              <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] group-hover:text-[#1a1a1a]">{label}</span>
+              <span className="text-xs font-bold text-gray-500 group-hover:text-[#1a1a1a]">{label}</span>
             </button>
           ))}
         </div>

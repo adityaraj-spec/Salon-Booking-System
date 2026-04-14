@@ -189,7 +189,7 @@ export function Shops() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="shrink-0 bg-[#1A1A1A] text-white p-2.5 md:px-6 md:py-3 rounded-full font-bold uppercase text-[10px] tracking-widest hover:bg-black active:scale-95 transition-all disabled:opacity-70 flex items-center justify-center gap-2"
+                                className="shrink-0 bg-[#1A1A1A] text-white p-2.5 md:px-6 md:py-3 rounded-full font-bold text-xs hover:bg-black active:scale-95 transition-all disabled:opacity-70 flex items-center justify-center gap-2"
                             >
                                 {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : (
                                     <>
@@ -253,7 +253,7 @@ export function Shops() {
                                 <div className="px-6 pt-6 pb-4 flex items-center justify-between border-b border-gray-50">
                                     <div>
                                         <h2 className="text-xl font-serif font-bold text-gray-900">Discovery Settings</h2>
-                                        <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-1">Refine your search</p>
+                                        <p className="text-gray-400 text-xs font-bold mt-1">Refine your search</p>
                                     </div>
                                     <button
                                         onClick={() => setIsSortModalOpen(false)}
@@ -268,13 +268,13 @@ export function Shops() {
                                     <div className="space-y-4">
                                         <div className="flex items-center gap-2 px-1">
                                             <MapPin size={14} className="text-[#D4AF37]" />
-                                            <h3 className="text-[11px] font-black text-gray-900 uppercase tracking-widest">Discovery Location</h3>
+                                            <h3 className="text-[11px] font-bold text-gray-900 leading-tight">Discovery Location</h3>
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-3">
                                             {/* State Selector */}
                                             <div className="relative" ref={stateListRef}>
-                                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest pl-1 mb-1 block">State</label>
+                                                <label className="text-[10px] font-bold text-gray-400 pl-1 mb-1 block">State</label>
                                                 <div className="relative">
                                                     <input
                                                         type="text"
@@ -322,7 +322,7 @@ export function Shops() {
 
                                             {/* City Selector */}
                                             <div className="relative" ref={cityListRef}>
-                                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest pl-1 mb-1 block">City</label>
+                                                <label className="text-[10px] font-bold text-gray-400 pl-1 mb-1 block">City</label>
                                                 <div className="relative">
                                                     <input
                                                         type="text"
@@ -373,7 +373,7 @@ export function Shops() {
                                     <div className="space-y-4 pt-4 border-t border-gray-50">
                                         <div className="flex items-center gap-2 px-1">
                                             <SlidersHorizontal size={14} className="text-[#D4AF37]" />
-                                            <h3 className="text-[11px] font-black text-gray-900 uppercase tracking-widest">Service Preferences</h3>
+                                            <h3 className="text-[11px] font-bold text-gray-900 leading-tight">Service Preferences</h3>
                                         </div>
 
                                         <div className="grid grid-cols-1 gap-2">
@@ -424,7 +424,7 @@ export function Shops() {
                                                 <span className="text-lg font-serif font-black text-white">{salons.length}</span>
                                             </div>
                                             <div>
-                                                <p className="text-[9px] text-[#D4AF37] font-black uppercase tracking-widest leading-none mb-0.5">Total</p>
+                                                <p className="text-[10px] text-[#D4AF37] font-bold leading-none mb-0.5">Total</p>
                                                 <p className="text-sm font-bold text-gray-900 leading-none">Salons found</p>
                                             </div>
                                         </div>
@@ -447,7 +447,7 @@ export function Shops() {
                                             setCityQuery(citySearch);
                                             setIsSortModalOpen(false);
                                         }}
-                                        className="w-full bg-[#1a1a1a] text-white py-4 rounded-2xl font-bold text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-black active:scale-[0.98] transition-all"
+                                        className="w-full bg-[#1a1a1a] text-white py-4 rounded-2xl font-bold text-xs shadow-xl hover:bg-black active:scale-[0.98] transition-all"
                                     >
                                         Apply Settings
                                     </button>

@@ -38,20 +38,20 @@ function StaffForm({ initial, onSave, onClose }) {
         {[['name','Name *',true,'text'],['role','Role / Title',false,'text'],
           ['experience','Experience (Years)',false,'number']].map(([k,label,req,type]) => (
           <div key={k}>
-            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 pl-1">{label}</label>
+            <label className="block text-[11px] font-bold text-gray-500 mb-2 pl-1">{label}</label>
             <input type={type} value={form[k]} onChange={e => set(k, e.target.value)} required={req === true}
               className="w-full px-4 py-3 border-none rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 bg-gray-50/50" />
           </div>
         ))}
       </div>
       <div>
-        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 pl-1">Skills (comma separated)</label>
+        <label className="block text-[11px] font-bold text-gray-500 mb-2 pl-1">Skills (comma separated)</label>
         <textarea value={form.skills} onChange={e => set('skills', e.target.value)} placeholder="e.g. Haircut, Coloring, Styling"
           rows={2} className="w-full px-4 py-3 border-none rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 bg-gray-50/50 resize-none" />
       </div>
       <div className="flex gap-4 pt-4">
-        <button type="button" onClick={onClose} className="flex-1 px-6 py-4 bg-gray-50 rounded-full text-[10px] font-black uppercase tracking-widest text-gray-600 hover:bg-gray-100 transition-all">Cancel</button>
-        <button type="submit" disabled={saving} className="flex-1 px-6 py-4 bg-[#1a1a1a] hover:bg-black text-white rounded-full text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-black/10 disabled:opacity-60">
+        <button type="button" onClick={onClose} className="flex-1 px-6 py-4 bg-gray-50 rounded-full text-xs font-bold text-gray-600 hover:bg-gray-100 transition-all">Cancel</button>
+        <button type="submit" disabled={saving} className="flex-1 px-6 py-4 bg-[#1a1a1a] hover:bg-black text-white rounded-full text-xs font-bold transition-all shadow-xl shadow-black/10 disabled:opacity-60">
           {saving ? 'Saving...' : (initial ? 'Update' : 'Add Staff')}
         </button>
       </div>
@@ -89,11 +89,11 @@ export default function MyStaff() {
 
   const columns = [
     { key: 'name', label: 'Name', render: (v) => <span className="font-bold text-[#1a1a1a]">{v}</span> },
-    { key: 'role', label: 'Role', render: (v) => <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{v || '—'}</span> },
+    { key: 'role', label: 'Role', render: (v) => <span className="text-xs font-medium text-gray-500">{v || '—'}</span> },
     { key: 'experience', label: 'Experience', render: (v) => v ? <span className="font-serif font-black text-[#1a1a1a]">{v} years</span> : '—' },
     { key: 'skills', label: 'Skills', render: (v) => (
       <div className="flex flex-wrap gap-1.5">
-        {(v || []).map((s, i) => <span key={i} className="bg-[#D4AF37]/10 text-[#D4AF37] text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest">{s}</span>)}
+        {(v || []).map((s, i) => <span key={i} className="bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-bold px-3 py-1 rounded-full">{s}</span>)}
       </div>
     )},
   ];
@@ -106,10 +106,10 @@ export default function MyStaff() {
             My Staff
             <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
           </h2>
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-2">Manage your salon's team members</p>
+          <p className="text-xs font-medium text-gray-500 mt-2">Manage your salon's team members</p>
         </div>
         <button onClick={() => setModal({ open: true, staff: null })}
-          className="flex items-center gap-3 bg-[#1a1a1a] hover:bg-black text-white px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-xl shadow-black/10 hover:scale-[1.02]">
+          className="flex items-center gap-3 bg-[#1a1a1a] hover:bg-black text-white px-8 py-4 rounded-full text-xs font-bold transition-all shadow-xl shadow-black/10 hover:scale-[1.02]">
           <Plus size={16} className="text-[#D4AF37]" /> Add Staff
         </button>
       </div>

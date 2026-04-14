@@ -6,6 +6,7 @@ import { SocketProvider } from "./context/SocketContext.jsx";
 import { NotificationProvider } from "./context/NotificationContext.jsx";
 import { UIProvider } from "./context/UIContext.jsx";
 import { Notification } from "./components/Notification.jsx";
+import ScrollToTop from "./components/ScrollToTop.jsx";
 import './App.css'
 
 // Lazy load pages to reduce initial bundle size
@@ -41,6 +42,7 @@ function App() {
           <SocketProvider>
             <Notification />
             <BrowserRouter>
+              <ScrollToTop />
               <Suspense fallback={<PageLoader />}>
                 <Routes>
                   {/* Layout Wrapper for standard pages */}

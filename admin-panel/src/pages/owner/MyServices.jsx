@@ -83,20 +83,20 @@ function ServiceForm({ initial, onSave, onClose }) {
         {[['name','Service Name *',true,'text'],['category','Category','false','text'],
           ['price','Price (₹)',false,'number'],['duration','Duration (mins)',false,'number']].map(([k,label,req,type]) => (
           <div key={k}>
-            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 pl-1">{label}</label>
+            <label className="block text-[11px] font-bold text-gray-500 mb-2 pl-1">{label}</label>
             <input type={type} value={form[k]} onChange={e => set(k, e.target.value)} required={req === true}
               className="w-full px-4 py-3 border-none rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 bg-gray-50/50" />
           </div>
         ))}
       </div>
       <div>
-        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 pl-1">Description</label>
+        <label className="block text-[11px] font-bold text-gray-500 mb-2 pl-1">Description</label>
         <textarea value={form.description} onChange={e => set('description', e.target.value)}
           rows={3} className="w-full px-4 py-3 border-none rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 bg-gray-50/50 resize-none" />
       </div>
       <div className="flex gap-4 pt-4">
-        <button type="button" onClick={onClose} className="flex-1 px-6 py-4 bg-gray-50 rounded-full text-[10px] font-black uppercase tracking-widest text-gray-600 hover:bg-gray-100 transition-all">Cancel</button>
-        <button type="submit" disabled={saving} className="flex-1 px-6 py-4 bg-[#1a1a1a] hover:bg-black text-white rounded-full text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-black/10 disabled:opacity-60">
+        <button type="button" onClick={onClose} className="flex-1 px-6 py-4 bg-gray-50 rounded-full text-xs font-bold text-gray-600 hover:bg-gray-100 transition-all">Cancel</button>
+        <button type="submit" disabled={saving} className="flex-1 px-6 py-4 bg-[#1a1a1a] hover:bg-black text-white rounded-full text-xs font-bold transition-all shadow-xl shadow-black/10 disabled:opacity-60">
           {saving ? 'Saving...' : (initial ? 'Update' : 'Create Service')}
         </button>
       </div>
@@ -148,12 +148,12 @@ export default function MyServices() {
   const columns = [
     { key: 'name', label: 'Service Name', render: (v) => <span className="font-bold text-[#1a1a1a]">{v}</span> },
     { key: 'category', label: 'Category', render: (v) => v
-      ? <span className="bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest">{v}</span>
+      ? <span className="bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-bold px-3 py-1 rounded-full">{v}</span>
       : '—' },
     { key: 'price', label: 'Price', render: (v, row) => (
       <InlinePrice value={v} onSave={(newPrice) => handlePriceSave(row._id, newPrice)} />
     )},
-    { key: 'duration', label: 'Duration', render: (v) => v ? <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{v} min</span> : '—' },
+    { key: 'duration', label: 'Duration', render: (v) => v ? <span className="text-xs font-medium text-gray-500">{v} min</span> : '—' },
   ];
 
   return (
@@ -164,10 +164,10 @@ export default function MyServices() {
             My Services
             <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
           </h2>
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-2">Double-click any price to edit inline. Changes reflect on main site immediately.</p>
+          <p className="text-xs font-medium text-gray-500 mt-2">Double-click any price to edit inline. Changes reflect on main site immediately.</p>
         </div>
         <button onClick={() => setModal({ open: true, service: null })}
-          className="flex items-center gap-3 bg-[#1a1a1a] hover:bg-black text-white px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-xl shadow-black/10 hover:scale-[1.02]">
+          className="flex items-center gap-3 bg-[#1a1a1a] hover:bg-black text-white px-8 py-4 rounded-full text-xs font-bold transition-all shadow-xl shadow-black/10 hover:scale-[1.02]">
           <Plus size={16} className="text-[#D4AF37]" /> Add Service
         </button>
       </div>

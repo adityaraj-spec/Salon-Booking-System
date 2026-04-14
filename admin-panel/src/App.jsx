@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AdminLayout from './components/Layout/AdminLayout';
 import LoadingSpinner from './components/UI/LoadingSpinner';
+import ScrollToTop from './components/UI/ScrollToTop';
 import Login from './pages/Login';
 
 // Super Admin Pages (Lazy Loaded)
@@ -105,6 +106,7 @@ function AppRoutes() {
 export default function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <AuthProvider>
         <Toaster position="top-right" toastOptions={{
           success: { style: { background: '#10b981', color: 'white' } },

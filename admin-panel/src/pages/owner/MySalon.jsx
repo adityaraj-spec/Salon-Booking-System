@@ -59,7 +59,7 @@ export default function MySalon() {
 
   const F = ({ label, k, type = 'text', required, placeholder, colSpan = '' }) => (
     <div className={colSpan}>
-      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 pl-1">{label}</label>
+      <label className="block text-[11px] font-bold text-gray-500 mb-2 pl-1">{label}</label>
       <input type={type} value={form[k] || ''} onChange={e => set(k, e.target.value)}
         required={required} placeholder={placeholder}
         className="w-full px-4 py-3 border-none rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 bg-gray-50/50 transition-all" />
@@ -73,13 +73,13 @@ export default function MySalon() {
           My Salon
           <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
         </h2>
-        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-2">Update your salon information. Changes are reflected on the main website immediately.</p>
+        <p className="text-xs font-medium text-gray-500 mt-2">Update your salon information. Changes are reflected on the main website immediately.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Basic Info */}
         <div className="bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm">
-          <h3 className="font-serif font-black text-[#1a1a1a] text-lg mb-6 flex items-center gap-2 uppercase tracking-tight">
+          <h3 className="font-serif font-black text-[#1a1a1a] text-lg mb-6 flex items-center gap-2 tracking-tight">
             Basic Information
             <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
           </h3>
@@ -92,12 +92,12 @@ export default function MySalon() {
             <F label="Total Seats" k="totalSeats" type="number" />
           </div>
           <div className="mt-6">
-            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 pl-1">Address</label>
+            <label className="block text-[11px] font-bold text-gray-500 mb-2 pl-1">Address</label>
             <input value={form.address || ''} onChange={e => set('address', e.target.value)}
               className="w-full px-4 py-3 border-none rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 bg-gray-50/50 transition-all" />
           </div>
           <div className="mt-6">
-            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 pl-1">Description</label>
+            <label className="block text-[11px] font-bold text-gray-500 mb-2 pl-1">Description</label>
             <textarea value={form.description || ''} onChange={e => set('description', e.target.value)}
               rows={4} placeholder="Describe your salon..."
               className="w-full px-4 py-3 border-none rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 bg-gray-50/50 resize-none transition-all" />
@@ -106,7 +106,7 @@ export default function MySalon() {
 
         {/* Hours */}
         <div className="bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm">
-          <h3 className="font-serif font-black text-[#1a1a1a] text-lg mb-6 flex items-center gap-2 uppercase tracking-tight">
+          <h3 className="font-serif font-black text-[#1a1a1a] text-lg mb-6 flex items-center gap-2 tracking-tight">
             Working Hours
             <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
           </h3>
@@ -118,7 +118,7 @@ export default function MySalon() {
 
         {/* Images */}
         <div className="bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm">
-          <h3 className="font-serif font-black text-[#1a1a1a] text-lg mb-6 flex items-center gap-2 uppercase tracking-tight">
+          <h3 className="font-serif font-black text-[#1a1a1a] text-lg mb-6 flex items-center gap-2 tracking-tight">
             Gallery Images
             <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
           </h3>
@@ -143,14 +143,14 @@ export default function MySalon() {
           )}
           <label className="flex items-center gap-3 cursor-pointer bg-gray-50/50 hover:bg-[#D4AF37]/5 border-2 border-dashed border-gray-100 hover:border-[#D4AF37]/30 rounded-[24px] px-8 py-6 transition-all w-fit group">
             <ImagePlus size={20} className="text-gray-400 group-hover:text-[#D4AF37] transition-colors" />
-            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest group-hover:text-[#1a1a1a] transition-colors">Upload New Photos</span>
+            <span className="text-xs font-bold text-gray-400 group-hover:text-[#1a1a1a] transition-colors">Upload New Photos</span>
             <input type="file" accept="image/*" multiple onChange={handleImages} className="hidden" />
           </label>
         </div>
 
         {/* Submit */}
         <button type="submit" disabled={saving}
-          className="flex items-center gap-3 bg-[#1a1a1a] hover:bg-black text-white px-10 py-5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl shadow-black/10 transition-all disabled:opacity-60 hover:scale-[1.02]">
+          className="flex items-center gap-3 bg-[#1a1a1a] hover:bg-black text-white px-10 py-5 rounded-full text-xs font-bold shadow-2xl shadow-black/10 transition-all disabled:opacity-60 hover:scale-[1.02]">
           <Save size={18} className="text-[#D4AF37]" />
           {saving ? 'Saving Changes...' : 'Save Salon Details'}
         </button>

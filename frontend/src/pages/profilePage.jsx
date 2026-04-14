@@ -45,7 +45,7 @@ export function ProfilePage() {
                         {!isEditing && (
                             <button 
                                 onClick={() => setIsEditing(true)}
-                                className="absolute bottom-4 right-6 md:right-12 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-2 border border-white/20"
+                                className="absolute bottom-4 right-6 md:right-12 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border border-white/20"
                             >
                                 <Edit2 size={14} />
                                 Edit Profile
@@ -59,7 +59,7 @@ export function ProfilePage() {
                                 {isEditing ? (
                                     <div className="space-y-4 max-w-sm">
                                         <div>
-                                            <label className="text-[10px] text-gray-400 font-bold uppercase tracking-widest block mb-1">Full Name</label>
+                                            <label className="text-[10px] text-gray-400 font-bold block mb-1">Full Name</label>
                                             <input
                                                 type="text"
                                                 value={formData.fullName}
@@ -75,14 +75,14 @@ export function ProfilePage() {
                                     </>
                                 )}
                             </div>
-                            <span className="bg-[#f9f5e8] text-[#D4AF37] px-4 py-1 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-widest border border-[#D4AF37]/20">
+                            <span className="bg-[#f9f5e8] text-[#D4AF37] px-4 py-1 rounded-full text-[10px] md:text-xs font-bold border border-[#D4AF37]/20 capitalize">
                                 {user.role === 'unassigned' ? 'Not Selected' : user.role}
                             </span>
                         </div>
 
                         <div className="grid md:grid-cols-2 gap-8">
                             <div className="space-y-4">
-                                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 pb-2">Information</h3>
+                                <h3 className="text-sm font-bold text-gray-400 border-b border-gray-50 pb-2">Information</h3>
                                 
                                 <div className="flex items-center gap-4 group opacity-60">
                                     <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400">
@@ -119,7 +119,7 @@ export function ProfilePage() {
                                         <button 
                                             onClick={handleUpdate}
                                             disabled={loading}
-                                            className="bg-[#1a1a1a] text-white px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest flex items-center gap-2 hover:bg-black disabled:opacity-50 transition-all shadow-lg shadow-black/10"
+                                            className="bg-[#1a1a1a] text-white px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-black disabled:opacity-50 transition-all shadow-lg shadow-black/10"
                                         >
                                             {loading ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                                             Save Changes
@@ -129,7 +129,7 @@ export function ProfilePage() {
                                                 setIsEditing(false);
                                                 setFormData({ fullName: user.fullName || "", phonenumber: user.phonenumber || "" });
                                             }}
-                                            className="bg-gray-100 text-gray-500 px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest flex items-center gap-2 hover:bg-gray-200 transition-all font-sans"
+                                            className="bg-gray-100 text-gray-500 px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-gray-200 transition-all font-sans"
                                         >
                                             <X size={14} />
                                             Cancel
@@ -139,7 +139,7 @@ export function ProfilePage() {
                             </div>
 
                             <div className="space-y-4">
-                                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 pb-2">Account Security</h3>
+                                <h3 className="text-sm font-bold text-gray-400 border-b border-gray-50 pb-2">Account Security</h3>
                                 
                                 <div className="flex items-center gap-4 group">
                                     <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-[#1a1a1a] group-hover:text-white transition-all">

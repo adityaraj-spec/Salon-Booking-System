@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   LayoutDashboard, Store, Scissors, Calendar, Users, UserCheck,
-  BarChart2, Settings, LogOut, Scissors as ScissorsIcon, ChevronRight, X
+  BarChart2, Settings, LogOut, Scissors as ScissorsIcon, ChevronRight, X, Bell
 } from 'lucide-react';
 
 const SUPER_ADMIN_NAV = [
@@ -14,6 +14,7 @@ const SUPER_ADMIN_NAV = [
   { to: '/super-admin/owners', icon: UserCheck, label: 'Salon Owners' },
   { to: '/super-admin/reports', icon: BarChart2, label: 'Reports' },
   { to: '/super-admin/settings', icon: Settings, label: 'Settings' },
+  { to: '#', icon: Bell, label: 'Notifications' },
 ];
 
 const OWNER_NAV = [
@@ -23,6 +24,7 @@ const OWNER_NAV = [
   { to: '/owner/bookings', icon: Calendar, label: 'My Bookings' },
   { to: '/owner/staff', icon: Users, label: 'My Staff' },
   { to: '/owner/reports', icon: BarChart2, label: 'Reports' },
+  { to: '#', icon: Bell, label: 'Notifications' },
 ];
 
 export default function Sidebar({ role, isOpen, onClose }) {
@@ -32,7 +34,7 @@ export default function Sidebar({ role, isOpen, onClose }) {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/login');
+    navigate('/login', { replace: true });
   };
 
   return (
@@ -64,12 +66,15 @@ export default function Sidebar({ role, isOpen, onClose }) {
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         {navItems.map(({ to, icon: Icon, label }) => (
           <NavLink
-            key={to}
+            key={label}
             to={to}
-            onClick={onClose}
+            onClick={(e) => {
+              if (to === '#') e.preventDefault();
+              onClose();
+            }}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-3 rounded-2xl text-sm font-medium transition-all group ${
-                isActive
+                isActive && to !== '#'
                    ? 'bg-[#f9f5e8] text-[#1a1a1a] shadow-lg shadow-[#D4AF37]/10 border border-[#D4AF37]/20'
                   : 'text-gray-400 hover:bg-gray-800 hover:text-white'
               }`
@@ -90,14 +95,14 @@ export default function Sidebar({ role, isOpen, onClose }) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-white text-xs font-semibold truncate">{user?.fullName}</p>
-            <p className="text-gray-400 text-[10px] truncate uppercase tracking-widest font-bold mt-0.5">
+            <p className="text-gray-400 text-[10px] truncate font-bold mt-0.5">
               {user?.role?.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
             </p>
           </div>
         </div>
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all font-bold text-[10px] uppercase tracking-widest"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all font-bold text-xs"
         >
           <LogOut size={16} />
           Logout

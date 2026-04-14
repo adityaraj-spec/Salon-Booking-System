@@ -35,7 +35,7 @@ export function LoginPage() {
                 login(response.data.data.user);
                 showNotification("Welcome back! Login successful.", "success");
                 // Redirect directly to home after login as per user request
-                navigate("/home");
+                navigate("/home", { replace: true });
             } else {
                 const msg = response.data.message || "Login failed";
                 setError(msg);

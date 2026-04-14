@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useLocation, NavLink } from 'react-router-dom';
-import { Scissors, LogOut, ChevronDown, User, Calendar, Settings, Menu, X, Bell, CheckCircle2, Clock, LayoutDashboard, Heart } from "lucide-react";
+import { Scissors, LogOut, ChevronDown, User, Calendar, Settings, Menu, X, Bell, CheckCircle2, Clock, LayoutDashboard, Heart, Store } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
 import { useUI } from "../context/UIContext";
@@ -166,18 +166,18 @@ export function NavBar() {
 
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center gap-6">
-                        <NavLink to="/home" className={`${isTransparent ? (isDark ? 'text-white' : 'text-gray-900') : 'text-[#1a1a1a]'} font-medium text-sm tracking-widest uppercase hover:text-[#D4AF37] transition-colors duration-1000`}>
+                        <NavLink to="/home" className={`${isTransparent ? (isDark ? 'text-white' : 'text-gray-900') : 'text-[#1a1a1a]'} font-semibold text-sm hover:text-[#D4AF37] transition-colors duration-1000`}>
                             Discover
                         </NavLink>
 
                         {(user?.role === "salonOwner" || user?.role === "super_admin") && (
                             <div className="flex items-center gap-6">
                                 {!hasSalon && (
-                                    <NavLink to="/create-salon" className="bg-[#1a1a1a] hover:bg-black text-white px-5 py-2 rounded-full font-medium text-xs tracking-widest uppercase transition-colors flex items-center gap-2">
-                                        Add Your Shop
+                                    <NavLink to="/create-salon" className="bg-[#1a1a1a] hover:bg-black text-white px-5 py-2 rounded-full font-bold text-xs transition-colors flex items-center gap-2">
+                                        Add your shop
                                     </NavLink>
                                 )}
-                                <NavLink to="/salon/dashboard" className="text-[#1a1a1a] font-medium text-sm tracking-widest uppercase hover:text-[#D4AF37] transition-colors">
+                                <NavLink to="/salon/dashboard" className="text-[#1a1a1a] font-semibold text-sm hover:text-[#D4AF37] transition-colors">
                                     Requests
                                 </NavLink>
 
@@ -207,7 +207,7 @@ export function NavBar() {
                                                 {unreadCount > 0 && (
                                                     <button
                                                         onClick={markAllAsRead}
-                                                        className="text-[10px] uppercase font-black tracking-widest text-[#D4AF37] hover:text-black transition-colors"
+                                                        className="text-[10px] font-bold text-[#D4AF37] hover:text-black transition-colors"
                                                     >
                                                         Mark all as read
                                                     </button>
@@ -250,7 +250,7 @@ export function NavBar() {
                                             </div>
                                             {notifications.length > 0 && (
                                                 <div className="p-3 bg-gray-50/50 border-t border-gray-50 text-center">
-                                                    <button className="text-[10px] font-bold text-gray-400 hover:text-gray-900 uppercase tracking-widest">
+                                                    <button className="text-[10px] font-bold text-gray-400 hover:text-gray-900">
                                                         View all activity
                                                     </button>
                                                 </div>
@@ -271,7 +271,7 @@ export function NavBar() {
                                             <p className="text-xs font-bold text-gray-900 leading-none mb-1 capitalize truncate max-w-[100px]">
                                                 {user.fullName?.split(' ')[0] || "User"}
                                             </p>
-                                            <p className="text-[10px] font-medium text-[#D4AF37] uppercase tracking-[0.2em] leading-none mt-1">
+                                            <p className="text-[10px] font-bold text-[#D4AF37] leading-none mt-1">
                                                 {user.role?.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                                             </p>
                                         </div>
@@ -281,7 +281,7 @@ export function NavBar() {
                                     {isMenuOpen && (
                                         <div className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
                                             <div className="px-4 py-3 border-b border-gray-50 mb-1">
-                                                <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Account</p>
+                                                <p className="text-xs text-gray-400 font-bold">Account</p>
                                                 <p className="text-sm font-bold text-gray-800 truncate">{user.fullName}</p>
                                             </div>
 
@@ -367,20 +367,76 @@ export function NavBar() {
                             </div>
                         ) : (
                             <div className="flex items-center gap-4 ml-2">
-                                <NavLink to="/login" className={`${isTransparent ? (isDark ? 'text-white hover:text-white/80' : 'text-gray-800 hover:text-black') : 'text-gray-800 hover:text-[#e65c00]'} font-medium text-sm tracking-widest uppercase transition-colors duration-1000`}>
+                                <NavLink to="/login" className={`${isTransparent ? (isDark ? 'text-white hover:text-white/80' : 'text-gray-800 hover:text-black') : 'text-gray-800 hover:text-[#e65c00]'} font-bold text-sm transition-colors duration-1000`}>
                                     Login
                                 </NavLink>
-                                <NavLink to="/signup" className={`${isTransparent ? (isDark ? 'bg-white text-black hover:bg-gray-100' : 'bg-gray-900 text-white hover:bg-black') : 'bg-[#1a1a1a] text-white hover:bg-black'} px-6 py-2.5 rounded-full font-medium text-sm tracking-widest uppercase transition-colors duration-1000 shadow-md`}>
-                                    Sign Up
+                                <NavLink to="/signup" className={`${isTransparent ? (isDark ? 'bg-white text-black hover:bg-gray-100' : 'bg-gray-900 text-white hover:bg-black') : 'bg-[#1a1a1a] text-white hover:bg-black'} px-6 py-2.5 rounded-full font-bold text-sm transition-colors duration-1000 shadow-md`}>
+                                    Sign up
                                 </NavLink>
                             </div>
                         )}
                     </div>
 
                     {/* Mobile Menu Button */}
-                    <div className="md:hidden flex items-center gap-4">
+                    <div className="md:hidden flex items-center gap-3">
                         {user && (
-                            <NavLink to="/profile" className="w-8 h-8 rounded-full bg-[#1a1a1a] flex items-center justify-center text-white font-bold text-xs border border-[#D4AF37]">
+                            <div className="relative" ref={notificationsRef}>
+                                <button
+                                    onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                                    className="p-1.5 text-gray-500 hover:text-[#D4AF37] transition-all relative"
+                                >
+                                    <Bell size={22} />
+                                    {unreadCount > 0 && (
+                                        <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-red-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center border-2 border-white ring-1 ring-red-500/20">
+                                            {unreadCount}
+                                        </span>
+                                    )}
+                                </button>
+                                
+                                {isNotificationsOpen && (
+                                    <div className="fixed inset-x-4 top-20 bg-white rounded-[32px] shadow-2xl border border-gray-100 overflow-hidden z-[130] animate-in fade-in slide-in-from-top-2 duration-200">
+                                        <div className="p-4 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
+                                            <h3 className="font-bold text-gray-900 text-sm">Notifications</h3>
+                                            {unreadCount > 0 && (
+                                                <button onClick={markAllAsRead} className="text-[10px] font-bold text-[#D4AF37]">
+                                                    Mark all as read
+                                                </button>
+                                            )}
+                                        </div>
+                                        <div className="max-h-[350px] overflow-y-auto">
+                                            {notifications.length > 0 ? (
+                                                <div className="divide-y divide-gray-50">
+                                                    {notifications.map((notif) => (
+                                                        <div
+                                                            key={notif._id}
+                                                            onClick={() => {
+                                                                !notif.isRead && markAsRead(notif._id);
+                                                                setIsNotificationsOpen(false);
+                                                            }}
+                                                            className={`p-4 active:bg-gray-50 transition-colors flex gap-3 ${!notif.isRead ? 'bg-[#D4AF37]/5' : ''}`}
+                                                        >
+                                                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${notif.type.includes('confirmed') ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-50 text-gray-500'}`}>
+                                                                <Clock size={16} />
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <p className={`text-xs ${!notif.isRead ? 'font-bold text-gray-900' : 'text-gray-600'}`}>{notif.title}</p>
+                                                                <p className="text-[10px] text-gray-500 line-clamp-2 mt-0.5">{notif.message}</p>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="py-10 text-center text-gray-400">
+                                                    <p className="text-xs font-medium">No notifications yet</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                        {user && (
+                            <NavLink to="/profile" className="w-8 h-8 rounded-full bg-[#1a1a1a] flex items-center justify-center text-white font-bold text-xs border border-[#D4AF37]/30">
                                 {user.fullName?.charAt(0).toUpperCase()}
                             </NavLink>
                         )}
@@ -430,20 +486,22 @@ export function NavBar() {
                             }`}
                         onClick={() => setIsMobileMenuOpen(false)}
                     >
+                        <Menu size={18} className="shrink-0" />
                         Discover
                     </NavLink>
 
                     {(user?.role === "salonOwner" || user?.role === "super_admin") && (
                         <>
                             {!hasSalon && (
-                                <NavLink
-                                    to="/create-salon"
-                                    className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all ${isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37]"
-                                        }`}
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                >
-                                    Add Your Shop
-                                </NavLink>
+                                    <NavLink
+                                        to="/create-salon"
+                                        className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all ${isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37]"
+                                            }`}
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                    >
+                                        <Store size={18} className="shrink-0" />
+                                        Add your shop
+                                    </NavLink>
                             )}
                             <NavLink
                                 to="/salon/dashboard"
@@ -451,6 +509,7 @@ export function NavBar() {
                                     }`}
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
+                                <Calendar size={18} className="shrink-0" />
                                 Requests
                             </NavLink>
                             <button
@@ -461,7 +520,8 @@ export function NavBar() {
                                 }}
                                 className="w-full flex items-center justify-start gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
                             >
-                                Admin Dashboard
+                                <LayoutDashboard size={18} className="shrink-0" />
+                                Admin dashboard
                             </button>
                             <NavLink
                                 to="/salon/manage"
@@ -483,7 +543,8 @@ export function NavBar() {
                                     }`}
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
-                                My Bookings
+                                <Clock size={18} className="shrink-0" />
+                                My bookings
                             </NavLink>
 
                             <NavLink
@@ -492,7 +553,8 @@ export function NavBar() {
                                     }`}
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
-                                My Favorites
+                                <Heart size={18} className="shrink-0" />
+                                My favorites
                             </NavLink>
                         </>
                     )}
@@ -504,6 +566,7 @@ export function NavBar() {
                                 className="flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
+                                <User size={18} className="shrink-0" />
                                 Profile
                             </NavLink>
                             <button
@@ -521,14 +584,14 @@ export function NavBar() {
                         <div className="space-y-3 px-2 pt-2">
                             <NavLink
                                 to="/login"
-                                className="block w-full text-center border-2 border-gray-100 py-3.5 rounded-2xl font-bold uppercase tracking-widest text-xs hover:border-[#1a1a1a] transition-all"
+                                className="block w-full text-center border-2 border-gray-100 py-3.5 rounded-2xl font-bold text-xs hover:border-[#1a1a1a] transition-all"
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
                                 Login
                             </NavLink>
                             <NavLink
                                 to="/signup"
-                                className="block w-full text-center bg-[#1a1a1a] text-white py-3.5 rounded-2xl font-bold uppercase tracking-widest text-xs shadow-lg shadow-black/10 active:scale-[0.98] transition-all"
+                                className="block w-full text-center bg-[#1a1a1a] text-white py-3.5 rounded-2xl font-bold text-xs shadow-lg shadow-black/10 active:scale-[0.98] transition-all"
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
                                 Sign Up
