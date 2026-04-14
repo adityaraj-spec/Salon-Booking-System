@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, Star, MapPin, Phone, Heart, ArrowUpDown, ChevronLeft, ChevronRight, SlidersHorizontal, X, Map } from 'lucide-react';
+import { Search, Star, MapPin, Phone, Heart, ArrowUpDown, ChevronLeft, ChevronRight, SlidersHorizontal, X, Map, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { State, City } from 'country-state-city';
 import axiosInstance from '../api/axiosConfig';
@@ -122,7 +122,10 @@ export function Shops() {
                         setUserFavorites(favoriteIds);
                     }
                 } catch (error) {
-                    // silent
+                    if (error.response?.status === 401) {
+                        // Logout if session expired to keep UI in sync
+                        showNotification("Session expired. Please login again.", "info");
+                    }
                 }
             } else {
                 setUserFavorites([]);
@@ -131,15 +134,17 @@ export function Shops() {
         fetchUserFavorites();
     }, [user]);
 
-    // Reset all filters on mount (Hard Refresh)
+    // Keep local query state in sync with URL
     useEffect(() => {
-        setSearchParams({}, { replace: true });
-        setCityQuery("");
-        setStateSearch("");
-        setCitySearch("");
-        setPreferTopRated(false);
-        setSortBy("rating");
-    }, []);
+        setCityQuery(cityParam || "");
+        setStateSearch(stateParam || "");
+        setCitySearch(cityParam || "");
+        // Only reset preferences if no params exist (indicates a fresh discovery click)
+        if (!cityParam && !stateParam) {
+            setPreferTopRated(false);
+            setSortBy("rating");
+        }
+    }, [cityParam, stateParam]);
 
     // Reset to first page when search filters change
     useEffect(() => {
@@ -154,9 +159,8 @@ export function Shops() {
     const handleSearch = (e) => {
         e.preventDefault();
         setSearchParams(prev => {
-            const newParams = new URLSearchParams(prev);
+            const newParams = new URLSearchParams(); // Fresh params to avoid mixing
             if (cityQuery) newParams.set("city", cityQuery);
-            else newParams.delete("city");
             return newParams;
         });
     };
