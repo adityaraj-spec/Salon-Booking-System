@@ -126,7 +126,7 @@ const createSalon = asyncHandler(async (req, res) => {
     // Trigger notification email to the salon owner
     const ownerDetails = await User.findById(owner);
     if (ownerDetails) {
-        await sendShopAddedEmail(ownerDetails.email, ownerDetails.fullName, salon.name);
+        sendShopAddedEmail(ownerDetails.email, ownerDetails.fullName, salon.name);
     }
 
     return res.status(201).json(new ApiResponse(201, salon, "Salon created successfully"));
@@ -283,7 +283,7 @@ const createOwner = asyncHandler(async (req, res) => {
 
     // Trigger welcome email to the new owner
     if (created) {
-        await sendWelcomeEmail(created.email, created.fullName);
+        sendWelcomeEmail(created.email, created.fullName);
     }
 
     return res.status(201).json(new ApiResponse(201, created, "Owner created successfully"));
