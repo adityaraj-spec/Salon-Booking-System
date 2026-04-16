@@ -8,6 +8,7 @@ import { UIProvider } from "./context/UIContext.jsx";
 import { Notification } from "./components/Notification.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import RoleProtectedRoute from "./components/RoleProtectedRoute.jsx";
+import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import './App.css'
 
 // Lazy load pages to reduce initial bundle size
@@ -45,29 +46,31 @@ function App() {
             <BrowserRouter>
               <ScrollToTop />
               <Suspense fallback={<PageLoader />}>
-                <Routes>
-                  {/* Layout Wrapper for standard pages */}
-                  <Route element={<MainLayout />}>
-                    <Route path="role-selection" element={<RoleSelectionPage />} />
-                    
-                    <Route element={<RoleProtectedRoute />}>
+                <ErrorBoundary>
+                  <Routes>
+                    {/* Layout Wrapper for standard pages */}
+                    <Route element={<MainLayout />}>
                       <Route index element={<LandingPage />} />
-                      <Route path="home" element={<Shops />} />
-                      <Route path="create-salon" element={<CreateSalonPage />} />
-                      <Route path="shop/:id" element={<Shop />} />
-                      <Route path="booking/:id" element={<BookingPage />} />
-                      <Route path="profile" element={<ProfilePage />} />
-                      <Route path="bookings" element={<MyBookingsPage />} />
-                      <Route path="salon/dashboard" element={<SalonBookingsPage />} />
-                      <Route path="salon/manage" element={<SalonManagementPage />} />
-                      <Route path="favorites" element={<FavoritesPage />} />
+                      <Route path="role-selection" element={<RoleSelectionPage />} />
+                      
+                      <Route element={<RoleProtectedRoute />}>
+                        <Route path="home" element={<Shops />} />
+                        <Route path="create-salon" element={<CreateSalonPage />} />
+                        <Route path="shop/:id" element={<Shop />} />
+                        <Route path="booking/:id" element={<BookingPage />} />
+                        <Route path="profile" element={<ProfilePage />} />
+                        <Route path="bookings" element={<MyBookingsPage />} />
+                        <Route path="salon/dashboard" element={<SalonBookingsPage />} />
+                        <Route path="salon/manage" element={<SalonManagementPage />} />
+                        <Route path="favorites" element={<FavoritesPage />} />
+                      </Route>
                     </Route>
-                  </Route>
-                  
-                  {/* Auth pages (no layout) */}
-                  <Route path="login" element={<LoginPage />} />
-                  <Route path="signup" element={<SignUpPage />} />
-                </Routes>
+                    
+                    {/* Auth pages (no layout) */}
+                    <Route path="login" element={<LoginPage />} />
+                    <Route path="signup" element={<SignUpPage />} />
+                  </Routes>
+                </ErrorBoundary>
               </Suspense>
             </BrowserRouter>
           </SocketProvider>

@@ -65,13 +65,23 @@ const registerUser = asyncHandler(async (req, res) => {
         sameSite: isProduction ? "none" : "lax"
     }
 
+    const accessTokenOptions = {
+        ...options,
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    }
+
+    const refreshTokenOptions = {
+        ...options,
+        maxAge: 15 * 24 * 60 * 60 * 1000 // 15 days
+    }
+
     // Trigger welcome email silently
     sendWelcomeEmail(createdUser.email, createdUser.fullName);
 
     return res
         .status(201)
-        .cookie("accessToken", accessToken, options)
-        .cookie("refreshToken", refreshToken, options)
+        .cookie("accessToken", accessToken, accessTokenOptions)
+        .cookie("refreshToken", refreshToken, refreshTokenOptions)
         .json(
             new ApiResponse(200, { user: createdUser, accessToken, refreshToken }, "User registered Successfully")
         )
@@ -106,13 +116,23 @@ const loginUser = asyncHandler(async (req, res) => {
         sameSite: isProduction ? "none" : "lax"
     }
 
+    const accessTokenOptions = {
+        ...options,
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    }
+
+    const refreshTokenOptions = {
+        ...options,
+        maxAge: 15 * 24 * 60 * 60 * 1000 // 15 days
+    }
+
     // Trigger login email silently
     sendLoginEmail(loggedInUSer.email, loggedInUSer.fullName);
 
     return res
         .status(200)
-        .cookie("accessToken", accessToken, options)
-        .cookie("refreshToken", refreshToken, options)
+        .cookie("accessToken", accessToken, accessTokenOptions)
+        .cookie("refreshToken", refreshToken, refreshTokenOptions)
         .json(
             new ApiResponse(
                 200,
