@@ -82,7 +82,7 @@ const updateOwnerSalon = asyncHandler(async (req, res) => {
     const newImageUrls = [];
     for (const path of imagesLocalPaths) {
         const uploaded = await uploadOnCloudinary(path);
-        if (uploaded) newImageUrls.push(uploaded.url);
+        if (uploaded) newImageUrls.push(uploaded.secure_url);
     }
 
     const updates = {};

@@ -26,7 +26,7 @@ const registerSalon = asyncHandler(async (req, res) => {
         for (const path of imagesLocalPaths) {
             const uploaded = await uploadOnCloudinary(path);
             if (uploaded) {
-                imageUrls.push(uploaded.url);
+                imageUrls.push(uploaded.secure_url);
             }
         }
     }
@@ -266,7 +266,7 @@ const updateSalonDetails = asyncHandler(async (req, res) => {
         for (const path of imagesLocalPaths) {
             const uploaded = await uploadOnCloudinary(path);
             if (uploaded) {
-                imageUrls.push(uploaded.url);
+                imageUrls.push(uploaded.secure_url);
             }
         }
     }

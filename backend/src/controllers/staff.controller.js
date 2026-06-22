@@ -29,7 +29,7 @@ const addStaff = asyncHandler(async (req, res) => {
     if (req.file) {
         const uploadedFile = await uploadOnCloudinary(req.file.path);
         if (uploadedFile) {
-            profilePicUrl = uploadedFile.url;
+            profilePicUrl = uploadedFile.secure_url;
         }
     }
 
@@ -107,7 +107,7 @@ const updateStaff = asyncHandler(async (req, res) => {
     if (req.file) {
         const uploadedFile = await uploadOnCloudinary(req.file.path);
         if (uploadedFile) {
-            profilePicUrl = uploadedFile.url;
+            profilePicUrl = uploadedFile.secure_url;
         }
     }
 

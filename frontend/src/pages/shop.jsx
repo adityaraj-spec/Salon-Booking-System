@@ -241,7 +241,7 @@ export function Shop() {
                 {/* Owner Magic Button: Only visible if isOwner */}
                 {user?._id === salon?.owner && (
                     <NavLink 
-                        to="/salon-management" 
+                        to="/salon/manage" 
                         className="inline-flex items-center gap-2.5 px-6 py-2.5 bg-[#1a1a1a] text-white rounded-full text-xs font-black uppercase tracking-widest hover:bg-black transition-all shadow-xl shadow-black/10 hover:scale-105"
                     >
                         <Settings size={14} className="text-[#D4AF37]" />

@@ -111,7 +111,7 @@ const createSalon = asyncHandler(async (req, res) => {
     const imageUrls = [];
     for (const path of imagesLocalPaths) {
         const uploaded = await uploadOnCloudinary(path);
-        if (uploaded) imageUrls.push(uploaded.url);
+        if (uploaded) imageUrls.push(uploaded.secure_url);
     }
 
     const salon = await Salon.create({

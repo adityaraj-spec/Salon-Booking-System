@@ -28,6 +28,13 @@ app.use(express.static("public"));
 app.use(cookieParser());
 
 // routes declaration
+app.get("/", (req, res) => {
+    res.status(200).json({
+        success: true,
+        message: "Salon Booking System API is running successfully."
+    });
+});
+
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/salons", salonRouter);
 app.use("/api/v1/bookings", bookingRouter);
