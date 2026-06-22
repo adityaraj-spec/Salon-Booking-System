@@ -20,7 +20,7 @@ export function VerifyEmailPage() {
     const [resendLoading, setResendLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
-    const [cooldown, setCooldown] = useState(0); // seconds remaining on resend cooldown
+    const [cooldown, setCooldown] = useState(60); // Start 1-minute timer immediately
 
     const inputRefs = useRef([]);
 
@@ -45,6 +45,19 @@ export function VerifyEmailPage() {
         }, 1000);
         return () => clearInterval(timer);
     }, [cooldown]);
+
+    // Format seconds as MM:SS
+    const formatTime = (secs) => {
+        const m = Math.floor(secs / 60).toString().padStart(2, "0");
+        const s = (secs % 60).toString().padStart(2, "0");
+        return `${m}:${s}`;
+    };
+
+    // SVG circular progress (radius 20, circumference ~125.6)
+    const RADIUS = 20;
+    const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+    const progress = cooldown / 60; // 1.0 = full, 0.0 = empty
+    const dashOffset = CIRCUMFERENCE * (1 - progress);
 
     const handleDigitChange = (index, value) => {
         // Only allow digits
@@ -126,7 +139,7 @@ export function VerifyEmailPage() {
         try {
             await axiosInstance.post("/users/resend-verification", { email });
             showNotification("A new verification code has been sent to your email.", "success");
-            setCooldown(60); // 60 second cooldown
+            setCooldown(60); // reset to 1 minute
             setCode(["", "", "", ""]);
             inputRefs.current[0]?.focus();
         } catch (err) {
@@ -251,27 +264,56 @@ export function VerifyEmailPage() {
 
                             {/* Resend Code */}
                             <div className="text-center">
-                                <p className="text-sm text-gray-500 mb-2">Didn't receive the code?</p>
-                                <button
-                                    type="button"
-                                    onClick={handleResend}
-                                    disabled={cooldown > 0 || resendLoading}
-                                    className="inline-flex items-center gap-2 text-sm font-medium 
-                                               text-[#D4AF37] hover:text-[#b8942e] 
-                                               disabled:text-gray-400 disabled:cursor-not-allowed
-                                               transition-colors"
-                                >
-                                    <RefreshCw
-                                        size={14}
-                                        className={resendLoading ? "animate-spin" : ""}
-                                    />
-                                    {cooldown > 0
-                                        ? `Resend in ${cooldown}s`
-                                        : resendLoading
-                                        ? "Sending..."
-                                        : "Resend Verification Code"
-                                    }
-                                </button>
+                                <p className="text-sm text-gray-500 mb-3">Didn't receive the code?</p>
+
+                                {cooldown > 0 ? (
+                                    /* Circular countdown timer */
+                                    <div className="flex flex-col items-center gap-2">
+                                        <div className="relative w-14 h-14">
+                                            <svg className="w-14 h-14 -rotate-90" viewBox="0 0 48 48">
+                                                {/* Track */}
+                                                <circle
+                                                    cx="24" cy="24" r={RADIUS}
+                                                    fill="none"
+                                                    stroke="#f0f0f0"
+                                                    strokeWidth="4"
+                                                />
+                                                {/* Progress */}
+                                                <circle
+                                                    cx="24" cy="24" r={RADIUS}
+                                                    fill="none"
+                                                    stroke="#D4AF37"
+                                                    strokeWidth="4"
+                                                    strokeLinecap="round"
+                                                    strokeDasharray={CIRCUMFERENCE}
+                                                    strokeDashoffset={dashOffset}
+                                                    style={{ transition: "stroke-dashoffset 1s linear" }}
+                                                />
+                                            </svg>
+                                            {/* Timer text in center */}
+                                            <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-[#1a1a1a]">
+                                                {formatTime(cooldown)}
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-gray-400">Resend available after timer</p>
+                                    </div>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={handleResend}
+                                        disabled={resendLoading}
+                                        className="inline-flex items-center gap-2 text-sm font-medium 
+                                                   text-[#D4AF37] hover:text-[#b8942e] 
+                                                   disabled:text-gray-400 disabled:cursor-not-allowed
+                                                   transition-colors"
+                                    >
+                                        <RefreshCw
+                                            size={14}
+                                            className={resendLoading ? "animate-spin" : ""}
+                                        />
+                                        {resendLoading ? "Sending..." : "Resend Verification Code"}
+                                    </button>
+                                )}
                             </div>
 
                             {/* Back to signup */}

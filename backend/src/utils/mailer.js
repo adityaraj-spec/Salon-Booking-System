@@ -1,9 +1,7 @@
 import nodemailer from 'nodemailer';
 
-const FRONTEND_URL = process.env.FRONTEND_URL;
-if (!FRONTEND_URL) {
-    console.warn("WARNING: FRONTEND_URL is not defined leaning on environment vars. Email links may fail.");
-}
+// Read lazily so it works after dotenv.config() runs
+const FRONTEND_URL = () => process.env.FRONTEND_URL || 'http://localhost:5173';
 
 const createTransporter = async () => {
     const smtpUser = process.env.SMTP_USER?.trim();
@@ -19,9 +17,12 @@ const createTransporter = async () => {
             port: smtpPort,
             secure: smtpSecure,
             auth: { user: smtpUser, pass: smtpPass },
-            // Add debugging for production issues
-            debug: process.env.NODE_ENV !== 'production',
-            logger: process.env.NODE_ENV !== 'production',
+            tls: {
+                rejectUnauthorized: false, // allow self-signed certs in dev
+            },
+            connectionTimeout: 10000, // 10s timeout
+            greetingTimeout: 10000,
+            socketTimeout: 15000,
         });
     } else {
         console.warn("[Mailer] No SMTP credentials found. Falling back to Ethereal test account.");
@@ -32,6 +33,26 @@ const createTransporter = async () => {
             secure: false,
             auth: { user: testAccount.user, pass: testAccount.pass },
         });
+    }
+};
+
+// ─── Startup SMTP Verification ────────────────────────────────────────────────
+// Call this AFTER dotenv.config() has run (from index.js)
+export const verifyTransporter = async () => {
+    try {
+        const transporter = await createTransporter();
+        await transporter.verify();
+        console.log("[Mailer] ✅ SMTP connection verified successfully — ready to send emails.");
+    } catch (err) {
+        console.error("[Mailer] ❌ SMTP connection FAILED:", err.message);
+        if (err.message.includes("535") || err.message.includes("Username and Password not accepted")) {
+            console.error("[Mailer] 👉 FIX: Your Gmail App Password is wrong or 2-Step Verification is not enabled.");
+            console.error("[Mailer] 👉 Go to: https://myaccount.google.com/apppasswords to generate a new App Password.");
+        } else if (err.message.includes("ECONNREFUSED") || err.message.includes("ETIMEDOUT")) {
+            console.error("[Mailer] 👉 FIX: Cannot reach SMTP server. Check SMTP_HOST and SMTP_PORT in your .env file.");
+        } else if (err.message.includes("EAUTH")) {
+            console.error("[Mailer] 👉 FIX: Authentication error. Make sure SMTP_USER and SMTP_PASS are correct.");
+        }
     }
 };
 
@@ -98,7 +119,7 @@ export const sendWelcomeEmail = async (email, name) => {
           <span style="display:inline-block;width:40px;height:2px;background:#D4AF37;vertical-align:middle;"></span>
         </div>
         <div style="text-align:center;margin-bottom:32px;">
-          <a href="${FRONTEND_URL}/home" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">EXPLORE SALONS</a>
+          <a href="${FRONTEND_URL()}/home" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">EXPLORE SALONS</a>
         </div>
         <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
         <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Team &nbsp;&bull;&nbsp; Making every day a good hair day</p>
@@ -124,7 +145,7 @@ export const sendLoginEmail = async (email, name) => {
           You've successfully logged in to your SalonNow account. Your next perfect salon experience is just a click away!
         </p>
         <div style="text-align:center;margin-bottom:32px;">
-          <a href="${FRONTEND_URL}/home" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">BROWSE SALONS</a>
+          <a href="${FRONTEND_URL()}/home" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">BROWSE SALONS</a>
         </div>
         <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
         <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Team &nbsp;&bull;&nbsp; Making every day a good hair day</p>
@@ -147,7 +168,7 @@ export const sendLogoutEmail = async (email, name) => {
           You've successfully logged out of your SalonNow account. We've enjoyed having you! Don't forget to check back for new services and deals.
         </p>
         <div style="text-align:center;margin-bottom:32px;">
-          <a href="${FRONTEND_URL}/home" style="display:inline-block;background:#D4AF37;color:#1a1a1a;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">RETURN TO SITE</a>
+          <a href="${FRONTEND_URL()}/home" style="display:inline-block;background:#D4AF37;color:#1a1a1a;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">RETURN TO SITE</a>
         </div>
         <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
         <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Team &nbsp;&bull;&nbsp; Always here for your style needs</p>
@@ -177,7 +198,7 @@ export const sendShopAddedEmail = async (email, name, shopName) => {
           <p style="margin:0;color:#1a1a1a;font-size:18px;font-weight:700;">${shopName}</p>
         </div>
         <div style="text-align:center;margin-bottom:32px;">
-          <a href="${FRONTEND_URL}/home" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">VIEW YOUR SHOP</a>
+          <a href="${FRONTEND_URL()}/home" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">VIEW YOUR SHOP</a>
         </div>
         <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
         <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Team &nbsp;&bull;&nbsp; We can't wait to see your business grow!</p>
@@ -229,7 +250,7 @@ export const sendBookingConfirmationEmail = async (email, name, shopName, bookin
           </table>
         </div>
         <div style="text-align:center;margin-bottom:32px;">
-          <a href="${FRONTEND_URL}/bookings" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">VIEW BOOKING</a>
+          <a href="${FRONTEND_URL()}/bookings" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">VIEW BOOKING</a>
         </div>
         <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
         <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Team &nbsp;&bull;&nbsp; Enjoy your visit!</p>
@@ -267,7 +288,7 @@ export const sendBookingStatusEmail = async (email, name, shopName, date, time, 
           <p style="margin:0;color:#1a1a1a;font-size:16px;font-weight:700;">${date} at ${time}</p>
         </div>
         <div style="text-align:center;margin-bottom:32px;">
-          <a href="${FRONTEND_URL}/bookings" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">GO TO BOOKINGS</a>
+          <a href="${FRONTEND_URL()}/bookings" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">GO TO BOOKINGS</a>
         </div>
         <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
         <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Team &nbsp;&bull;&nbsp; Making every visit special</p>
@@ -319,7 +340,7 @@ export const sendBookingPendingEmail = async (email, name, shopName, bookingTime
           </table>
         </div>
         <div style="text-align:center;margin-bottom:32px;">
-          <a href="${FRONTEND_URL}/bookings" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">CHECK MY REQUEST</a>
+          <a href="${FRONTEND_URL()}/bookings" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">CHECK MY REQUEST</a>
         </div>
         <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
         <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Team &nbsp;&bull;&nbsp; We'll notify you soon!</p>
@@ -345,7 +366,7 @@ export const sendProfileUpdateEmail = async (email, name, salonName) => {
           <p style="margin:0;color:#666;font-size:13px;">If you did not perform this action, please contact support immediately.</p>
         </div>
         <div style="text-align:center;margin-bottom:32px;">
-          <a href="${FRONTEND_URL}/salon/manage" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">REVIEW CHANGES</a>
+          <a href="${FRONTEND_URL()}/salon/manage" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">REVIEW CHANGES</a>
         </div>
         <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
         <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Security Team</p>
