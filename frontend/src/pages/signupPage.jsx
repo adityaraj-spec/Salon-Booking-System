@@ -2,11 +2,9 @@ import { useState } from "react";
 import { Scissors, Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosConfig";
-import { useAuth } from "../context/AuthContext";
 import { useNotification } from "../context/NotificationContext";
 
 export function SignUpPage() {
-    const { login } = useAuth();
     const { showNotification } = useNotification();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -28,14 +26,10 @@ export function SignUpPage() {
             });
 
             if (response.status === 200 || response.status === 201) {
-                // Store authToken to be passed to admin panel later if needed
-                const token = response.data.data.accessToken;
-                if (token) localStorage.setItem('authToken', token);
-
-                login(response.data.data.user);
-                showNotification("Account created successfully! Welcome to SalonNow.", "success");
-                // Assuming successful registration logs the user in (setting cookies)
-                navigate("/role-selection");
+                const registeredEmail = response.data.data.email || data.email;
+                showNotification("Account created! Please check your email for the verification code.", "success");
+                // Redirect to email verification page — no login yet
+                navigate("/verify-email", { state: { email: registeredEmail } });
             } else {
                 const msg = response.data.message || "Registration failed";
                 setError(msg);

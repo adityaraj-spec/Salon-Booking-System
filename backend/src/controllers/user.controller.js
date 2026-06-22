@@ -3,7 +3,7 @@ import ApiError from "../utils/apiError.js"
 import { ApiResponse } from "../utils/apiResponse.js"
 import { User } from "../models/user.models.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
-import { sendWelcomeEmail, sendLoginEmail, sendLogoutEmail } from "../utils/mailer.js"
+import { sendWelcomeEmail, sendLoginEmail, sendLogoutEmail, sendVerificationEmail } from "../utils/mailer.js"
 import { ROLES } from "../constants.js"
 
 const generateAccessAndRefreshToken = async (userId) => {
@@ -24,6 +24,16 @@ const generateAccessAndRefreshToken = async (userId) => {
     }
 }
 
+// Helper: Build cookie options based on environment
+const getCookieOptions = () => {
+    const isProduction = process.env.NODE_ENV === "production" || process.env.FRONTEND_URL?.includes('onrender.com');
+    return {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax"
+    };
+};
+
 const registerUser = asyncHandler(async (req, res) => {
     const { fullName, email, username, password, phonenumber, role = "unassigned" } = req.body
     
@@ -39,8 +49,12 @@ const registerUser = asyncHandler(async (req, res) => {
         $or: [{ username }, { email }]
     })
     if (existedUser) {
-        throw new ApiError(409, "User with eamil or username already exists")
+        throw new ApiError(409, "User with email or username already exists")
     }
+
+    // Generate a 4-digit verification code
+    const verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
+    const verificationCodeExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes from now
 
     const user = await User.create({
         fullName,
@@ -48,44 +62,116 @@ const registerUser = asyncHandler(async (req, res) => {
         username: username.toLowerCase(),
         password,
         phonenumber,
-        role
+        role,
+        isVerified: false,
+        verificationCode,
+        verificationCodeExpiry
     })
 
-    const createdUser = await User.findById(user._id).select('-password -refreshToken')
+    const createdUser = await User.findById(user._id).select('-password -refreshToken -verificationCode -verificationCodeExpiry')
     if (!createdUser) {
         throw new ApiError(505, "Something went wrong registering the user")
     }
 
-    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id)
-
-    const isProduction = process.env.NODE_ENV === "production" || process.env.FRONTEND_URL?.includes('onrender.com');
-    const options = {
-        httpOnly: true,
-        secure: isProduction,
-        sameSite: isProduction ? "none" : "lax"
-    }
-
-    const accessTokenOptions = {
-        ...options,
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-    }
-
-    const refreshTokenOptions = {
-        ...options,
-        maxAge: 15 * 24 * 60 * 60 * 1000 // 15 days
-    }
-
-    // Trigger welcome email silently
-    sendWelcomeEmail(createdUser.email, createdUser.fullName);
+    // Send verification email (do not await to avoid blocking response)
+    sendVerificationEmail(email, fullName, verificationCode).catch(err => {
+        console.error("[registerUser] Failed to send verification email:", err.message);
+    });
 
     return res
         .status(201)
+        .json(
+            new ApiResponse(201, { email: createdUser.email }, "Account created! Please check your email for the 4-digit verification code.")
+        )
+})
+
+const verifyEmail = asyncHandler(async (req, res) => {
+    const { email, code } = req.body;
+
+    if (!email || !code) {
+        throw new ApiError(400, "Email and verification code are required");
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    if (user.isVerified) {
+        throw new ApiError(400, "Email is already verified. Please log in.");
+    }
+
+    // Check if code matches
+    if (user.verificationCode !== code.toString()) {
+        throw new ApiError(400, "Invalid verification code");
+    }
+
+    // Check if code has expired
+    if (!user.verificationCodeExpiry || user.verificationCodeExpiry < new Date()) {
+        throw new ApiError(400, "Verification code has expired. Please request a new one.");
+    }
+
+    // Mark user as verified and clear the code fields
+    user.isVerified = true;
+    user.verificationCode = undefined;
+    user.verificationCodeExpiry = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    // Now generate tokens for the newly verified user
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
+
+    const verifiedUser = await User.findById(user._id).select("-password -refreshToken -verificationCode -verificationCodeExpiry");
+
+    const options = getCookieOptions();
+    const accessTokenOptions = { ...options, maxAge: 7 * 24 * 60 * 60 * 1000 };
+    const refreshTokenOptions = { ...options, maxAge: 15 * 24 * 60 * 60 * 1000 };
+
+    // Send welcome email silently
+    sendWelcomeEmail(verifiedUser.email, verifiedUser.fullName).catch(err => {
+        console.error("[verifyEmail] Failed to send welcome email:", err.message);
+    });
+
+    return res
+        .status(200)
         .cookie("accessToken", accessToken, accessTokenOptions)
         .cookie("refreshToken", refreshToken, refreshTokenOptions)
         .json(
-            new ApiResponse(200, { user: createdUser, accessToken, refreshToken }, "User registered Successfully")
-        )
-})
+            new ApiResponse(200, { user: verifiedUser, accessToken, refreshToken }, "Email verified successfully! Welcome to SalonNow.")
+        );
+});
+
+const resendVerificationCode = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        throw new ApiError(400, "Email is required");
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    if (user.isVerified) {
+        throw new ApiError(400, "This email is already verified. Please log in.");
+    }
+
+    // Generate a fresh 4-digit code
+    const verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
+    const verificationCodeExpiry = new Date(Date.now() + 15 * 60 * 1000);
+
+    user.verificationCode = verificationCode;
+    user.verificationCodeExpiry = verificationCodeExpiry;
+    await user.save({ validateBeforeSave: false });
+
+    sendVerificationEmail(email, user.fullName, verificationCode).catch(err => {
+        console.error("[resendVerificationCode] Failed to send email:", err.message);
+    });
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, { email }, "A new verification code has been sent to your email."));
+});
 
 const loginUser = asyncHandler(async (req, res) => {
     const { username, email, password } = req.body
@@ -105,29 +191,34 @@ const loginUser = asyncHandler(async (req, res) => {
         throw new ApiError(401, "Invalid credential")
     }
 
+    // Block login for unverified users and resend a fresh code
+    if (!user.isVerified) {
+        const verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
+        const verificationCodeExpiry = new Date(Date.now() + 15 * 60 * 1000);
+
+        user.verificationCode = verificationCode;
+        user.verificationCodeExpiry = verificationCodeExpiry;
+        await user.save({ validateBeforeSave: false });
+
+        sendVerificationEmail(user.email, user.fullName, verificationCode).catch(err => {
+            console.error("[loginUser] Failed to resend verification email:", err.message);
+        });
+
+        throw new ApiError(403, "Email not verified. A new verification code has been sent to your email.")
+    }
+
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id)
 
-    const loggedInUSer = await User.findById(user._id).select("-password -refreshToken")
+    const loggedInUSer = await User.findById(user._id).select("-password -refreshToken -verificationCode -verificationCodeExpiry")
 
-    const isProduction = process.env.NODE_ENV === "production" || process.env.FRONTEND_URL?.includes('onrender.com');
-    const options = {
-        httpOnly: true,
-        secure: isProduction,
-        sameSite: isProduction ? "none" : "lax"
-    }
-
-    const accessTokenOptions = {
-        ...options,
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-    }
-
-    const refreshTokenOptions = {
-        ...options,
-        maxAge: 15 * 24 * 60 * 60 * 1000 // 15 days
-    }
+    const options = getCookieOptions();
+    const accessTokenOptions = { ...options, maxAge: 7 * 24 * 60 * 60 * 1000 };
+    const refreshTokenOptions = { ...options, maxAge: 15 * 24 * 60 * 60 * 1000 };
 
     // Trigger login email silently
-    sendLoginEmail(loggedInUSer.email, loggedInUSer.fullName);
+    sendLoginEmail(loggedInUSer.email, loggedInUSer.fullName).catch(err => {
+        console.error("[loginUser] Failed to send login email:", err.message);
+    });
 
     return res
         .status(200)
@@ -157,15 +248,12 @@ const logoutUser = asyncHandler(async (req, res) => {
         }
     )
 
-    const isProduction = process.env.NODE_ENV === "production" || process.env.FRONTEND_URL?.includes('onrender.com');
-    const options = {
-        httpOnly: true,
-        secure: isProduction,
-        sameSite: isProduction ? "none" : "lax"
-    }
+    const options = getCookieOptions();
 
     // Trigger logout email silently
-    sendLogoutEmail(req.user.email, req.user.fullName);
+    sendLogoutEmail(req.user.email, req.user.fullName).catch(err => {
+        console.error("[logoutUser] Failed to send logout email:", err.message);
+    });
 
     return res
         .status(200)
@@ -294,5 +382,7 @@ export {
     updateAccountDetails,
     toggleFavorite,
     getFavorites,
-    getCurrentUser
+    getCurrentUser,
+    verifyEmail,
+    resendVerificationCode
 }

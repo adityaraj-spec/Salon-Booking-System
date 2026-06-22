@@ -39,6 +39,16 @@ const userSchema = new mongoose.Schema({
   refreshToken: {
     type: String,
   },
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  verificationCode: {
+    type: String
+  },
+  verificationCodeExpiry: {
+    type: Date
+  },
   favorites: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: "Salon"

@@ -47,6 +47,13 @@ export function LoginPage() {
                 showNotification(msg, "error");
             }
         } catch (err) {
+            // 403 = email not verified — redirect to verification page
+            if (err.response?.status === 403) {
+                const msg = err.response?.data?.message || "Please verify your email before logging in.";
+                showNotification(msg, "error");
+                navigate("/verify-email", { state: { email } });
+                return;
+            }
             const msg = err.response?.data?.message || "Something went wrong. Please try again.";
             setError(msg);
             showNotification(msg, "error");

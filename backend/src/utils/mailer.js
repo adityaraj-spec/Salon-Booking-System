@@ -379,3 +379,28 @@ export const sendManagementUpdateEmail = async (email, name, action, itemName, c
     </div>`;
     return sendMail(email, `${category} Alert: ${action}`, html);
 };
+
+// ─── Verification Email ───────────────────────────────────────────────────────
+export const sendVerificationEmail = async (email, name, code) => {
+    const html = `
+    <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #f0f0f0;">
+      <div style="background:#1a1a1a;padding:32px 40px;text-align:center;">
+        <div style="display:inline-block;background:#D4AF37;border-radius:50%;width:64px;height:64px;text-align:center;line-height:64px;margin-bottom:16px;font-size:28px;color:#1a1a1a;">&#9993;</div>
+        <h1 style="color:#ffffff;margin:0;font-size:26px;font-weight:700;letter-spacing:1px;">Salon<span style="color:#D4AF37;">Now</span></h1>
+      </div>
+      <div style="padding:40px;">
+        <h2 style="color:#1a1a1a;font-size:22px;margin:0 0 12px;text-align:center;">Verify Your Email Address</h2>
+        <p style="color:#555555;font-size:15px;line-height:1.7;text-align:center;margin:0 0 28px;">
+          Hi <strong>${name}</strong>, thank you for registering with SalonNow. Please enter the following 4-digit verification code to complete your signup process. This code will expire in 15 minutes.
+        </p>
+        <div style="text-align:center;margin-bottom:32px;">
+          <div style="display:inline-block;background:#f9f5e8;border:2px dashed #D4AF37;border-radius:12px;padding:16px 40px;font-size:36px;font-weight:900;letter-spacing:8px;color:#1a1a1a;text-align:center;">
+            ${code}
+          </div>
+        </div>
+        <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
+        <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Security Team</p>
+      </div>
+    </div>`;
+    return sendMail(email, "Verify your email - SalonNow", html);
+};

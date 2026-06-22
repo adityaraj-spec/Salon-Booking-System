@@ -25,6 +25,7 @@ const MyBookingsPage = lazy(() => import("./pages/bookingsListPage.jsx").then(m 
 const SalonBookingsPage = lazy(() => import("./pages/SalonBookingsPage.jsx"));
 const SalonManagementPage = lazy(() => import("./pages/SalonManagementPage.jsx").then(m => ({ default: m.SalonManagementPage })));
 const FavoritesPage = lazy(() => import("./pages/FavoritesPage.jsx").then(m => ({ default: m.FavoritesPage })));
+const VerifyEmailPage = lazy(() => import('./pages/VerifyEmailPage.jsx').then(m => ({ default: m.VerifyEmailPage })));
 
 /**
  * Loading Fallback - A subtle shimmer bar for route transitions
@@ -69,6 +70,7 @@ function App() {
                     {/* Auth pages (no layout) */}
                     <Route path="login" element={<LoginPage />} />
                     <Route path="signup" element={<SignUpPage />} />
+                    <Route path="verify-email" element={<VerifyEmailPage />} />
                   </Routes>
                 </ErrorBoundary>
               </Suspense>

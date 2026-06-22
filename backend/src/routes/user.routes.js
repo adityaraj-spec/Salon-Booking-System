@@ -1,13 +1,15 @@
 import { Router } from "express";
-import { registerUser, loginUser, logoutUser, updateUserRole, updateAccountDetails, toggleFavorite, getFavorites, getCurrentUser } from "../controllers/user.controller.js";
+import { registerUser, loginUser, logoutUser, updateUserRole, updateAccountDetails, toggleFavorite, getFavorites, getCurrentUser, verifyEmail, resendVerificationCode } from "../controllers/user.controller.js";
 import { verifyJWT } from "../middleware/auth.middleware.js";
 
 
 const router = Router()
 
 router.route("/register").post(registerUser)
-
 router.route("/login").post(loginUser)
+router.route("/verify-email").post(verifyEmail)
+router.route("/resend-verification").post(resendVerificationCode)
+
 router.route("/logout").post(verifyJWT, logoutUser)
 router.route("/update-role").patch(verifyJWT, updateUserRole)
 router.route("/update-account").patch(verifyJWT, updateAccountDetails)
