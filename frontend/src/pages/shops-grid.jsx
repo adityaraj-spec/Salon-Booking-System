@@ -35,8 +35,17 @@ export function Shops() {
 
     const [isSortModalOpen, setIsSortModalOpen] = useState(false);
 
+    // Restore selectedState from URL on mount (so reload keeps filter working)
+    const getInitialState = () => {
+        if (!stateParam) return null;
+        const found = State.getStatesOfCountry('IN').find(
+            s => s.name.toLowerCase() === stateParam.toLowerCase()
+        );
+        return found || null;
+    };
+
     // Smart Location State (Modal Internal)
-    const [selectedState, setSelectedState] = useState(null); // { name, isoCode }
+    const [selectedState, setSelectedState] = useState(getInitialState); // { name, isoCode }
     const [stateSearch, setStateSearch] = useState(stateParam || "");
     const [citySearch, setCitySearch] = useState(cityParam || "");
     const [isStateListOpen, setIsStateListOpen] = useState(false);

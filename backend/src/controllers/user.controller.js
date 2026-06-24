@@ -54,7 +54,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
     // Generate a 4-digit verification code
     const verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
-    const verificationCodeExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes from now
+    const verificationCodeExpiry = new Date(Date.now() + 1 * 60 * 1000); // 1 minute from now
 
     const user = await User.create({
         fullName,
@@ -158,7 +158,7 @@ const resendVerificationCode = asyncHandler(async (req, res) => {
 
     // Generate a fresh 4-digit code
     const verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
-    const verificationCodeExpiry = new Date(Date.now() + 15 * 60 * 1000);
+    const verificationCodeExpiry = new Date(Date.now() + 1 * 60 * 1000);
 
     user.verificationCode = verificationCode;
     user.verificationCodeExpiry = verificationCodeExpiry;
@@ -194,7 +194,7 @@ const loginUser = asyncHandler(async (req, res) => {
     // Block login for unverified users and resend a fresh code
     if (!user.isVerified) {
         const verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
-        const verificationCodeExpiry = new Date(Date.now() + 15 * 60 * 1000);
+        const verificationCodeExpiry = new Date(Date.now() + 1 * 60 * 1000);
 
         user.verificationCode = verificationCode;
         user.verificationCodeExpiry = verificationCodeExpiry;

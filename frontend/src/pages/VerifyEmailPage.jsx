@@ -21,6 +21,7 @@ export function VerifyEmailPage() {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
     const [cooldown, setCooldown] = useState(60); // Start 1-minute timer immediately
+    const [codeExpiry, setCodeExpiry] = useState(60); // 1-minute code expiry countdown
 
     const inputRefs = useRef([]);
 
@@ -45,6 +46,21 @@ export function VerifyEmailPage() {
         }, 1000);
         return () => clearInterval(timer);
     }, [cooldown]);
+
+    // 15-minute code expiry countdown
+    useEffect(() => {
+        if (success || codeExpiry <= 0) return;
+        const expiryTimer = setInterval(() => {
+            setCodeExpiry(prev => {
+                if (prev <= 1) {
+                    clearInterval(expiryTimer);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+        return () => clearInterval(expiryTimer);
+    }, [success]);
 
     // Format seconds as MM:SS
     const formatTime = (secs) => {
@@ -140,6 +156,7 @@ export function VerifyEmailPage() {
             await axiosInstance.post("/users/resend-verification", { email });
             showNotification("A new verification code has been sent to your email.", "success");
             setCooldown(60); // reset to 1 minute
+            setCodeExpiry(60); // reset 1-minute expiry
             setCode(["", "", "", ""]);
             inputRefs.current[0]?.focus();
         } catch (err) {
@@ -232,8 +249,13 @@ export function VerifyEmailPage() {
                                         />
                                     ))}
                                 </div>
-                                <p className="text-xs text-gray-400 text-center mt-2">
-                                    Code expires in 15 minutes
+                                <p className={`text-xs text-center mt-2 font-medium ${
+                                    codeExpiry <= 60 ? 'text-red-400' : 'text-gray-400'
+                                }`}>
+                                    {codeExpiry > 0
+                                        ? <>Code expires in <span className="font-bold">{formatTime(codeExpiry)}</span></>
+                                        : <span className="text-red-500">Code expired — please resend</span>
+                                    }
                                 </p>
                             </div>
 

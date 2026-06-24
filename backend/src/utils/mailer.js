@@ -68,13 +68,21 @@ const sendMail = async (to, subject, htmlContent) => {
             html: htmlContent,
         });
 
-        console.log(`[Mailer] SUCCESS: "${subject}" sent to ${to}`);
+        console.log(`[Mailer] ✅ SUCCESS: "${subject}" sent to ${to}`);
         if (!smtpUser) {
             console.log(`[Mailer] Ethereal Preview: ${nodemailer.getTestMessageUrl(info)}`);
         }
         return { success: true, info };
     } catch (error) {
-        console.error("[Mailer] ERROR:", error.message);
+        console.error(`[Mailer] ❌ FAILED to send "${subject}" to ${to}:`);
+        console.error(`[Mailer]    Code: ${error.code} | Response: ${error.response || error.message}`);
+        if (error.responseCode === 535 || error.message?.includes('535') || error.message?.includes('Username and Password not accepted')) {
+            console.error("[Mailer] 🔑 FIX: Gmail rejected credentials. Go to https://myaccount.google.com/apppasswords and generate a new App Password. Make sure 2-Step Verification is ON.");
+        } else if (error.message?.includes('EAUTH')) {
+            console.error("[Mailer] 🔑 FIX: Authentication error — check SMTP_USER and SMTP_PASS in your Render environment variables.");
+        } else if (error.message?.includes('ECONNREFUSED') || error.message?.includes('ETIMEDOUT')) {
+            console.error("[Mailer] 🌐 FIX: Cannot connect to SMTP server. Render may be blocking outbound port 587. Try port 465 with SMTP_SECURE=true.");
+        }
         return { success: false, error: error.message };
     }
 };
