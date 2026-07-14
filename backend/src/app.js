@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import rateLimit from "express-rate-limit";
 
 // routes imports
 import userRouter from "./routes/user.routes.js";
@@ -27,6 +28,34 @@ app.use(express.urlencoded({ limit: "16kb", extended: true }));
 app.use(express.static("public"));
 app.use(cookieParser());
 
+// ─── Rate Limiters ───────────────────────────────────────────────────────────
+const generalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: "Too many requests, please try again later." }
+});
+
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10, // strict: 10 attempts per 15 min
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: "Too many authentication attempts, please try again after 15 minutes." }
+});
+
+const resendLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 3, // very strict: 3 resends per 15 min
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: "Too many resend attempts. Please wait before requesting again." }
+});
+
+// Apply general limiter to all API routes
+app.use("/api/", generalLimiter);
+
 // routes declaration
 app.get("/", (req, res) => {
     res.status(200).json({
@@ -35,6 +64,11 @@ app.get("/", (req, res) => {
     });
 });
 
+// Apply strict auth rate limiters to sensitive auth endpoints
+app.use("/api/v1/users/login", authLimiter);
+app.use("/api/v1/users/register", authLimiter);
+app.use("/api/v1/users/verify-email", authLimiter);
+app.use("/api/v1/users/resend-verification", resendLimiter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/salons", salonRouter);
 app.use("/api/v1/bookings", bookingRouter);

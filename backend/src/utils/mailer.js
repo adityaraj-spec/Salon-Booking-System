@@ -3,7 +3,12 @@ import nodemailer from 'nodemailer';
 // Read lazily so it works after dotenv.config() runs
 const FRONTEND_URL = () => process.env.FRONTEND_URL || 'http://localhost:5173';
 
-const createTransporter = async () => {
+// ─── Singleton Transporter ────────────────────────────────────────────────────
+let cachedTransporter = null;
+
+const getTransporter = async () => {
+    if (cachedTransporter) return cachedTransporter;
+
     const smtpUser = process.env.SMTP_USER?.trim();
     const smtpPass = process.env.SMTP_PASS?.trim();
     const smtpHost = process.env.SMTP_HOST?.trim() || "smtp.gmail.com";
@@ -12,38 +17,44 @@ const createTransporter = async () => {
 
     if (smtpUser && smtpPass) {
         console.log(`[Mailer] Initializing with ${smtpHost}:${smtpPort} (User: ${smtpUser})`);
-        return nodemailer.createTransport({
+        cachedTransporter = nodemailer.createTransport({
             host: smtpHost,
             port: smtpPort,
             secure: smtpSecure,
             auth: { user: smtpUser, pass: smtpPass },
             tls: {
-                rejectUnauthorized: false, // allow self-signed certs in dev
+                rejectUnauthorized: process.env.NODE_ENV === "production", // strict in prod, lenient in dev
             },
-            connectionTimeout: 10000, // 10s timeout
+            connectionTimeout: 10000,
             greetingTimeout: 10000,
             socketTimeout: 15000,
+            pool: true,          // use connection pooling
+            maxConnections: 3,   // limit concurrent connections
+            maxMessages: 100,    // messages per connection before reconnect
         });
     } else {
         console.warn("[Mailer] No SMTP credentials found. Falling back to Ethereal test account.");
         const testAccount = await nodemailer.createTestAccount();
-        return nodemailer.createTransport({
+        cachedTransporter = nodemailer.createTransport({
             host: "smtp.ethereal.email",
             port: 587,
             secure: false,
             auth: { user: testAccount.user, pass: testAccount.pass },
         });
     }
+
+    return cachedTransporter;
 };
 
 // ─── Startup SMTP Verification ────────────────────────────────────────────────
-// Call this AFTER dotenv.config() has run (from index.js)
 export const verifyTransporter = async () => {
     try {
-        const transporter = await createTransporter();
+        const transporter = await getTransporter();
         await transporter.verify();
         console.log("[Mailer] ✅ SMTP connection verified successfully — ready to send emails.");
     } catch (err) {
+        // Reset cached transporter so next attempt retries
+        cachedTransporter = null;
         console.error("[Mailer] ❌ SMTP connection FAILED:", err.message);
         if (err.message.includes("535") || err.message.includes("Username and Password not accepted")) {
             console.error("[Mailer] 👉 FIX: Your Gmail App Password is wrong or 2-Step Verification is not enabled.");
@@ -58,7 +69,7 @@ export const verifyTransporter = async () => {
 
 const sendMail = async (to, subject, htmlContent) => {
     try {
-        const mailTransporter = await createTransporter();
+        const mailTransporter = await getTransporter();
         const smtpUser = process.env.SMTP_USER?.trim();
         
         const info = await mailTransporter.sendMail({
@@ -78,10 +89,14 @@ const sendMail = async (to, subject, htmlContent) => {
         console.error(`[Mailer]    Code: ${error.code} | Response: ${error.response || error.message}`);
         if (error.responseCode === 535 || error.message?.includes('535') || error.message?.includes('Username and Password not accepted')) {
             console.error("[Mailer] 🔑 FIX: Gmail rejected credentials. Go to https://myaccount.google.com/apppasswords and generate a new App Password. Make sure 2-Step Verification is ON.");
+            // Reset transporter so next attempt retries with fresh credentials
+            cachedTransporter = null;
         } else if (error.message?.includes('EAUTH')) {
             console.error("[Mailer] 🔑 FIX: Authentication error — check SMTP_USER and SMTP_PASS in your Render environment variables.");
+            cachedTransporter = null;
         } else if (error.message?.includes('ECONNREFUSED') || error.message?.includes('ETIMEDOUT')) {
             console.error("[Mailer] 🌐 FIX: Cannot connect to SMTP server. Render may be blocking outbound port 587. Try port 465 with SMTP_SECURE=true.");
+            cachedTransporter = null;
         }
         return { success: false, error: error.message };
     }
@@ -420,7 +435,7 @@ export const sendVerificationEmail = async (email, name, code) => {
       <div style="padding:40px;">
         <h2 style="color:#1a1a1a;font-size:22px;margin:0 0 12px;text-align:center;">Verify Your Email Address</h2>
         <p style="color:#555555;font-size:15px;line-height:1.7;text-align:center;margin:0 0 28px;">
-          Hi <strong>${name}</strong>, thank you for registering with SalonNow. Please enter the following 4-digit verification code to complete your signup process. This code will expire in 15 minutes.
+          Hi <strong>${name}</strong>, thank you for registering with SalonNow. Please enter the following 4-digit verification code to complete your signup process. This code will expire in <strong>15 minutes</strong>.
         </p>
         <div style="text-align:center;margin-bottom:32px;">
           <div style="display:inline-block;background:#f9f5e8;border:2px dashed #D4AF37;border-radius:12px;padding:16px 40px;font-size:36px;font-weight:900;letter-spacing:8px;color:#1a1a1a;text-align:center;">

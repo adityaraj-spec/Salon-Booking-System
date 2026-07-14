@@ -1,4 +1,5 @@
 import { Server } from "socket.io";
+import jwt from "jsonwebtoken";
 
 let io;
 
@@ -10,16 +11,32 @@ const initializeSocket = (server) => {
         }
     });
 
-    io.on("connection", (socket) => {
-        // Join a private room based on user ID passed during handshake or event
-        const userId = socket.handshake.query.userId;
-        if (userId) {
-            socket.join(userId);
+    // ─── Authenticate Socket.io connections with JWT ─────────────────────────
+    io.use((socket, next) => {
+        const token = socket.handshake.auth?.token || socket.handshake.query?.token;
+        if (!token) {
+            return next(new Error("Authentication required — no token provided"));
         }
 
-        socket.on("join", (userId) => {
-            if (userId) {
-                socket.join(userId);
+        try {
+            const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+            socket.userId = decoded.id;
+            next();
+        } catch (err) {
+            return next(new Error("Authentication failed — invalid or expired token"));
+        }
+    });
+
+    io.on("connection", (socket) => {
+        // Auto-join the authenticated user's private room
+        if (socket.userId) {
+            socket.join(socket.userId);
+        }
+
+        // Prevent joining other users' rooms — users can only be in their own room
+        socket.on("join", (requestedUserId) => {
+            if (requestedUserId && requestedUserId === socket.userId) {
+                socket.join(requestedUserId);
             }
         });
 

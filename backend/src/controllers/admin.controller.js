@@ -6,11 +6,16 @@ import { Salon } from "../models/salon.models.js";
 import { Service } from "../models/service.models.js";
 import { Booking } from "../models/booking.models.js";
 import { Staff } from "../models/staff.models.js";
+import { Review } from "../models/review.models.js";
+import { Notification } from "../models/notification.models.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ROLES } from "../constants.js";
 import { sendShopAddedEmail, testEmailConfiguration, sendWelcomeEmail } from "../utils/mailer.js";
 import { emitToAll } from "../socket.js";
 import { geocodeAddress } from "../utils/geocoding.js";
+
+// Helper: escape special regex characters in user input to prevent ReDoS
+const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 // ─── DIAGNOSTICS ─────────────────────────────────────────────────────────────
 
@@ -81,8 +86,8 @@ const getDashboard = asyncHandler(async (req, res) => {
 const getAllSalons = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, search = "", city = "" } = req.query;
     const query = {};
-    if (search) query.name = { $regex: search, $options: "i" };
-    if (city) query.city = { $regex: city, $options: "i" };
+    if (search) query.name = { $regex: escapeRegex(search), $options: "i" };
+    if (city) query.city = { $regex: escapeRegex(city), $options: "i" };
 
     const skip = (Number(page) - 1) * Number(limit);
     const [salons, total] = await Promise.all([
@@ -134,9 +139,20 @@ const createSalon = asyncHandler(async (req, res) => {
 
 const deleteSalon = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const salon = await Salon.findByIdAndDelete(id);
+    const salon = await Salon.findById(id);
     if (!salon) throw new ApiError(404, "Salon not found");
-    return res.status(200).json(new ApiResponse(200, {}, "Salon deleted successfully"));
+
+    // Cascade delete all related data
+    await Promise.all([
+        Service.deleteMany({ salon: id }),
+        Staff.deleteMany({ salon: id }),
+        Booking.deleteMany({ salon: id }),
+        Review.deleteMany({ salon: id }),
+    ]);
+
+    await Salon.findByIdAndDelete(id);
+
+    return res.status(200).json(new ApiResponse(200, {}, "Salon and all related data deleted successfully"));
 });
 
 // ─── SERVICES ────────────────────────────────────────────────────────────────
@@ -144,7 +160,7 @@ const deleteSalon = asyncHandler(async (req, res) => {
 const getAllServices = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, search = "", salonId = "" } = req.query;
     const query = {};
-    if (search) query.name = { $regex: search, $options: "i" };
+    if (search) query.name = { $regex: escapeRegex(search), $options: "i" };
     if (salonId) query.salon = salonId;
 
     const skip = (Number(page) - 1) * Number(limit);
@@ -168,7 +184,12 @@ const createService = asyncHandler(async (req, res) => {
 
 const updateService = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const updates = req.body;
+    // Whitelist allowed fields
+    const allowedFields = ['name', 'category', 'price', 'duration', 'description'];
+    const updates = {};
+    for (const field of allowedFields) {
+        if (req.body[field] !== undefined) updates[field] = req.body[field];
+    }
     const service = await Service.findByIdAndUpdate(id, { $set: updates }, { new: true });
     if (!service) throw new ApiError(404, "Service not found");
     return res.status(200).json(new ApiResponse(200, service, "Service updated"));
@@ -223,8 +244,8 @@ const getAllCustomers = asyncHandler(async (req, res) => {
     const query = { role: "customer" };
     if (search) {
         query.$or = [
-            { fullName: { $regex: search, $options: "i" } },
-            { email: { $regex: search, $options: "i" } }
+            { fullName: { $regex: escapeRegex(search), $options: "i" } },
+            { email: { $regex: escapeRegex(search), $options: "i" } }
         ];
     }
 
@@ -247,8 +268,8 @@ const getAllOwners = asyncHandler(async (req, res) => {
     const query = { role: ROLES.OWNER };
     if (search) {
         query.$or = [
-            { fullName: { $regex: search, $options: "i" } },
-            { email: { $regex: search, $options: "i" } }
+            { fullName: { $regex: escapeRegex(search), $options: "i" } },
+            { email: { $regex: escapeRegex(search), $options: "i" } }
         ];
     }
 
@@ -278,7 +299,7 @@ const createOwner = asyncHandler(async (req, res) => {
     const existedUser = await User.findOne({ $or: [{ username }, { email }] });
     if (existedUser) throw new ApiError(409, "User with email or username already exists");
 
-    const owner = await User.create({ fullName, email, username, password, phonenumber, role: ROLES.OWNER });
+    const owner = await User.create({ fullName, email, username, password, phonenumber, role: ROLES.OWNER, isVerified: true });
     const created = await User.findById(owner._id).select("-password -refreshToken");
 
     // Trigger welcome email to the new owner
@@ -291,8 +312,31 @@ const createOwner = asyncHandler(async (req, res) => {
 
 const deleteOwner = asyncHandler(async (req, res) => {
     const { id } = req.params;
+    const owner = await User.findById(id);
+    if (!owner) throw new ApiError(404, "Owner not found");
+
+    // Find all salons owned by this user
+    const salons = await Salon.find({ owner: id });
+    const salonIds = salons.map(s => s._id);
+
+    // Cascade delete all related data for each salon
+    if (salonIds.length > 0) {
+        await Promise.all([
+            Service.deleteMany({ salon: { $in: salonIds } }),
+            Staff.deleteMany({ salon: { $in: salonIds } }),
+            Booking.deleteMany({ salon: { $in: salonIds } }),
+            Review.deleteMany({ salon: { $in: salonIds } }),
+            Salon.deleteMany({ owner: id }),
+        ]);
+    }
+
+    // Delete owner's notifications
+    await Notification.deleteMany({ $or: [{ recipient: id }, { sender: id }] });
+
+    // Delete the owner user
     await User.findByIdAndDelete(id);
-    return res.status(200).json(new ApiResponse(200, {}, "Owner deleted"));
+
+    return res.status(200).json(new ApiResponse(200, {}, "Owner and all related data deleted successfully"));
 });
 
 // ─── REPORTS ─────────────────────────────────────────────────────────────────

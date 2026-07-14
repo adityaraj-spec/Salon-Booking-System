@@ -6,6 +6,8 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js"
 import { sendWelcomeEmail, sendLoginEmail, sendLogoutEmail, sendVerificationEmail } from "../utils/mailer.js"
 import { ROLES } from "../constants.js"
 
+const VERIFICATION_CODE_EXPIRY_MINUTES = 15;
+
 const generateAccessAndRefreshToken = async (userId) => {
     try {
         const user = await User.findById(userId)
@@ -40,7 +42,7 @@ const registerUser = asyncHandler(async (req, res) => {
     if (
         [
             fullName, email, username, password, phonenumber
-        ].some((field) => field?.trim() === "")
+        ].some((field) => !field || field.trim() === "")
     ) {
         throw new ApiError(400, "All fields are required")
     }
@@ -54,7 +56,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
     // Generate a 4-digit verification code
     const verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
-    const verificationCodeExpiry = new Date(Date.now() + 1 * 60 * 1000); // 1 minute from now
+    const verificationCodeExpiry = new Date(Date.now() + VERIFICATION_CODE_EXPIRY_MINUTES * 60 * 1000);
 
     const user = await User.create({
         fullName,
@@ -158,7 +160,7 @@ const resendVerificationCode = asyncHandler(async (req, res) => {
 
     // Generate a fresh 4-digit code
     const verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
-    const verificationCodeExpiry = new Date(Date.now() + 1 * 60 * 1000);
+    const verificationCodeExpiry = new Date(Date.now() + VERIFICATION_CODE_EXPIRY_MINUTES * 60 * 1000);
 
     user.verificationCode = verificationCode;
     user.verificationCodeExpiry = verificationCodeExpiry;
@@ -194,7 +196,7 @@ const loginUser = asyncHandler(async (req, res) => {
     // Block login for unverified users and resend a fresh code
     if (!user.isVerified) {
         const verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
-        const verificationCodeExpiry = new Date(Date.now() + 1 * 60 * 1000);
+        const verificationCodeExpiry = new Date(Date.now() + VERIFICATION_CODE_EXPIRY_MINUTES * 60 * 1000);
 
         user.verificationCode = verificationCode;
         user.verificationCodeExpiry = verificationCodeExpiry;
@@ -263,19 +265,27 @@ const logoutUser = asyncHandler(async (req, res) => {
 })
 
 const updateUserRole = asyncHandler(async (req, res) => {
-    const { role } = req.body
+    const { role, userId } = req.body
     
-    // Explicitly check if user is attached by verifyJWT middleware
+    // Only super_admin can change user roles
     if (!req.user?._id) {
         throw new ApiError(401, "Authentication required to update role")
     }
 
-    if (!role || ![ROLES.CUSTOMER, ROLES.OWNER].includes(role)) {
+    const requesterRole = req.user.role?.toString().trim().toLowerCase();
+    if (requesterRole !== ROLES.ADMIN.toLowerCase()) {
+        throw new ApiError(403, "Forbidden — only super_admin can change user roles")
+    }
+
+    if (!role || !Object.values(ROLES).includes(role)) {
         throw new ApiError(400, "Invalid role")
     }
 
+    // Admin specifies which user to update via userId, fallback to self
+    const targetUserId = userId || req.user._id;
+
     const user = await User.findByIdAndUpdate(
-        req.user._id,
+        targetUserId,
         {
             $set: {
                 role: role

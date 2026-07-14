@@ -5,8 +5,10 @@ import { Salon } from "../models/salon.models.js";
 import { Service } from "../models/service.models.js";
 import { Booking } from "../models/booking.models.js";
 import { Staff } from "../models/staff.models.js";
+import { Notification } from "../models/notification.models.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
-import { sendProfileUpdateEmail, sendManagementUpdateEmail } from "../utils/mailer.js";
+import { sendProfileUpdateEmail, sendManagementUpdateEmail, sendBookingStatusEmail } from "../utils/mailer.js";
+import { emitToUser } from "../socket.js";
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
@@ -112,7 +114,7 @@ const getOwnerServices = asyncHandler(async (req, res) => {
     const salon = await getOwnerSalonOrThrow(req.user._id);
     const { page = 1, limit = 10, search = "" } = req.query;
     const query = { salon: salon._id };
-    if (search) query.name = { $regex: search, $options: "i" };
+    if (search) query.name = { $regex: search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: "i" };
 
     const skip = (Number(page) - 1) * Number(limit);
     const [services, total] = await Promise.all([
@@ -145,7 +147,14 @@ const updateOwnerService = asyncHandler(async (req, res) => {
     const service = await Service.findOne({ _id: id, salon: salon._id });
     if (!service) throw new ApiError(404, "Service not found or unauthorized");
 
-    const updated = await Service.findByIdAndUpdate(id, { $set: req.body }, { new: true });
+    // Whitelist allowed fields to prevent field injection (e.g. changing salon ownership)
+    const allowedFields = ['name', 'category', 'price', 'duration', 'description'];
+    const updates = {};
+    for (const field of allowedFields) {
+        if (req.body[field] !== undefined) updates[field] = req.body[field];
+    }
+
+    const updated = await Service.findByIdAndUpdate(id, { $set: updates }, { new: true });
 
     // Trigger notification email
     sendManagementUpdateEmail(req.user.email, req.user.fullName, "Updated service details", updated.name, "Service");
@@ -193,11 +202,45 @@ const updateOwnerBookingStatus = asyncHandler(async (req, res) => {
     const validStatuses = ["pending", "confirmed", "completed", "cancelled", "rejected"];
     if (!validStatuses.includes(status)) throw new ApiError(400, "Invalid status");
 
-    const booking = await Booking.findOne({ _id: id, salon: salon._id });
+    const booking = await Booking.findOne({ _id: id, salon: salon._id }).populate("customer", "fullName email");
     if (!booking) throw new ApiError(404, "Booking not found or unauthorized");
 
     booking.status = status;
     await booking.save();
+
+    // Send customer email notification
+    if (booking.customer?.email) {
+        const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
+        sendBookingStatusEmail(
+            booking.customer.email,
+            booking.customer.fullName,
+            salon.name,
+            booking.date,
+            booking.time,
+            statusLabel
+        ).catch(err => console.error("[Owner] Failed to send booking status email:", err.message));
+    }
+
+    // Create notification for customer
+    let title = "Booking Update";
+    let type = "system";
+    if (status === "confirmed") { title = "Booking Confirmed!"; type = "booking_confirmed"; }
+    else if (status === "rejected") { title = "Booking Declined"; type = "booking_rejected"; }
+    else if (status === "completed") { title = "Appointment Completed"; type = "booking_completed"; }
+
+    const notification = await Notification.create({
+        recipient: booking.customer._id,
+        sender: req.user._id,
+        title,
+        message: `Your booking at ${salon.name} for ${booking.date} has been ${status}.`,
+        type,
+        bookingId: booking._id
+    });
+
+    // Socket.io emit to customer
+    emitToUser(booking.customer._id, "newNotification", notification);
+    emitToUser(booking.customer._id, "bookingUpdate", { booking, type: "STATUS_CHANGE" });
+
     return res.status(200).json(new ApiResponse(200, booking, "Status updated"));
 });
 

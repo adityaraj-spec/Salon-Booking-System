@@ -11,6 +11,9 @@ import { sendShopAddedEmail } from "../utils/mailer.js"
 import { emitToAll } from "../socket.js";
 import { geocodeAddress } from "../utils/geocoding.js";
 
+// Helper: escape special regex characters in user input to prevent ReDoS
+const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 
 const registerSalon = asyncHandler(async (req, res) => {
     const { name, city, state, pincode, description, address, contactNumber, openingHours, closingHours, totalSeats } = req.body
@@ -78,17 +81,18 @@ const getSalons = asyncHandler(async (req, res) => {
     let query = {};
 
     if (search) {
+        const escaped = escapeRegex(search);
         query.$or = [
-            { name: { $regex: search, $options: "i" } },
-            { description: { $regex: search, $options: "i" } },
-            { address: { $regex: search, $options: "i" } },
-            { city: { $regex: search, $options: "i" } },
-            { state: { $regex: search, $options: "i" } }
+            { name: { $regex: escaped, $options: "i" } },
+            { description: { $regex: escaped, $options: "i" } },
+            { address: { $regex: escaped, $options: "i" } },
+            { city: { $regex: escaped, $options: "i" } },
+            { state: { $regex: escaped, $options: "i" } }
         ];
     }
 
     if (city) {
-        query.city = { $regex: city, $options: "i" };
+        query.city = { $regex: escapeRegex(city), $options: "i" };
     }
 
     // New: Top Rated Filter (Threshold 4.0)

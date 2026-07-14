@@ -20,7 +20,7 @@ const bookingSchema = new mongoose.Schema({
   staffName: String,
   services: [
     { 
-    type: String, 
+    type: mongoose.Schema.Types.ObjectId, 
     ref: "Service" 
 
   }
