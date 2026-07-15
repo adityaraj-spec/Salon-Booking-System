@@ -149,7 +149,7 @@ const getSalons = asyncHandler(async (req, res) => {
     const hour = now.getHours();
     const displayHour = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
     const ampm = hour >= 12 ? "PM" : "AM";
-    const timeMatcher = new RegExp(`(^${hour}:|^0${hour}:|^${displayHour}:|^0${displayHour}:).*${ampm}|(^${hour}:|^0${hour}:)`, "i");
+    const timeMatcher = new RegExp(`^(?:${hour}:|0${hour}:|${displayHour}:|0${displayHour}:).*${ampm}|^(?:${hour}:|0${hour}:)`, "i");
 
     const salonsWithAvailability = await Promise.all(salons.map(async (salonDoc) => {
         // If it was aggregation (raw obj) or find (mongoose doc)
@@ -214,7 +214,7 @@ const getSalonById = asyncHandler(async (req, res) => {
     const ampm = hour >= 12 ? "PM" : "AM";
 
     // Flexible regex for "2:XX PM" or "14:XX"
-    const timeMatcher = new RegExp(`(^${hour}:|^0${hour}:|^${displayHour}:|^0${displayHour}:).*${ampm}|(^${hour}:|^0${hour}:)`, "i");
+    const timeMatcher = new RegExp(`^(?:${hour}:|0${hour}:|${displayHour}:|0${displayHour}:).*${ampm}|^(?:${hour}:|0${hour}:)`, "i");
 
     const activeBookingsCount = await Booking.countDocuments({
         salon: id,

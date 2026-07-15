@@ -28,7 +28,20 @@ const createBooking = asyncHandler(async (req, res) => {
     const ampm = ampmMatch ? ampmMatch[0].toUpperCase() : "";
 
     // Regex to match anything in the same hour block
-    const timeMatcher = new RegExp(`(^${requestedHour}:|^0${requestedHour}:).*${ampm}`, "i");
+    const timeMatcher = new RegExp(`^(?:${requestedHour}:|0${requestedHour}:).*${ampm}`, "i");
+
+    if (staff) {
+        const staffBooked = await Booking.findOne({
+            salon: salonId,
+            date: date,
+            status: { $in: ["pending", "confirmed"] },
+            time: { $regex: timeMatcher },
+            staff: staff
+        });
+        if (staffBooked) {
+             throw new ApiError(400, "Requested staff member is already booked at this time");
+        }
+    }
 
     const existingBookingsCount = await Booking.countDocuments({
         salon: salonId,
@@ -206,7 +219,7 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
 
 const getAvailability = asyncHandler(async (req, res) => {
     const { salonId } = req.params;
-    const { date } = req.query;
+    const { date, staffId } = req.query;
 
     if (!salonId || !date) {
         throw new ApiError(400, "Salon ID and date are required");
@@ -217,12 +230,18 @@ const getAvailability = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Salon not found");
     }
 
-    // Fetch all confirmed/pending bookings for this salon on this date
-    const bookings = await Booking.find({
+    let query = {
         salon: salonId,
         date: date,
         status: { $in: ["pending", "confirmed"] }
-    });
+    };
+
+    if (staffId) {
+        query.staff = staffId;
+    }
+
+    // Fetch all confirmed/pending bookings for this salon on this date
+    const bookings = await Booking.find(query);
 
     // We'll return an object mapping time slots to their booking counts
     // The frontend can then compare these to salon.totalSeats
@@ -236,7 +255,7 @@ const getAvailability = asyncHandler(async (req, res) => {
     return res.status(200).json(
         new ApiResponse(200, {
             availability,
-            totalSeats: salon.totalSeats || 6
+            totalSeats: staffId ? 1 : (salon.totalSeats || 6)
         }, "Availability fetched successfully")
     );
 });

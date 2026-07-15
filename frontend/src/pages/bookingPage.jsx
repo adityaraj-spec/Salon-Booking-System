@@ -170,7 +170,7 @@ export function BookingPage() {
             setAvailabilityLoading(true);
             try {
                 const response = await axiosInstance.get(`/bookings/availability/${id}`, {
-                    params: { date }
+                    params: { date, staffId: selectedStaff?._id }
                 });
                 if (response.data.success) {
                     setAvailability(response.data.data.availability || {});
@@ -183,7 +183,7 @@ export function BookingPage() {
         };
 
         fetchAvailability();
-    }, [id, date]);
+    }, [id, date, selectedStaff]);
 
     const toggleService = (service) => {
         setSelectedServices(prev =>

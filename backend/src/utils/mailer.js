@@ -16,9 +16,10 @@ const getTransporter = async () => {
     const smtpSecure = process.env.SMTP_SECURE === "true";
 
     if (smtpUser && smtpPass) {
+        const isGmail = smtpHost.includes("gmail.com");
         console.log(`[Mailer] Initializing with ${smtpHost}:${smtpPort} (User: ${smtpUser})`);
         cachedTransporter = nodemailer.createTransport({
-            host: smtpHost,
+            ...(isGmail ? { service: "gmail" } : { host: smtpHost }),
             port: smtpPort,
             secure: smtpSecure,
             auth: { user: smtpUser, pass: smtpPass },

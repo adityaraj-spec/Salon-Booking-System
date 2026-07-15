@@ -1,4 +1,5 @@
 import express from "express";
+import path from "path";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
@@ -78,6 +79,12 @@ app.use("/api/v1/services", serviceRouter);
 app.use("/api/v1/staff", staffRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/owner", ownerRouter);
+
+
+// SPA Fallback for generic routes (must be placed before generic error handler)
+app.get(/^(?!\/api).*$/, (req, res) => {
+    res.sendFile(path.resolve("public", "index.html"));
+});
 
 // common error handling middleware
 app.use((err, req, res, next) => {
