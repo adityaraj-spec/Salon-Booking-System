@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import fs from "fs";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
@@ -15,12 +16,16 @@ import staffRouter from "./routes/staff.routes.js";
 import adminRouter from "./routes/admin.routes.js";
 import ownerRouter from "./routes/owner.routes.js";
 import paymentRouter from "./routes/payment.routes.js";
+import healthRouter from "./routes/health.routes.js";
 import ApiError from "./utils/apiError.js";
 
 import { sanitizeNoSQL } from "./middleware/sanitize.js";
+import { requestIdMiddleware } from "./middleware/requestId.js";
 
 const app = express();
 app.set("trust proxy", 1);
+
+app.use(requestIdMiddleware);
 
 app.use(cors({
     origin: (process.env.CORS_ORIGIN || "").split(","),
@@ -29,7 +34,12 @@ app.use(cors({
 
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ limit: "16kb", extended: true }));
-app.use(express.static("public"));
+
+// Health check probes (mounted before static middleware)
+app.use("/health", healthRouter);
+app.use("/api/v1/health", healthRouter);
+
+app.use(express.static("public", { fallthrough: true }));
 app.use(cookieParser());
 app.use(sanitizeNoSQL);
 
@@ -88,22 +98,28 @@ app.use("/api/v1/payments", paymentRouter);
 
 
 // SPA Fallback for generic routes (must be placed before generic error handler)
-app.get(/^(?!\/api).*$/, (req, res) => {
-    res.sendFile(path.resolve("public", "index.html"));
+app.get(/^(?!\/(api|health)).*$/, (req, res, next) => {
+    const indexPath = path.resolve("public", "index.html");
+    if (fs.existsSync(indexPath)) {
+        return res.sendFile(indexPath);
+    }
+    next();
 });
 
-// common error handling middleware
+// Common error handling middleware
 app.use((err, req, res, next) => {
-    // Log error for debugging in server logs
-    console.error(`Error [${err.statusCode || 500}]:`, err.message);
+    const requestId = req.id || "N/A";
+    console.error(`Error [${err.statusCode || 500}] (ReqID: ${requestId}):`, err.message);
     if (err.stack) console.error(err.stack);
 
     if (err instanceof ApiError) {
         return res.status(err.statusCode).json({
             success: false,
             message: err.message,
-            errors: err.errors,
-            data: err.data
+            code: err.code || `ERR_${err.statusCode}`,
+            errors: err.errors || [],
+            data: err.data || null,
+            requestId,
         });
     }
 
@@ -111,6 +127,9 @@ app.use((err, req, res, next) => {
     return res.status(500).json({
         success: false,
         message: err.message || "Internal Server Error",
+        code: "INTERNAL_SERVER_ERROR",
+        errors: [],
+        requestId,
     });
 });
 

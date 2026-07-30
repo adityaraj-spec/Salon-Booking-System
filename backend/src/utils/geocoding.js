@@ -1,7 +1,7 @@
 import mbxGeocoding from "@mapbox/mapbox-sdk/services/geocoding.js";
 
 const mapBoxToken = process.env.MAPBOX_ACCESS_TOKEN;
-const geocodingClient = mbxGeocoding({ accessToken: mapBoxToken });
+const geocodingClient = mapBoxToken ? mbxGeocoding({ accessToken: mapBoxToken }) : null;
 
 /**
  * Geocode an address to [longitude, latitude]
@@ -9,6 +9,9 @@ const geocodingClient = mbxGeocoding({ accessToken: mapBoxToken });
  * @returns {Promise<number[]>} - Returns [longitude, latitude]
  */
 export const geocodeAddress = async (address) => {
+    if (!geocodingClient) {
+        return null;
+    }
     try {
         const response = await geocodingClient
             .forwardGeocode({
