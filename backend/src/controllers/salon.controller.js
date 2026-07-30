@@ -70,125 +70,41 @@ const registerSalon = asyncHandler(async (req, res) => {
     )
 })
 
+import { searchSalonsNearby } from "../services/search.service.js";
+
 const getSalons = asyncHandler(async (req, res) => {
-    const { search, city, page = 1, limit = 8, sortBy, sortOrder = "asc", topRated } = req.query;
+    const { search, query, city, page = 1, limit = 8, longitude, latitude, maxDistanceMeters, rating } = req.query;
 
-    // Parse pagination parameters
-    const currentPage = parseInt(page);
-    const pageLimit = parseInt(limit);
-    const skip = (currentPage - 1) * pageLimit;
-
-    let query = {};
-
-    if (search) {
-        const escaped = escapeRegex(search);
-        query.$or = [
-            { name: { $regex: escaped, $options: "i" } },
-            { description: { $regex: escaped, $options: "i" } },
-            { address: { $regex: escaped, $options: "i" } },
-            { city: { $regex: escaped, $options: "i" } },
-            { state: { $regex: escaped, $options: "i" } }
-        ];
-    }
-
-    if (city) {
-        query.city = { $regex: escapeRegex(city), $options: "i" };
-    }
-
-    // New: Top Rated Filter (Threshold 4.0)
-    if (topRated === "true" || topRated === true) {
-        query.rating = { $gte: 4.0 };
-    }
-
-    let salons;
-    let totalSalons;
-
-    if (sortBy === "price") {
-        // Use aggregation to sort by minimum service price
-        const pipeline = [
-            { $match: query },
-            {
-                $lookup: {
-                    from: "services",
-                    localField: "_id",
-                    foreignField: "salon",
-                    as: "services"
-                }
-            },
-            {
-                $addFields: {
-                    minPrice: { $min: "$services.price" }
-                }
-            },
-            { $sort: { minPrice: sortOrder === "asc" ? 1 : -1 } },
-            { $skip: skip },
-            { $limit: pageLimit }
-        ];
-        salons = await Salon.aggregate(pipeline);
-        totalSalons = await Salon.countDocuments(query);
-    } else {
-        // Handle other sorts
-        let sortCriteria = { createdAt: -1 };
-        if (sortBy === "rating") {
-            sortCriteria = { rating: -1 };
-        } else if (sortBy === "city") {
-            sortCriteria = { city: sortOrder === "asc" ? 1 : -1 };
-        }
-
-        totalSalons = await Salon.countDocuments(query);
-        salons = await Salon.find(query)
-            .populate("owner", "fullName phonenumber")
-            .sort(sortCriteria)
-            .skip(skip)
-            .limit(pageLimit);
-    }
-
-    // --- CALCULATE LIVE AVAILABILITY FOR THE LIST ---
-    const now = new Date();
-    const today = now.toISOString().split('T')[0];
-    const hour = now.getHours();
-    const displayHour = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
-    const ampm = hour >= 12 ? "PM" : "AM";
-    const timeMatcher = new RegExp(`^(?:${hour}:|0${hour}:|${displayHour}:|0${displayHour}:).*${ampm}|^(?:${hour}:|0${hour}:)`, "i");
-
-    const salonsWithAvailability = await Promise.all(salons.map(async (salonDoc) => {
-        // If it was aggregation (raw obj) or find (mongoose doc)
-        const salon = salonDoc.toObject ? salonDoc.toObject() : salonDoc;
-
-        const activeBookingsCount = await Booking.countDocuments({
-            salon: salon._id,
-            date: today,
-            status: { $in: ["pending", "confirmed"] },
-            time: { $regex: timeMatcher }
-        });
-
-        const totalSeatsValue = salon.totalSeats || 6;
-        const availableSeats = Math.max(0, totalSeatsValue - activeBookingsCount);
-
-        return {
-            ...salon,
-            availableSeats
-        };
-    }));
-
-    const totalPages = Math.ceil(totalSalons / pageLimit);
+    const result = await searchSalonsNearby({
+        longitude,
+        latitude,
+        maxDistanceMeters,
+        city,
+        rating,
+        query: search || query,
+        page,
+        limit,
+    });
 
     return res.status(200).json(
         new ApiResponse(
             200,
             {
-                salons: salonsWithAvailability,
+                salons: result.data,
                 pagination: {
-                    totalSalons,
-                    totalPages,
-                    currentPage,
-                    limit: pageLimit
-                }
+                    totalSalons: result.pagination.totalItems,
+                    totalPages: result.pagination.totalPages,
+                    currentPage: result.pagination.currentPage,
+                    limit: result.pagination.limit,
+                    hasNextPage: result.pagination.hasNext,
+                    hasPrevPage: result.pagination.hasPrev,
+                },
             },
             "Salons fetched successfully"
         )
     );
 });
+
 
 const getSalonById = asyncHandler(async (req, res) => {
     const { id } = req.params;
