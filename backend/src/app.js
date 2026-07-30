@@ -18,15 +18,18 @@ import ownerRouter from "./routes/owner.routes.js";
 import paymentRouter from "./routes/payment.routes.js";
 import healthRouter from "./routes/health.routes.js";
 import growthRouter from "./routes/growth.routes.js";
+import metricsRouter from "./routes/metrics.routes.js";
 import ApiError from "./utils/apiError.js";
 
 import { sanitizeNoSQL } from "./middleware/sanitize.js";
 import { requestIdMiddleware } from "./middleware/requestId.js";
+import { prometheusMetricsMiddleware } from "./middleware/metricsMiddleware.js";
 
 const app = express();
 app.set("trust proxy", 1);
 
 app.use(requestIdMiddleware);
+app.use(prometheusMetricsMiddleware);
 
 app.use(cors({
     origin: (process.env.CORS_ORIGIN || "").split(","),
@@ -36,9 +39,11 @@ app.use(cors({
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ limit: "16kb", extended: true }));
 
-// Health check probes (mounted before static middleware)
+// Health check probes and Metrics endpoint (mounted before static middleware)
 app.use("/health", healthRouter);
 app.use("/api/v1/health", healthRouter);
+app.use("/metrics", metricsRouter);
+
 
 app.use(express.static("public", { fallthrough: true }));
 app.use(cookieParser());
