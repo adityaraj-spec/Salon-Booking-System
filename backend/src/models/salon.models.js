@@ -34,6 +34,32 @@ const salonSchema = new mongoose.Schema({
   },
   openingHours: String,
   closingHours: String,
+  operatingHours: [
+    {
+      dayOfWeek: {
+        type: Number,
+        min: 0,
+        max: 6,
+        required: true,
+      },
+      openTime: {
+        type: String,
+        default: "09:00",
+      },
+      closeTime: {
+        type: String,
+        default: "21:00",
+      },
+      isClosed: {
+        type: Boolean,
+        default: false,
+      },
+    },
+  ],
+  defaultBufferMinutes: {
+    type: Number,
+    default: 15,
+  },
   rating: {
     type: Number,
     default: 0

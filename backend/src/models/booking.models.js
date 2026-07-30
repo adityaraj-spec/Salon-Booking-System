@@ -27,6 +27,22 @@ const bookingSchema = new mongoose.Schema(
     totalAmount: Number,
     date: String,
     time: String,
+    startTime: {
+      type: Date,
+      index: true
+    },
+    endTime: {
+      type: Date,
+      index: true
+    },
+    durationMinutes: {
+      type: Number,
+      default: 30
+    },
+    bufferMinutes: {
+      type: Number,
+      default: 0
+    },
     holdId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "BookingHold"
@@ -55,6 +71,9 @@ bookingSchema.index({ idempotencyKey: 1 }, { unique: true, sparse: true });
 bookingSchema.index({ customer: 1, status: 1, date: 1 });
 bookingSchema.index({ salon: 1, status: 1, date: 1 });
 bookingSchema.index({ staff: 1, date: 1, time: 1 });
+bookingSchema.index({ salon: 1, startTime: 1, endTime: 1, status: 1 });
+bookingSchema.index({ staff: 1, startTime: 1, endTime: 1, status: 1 });
 
 export const Booking = mongoose.model("Booking", bookingSchema);
+
 

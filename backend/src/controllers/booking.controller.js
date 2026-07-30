@@ -185,35 +185,46 @@ const getAvailability = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Salon not found");
     }
 
-    let query = {
+    const now = new Date();
+
+    const bookingQuery = {
         salon: salonId,
-        date: date,
-        status: { $in: ["pending", "confirmed"] }
+        status: { $in: ["pending", "pending_payment", "confirmed"] }
+    };
+
+    const holdQuery = {
+        salon: salonId,
+        status: "active",
+        expiresAt: { $gt: now }
     };
 
     if (staffId) {
-        query.staff = staffId;
+        bookingQuery.staff = staffId;
+        holdQuery.staff = staffId;
     }
 
-    // Fetch all confirmed/pending bookings for this salon on this date
-    const bookings = await Booking.find(query);
+    const [bookings, holds] = await Promise.all([
+        Booking.find(bookingQuery).select("time startTime endTime date staff"),
+        BookingHold.find(holdQuery).select("time startTime endTime date staff")
+    ]);
 
-    // We'll return an object mapping time slots to their booking counts
-    // The frontend can then compare these to salon.totalSeats
     const availability = {};
-    bookings.forEach(b => {
-        // Extract the hour/AM-PM part to group slots if they aren't exactly identical strings
-        const timeKey = b.time; 
-        availability[timeKey] = (availability[timeKey] || 0) + 1;
+    [...bookings, ...holds].forEach(b => {
+        const timeKey = b.time;
+        if (timeKey) {
+            availability[timeKey] = (availability[timeKey] || 0) + 1;
+        }
     });
 
     return res.status(200).json(
         new ApiResponse(200, {
             availability,
-            totalSeats: staffId ? 1 : (salon.totalSeats || 6)
-        }, "Availability fetched successfully")
+            totalSeats: staffId ? 1 : (salon.totalSeats || 6),
+            defaultBufferMinutes: salon.defaultBufferMinutes || 15
+        }, "Time-range availability fetched successfully")
     );
 });
+
 
 import { createHold, cancelHold } from "../services/hold.service.js";
 import { initiateBookingFromHold, cancelPendingBooking } from "../services/booking.service.js";

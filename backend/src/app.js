@@ -14,6 +14,7 @@ import serviceRouter from "./routes/service.routes.js";
 import staffRouter from "./routes/staff.routes.js";
 import adminRouter from "./routes/admin.routes.js";
 import ownerRouter from "./routes/owner.routes.js";
+import paymentRouter from "./routes/payment.routes.js";
 import ApiError from "./utils/apiError.js";
 
 import { sanitizeNoSQL } from "./middleware/sanitize.js";
@@ -83,6 +84,7 @@ app.use("/api/v1/services", serviceRouter);
 app.use("/api/v1/staff", staffRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/owner", ownerRouter);
+app.use("/api/v1/payments", paymentRouter);
 
 
 // SPA Fallback for generic routes (must be placed before generic error handler)

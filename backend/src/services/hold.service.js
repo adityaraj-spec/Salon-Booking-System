@@ -1,6 +1,10 @@
 import mongoose from "mongoose";
 import { BookingHold } from "../models/bookingHold.model.js";
 import { checkAndIncrementHoldCapacity, decrementHoldCapacity } from "./capacity.service.js";
+
+import { calculateServicesDurationAndPrice } from "./duration.service.js";
+import { checkTimeRangeAvailability } from "./availability.service.js";
+import { parseDateTimeString, validateOperatingHours } from "../utils/timeRange.js";
 import { scheduleHoldExpiry } from "../queues/holdExpiry.queue.js";
 import { withTransactionRetry } from "../utils/transaction.js";
 import ApiError from "../utils/apiError.js";
@@ -8,7 +12,7 @@ import ApiError from "../utils/apiError.js";
 export const HOLD_DURATION_MS = 10 * 60 * 1000; // 10 minutes
 
 /**
- * Creates a 10-minute hold on a salon slot with transaction retries.
+ * Creates a 10-minute hold on a salon time range with transaction retries.
  */
 export const createHold = async ({
   salonId,
@@ -19,7 +23,8 @@ export const createHold = async ({
   serviceNames,
   date,
   time,
-  totalAmount,
+  startTime: inputStartTime,
+  totalAmount: inputTotalAmount,
   idempotencyKey,
 }) => {
   // Idempotency check: if key already used for an active hold, return existing hold
@@ -35,21 +40,66 @@ export const createHold = async ({
     }
   }
 
+  // 1. Calculate duration, total price, and buffer time from selected services & salon
+  const {
+    services: serviceDocs,
+    serviceNames: fetchedServiceNames,
+    totalAmount: calculatedAmount,
+    durationMinutes,
+    bufferMinutes,
+    totalDurationWithBuffer,
+    salon,
+  } = await calculateServicesDurationAndPrice(services, salonId);
+
+  // 2. Compute exact startTime and endTime ISODate objects
+  let startTime;
+  if (inputStartTime) {
+    startTime = new Date(inputStartTime);
+  } else if (date && time) {
+    startTime = parseDateTimeString(date, time);
+  } else {
+    throw new ApiError(400, "Either startTime or date and time are required.");
+  }
+
+  if (isNaN(startTime.getTime())) {
+    throw new ApiError(400, "Invalid start time provided.");
+  }
+
+  const endTime = new Date(startTime.getTime() + totalDurationWithBuffer * 60 * 1000);
+
+  // 3. Validate requested time range against salon operating hours
+  validateOperatingHours(startTime, endTime, salon);
+
   const expiresAt = new Date(Date.now() + HOLD_DURATION_MS);
   const holdId = new mongoose.Types.ObjectId();
 
+  const finalTotalAmount = inputTotalAmount || calculatedAmount;
+  const finalServiceNames = serviceNames && serviceNames.length > 0 ? serviceNames : fetchedServiceNames;
+  const formattedDate = date || startTime.toISOString().split("T")[0];
+  const formattedTime = time || startTime.toISOString().split("T")[1].substring(0, 5);
+
   const holdDoc = await withTransactionRetry(async (session) => {
-    // 1. Check and reserve capacity + staff lock
+    // 4a. Verify time-range availability (overlap check across active holds & bookings)
+    await checkTimeRangeAvailability({
+      salonId,
+      staffId,
+      startTime,
+      endTime,
+      totalSeats: salon.totalSeats || 6,
+      session,
+    });
+
+    // 4b. Increment SlotCapacity and lock staff slot
     await checkAndIncrementHoldCapacity({
       salonId,
       staffId,
-      date,
-      time,
+      date: formattedDate,
+      time: formattedTime,
       holdId,
       session,
     });
 
-    // 2. Insert hold record
+    // 5. Insert hold record with time-range fields
     const [createdHold] = await BookingHold.create(
       [
         {
@@ -59,10 +109,14 @@ export const createHold = async ({
           staff: staffId || undefined,
           staffName,
           services,
-          serviceNames,
-          date,
-          time,
-          totalAmount,
+          serviceNames: finalServiceNames,
+          date: formattedDate,
+          time: formattedTime,
+          startTime,
+          endTime,
+          durationMinutes,
+          bufferMinutes,
+          totalAmount: finalTotalAmount,
           status: "active",
           expiresAt,
           idempotencyKey,
@@ -74,7 +128,8 @@ export const createHold = async ({
     return createdHold;
   });
 
-  // 3. Schedule automated expiry background job in BullMQ
+
+  // 6. Schedule automated expiry background job in BullMQ
   await scheduleHoldExpiry(holdDoc._id.toString(), HOLD_DURATION_MS);
 
   return holdDoc;
