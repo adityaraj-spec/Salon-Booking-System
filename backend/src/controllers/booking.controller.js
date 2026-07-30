@@ -278,6 +278,40 @@ const cancelPendingBookingHandler = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, cancelledBooking, "Pending booking cancelled successfully"));
 });
 
+import { createWalkInBooking } from "../services/walkin.service.js";
+import { rescheduleBooking } from "../services/reschedule.service.js";
+
+const createWalkInBookingHandler = asyncHandler(async (req, res) => {
+  const { salonId, staffId, staffName, serviceIds, customerName, customerPhone, startTime, source } = req.body;
+
+  const booking = await createWalkInBooking({
+    salonId,
+    ownerId: req.user._id,
+    staffId,
+    staffName,
+    serviceIds,
+    customerName,
+    customerPhone,
+    startTime,
+    source,
+  });
+
+  return res.status(201).json(new ApiResponse(201, booking, "Walk-in booking created and confirmed successfully"));
+});
+
+const rescheduleBookingHandler = asyncHandler(async (req, res) => {
+  const { bookingId } = req.params;
+  const { newStartTime } = req.body;
+
+  const rescheduled = await rescheduleBooking({
+    bookingId,
+    customerId: req.user._id,
+    newStartTime,
+  });
+
+  return res.status(200).json(new ApiResponse(200, rescheduled, "Booking rescheduled successfully"));
+});
+
 export { 
     createBooking, 
     getUserBookings, 
@@ -286,6 +320,7 @@ export {
     getAvailability,
     createHoldHandler,
     initiateBookingHandler,
-    cancelPendingBookingHandler
+    cancelPendingBookingHandler,
+    createWalkInBookingHandler,
+    rescheduleBookingHandler,
 };
-

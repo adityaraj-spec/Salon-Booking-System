@@ -132,4 +132,103 @@ const updateStaff = asyncHandler(async (req, res) => {
     );
 });
 
-export { addStaff, getSalonStaff, deleteStaff, updateStaff };
+import {
+    updateStaffSchedule,
+    addStaffException,
+    removeStaffException,
+} from "../services/staff.service.js";
+
+const updateStaffScheduleHandler = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { salonId, schedule } = req.body;
+
+    const salon = await Salon.findById(salonId);
+    if (!salon) {
+        throw new ApiError(404, "Salon not found");
+    }
+
+    const isOwner = salon.owner.toString() === req.user._id.toString();
+    const isSuperAdmin = req.user.role?.toString().trim().toLowerCase() === "super_admin";
+
+    if (!isOwner && !isSuperAdmin) {
+        throw new ApiError(403, "Access Denied: You do not have permission to update schedule for this staff member");
+    }
+
+    const updatedStaff = await updateStaffSchedule({
+        staffId: id,
+        salonId,
+        schedule,
+    });
+
+    return res.status(200).json(
+        new ApiResponse(200, updatedStaff, "Staff schedule updated successfully")
+    );
+});
+
+const addStaffExceptionHandler = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { salonId, date, type, reason } = req.body;
+
+    const salon = await Salon.findById(salonId);
+    if (!salon) {
+        throw new ApiError(404, "Salon not found");
+    }
+
+    const isOwner = salon.owner.toString() === req.user._id.toString();
+    const isSuperAdmin = req.user.role?.toString().trim().toLowerCase() === "super_admin";
+
+    if (!isOwner && !isSuperAdmin) {
+        throw new ApiError(403, "Access Denied: You do not have permission to add exceptions for this staff member");
+    }
+
+    const updatedStaff = await addStaffException({
+        staffId: id,
+        salonId,
+        date,
+        type,
+        reason,
+    });
+
+    return res.status(200).json(
+        new ApiResponse(200, updatedStaff, "Staff exception added successfully")
+    );
+});
+
+const removeStaffExceptionHandler = asyncHandler(async (req, res) => {
+    const { id, exceptionId } = req.params;
+    const { salonId } = req.query;
+
+    const staff = await Staff.findById(id);
+    if (!staff) {
+        throw new ApiError(404, "Staff member not found");
+    }
+
+    const salon = await Salon.findById(staff.salon);
+    const isOwner = salon.owner.toString() === req.user._id.toString();
+    const isSuperAdmin = req.user.role?.toString().trim().toLowerCase() === "super_admin";
+
+    if (!isOwner && !isSuperAdmin) {
+        throw new ApiError(403, "Access Denied: You do not have permission to remove exceptions for this staff member");
+    }
+
+    const updatedStaff = await removeStaffException({
+        staffId: id,
+        salonId: staff.salon,
+        exceptionId,
+    });
+
+    return res.status(200).json(
+        new ApiResponse(200, updatedStaff, "Staff exception removed successfully")
+    );
+});
+
+export {
+    addStaff,
+    getSalonStaff,
+    deleteStaff,
+    updateStaff,
+    updateStaffScheduleHandler,
+    addStaffExceptionHandler,
+    removeStaffExceptionHandler,
+};
+

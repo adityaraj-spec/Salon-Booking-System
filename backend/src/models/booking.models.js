@@ -55,6 +55,15 @@ const bookingSchema = new mongoose.Schema(
     idempotencyKey: {
       type: String
     },
+    source: {
+      type: String,
+      enum: ["online", "walk_in", "phone"],
+      default: "online"
+    },
+    rescheduledFrom: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Booking"
+    },
     status: {
       type: String,
       enum: ["pending", "pending_payment", "confirmed", "completed", "cancelled", "rejected", "no_show"],
