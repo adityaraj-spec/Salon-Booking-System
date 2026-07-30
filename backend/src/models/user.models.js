@@ -46,13 +46,23 @@ const userSchema = new mongoose.Schema({
   verificationCode: {
     type: String
   },
-  verificationCodeExpiry: {
-    type: Date
-  },
   favorites: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: "Salon"
-  }]
+  }],
+  referralCode: {
+    type: String,
+    sparse: true,
+    unique: true
+  },
+  referredBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  },
+  loyaltyPoints: {
+    type: Number,
+    default: 0
+  }
 }, { timestamps: true });
 
 userSchema.pre("save", async function () {
