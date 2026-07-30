@@ -42,6 +42,10 @@ const salonSchema = new mongoose.Schema({
     type: Number,
     default: 6 // Default capacity per salon
   },
+  timezone: {
+    type: String,
+    default: "Asia/Kolkata"
+  },
   isOpen: {
     type: Boolean,
     default: true
@@ -54,7 +58,7 @@ const salonSchema = new mongoose.Schema({
     },
     coordinates: {
       type: [Number], // [longitude, latitude]
-      index: '2dsphere'
+      default: [0, 0]
     }
   }
 }, { timestamps: true });

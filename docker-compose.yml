@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:7.0
+    container_name: salonnow-mongo
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: >
+        mongosh --eval "
+          try {
+            if (rs.status().ok === 1) quit(0);
+          } catch(e) {}
+          rs.initiate({
+            _id: 'rs0',
+            members: [{ _id: 0, host: 'localhost:27017' }]
+          });
+        "
+      interval: 5s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
+
+  redis:
+    image: redis:7-alpine
+    container_name: salonnow-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  hold-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.worker
+    container_name: salonnow-hold-worker
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/salonnow?replicaSet=rs0
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
+volumes:
+  mongo_data:

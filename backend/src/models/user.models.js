@@ -92,4 +92,19 @@ userSchema.methods.generateRefreshToken = function () {
     }
   )
 }
+
+userSchema.methods.setRefreshToken = async function (refreshToken) {
+  if (!refreshToken) {
+    this.refreshToken = undefined;
+  } else {
+    this.refreshToken = await bcrypt.hash(refreshToken, 10);
+  }
+};
+
+userSchema.methods.isRefreshTokenCorrect = async function (refreshToken) {
+  if (!this.refreshToken || !refreshToken) return false;
+  return await bcrypt.compare(refreshToken, this.refreshToken);
+};
+
 export const User = mongoose.model("User", userSchema);
+

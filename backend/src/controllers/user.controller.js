@@ -5,6 +5,8 @@ import { User } from "../models/user.models.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
 import { sendWelcomeEmail, sendLoginEmail, sendLogoutEmail, sendVerificationEmail } from "../utils/mailer.js"
 import { ROLES } from "../constants.js"
+import { generateOTP, hashOTP, verifyOTPHash, checkOTPLockout, recordOTPAttempt, clearOTPState } from "../utils/otp.js"
+
 
 const VERIFICATION_CODE_EXPIRY_MINUTES = 15;
 
@@ -14,7 +16,7 @@ const generateAccessAndRefreshToken = async (userId) => {
         const accessToken = user.generateAccessToken()
         const refreshToken = user.generateRefreshToken()
 
-        user.refreshToken = refreshToken
+        await user.setRefreshToken(refreshToken)
         await user.save({
             validateBeforeSave: false
         }) //jab bhi save karate hai to mongoose ke field kin in ho jata hai to wo save hone se pahke ye puchhta hai ki pass word kaha hai to usi ko resolve karne ke liye false kiye hai
@@ -54,8 +56,9 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(409, "User with email or username already exists")
     }
 
-    // Generate a 4-digit verification code
-    const verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
+    // Generate a secure 6-digit verification code and hash it for storage
+    const rawVerificationCode = generateOTP();
+    const verificationCodeHash = hashOTP(rawVerificationCode);
     const verificationCodeExpiry = new Date(Date.now() + VERIFICATION_CODE_EXPIRY_MINUTES * 60 * 1000);
 
     const user = await User.create({
@@ -66,7 +69,7 @@ const registerUser = asyncHandler(async (req, res) => {
         phonenumber,
         role,
         isVerified: false,
-        verificationCode,
+        verificationCode: verificationCodeHash,
         verificationCodeExpiry
     })
 
@@ -75,15 +78,15 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(505, "Something went wrong registering the user")
     }
 
-    // Send verification email (do not await to avoid blocking response)
-    sendVerificationEmail(email, fullName, verificationCode).catch(err => {
+    // Send verification email with raw code (do not await to avoid blocking response)
+    sendVerificationEmail(email, fullName, rawVerificationCode).catch(err => {
         console.error("[registerUser] Failed to send verification email:", err.message);
     });
 
     return res
         .status(201)
         .json(
-            new ApiResponse(201, { email: createdUser.email }, "Account created! Please check your email for the 4-digit verification code.")
+            new ApiResponse(201, { email: createdUser.email }, "Account created! Please check your email for the 6-digit verification code.")
         )
 })
 
@@ -94,6 +97,9 @@ const verifyEmail = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Email and verification code are required");
     }
 
+    // Check if account is locked out due to prior failed attempts
+    await checkOTPLockout(email);
+
     const user = await User.findOne({ email });
     if (!user) {
         throw new ApiError(404, "User not found");
@@ -103,15 +109,20 @@ const verifyEmail = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Email is already verified. Please log in.");
     }
 
-    // Check if code matches
-    if (user.verificationCode !== code.toString()) {
-        throw new ApiError(400, "Invalid verification code");
-    }
-
     // Check if code has expired
     if (!user.verificationCodeExpiry || user.verificationCodeExpiry < new Date()) {
         throw new ApiError(400, "Verification code has expired. Please request a new one.");
     }
+
+    // Check if code matches (constant-time comparison against SHA-256 hash)
+    const isValid = verifyOTPHash(code.toString(), user.verificationCode);
+    if (!isValid) {
+        await recordOTPAttempt(email);
+        throw new ApiError(400, "Invalid verification code");
+    }
+
+    // Clear attempt/lockout state in Redis
+    await clearOTPState(email);
 
     // Mark user as verified and clear the code fields
     user.isVerified = true;
@@ -149,6 +160,8 @@ const resendVerificationCode = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Email is required");
     }
 
+    await checkOTPLockout(email);
+
     const user = await User.findOne({ email });
     if (!user) {
         throw new ApiError(404, "User not found");
@@ -158,15 +171,16 @@ const resendVerificationCode = asyncHandler(async (req, res) => {
         throw new ApiError(400, "This email is already verified. Please log in.");
     }
 
-    // Generate a fresh 4-digit code
-    const verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
+    // Generate a fresh 6-digit code and hash it
+    const rawVerificationCode = generateOTP();
+    const verificationCodeHash = hashOTP(rawVerificationCode);
     const verificationCodeExpiry = new Date(Date.now() + VERIFICATION_CODE_EXPIRY_MINUTES * 60 * 1000);
 
-    user.verificationCode = verificationCode;
+    user.verificationCode = verificationCodeHash;
     user.verificationCodeExpiry = verificationCodeExpiry;
     await user.save({ validateBeforeSave: false });
 
-    sendVerificationEmail(email, user.fullName, verificationCode).catch(err => {
+    sendVerificationEmail(email, user.fullName, rawVerificationCode).catch(err => {
         console.error("[resendVerificationCode] Failed to send email:", err.message);
     });
 
@@ -195,19 +209,22 @@ const loginUser = asyncHandler(async (req, res) => {
 
     // Block login for unverified users and resend a fresh code
     if (!user.isVerified) {
-        const verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
+        await checkOTPLockout(user.email);
+        const rawVerificationCode = generateOTP();
+        const verificationCodeHash = hashOTP(rawVerificationCode);
         const verificationCodeExpiry = new Date(Date.now() + VERIFICATION_CODE_EXPIRY_MINUTES * 60 * 1000);
 
-        user.verificationCode = verificationCode;
+        user.verificationCode = verificationCodeHash;
         user.verificationCodeExpiry = verificationCodeExpiry;
         await user.save({ validateBeforeSave: false });
 
-        sendVerificationEmail(user.email, user.fullName, verificationCode).catch(err => {
+        sendVerificationEmail(user.email, user.fullName, rawVerificationCode).catch(err => {
             console.error("[loginUser] Failed to resend verification email:", err.message);
         });
 
         throw new ApiError(403, "Email not verified. A new verification code has been sent to your email.")
     }
+
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id)
 

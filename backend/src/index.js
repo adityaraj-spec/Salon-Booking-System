@@ -4,6 +4,7 @@ import connectDB from "./db/index.js"
 import app from "./app.js"
 import { initializeSocket } from "./socket.js";
 import { verifyTransporter } from "./utils/mailer.js";
+import { startHoldWatcher } from "./changeStreams/holdWatcher.js";
 
 dotenv.config({
     path: "./.env"
@@ -14,6 +15,8 @@ initializeSocket(server);
 
 connectDB()
     .then(() => {
+        startHoldWatcher();
+
         server.on("error", (error) => {
             console.log("Error", error)
             process.exit(1)
@@ -27,5 +30,6 @@ connectDB()
     }).catch((error) => {
         console.log("MongoDB connection failed!!", error)
     })
+
 
 // CORS fix reload

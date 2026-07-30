@@ -10,108 +10,63 @@ import { emitToUser, emitToAll } from "../socket.js";
 
 const createBooking = asyncHandler(async (req, res) => {
     const { salonId, services, staff, date, time, totalAmount, serviceNames, staffName } = req.body;
+    const idempotencyKey = req.headers["idempotency-key"] || req.body.idempotencyKey || `legacy-${req.user._id}-${Date.now()}`;
 
     if (!salonId || !date || !time) {
         throw new ApiError(400, "Salon, date, and time are required");
     }
 
-    const salon = await Salon.findById(salonId);
-    if (!salon) {
-        throw new ApiError(404, "Salon not found");
-    }
-
-    // --- CHECK CAPACITY BEFORE BOOKING ---
-    // Match the hour of the requested time (e.g., "10:30 AM" matches "10")
-    const requestedHourMatch = time.match(/(^|\D)(\d+)(?=:)/);
-    const requestedHour = requestedHourMatch ? requestedHourMatch[0].trim() : "";
-    const ampmMatch = time.match(/AM|PM/i);
-    const ampm = ampmMatch ? ampmMatch[0].toUpperCase() : "";
-
-    // Regex to match anything in the same hour block
-    const timeMatcher = new RegExp(`^(?:${requestedHour}:|0${requestedHour}:).*${ampm}`, "i");
-
-    if (staff) {
-        const staffBooked = await Booking.findOne({
-            salon: salonId,
-            date: date,
-            status: { $in: ["pending", "confirmed"] },
-            time: { $regex: timeMatcher },
-            staff: staff
-        });
-        if (staffBooked) {
-             throw new ApiError(400, "Requested staff member is already booked at this time");
-        }
-    }
-
-    const existingBookingsCount = await Booking.countDocuments({
-        salon: salonId,
-        date: date,
-        status: { $in: ["pending", "confirmed"] },
-        time: { $regex: timeMatcher }
-    });
-
-    const totalSeats = salon.totalSeats || 6;
-    const isAvailable = existingBookingsCount < totalSeats;
-    const initialStatus = isAvailable ? "confirmed" : "pending";
-
-    const booking = await Booking.create({
-        customer: req.user._id,
-        salon: salonId,
+    // Step 1: Create 10-minute hold
+    const hold = await createHold({
+        salonId,
+        customerId: req.user._id,
+        staffId: staff || null,
+        staffName: staffName || "Any Available",
         services: services || [],
         serviceNames: serviceNames || [],
-        staff: staff || null,
-        staffName: staffName || "Any Available",
         date,
         time,
         totalAmount: totalAmount || 0,
-        status: initialStatus
+        idempotencyKey,
     });
 
-    // Notify customer appropriately
-    const bookingTime = `${date} at ${time}`;
-    if (initialStatus === "confirmed") {
+    // Step 2: Initiate booking from hold
+    const booking = await initiateBookingFromHold({
+        holdId: hold._id,
+        customerId: req.user._id,
+        idempotencyKey,
+    });
+
+    const salon = await Salon.findById(salonId);
+
+    // Send confirmation notifications
+    if (salon) {
+        const bookingTime = `${date} at ${time}`;
         sendBookingConfirmationEmail(
-            req.user.email, 
-            req.user.fullName, 
-            salon.name, 
-            bookingTime, 
-            totalAmount || 0, 
-            staffName || "Any Available", 
+            req.user.email,
+            req.user.fullName,
+            salon.name,
+            bookingTime,
+            totalAmount || 0,
+            staffName || "Any Available",
             serviceNames || []
         );
-    } else {
-        sendBookingPendingEmail(
-            req.user.email, 
-            req.user.fullName, 
-            salon.name, 
-            bookingTime, 
-            totalAmount || 0, 
-            staffName || "Any Available", 
-            serviceNames || []
-        );
+
+        const notification = await Notification.create({
+            recipient: salon.owner,
+            sender: req.user._id,
+            title: "New Confirmed Booking",
+            message: `New booking from ${req.user.fullName} for ${date} at ${time}.`,
+            type: "booking_confirmed",
+            bookingId: booking._id
+        });
+
+        emitToUser(salon.owner, "newNotification", notification);
+        emitToUser(salon.owner, "bookingUpdate", { booking, type: "NEW_REQUEST" });
     }
 
-    // Create notification for salon owner
-    const notification = await Notification.create({
-        recipient: salon.owner,
-        sender: req.user._id,
-        title: initialStatus === "confirmed" ? "New Confirmed Booking" : "New Booking Request",
-        message: initialStatus === "confirmed" 
-            ? `New auto-confirmed booking from ${req.user.fullName} for ${date} at ${time}.`
-            : `New pending request from ${req.user.fullName} for ${date} at ${time} (Over capacity).`,
-        type: initialStatus === "confirmed" ? "booking_confirmed" : "booking_request",
-        bookingId: booking._id
-    });
-
-    // --- SOCKET.IO EMIT ---
-    emitToUser(salon.owner, "newNotification", notification);
-    emitToUser(salon.owner, "bookingUpdate", { booking, type: "NEW_REQUEST" });
-
-
     return res.status(201).json(
-        new ApiResponse(201, booking, initialStatus === "confirmed" 
-            ? "Your booking has been automatically confirmed!" 
-            : "Request received! Since the salon is full, please wait for the owner to confirm.")
+        new ApiResponse(201, booking, "Your booking has been successfully confirmed!")
     );
 });
 
@@ -260,10 +215,66 @@ const getAvailability = asyncHandler(async (req, res) => {
     );
 });
 
+import { createHold, cancelHold } from "../services/hold.service.js";
+import { initiateBookingFromHold, cancelPendingBooking } from "../services/booking.service.js";
+
+const createHoldHandler = asyncHandler(async (req, res) => {
+  const { salonId, services, staff, staffName, date, time, totalAmount, serviceNames } = req.body;
+  const idempotencyKey = req.headers["idempotency-key"] || req.body.idempotencyKey;
+
+  if (!salonId || !date || !time) {
+    throw new ApiError(400, "Salon ID, date, and time are required");
+  }
+
+  const hold = await createHold({
+    salonId,
+    customerId: req.user._id,
+    staffId: staff || null,
+    staffName: staffName || "Any Available",
+    services: services || [],
+    serviceNames: serviceNames || [],
+    date,
+    time,
+    totalAmount: totalAmount || 0,
+    idempotencyKey,
+  });
+
+  return res.status(201).json(new ApiResponse(201, hold, "Slot held successfully for 10 minutes"));
+});
+
+const initiateBookingHandler = asyncHandler(async (req, res) => {
+  const { holdId } = req.body;
+  const idempotencyKey = req.headers["idempotency-key"] || req.body.idempotencyKey;
+
+  if (!holdId) {
+    throw new ApiError(400, "Hold ID is required to initiate booking");
+  }
+
+  const booking = await initiateBookingFromHold({
+    holdId,
+    customerId: req.user._id,
+    idempotencyKey,
+  });
+
+  return res.status(201).json(new ApiResponse(201, booking, "Booking initiated successfully"));
+});
+
+const cancelPendingBookingHandler = asyncHandler(async (req, res) => {
+  const { bookingId } = req.params;
+
+  const cancelledBooking = await cancelPendingBooking(bookingId, req.user._id);
+
+  return res.status(200).json(new ApiResponse(200, cancelledBooking, "Pending booking cancelled successfully"));
+});
+
 export { 
     createBooking, 
     getUserBookings, 
     getSalonBookings, 
     updateBookingStatus,
-    getAvailability
+    getAvailability,
+    createHoldHandler,
+    initiateBookingHandler,
+    cancelPendingBookingHandler
 };
+

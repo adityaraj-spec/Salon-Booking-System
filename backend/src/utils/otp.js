@@ -1,0 +1,114 @@
+import crypto from "crypto";
+import getRedisClient from "../lib/redis.js";
+import ApiError from "./apiError.js";
+
+const MAX_ATTEMPTS = 5;
+const INITIAL_LOCKOUT_SECONDS = 60; // 1 minute
+
+/**
+ * Generates a cryptographically secure 6-digit OTP code.
+ * @returns {string}
+ */
+export const generateOTP = () => {
+  return crypto.randomInt(100000, 999999).toString();
+};
+
+/**
+ * Hashes an OTP string using SHA-256.
+ * @param {string} otp
+ * @returns {string}
+ */
+export const hashOTP = (otp) => {
+  return crypto.createHash("sha256").update(otp.toString()).digest("hex");
+};
+
+/**
+ * Secure constant-time comparison of plain OTP against hashed OTP.
+ * @param {string} inputOTP
+ * @param {string} storedHash
+ * @returns {boolean}
+ */
+export const verifyOTPHash = (inputOTP, storedHash) => {
+  if (!inputOTP || !storedHash) return false;
+  const inputHash = hashOTP(inputOTP);
+  const bufferA = Buffer.from(inputHash, "utf8");
+  const bufferB = Buffer.from(storedHash, "utf8");
+  if (bufferA.length !== bufferB.length) return false;
+  return crypto.timingSafeEqual(bufferA, bufferB);
+};
+
+/**
+ * Checks if an email is locked out from verification attempts.
+ * @param {string} email
+ */
+export const checkOTPLockout = async (email) => {
+  const redis = getRedisClient();
+  if (!redis) return;
+
+  try {
+    const lockoutTtl = await redis.ttl(`otp:lockout:${email}`);
+    if (lockoutTtl > 0) {
+      throw new ApiError(
+        429,
+        `Too many failed attempts. Account locked out. Please try again in ${Math.ceil(lockoutTtl / 60)} minute(s).`
+      );
+    }
+  } catch (err) {
+    if (err instanceof ApiError) throw err;
+    console.warn("[OTP] Redis check failed, skipping lockout check:", err.message);
+  }
+};
+
+/**
+ * Records a failed OTP attempt and triggers lockout if max attempts reached.
+ * @param {string} email
+ */
+export const recordOTPAttempt = async (email) => {
+  const redis = getRedisClient();
+  if (!redis) return;
+
+  try {
+    const attemptsKey = `otp:attempts:${email}`;
+    const lockoutCountKey = `otp:lockout_count:${email}`;
+
+    const attempts = await redis.incr(attemptsKey);
+    if (attempts === 1) {
+      await redis.expire(attemptsKey, 15 * 60); // 15-min attempt window
+    }
+
+    if (attempts >= MAX_ATTEMPTS) {
+      const lockouts = (await redis.incr(lockoutCountKey)) || 1;
+      await redis.expire(lockoutCountKey, 24 * 60 * 60); // 24-hr lockout history window
+
+      // Exponential lockout: 1m, 2m, 4m, 8m...
+      const lockoutDuration = INITIAL_LOCKOUT_SECONDS * Math.pow(2, lockouts - 1);
+      await redis.set(`otp:lockout:${email}`, "1", "EX", lockoutDuration);
+      await redis.del(attemptsKey);
+
+      throw new ApiError(
+        429,
+        `Too many failed verification attempts. Account locked out for ${Math.ceil(lockoutDuration / 60)} minute(s).`
+      );
+    }
+  } catch (err) {
+    if (err instanceof ApiError) throw err;
+    console.warn("[OTP] Redis record attempt failed:", err.message);
+  }
+};
+
+/**
+ * Clears OTP attempts and lockout state upon successful verification.
+ * @param {string} email
+ */
+export const clearOTPState = async (email) => {
+  const redis = getRedisClient();
+  if (!redis) return;
+
+  try {
+    await redis.del(`otp:attempts:${email}`);
+    await redis.del(`otp:lockout:${email}`);
+    await redis.del(`otp:lockout_count:${email}`);
+  } catch (err) {
+    console.warn("[OTP] Redis clear state failed:", err.message);
+  }
+};

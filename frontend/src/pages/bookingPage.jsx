@@ -204,23 +204,58 @@ export function BookingPage() {
         }
         setBookingLoading(true);
         setBookingError("");
-        try {
-            const response = await axiosInstance.post("/bookings", {
-                salonId: id,
-                services: selectedServices.map(s => s._id),
-                staff: selectedStaff?._id || null,
-                serviceNames: selectedServices.map(s => s.name),
-                staffName: selectedStaff?.name || "Any Available",
-                date,
-                time,
-                totalAmount,
-            }, { withCredentials: true });
 
-            if (response.data.success) {
+        // Generate fresh idempotency key per checkout attempt
+        const idempotencyKey = crypto.randomUUID();
+
+        try {
+            // Step 1: Create 10-minute slot hold
+            const holdResponse = await axiosInstance.post(
+                "/bookings/hold",
+                {
+                    salonId: id,
+                    services: selectedServices.map(s => s._id),
+                    staff: selectedStaff?._id || null,
+                    serviceNames: selectedServices.map(s => s.name),
+                    staffName: selectedStaff?.name || "Any Available",
+                    date,
+                    time,
+                    totalAmount,
+                },
+                {
+                    headers: { "Idempotency-Key": idempotencyKey },
+                    withCredentials: true,
+                }
+            );
+
+            const holdData = holdResponse.data?.data;
+            const holdId = holdData?._id;
+
+            if (!holdId) {
+                throw new Error("Failed to reserve slot hold.");
+            }
+
+            // Step 2: Initiate booking from hold
+            const initiateResponse = await axiosInstance.post(
+                "/bookings/initiate",
+                { holdId },
+                {
+                    headers: { "Idempotency-Key": idempotencyKey },
+                    withCredentials: true,
+                }
+            );
+
+            if (initiateResponse.data?.success) {
                 setBookingSuccess(true);
             }
         } catch (err) {
-            setBookingError(err.response?.data?.message || "Booking failed. Please try again.");
+            console.error("Booking error:", err);
+            const status = err.response?.status;
+            if (status === 409) {
+                setBookingError("This slot or staff member is no longer available. Please select a different time or stylist.");
+            } else {
+                setBookingError(err.response?.data?.message || "Booking failed. Please try again.");
+            }
         } finally {
             setBookingLoading(false);
         }
