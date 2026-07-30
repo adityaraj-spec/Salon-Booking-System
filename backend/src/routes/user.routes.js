@@ -10,6 +10,7 @@ import {
   getCurrentUser,
   verifyEmail,
   resendVerificationCode,
+  refreshAccessToken,
 } from "../controllers/user.controller.js";
 import { verifyJWT } from "../middleware/auth.middleware.js";
 import { validate } from "../middleware/validate.js";
@@ -26,6 +27,8 @@ router.route("/register").post(validate(registerUserSchema), registerUser);
 router.route("/login").post(validate(loginUserSchema), loginUser);
 router.route("/verify-email").post(validate(verifyEmailSchema), verifyEmail);
 router.route("/resend-verification").post(validate(resendVerificationSchema), resendVerificationCode);
+router.route("/refresh-token").post(refreshAccessToken);
+
 
 router.route("/logout").post(verifyJWT, logoutUser);
 router.route("/update-role").patch(verifyJWT, updateUserRole);

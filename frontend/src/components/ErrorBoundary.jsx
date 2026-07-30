@@ -1,42 +1,80 @@
-import React from 'react';
+import React from "react";
 
-class ErrorBoundary extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = { hasError: false };
+export class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("[ErrorBoundary Caught Error]:", error, errorInfo);
+  }
+
+  handleReset = () => {
+    this.setState({ hasError: false, error: null });
+    window.location.reload();
+  };
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={styles.container}>
+          <div style={styles.card}>
+            <h2 style={styles.heading}>Something went wrong</h2>
+            <p style={styles.message}>
+              {this.state.error?.message || "An unexpected error occurred. Please try again."}
+            </p>
+            <button style={styles.button} onClick={this.handleReset}>
+              Reload Page
+            </button>
+          </div>
+        </div>
+      );
     }
 
-    static getDerivedStateFromError(error) {
-        // Update state so the next render will show the fallback UI.
-        return { hasError: true };
-    }
-
-    componentDidCatch(error, errorInfo) {
-        // You can also log the error to an error reporting service
-        console.error("ErrorBoundary caught an error:", error, errorInfo);
-    }
-
-    render() {
-        if (this.state.hasError) {
-            // You can render any custom fallback UI
-            return (
-                <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#fafafa] text-center">
-                    <h1 className="text-3xl font-bold text-[#1a1a1a] mb-4">Something went wrong.</h1>
-                    <p className="text-gray-600 mb-8 max-w-md">
-                        We're sorry for the inconvenience. Please try refreshing the page or come back later.
-                    </p>
-                    <button 
-                        onClick={() => window.location.reload()}
-                        className="px-6 py-3 bg-[#D4AF37] text-white rounded-full font-bold hover:bg-[#b8962d] transition-colors"
-                    >
-                        Refresh Page
-                    </button>
-                </div>
-            );
-        }
-
-        return this.props.children; 
-    }
+    return this.props.children;
+  }
 }
+
+const styles = {
+  container: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: "60vh",
+    padding: "20px",
+  },
+  card: {
+    backgroundColor: "#ffffff",
+    padding: "32px",
+    borderRadius: "12px",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+    textAlign: "center",
+    maxWidth: "480px",
+    width: "100%",
+  },
+  heading: {
+    color: "#e53e3e",
+    marginBottom: "12px",
+  },
+  message: {
+    color: "#4a5568",
+    marginBottom: "24px",
+    lineHeight: "1.5",
+  },
+  button: {
+    backgroundColor: "#3182ce",
+    color: "#ffffff",
+    padding: "10px 24px",
+    borderRadius: "6px",
+    border: "none",
+    fontWeight: "bold",
+    cursor: "pointer",
+  },
+};
 
 export default ErrorBoundary;
