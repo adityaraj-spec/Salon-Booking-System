@@ -27,11 +27,23 @@ const sanitizeValue = (data) => {
   return data;
 };
 
+const sanitizeInPlace = (obj) => {
+  if (!obj || typeof obj !== "object") return;
+  for (const key of Object.keys(obj)) {
+    if (key.startsWith("$") || key.includes(".")) {
+      console.warn(`[NoSQL Sanitizer] Stripped suspicious key "${key}" from request input`);
+      delete obj[key];
+    } else if (typeof obj[key] === "object" && obj[key] !== null) {
+      sanitizeInPlace(obj[key]);
+    }
+  }
+};
+
 export const sanitizeNoSQL = (req, res, next) => {
   try {
     if (req.body) req.body = sanitizeValue(req.body);
-    if (req.query) req.query = sanitizeValue(req.query);
-    if (req.params) req.params = sanitizeValue(req.params);
+    if (req.query) sanitizeInPlace(req.query);
+    if (req.params) sanitizeInPlace(req.params);
     next();
   } catch (err) {
     next(err);
