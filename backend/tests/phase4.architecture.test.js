@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import { MongoMemoryReplSet } from "mongodb-memory-server";
 import app from "../src/app.js";
 import { formatPaginatedResponse } from "../src/utils/pagination.js";
-import { NotFoundError, ValidationError, ConflictError } from "../src/errors/domainErrors.js";
+import ApiError from "../src/utils/apiError.js";
 
 let replSet;
 
@@ -52,19 +52,18 @@ describe("Phase 4 Backend Architecture Test Suite", () => {
     });
   });
 
-  describe("Domain Error Classes", () => {
-    it("should correctly instantiate domain errors with codes and status codes", () => {
-      const notFound = new NotFoundError("Salon not found");
+  describe("API Error Standardized Output", () => {
+    it("should correctly instantiate ApiError with status code, message, and details", () => {
+      const notFound = new ApiError(404, "Salon not found");
       expect(notFound.statusCode).toBe(404);
-      expect(notFound.code).toBe("NOT_FOUND");
+      expect(notFound.message).toBe("Salon not found");
 
-      const validation = new ValidationError("Invalid body", [{ field: "email", message: "Required" }]);
+      const validation = new ApiError(400, "Validation failed", [{ field: "email", message: "Required" }]);
       expect(validation.statusCode).toBe(400);
-      expect(validation.code).toBe("VALIDATION_ERROR");
+      expect(validation.errors).toHaveLength(1);
 
-      const conflict = new ConflictError("Slot full");
+      const conflict = new ApiError(409, "Slot full");
       expect(conflict.statusCode).toBe(409);
-      expect(conflict.code).toBe("CONFLICT");
     });
   });
 

@@ -2,7 +2,7 @@ import { Payment } from "../models/payment.models.js";
 import { Refund } from "../models/refund.models.js";
 import { Booking } from "../models/booking.models.js";
 import { razorpayClient, verifyRazorpaySignature, verifyWebhookSignature } from "../utils/razorpay.js";
-import { decrementBookingCapacity } from "./capacity.service.js";
+
 import { withTransactionRetry } from "../utils/transaction.js";
 import ApiError from "../utils/apiError.js";
 
@@ -253,15 +253,8 @@ export const initiateRefund = async ({ bookingId, customerId, reason }) => {
     booking.paymentStatus = refundAmount > 0 ? "refunded" : "failed";
     await booking.save({ session });
 
-    // Release capacity
-    await decrementBookingCapacity({
-      salonId: booking.salon,
-      staffId: booking.staff,
-      date: booking.date,
-      time: booking.time,
-      bookingId: booking._id,
-      session,
-    });
+    // With overlap-only capacity: setting status to "cancelled" automatically excludes this
+    // booking from future overlap query results. No counter decrement required.
 
     return { booking, refundAmount, razorpayRefundId };
   });

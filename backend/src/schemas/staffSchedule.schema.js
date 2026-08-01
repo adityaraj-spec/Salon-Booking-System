@@ -37,13 +37,16 @@ export const createWalkInBookingSchema = {
   body: z.object({
     salonId: objectIdSchema,
     staffId: objectIdSchema.optional(),
+    staffName: z.string().optional(),
     serviceIds: z.array(objectIdSchema).min(1, "At least one service is required"),
     customerName: z.string().min(2, "Customer name is required"),
     customerPhone: z.string().regex(/^\+?[1-9]\d{1,14}$/, "Invalid phone number"),
     startTime: z.string().min(1, "Start time is required"),
     source: z.enum(["walk_in", "phone"]).default("walk_in"),
+    paymentMethod: z.enum(["cash", "card", "unpaid"]).default("cash"),
   }),
 };
+
 
 export const rescheduleBookingSchema = {
   params: z.object({

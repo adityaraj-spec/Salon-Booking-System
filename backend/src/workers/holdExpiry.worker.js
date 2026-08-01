@@ -1,45 +1,56 @@
 import { Worker } from "bullmq";
-import mongoose from "mongoose";
-import dotenv from "dotenv";
 import { expireHold } from "../services/hold.service.js";
-
-dotenv.config({ path: "./.env" });
+import logger from "../lib/logger.js";
 
 const redisConnection = {
   host: process.env.REDIS_HOST || "localhost",
   port: parseInt(process.env.REDIS_PORT || "6379", 10),
+  maxRetriesPerRequest: null,
 };
 
-const connectMongo = async () => {
-  const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI || "mongodb://localhost:27017/salonnow?replicaSet=rs0";
-  await mongoose.connect(mongoUri);
-  console.log("Hold Expiry Worker: connected to MongoDB");
-};
+let holdExpiryWorkerInstance = null;
 
-const startWorker = async () => {
-  await connectMongo();
+/**
+ * Creates and returns the hold-expiry BullMQ worker.
+ * Safe to call multiple times — returns the same instance.
+ */
+export const createHoldExpiryWorker = () => {
+  if (process.env.NODE_ENV === "test") return null;
+  if (holdExpiryWorkerInstance) return holdExpiryWorkerInstance;
 
-  const worker = new Worker(
+  holdExpiryWorkerInstance = new Worker(
     "hold-expiry",
     async (job) => {
-      console.log(`Processing hold expiry job for holdId: ${job.data.holdId}`);
+      logger.info({ holdId: job.data.holdId }, "Processing hold expiry job");
       await expireHold(job.data.holdId);
     },
-    { connection: redisConnection }
+    { connection: redisConnection, concurrency: 5 }
   );
 
-  worker.on("completed", (job) => {
-    console.log(`Hold expiry job ${job.id} completed successfully.`);
+  holdExpiryWorkerInstance.on("completed", (job) => {
+    logger.info({ jobId: job.id }, "Hold expiry job completed");
   });
 
-  worker.on("failed", (job, err) => {
-    console.error(`Hold expiry job ${job?.id} failed with error:`, err);
+  holdExpiryWorkerInstance.on("failed", (job, err) => {
+    logger.error({ jobId: job?.id, err: err.message }, "Hold expiry job failed");
   });
 
-  console.log("Hold Expiry Worker started and waiting for jobs...");
+  holdExpiryWorkerInstance.on("error", (err) => {
+    logger.error({ err: err.message }, "Hold expiry worker connection error");
+  });
+
+  logger.info("Hold expiry BullMQ worker started");
+  return holdExpiryWorkerInstance;
 };
 
-startWorker().catch((err) => {
-  console.error("Worker startup failed:", err);
-  process.exit(1);
-});
+/**
+ * Gracefully closes the hold expiry worker.
+ * Call this during application shutdown.
+ */
+export const closeHoldExpiryWorker = async () => {
+  if (holdExpiryWorkerInstance) {
+    await holdExpiryWorkerInstance.close();
+    holdExpiryWorkerInstance = null;
+    logger.info("Hold expiry worker closed");
+  }
+};

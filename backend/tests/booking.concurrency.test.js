@@ -3,12 +3,11 @@ process.env.NODE_ENV = "test";
 import { MongoMemoryReplSet } from "mongodb-memory-server";
 import mongoose from "mongoose";
 import { Salon } from "../src/models/salon.models.js";
-import { SlotCapacity } from "../src/models/slotCapacity.model.js";
-import { createHold } from "../src/services/hold.service.js";
-
+import { User } from "../src/models/user.models.js";
+import { Service } from "../src/models/service.models.js";
 import { BookingHold } from "../src/models/bookingHold.model.js";
 import { Booking } from "../src/models/booking.models.js";
-import { StaffSlotLock } from "../src/models/staffSlotLock.model.js";
+import { createHold } from "../src/services/hold.service.js";
 
 let replSet;
 
@@ -30,22 +29,37 @@ beforeEach(async () => {
   await Salon.createIndexes();
   await BookingHold.createIndexes();
   await Booking.createIndexes();
-  await SlotCapacity.createIndexes();
-  await StaffSlotLock.createIndexes();
 });
 
-describe("Booking Engine Concurrency Tests", () => {
+describe("Booking Engine Concurrency Tests (Overlap-Query Capacity)", () => {
   test("Exactly 6 of 30 concurrent hold requests should succeed for capacity 6", async () => {
+    const owner = await User.create({
+      username: `owner_${Date.now()}`,
+      email: `owner_${Date.now()}@test.com`,
+      fullName: "Test Owner",
+      phonenumber: "9999999999",
+      password: "password123",
+    });
+
     const salon = await Salon.create({
-      owner: new mongoose.Types.ObjectId(),
+      owner: owner._id,
       name: "High Volume Salon",
       city: "Delhi",
       totalSeats: 6,
+      operatingHours: [
+        { dayOfWeek: 6, openTime: "09:00", closeTime: "21:00", isClosed: false }, // Saturday
+      ],
+    });
+
+    const service = await Service.create({
+      salon: salon._id,
+      name: "Quick Haircut",
+      price: 300,
+      duration: 30,
     });
 
     const totalRequests = 30;
-    const date = "2026-08-01";
-    const time = "15:00";
+    const startTime = new Date(Date.UTC(2026, 7, 1, 15, 0)); // 2026-08-01 15:00 (Saturday)
 
     // Launch 30 concurrent createHold requests in parallel
     const holdPromises = Array.from({ length: totalRequests }).map(async (_, index) => {
@@ -54,8 +68,8 @@ describe("Booking Engine Concurrency Tests", () => {
         const hold = await createHold({
           salonId: salon._id,
           customerId,
-          date,
-          time,
+          services: [service._id],
+          startTime: startTime.toISOString(),
           totalAmount: 300,
           idempotencyKey: `key-${index}`,
         });
@@ -74,16 +88,19 @@ describe("Booking Engine Concurrency Tests", () => {
     if (failedHolds.length > 0) {
       console.log("Sample failure error:", failedHolds[0].error, "statusCode:", failedHolds[0].statusCode);
     }
+    
+    // Exactly 6 succeed because totalSeats = 6
+    expect(successfulHolds.length).toBe(6);
     expect(failedHolds.length).toBe(24);
 
-    const capacity = await SlotCapacity.findOne({
+    // Verify database active hold count for this time range is exactly 6
+    const activeHoldsCount = await BookingHold.countDocuments({
       salon: salon._id,
-      date,
-      time,
+      status: "active",
+      startTime: { $lt: new Date(startTime.getTime() + 30 * 60 * 1000) },
+      endTime: { $gt: startTime },
     });
 
-    expect(capacity.heldCount).toBe(6);
-    expect(capacity.bookedCount).toBe(0);
-    expect(capacity.heldCount + capacity.bookedCount).toBeLessThanOrEqual(6);
+    expect(activeHoldsCount).toBe(6);
   });
 });

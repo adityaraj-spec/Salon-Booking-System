@@ -90,5 +90,11 @@ const salonSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 salonSchema.index({ location: "2dsphere" });
+// Gap 7.1: MongoDB compound text index for full-text search (name, city, description)
+// Enables $text + $meta:"textScore" ranked search as an Elasticsearch alternative
+salonSchema.index({ name: "text", city: "text", description: "text" }, {
+  weights: { name: 10, city: 5, description: 1 },
+  name: "salon_fulltext_search"
+});
 
 export const Salon = mongoose.model("Salon", salonSchema);

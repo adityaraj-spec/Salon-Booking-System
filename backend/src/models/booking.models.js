@@ -5,8 +5,10 @@ const bookingSchema = new mongoose.Schema(
     customer: { 
       type: mongoose.Schema.Types.ObjectId, 
       ref: "User", 
-      required: true 
+      required: false 
     },
+    guestName: String,
+    guestPhone: String,
     salon: { 
       type: mongoose.Schema.Types.ObjectId, 
       ref: "Salon", 

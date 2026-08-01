@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import { BookingHold } from "../models/bookingHold.model.js";
-import { checkAndIncrementHoldCapacity, decrementHoldCapacity } from "./capacity.service.js";
 
 import { calculateServicesDurationAndPrice } from "./duration.service.js";
 import { checkTimeRangeAvailability } from "./availability.service.js";
@@ -13,6 +12,7 @@ export const HOLD_DURATION_MS = 10 * 60 * 1000; // 10 minutes
 
 /**
  * Creates a 10-minute hold on a salon time range with transaction retries.
+ * Capacity is now derived entirely from overlap queries — no SlotCapacity counters.
  */
 export const createHold = async ({
   salonId,
@@ -79,23 +79,13 @@ export const createHold = async ({
   const formattedTime = time || startTime.toISOString().split("T")[1].substring(0, 5);
 
   const holdDoc = await withTransactionRetry(async (session) => {
-    // 4a. Verify time-range availability (overlap check across active holds & bookings)
+    // 4. Verify time-range availability via overlap queries (no counter increments)
     await checkTimeRangeAvailability({
       salonId,
       staffId,
       startTime,
       endTime,
       totalSeats: salon.totalSeats || 6,
-      session,
-    });
-
-    // 4b. Increment SlotCapacity and lock staff slot
-    await checkAndIncrementHoldCapacity({
-      salonId,
-      staffId,
-      date: formattedDate,
-      time: formattedTime,
-      holdId,
       session,
     });
 
@@ -128,7 +118,6 @@ export const createHold = async ({
     return createdHold;
   });
 
-
   // 6. Schedule automated expiry background job in BullMQ
   await scheduleHoldExpiry(holdDoc._id.toString(), HOLD_DURATION_MS);
 
@@ -137,6 +126,7 @@ export const createHold = async ({
 
 /**
  * Cancels an active hold explicitly.
+ * With overlap-only capacity, cancellation just marks the hold expired — no counter updates needed.
  */
 export const cancelHold = async (holdId, customerId) => {
   return await withTransactionRetry(async (session) => {
@@ -153,21 +143,14 @@ export const cancelHold = async (holdId, customerId) => {
     hold.status = "cancelled";
     await hold.save({ session });
 
-    await decrementHoldCapacity({
-      salonId: hold.salon,
-      staffId: hold.staff,
-      date: hold.date,
-      time: hold.time,
-      holdId: hold._id,
-      session,
-    });
-
     return hold;
   });
 };
 
 /**
- * System expiry of a hold.
+ * System expiry of a hold (called by BullMQ worker).
+ * With overlap-only capacity, just mark as expired — the document exclusion from overlap
+ * queries happens automatically because status is no longer "active".
  */
 export const expireHold = async (holdId) => {
   return await withTransactionRetry(async (session) => {
@@ -179,16 +162,6 @@ export const expireHold = async (holdId) => {
     hold.status = "expired";
     await hold.save({ session });
 
-    await decrementHoldCapacity({
-      salonId: hold.salon,
-      staffId: hold.staff,
-      date: hold.date,
-      time: hold.time,
-      holdId: hold._id,
-      session,
-    });
-
-    console.log(`Hold ${holdId} expired successfully and slot capacity was released.`);
     return hold;
   });
 };

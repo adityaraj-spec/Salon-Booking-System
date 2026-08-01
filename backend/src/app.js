@@ -24,12 +24,15 @@ import ApiError from "./utils/apiError.js";
 import { sanitizeNoSQL } from "./middleware/sanitize.js";
 import { requestIdMiddleware } from "./middleware/requestId.js";
 import { prometheusMetricsMiddleware } from "./middleware/metricsMiddleware.js";
+import { requestLoggerMiddleware } from "./middleware/requestLogger.js";
+import logger from "./lib/logger.js";
 
 const app = express();
 app.set("trust proxy", 1);
 
 app.use(requestIdMiddleware);
 app.use(prometheusMetricsMiddleware);
+app.use(requestLoggerMiddleware);
 
 app.use(cors({
     origin: (process.env.CORS_ORIGIN || "").split(","),
@@ -116,8 +119,7 @@ app.get(/^(?!\/(api|health)).*$/, (req, res, next) => {
 // Common error handling middleware
 app.use((err, req, res, next) => {
     const requestId = req.id || "N/A";
-    console.error(`Error [${err.statusCode || 500}] (ReqID: ${requestId}):`, err.message);
-    if (err.stack) console.error(err.stack);
+    logger.error({ requestId, statusCode: err.statusCode || 500, err: err.message, stack: err.stack }, "Request error");
 
     if (err instanceof ApiError) {
         return res.status(err.statusCode).json({
@@ -130,7 +132,6 @@ app.use((err, req, res, next) => {
         });
     }
 
-    // Default error response for non-ApiError instances
     return res.status(500).json({
         success: false,
         message: err.message || "Internal Server Error",
