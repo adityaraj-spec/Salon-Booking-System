@@ -7,6 +7,8 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js"
 import { sendWelcomeEmail, sendLoginEmail, sendLogoutEmail, sendVerificationEmail } from "../utils/mailer.js"
 import { ROLES } from "../constants.js"
 import { generateOTP, hashOTP, verifyOTPHash, checkOTPLockout, recordOTPAttempt, clearOTPState } from "../utils/otp.js"
+import { issueTokenPair, rotateRefreshToken, revokeSession, revokeAllUserSessions } from "../services/auth.service.js"
+import { pickAllowedFields, USER_UPDATABLE_FIELDS } from "../utils/dto.js"
 
 
 const VERIFICATION_CODE_EXPIRY_MINUTES = 15;
@@ -227,7 +229,9 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 
 
-    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id)
+    // Issue token pair with family tracking and JTI claims (Part 4)
+    const deviceId = req.headers["user-agent"] || "unknown";
+    const { accessToken, refreshToken } = await issueTokenPair(user, deviceId);
 
     const loggedInUSer = await User.findById(user._id).select("-password -refreshToken -verificationCode -verificationCodeExpiry")
 
@@ -235,7 +239,6 @@ const loginUser = asyncHandler(async (req, res) => {
     const accessTokenOptions = { ...options, maxAge: 7 * 24 * 60 * 60 * 1000 };
     const refreshTokenOptions = { ...options, maxAge: 15 * 24 * 60 * 60 * 1000 };
 
-    // Trigger login email silently
     sendLoginEmail(loggedInUSer.email, loggedInUSer.fullName).catch(err => {
         console.error("[loginUser] Failed to send login email:", err.message);
     });
@@ -256,31 +259,31 @@ const loginUser = asyncHandler(async (req, res) => {
 })
 
 const logoutUser = asyncHandler(async (req, res) => {
-    await User.findByIdAndUpdate(
-        req.user._id,
-        {
-            $set: {
-                refreshToken: undefined,
-            }
-        },
-        {
-            new: true
-        }
-    )
+    // Revoke all sessions for this user in Redis & Mongo (SI6)
+    await revokeAllUserSessions(req.user._id);
 
-    const options = getCookieOptions();
-
-    // Trigger logout email silently
     sendLogoutEmail(req.user.email, req.user.fullName).catch(err => {
         console.error("[logoutUser] Failed to send logout email:", err.message);
     });
+
+    const options = getCookieOptions();
 
     return res
         .status(200)
         .clearCookie("accessToken", options)
         .clearCookie("refreshToken", options)
-        .json(new ApiResponse(200, {}, "User logged Out Successfully"))
-})
+        .json(new ApiResponse(200, {}, "User logged out successfully across all devices"));
+});
+
+const logoutAllDevices = asyncHandler(async (req, res) => {
+    await revokeAllUserSessions(req.user._id);
+    const options = getCookieOptions();
+    return res
+        .status(200)
+        .clearCookie("accessToken", options)
+        .clearCookie("refreshToken", options)
+        .json(new ApiResponse(200, {}, "All active devices logged out successfully"));
+});
 
 const updateUserRole = asyncHandler(async (req, res) => {
     const { role, userId } = req.body
@@ -409,39 +412,24 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         throw new ApiError(401, "Refresh token is required");
     }
 
-    try {
-        const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
-        const user = await User.findById(decodedToken?.id);
+    // Call central auth service with automatic theft detection and rotation (SI7)
+    const { accessToken, refreshToken: newRefreshToken } = await rotateRefreshToken(incomingRefreshToken);
 
-        if (!user) {
-            throw new ApiError(401, "Invalid refresh token - user not found");
-        }
+    const options = getCookieOptions();
+    const accessTokenOptions = { ...options, maxAge: 7 * 24 * 60 * 60 * 1000 };
+    const refreshTokenOptions = { ...options, maxAge: 15 * 24 * 60 * 60 * 1000 };
 
-        const isValid = await user.isRefreshTokenCorrect(incomingRefreshToken);
-        if (!isValid) {
-            throw new ApiError(401, "Refresh token is expired or invalid");
-        }
-
-        const { accessToken, refreshToken: newRefreshToken } = await generateAccessAndRefreshToken(user._id);
-
-        const options = getCookieOptions();
-        const accessTokenOptions = { ...options, maxAge: 7 * 24 * 60 * 60 * 1000 };
-        const refreshTokenOptions = { ...options, maxAge: 15 * 24 * 60 * 60 * 1000 };
-
-        return res
-            .status(200)
-            .cookie("accessToken", accessToken, accessTokenOptions)
-            .cookie("refreshToken", newRefreshToken, refreshTokenOptions)
-            .json(
-                new ApiResponse(
-                    200,
-                    { accessToken, refreshToken: newRefreshToken },
-                    "Access token refreshed successfully"
-                )
-            );
-    } catch (error) {
-        throw new ApiError(401, error?.message || "Invalid refresh token");
-    }
+    return res
+        .status(200)
+        .cookie("accessToken", accessToken, accessTokenOptions)
+        .cookie("refreshToken", newRefreshToken, refreshTokenOptions)
+        .json(
+            new ApiResponse(
+                200,
+                { accessToken, refreshToken: newRefreshToken },
+                "Access token refreshed successfully"
+            )
+        );
 });
 
 export {

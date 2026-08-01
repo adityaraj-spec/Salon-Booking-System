@@ -26,6 +26,8 @@ import { sanitizeNoSQL } from "./middleware/sanitize.js";
 import { requestIdMiddleware } from "./middleware/requestId.js";
 import { prometheusMetricsMiddleware } from "./middleware/metricsMiddleware.js";
 import { requestLoggerMiddleware } from "./middleware/requestLogger.js";
+import { applySecurityHeaders } from "./middleware/securityHeaders.js";
+import { authStrictLimiter, generalApiLimiter } from "./middleware/rateLimiter.js";
 import logger from "./lib/logger.js";
 
 const app = express();
@@ -34,10 +36,26 @@ app.set("trust proxy", 1);
 app.use(requestIdMiddleware);
 app.use(prometheusMetricsMiddleware);
 app.use(requestLoggerMiddleware);
+app.use(applySecurityHeaders);
+
+// Item 1: Strict CORS Whitelist with fail-closed behavior (No wildcard origin reflection)
+const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173,http://localhost:3000")
+    .split(",")
+    .map((o) => o.trim())
+    .filter(Boolean);
 
 app.use(cors({
-    origin: (process.env.CORS_ORIGIN || "").split(","),
-    credentials: true
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps, curl, or server-to-server)
+        if (!origin || allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        logger.warn({ origin }, "[CORS Blocked] Request origin not in whitelist");
+        return callback(new ApiError(403, "CORS policy violation: Origin not allowed"), false);
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Idempotency-Key"],
 }));
 
 // ─── CRITICAL: Webhook router MUST be mounted BEFORE express.json() ─────────
@@ -84,22 +102,11 @@ const resendLimiter = rateLimit({
     message: { success: false, message: "Too many resend attempts. Please wait before requesting again." }
 });
 
-// Apply general limiter to all API routes
-app.use("/api/", generalLimiter);
+// Apply Redis sliding-window limiters (SI11, SI12)
+app.use("/api/", generalApiLimiter);
+app.use("/api/v1/users/login", authStrictLimiter);
+app.use("/api/v1/users/register", authStrictLimiter);
 
-// routes declaration
-app.get("/", (req, res) => {
-    res.status(200).json({
-        success: true,
-        message: "Salon Booking System API is running successfully."
-    });
-});
-
-// Apply strict auth rate limiters to sensitive auth endpoints
-app.use("/api/v1/users/login", authLimiter);
-app.use("/api/v1/users/register", authLimiter);
-app.use("/api/v1/users/verify-email", authLimiter);
-app.use("/api/v1/users/resend-verification", resendLimiter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/salons", salonRouter);
 app.use("/api/v1/bookings", bookingRouter);

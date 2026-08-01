@@ -12,7 +12,9 @@ import {
   rescheduleBookingHandler,
 } from "../controllers/booking.controller.js";
 import { verifyJWT } from "../middleware/auth.middleware.js";
+import { authorize, requireOwnership } from "../middleware/authorize.js";
 import { validate } from "../middleware/validate.js";
+import { Booking } from "../models/booking.models.js";
 import {
   createHoldSchema,
   initiateBookingSchema,
@@ -25,16 +27,42 @@ import {
 
 const router = Router();
 
+// Hold creation (customers & staff)
 router.route("/hold").post(verifyJWT, validate(createHoldSchema), createHoldHandler);
-router.route("/initiate").post(verifyJWT, validate(initiateBookingSchema), initiateBookingHandler);
-router.route("/walk-in").post(verifyJWT, validate(createWalkInBookingSchema), createWalkInBookingHandler);
-router.route("/:bookingId/reschedule").post(verifyJWT, validate(rescheduleBookingSchema), rescheduleBookingHandler);
-router.route("/:bookingId/cancel-pending").post(verifyJWT, validate(cancelBookingSchema), cancelPendingBookingHandler);
 
+// Initiate booking from hold
+router.route("/initiate").post(verifyJWT, validate(initiateBookingSchema), initiateBookingHandler);
+
+// Walk-in booking (owners & staff only)
+router.route("/walk-in").post(verifyJWT, authorize("owner", "staff", "admin"), validate(createWalkInBookingSchema), createWalkInBookingHandler);
+
+// Reschedule booking (requires ABAC ownership check - Item 3)
+router.route("/:bookingId/reschedule").post(
+  verifyJWT,
+  requireOwnership(Booking, "bookingId", "customer"),
+  validate(rescheduleBookingSchema),
+  rescheduleBookingHandler
+);
+
+// Cancel pending booking (requires ABAC ownership check - Item 3)
+router.route("/:bookingId/cancel-pending").post(
+  verifyJWT,
+  requireOwnership(Booking, "bookingId", "customer"),
+  validate(cancelBookingSchema),
+  cancelPendingBookingHandler
+);
+
+// General bookings
 router.route("/").post(verifyJWT, createBooking);
 router.route("/my-bookings").get(verifyJWT, getUserBookings);
-router.route("/salon-bookings").get(verifyJWT, getSalonBookings);
+router.route("/salon-bookings").get(verifyJWT, authorize("owner", "staff", "admin"), getSalonBookings);
 router.route("/availability/:salonId").get(getAvailability);
-router.route("/:bookingId/status").patch(verifyJWT, updateBookingStatus);
+
+// Update status (requires ABAC ownership or salon owner authorization - Item 3)
+router.route("/:bookingId/status").patch(
+  verifyJWT,
+  requireOwnership(Booking, "bookingId", "customer"),
+  updateBookingStatus
+);
 
 export default router;
