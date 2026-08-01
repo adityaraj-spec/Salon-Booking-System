@@ -90,7 +90,7 @@ export const createHold = async ({
     async () => {
       // ── 5. Acquire distributed slot lock ─────────────────────────────────
       const lockKeys = buildSlotLockKeys(salonId, staffId, startTime, endTime);
-      const { acquired, token, keys: acquiredKeys } = await acquireSlotLock(lockKeys);
+      const { acquired, token, keys: acquiredKeys, stopWatchdog } = await acquireSlotLock(lockKeys);
 
       if (!acquired) {
         throw new ApiError(
@@ -155,8 +155,8 @@ export const createHold = async ({
           return createdHold;
         });
       } finally {
-        // Always release the lock, regardless of transaction outcome
-        await releaseSlotLock(acquiredKeys, token);
+        // Always release the lock and stop watchdog, regardless of transaction outcome
+        await releaseSlotLock(acquiredKeys, token, stopWatchdog);
       }
 
       // ── 7. Schedule expiry background job ────────────────────────────────

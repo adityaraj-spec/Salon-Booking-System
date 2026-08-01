@@ -4,21 +4,18 @@ import mongoose from "mongoose";
  * OutboxEvent — transactional outbox for I5 / I10.
  *
  * Written inside the SAME MongoDB transaction as the state-changing write.
- * This guarantees the cache-invalidation and notification intent is never
- * lost, even if the process crashes after the transaction commits but before
- * the inline invalidation call that exists in the current code.
+ * Supports atomic worker claiming (lockedBy, lockedUntil, status) to prevent
+ * multi-instance API deployments from double-processing outbox events.
  *
- * The outboxRelay worker consumes unprocessed events at-least-once and marks
- * them processed — fully decoupled from the HTTP request/response cycle.
+ * Poison events (attempts >= 5) are transitioned to "dead_letter" status
+ * so they do not block subsequent events (Audit Finding #5).
  */
 const outboxEventSchema = new mongoose.Schema(
   {
-    // Event type — used by the relay to dispatch to the right handler.
     type: {
       type: String,
       required: true,
       index: true,
-      // Supported event types:
       enum: [
         "hold.created",
         "hold.expired",
@@ -34,46 +31,59 @@ const outboxEventSchema = new mongoose.Schema(
       ],
     },
 
-    // Free-form payload — contains everything the relay needs to invalidate
-    // the right cache keys and emit the right socket events.
     payload: {
       type: mongoose.Schema.Types.Mixed,
       required: true,
     },
 
-    // Whether the relay has successfully processed this event.
-    // Indexed for the relay's polling query: { processed: false }.
+    // Lifecycle status: pending | processing | processed | dead_letter
+    status: {
+      type: String,
+      enum: ["pending", "processing", "processed", "dead_letter"],
+      default: "pending",
+      index: true,
+    },
+
     processed: {
       type: Boolean,
       default: false,
       index: true,
     },
 
-    // ISO date of when this event was processed (for debugging / audit).
     processedAt: {
       type: Date,
       default: null,
     },
 
-    // Number of times the relay has attempted to process this event.
-    // Enables exponential backoff on stuck events.
+    // Multi-instance worker lease claim fields (Item 2)
+    lockedBy: {
+      type: String,
+      default: null,
+    },
+
+    lockedUntil: {
+      type: Date,
+      default: null,
+      index: true,
+    },
+
     attempts: {
       type: Number,
       default: 0,
+      index: true,
     },
 
-    // Error message from the last failed processing attempt (for debugging).
     lastError: {
       type: String,
       default: null,
     },
   },
   {
-    timestamps: true, // createdAt, updatedAt
+    timestamps: true,
   }
 );
 
-// Compound index for efficient relay polling: newest unprocessed events first.
-outboxEventSchema.index({ processed: 1, createdAt: 1 });
+// Compound index for atomic polling query
+outboxEventSchema.index({ status: 1, processed: 1, attempts: 1, lockedUntil: 1, createdAt: 1 });
 
 export const OutboxEvent = mongoose.model("OutboxEvent", outboxEventSchema);

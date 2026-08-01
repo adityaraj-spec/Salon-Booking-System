@@ -1,9 +1,18 @@
 import Redis from "ioredis";
 
 let redisClient = null;
+let customMockClient = null;
+
+export const setMockRedisClient = (mock) => {
+  customMockClient = mock;
+};
 
 export const getRedisClient = () => {
-  if (process.env.NODE_ENV === "test") {
+  if (customMockClient) {
+    return customMockClient;
+  }
+
+  if (process.env.NODE_ENV === "test" && !process.env.USE_REDIS_IN_TESTS) {
     return null;
   }
 
