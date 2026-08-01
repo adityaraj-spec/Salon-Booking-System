@@ -9,6 +9,7 @@ import { Notification } from "../models/notification.models.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { sendProfileUpdateEmail, sendManagementUpdateEmail, sendBookingStatusEmail } from "../utils/mailer.js";
 import { emitToUser } from "../socket.js";
+import { pickAllowedFields, STAFF_UPDATABLE_FIELDS } from "../utils/dto.js";
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
@@ -269,7 +270,14 @@ const updateOwnerStaff = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const staff = await Staff.findOne({ _id: id, salon: salon._id });
     if (!staff) throw new ApiError(404, "Staff not found or unauthorized");
-    const updated = await Staff.findByIdAndUpdate(id, { $set: req.body }, { new: true });
+
+    // Fix C2: Whitelist allowed fields to prevent mass assignment (e.g. changing salon ID or user assignment)
+    const safeUpdates = pickAllowedFields(req.body, STAFF_UPDATABLE_FIELDS);
+    const updated = await Staff.findOneAndUpdate(
+        { _id: id, salon: salon._id }, // scoped ownership query
+        { $set: safeUpdates },
+        { new: true }
+    );
 
     // Trigger notification email
     sendManagementUpdateEmail(req.user.email, req.user.fullName, "Updated staff profile", updated.name, "Staff");

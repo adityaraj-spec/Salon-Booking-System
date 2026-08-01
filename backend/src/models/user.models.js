@@ -46,6 +46,9 @@ const userSchema = new mongoose.Schema({
   verificationCode: {
     type: String
   },
+  verificationCodeExpiry: {
+    type: Date
+  },
   favorites: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: "Salon"

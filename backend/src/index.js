@@ -8,6 +8,7 @@ import { verifyTransporter } from "./utils/mailer.js";
 import { startHoldWatcher } from "./changeStreams/holdWatcher.js";
 import { createHoldExpiryWorker, closeHoldExpiryWorker } from "./workers/holdExpiry.worker.js";
 import { createPaymentRecoveryWorker, closePaymentRecoveryWorker } from "./workers/paymentRecovery.worker.js";
+import { startOutboxRelayWorker, stopOutboxRelayWorker } from "./workers/outboxRelay.worker.js";
 import getRedisClient from "./lib/redis.js";
 import logger from "./lib/logger.js";
 
@@ -29,12 +30,13 @@ export const gracefulShutdown = async (signal) => {
   });
 
   try {
-    // Step 2: Close BullMQ workers (let in-flight jobs finish, up to 30s)
+    // Step 2: Close BullMQ workers & outbox relay
+    stopOutboxRelayWorker();
     await Promise.allSettled([
       closeHoldExpiryWorker(),
       closePaymentRecoveryWorker(),
     ]);
-    logger.info("BullMQ workers closed.");
+    logger.info("Background workers closed.");
 
     // Step 3: Close Redis connection
     const redis = getRedisClient();
@@ -73,7 +75,8 @@ connectDB()
     // Start MongoDB change stream for hold expiry fallback
     startHoldWatcher();
 
-    // Gap X.2: Start BullMQ workers in the main process
+    // Start BullMQ workers & OutboxRelay worker in the main process
+    startOutboxRelayWorker();
     createHoldExpiryWorker();
     createPaymentRecoveryWorker();
 

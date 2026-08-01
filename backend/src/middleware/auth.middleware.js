@@ -3,6 +3,8 @@ import ApiError from "../utils/apiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { User } from "../models/user.models.js";
 import { cacheGet, cacheSet, cacheDel } from "../lib/cacheManager.js";
+import getRedisClient from "../lib/redis.js";
+import logger from "../lib/logger.js";
 
 export const verifyJWT = asyncHandler(async (req, _, next) => {
   try {
@@ -19,6 +21,18 @@ export const verifyJWT = asyncHandler(async (req, _, next) => {
       throw new ApiError(401, "Invalid Access Token");
     }
 
+    // Part 10: Check if token JTI is in Redis blacklist (e.g. after logout or revocation)
+    if (decodedToken.jti) {
+      const redis = getRedisClient();
+      if (redis) {
+        const isBlacklisted = await redis.get(`rt:blacklist:${decodedToken.jti}`);
+        if (isBlacklisted) {
+          logger.warn({ userId, jti: decodedToken.jti }, "[Auth] Blacklisted access token presented");
+          throw new ApiError(401, "Token has been revoked — please log in again");
+        }
+      }
+    }
+
     const cacheKey = `user:session:${userId}`;
     let user = await cacheGet(cacheKey);
 
@@ -33,7 +47,8 @@ export const verifyJWT = asyncHandler(async (req, _, next) => {
     req.user = user;
     next();
   } catch (error) {
-    console.error("Auth Middleware - Verification Error:", error.message);
+    if (error instanceof ApiError) throw error;
+    logger.warn({ err: error.message }, "[Auth] JWT verification error");
     throw new ApiError(401, error?.message || "Invalid Access Token");
   }
 });

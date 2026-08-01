@@ -2,7 +2,8 @@ import { Worker } from "bullmq";
 import { Booking } from "../models/booking.models.js";
 import { Payment } from "../models/payment.models.js";
 import { razorpayClient } from "../utils/razorpay.js";
-import { confirmBookingAfterPayment, cancelPendingBooking } from "../services/booking.service.js";
+import { confirmPaymentAndBooking } from "../services/payment.service.js";
+import { cancelPendingBooking } from "../services/booking.service.js";
 import logger from "../lib/logger.js";
 
 const redisConnection = {
@@ -14,16 +15,15 @@ const redisConnection = {
 let paymentRecoveryWorkerInstance = null;
 
 /**
- * Gap 3.1 — Payment Recovery Worker
+ * Payment Recovery Worker
  *
  * 15 minutes after a booking is initiated (pending_payment), this worker checks
  * Razorpay for the actual payment status. If payment was captured, the booking is
- * confirmed. If not, the booking is cancelled and capacity is freed.
+ * confirmed via the shared confirmPaymentAndBooking() function. If not, the booking
+ * is cancelled and capacity is freed.
  *
- * This handles the case where:
- * - A user dropped off mid-payment
- * - Razorpay webhook failed to deliver
- * - Network issues prevented the verify endpoint from being called
+ * Calls the exact same confirmPaymentAndBooking() state-transition function
+ * as Path A (client verify) and Path B (webhook) — guaranteeing I3, I4, I5, I8.
  */
 export const createPaymentRecoveryWorker = () => {
   if (process.env.NODE_ENV === "test") return null;
@@ -61,11 +61,14 @@ export const createPaymentRecoveryWorker = () => {
         const razorpayPayment = await razorpayClient.payments.fetch(payment.razorpayPaymentId);
 
         if (razorpayPayment.status === "captured") {
-          // Payment succeeded but webhook/verify failed — confirm booking now
+          // Payment succeeded but webhook/verify failed — confirm booking via shared idempotent function
           logger.info({ bookingId, razorpayPaymentId: payment.razorpayPaymentId }, "[PaymentRecovery] Payment captured, confirming booking");
-          await confirmBookingAfterPayment(bookingId);
-          payment.status = "captured";
-          await payment.save();
+          await confirmPaymentAndBooking({
+            bookingId,
+            razorpayOrderId: payment.razorpayOrderId,
+            razorpayPaymentId: payment.razorpayPaymentId,
+            source: "recovery",
+          });
         } else {
           // Payment failed or was never completed — cancel booking
           logger.warn({ bookingId, razorpayStatus: razorpayPayment.status }, "[PaymentRecovery] Payment not captured, cancelling booking");
@@ -74,7 +77,6 @@ export const createPaymentRecoveryWorker = () => {
           await payment.save();
         }
       } catch (err) {
-        // If Razorpay API call itself fails, log and let BullMQ retry
         logger.error({ bookingId, err: err.message }, "[PaymentRecovery] Razorpay fetch failed");
         throw err; // triggers BullMQ retry with backoff
       }
@@ -82,7 +84,6 @@ export const createPaymentRecoveryWorker = () => {
     {
       connection: redisConnection,
       concurrency: 3,
-      // Retry 3 times with exponential backoff if Razorpay API is temporarily unavailable
       defaultJobOptions: {
         attempts: 3,
         backoff: { type: "exponential", delay: 5000 },
@@ -102,7 +103,7 @@ export const createPaymentRecoveryWorker = () => {
     logger.error({ err: err.message }, "[PaymentRecovery] Worker connection error");
   });
 
-  logger.info("Payment recovery BullMQ worker started");
+  logger.info("[PaymentRecovery] Worker started");
   return paymentRecoveryWorkerInstance;
 };
 

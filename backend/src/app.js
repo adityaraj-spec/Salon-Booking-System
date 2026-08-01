@@ -16,6 +16,7 @@ import staffRouter from "./routes/staff.routes.js";
 import adminRouter from "./routes/admin.routes.js";
 import ownerRouter from "./routes/owner.routes.js";
 import paymentRouter from "./routes/payment.routes.js";
+import paymentWebhookRouter from "./routes/payment.webhook.routes.js";
 import healthRouter from "./routes/health.routes.js";
 import growthRouter from "./routes/growth.routes.js";
 import metricsRouter from "./routes/metrics.routes.js";
@@ -38,6 +39,11 @@ app.use(cors({
     origin: (process.env.CORS_ORIGIN || "").split(","),
     credentials: true
 }));
+
+// ─── CRITICAL: Webhook router MUST be mounted BEFORE express.json() ─────────
+// Razorpay signs the raw byte buffer. express.json() would parse and discard it,
+// making HMAC verification impossible. The webhook route has its own express.raw() parser.
+app.use("/api/v1/payments/webhook", paymentWebhookRouter);
 
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ limit: "16kb", extended: true }));
@@ -103,7 +109,7 @@ app.use("/api/v1/services", serviceRouter);
 app.use("/api/v1/staff", staffRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/owner", ownerRouter);
-app.use("/api/v1/payments", paymentRouter);
+app.use("/api/v1/payments", paymentRouter); // non-webhook payment routes (create-order, verify) — JSON body is fine here
 app.use("/api/v1/growth", growthRouter);
 
 

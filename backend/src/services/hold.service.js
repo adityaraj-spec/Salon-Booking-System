@@ -6,13 +6,22 @@ import { checkTimeRangeAvailability } from "./availability.service.js";
 import { parseDateTimeString, validateOperatingHours } from "../utils/timeRange.js";
 import { scheduleHoldExpiry } from "../queues/holdExpiry.queue.js";
 import { withTransactionRetry } from "../utils/transaction.js";
+import { buildSlotLockKeys, acquireSlotLock, releaseSlotLock } from "../lib/redisLock.js";
+import { writeOutboxEvent } from "./outbox.service.js";
+import { withIdempotency, buildFallbackKey } from "./idempotency.service.js";
 import ApiError from "../utils/apiError.js";
+import logger from "../lib/logger.js";
 
 export const HOLD_DURATION_MS = 10 * 60 * 1000; // 10 minutes
 
 /**
- * Creates a 10-minute hold on a salon time range with transaction retries.
- * Capacity is now derived entirely from overlap queries — no SlotCapacity counters.
+ * Creates a 10-minute hold on a salon time range.
+ *
+ * Correctness guarantees:
+ *  - I1: Redis slot lock (acquireSlotLock) ensures at most one concurrent writer per slot bucket.
+ *  - I2: countOverlappingOccupancy inside the transaction is the belt-and-suspenders re-check.
+ *  - I5/I10: OutboxEvent written inside the same transaction — survives post-commit crashes.
+ *  - I6/I9: withIdempotency wraps the entire flow — retries replay the stored response.
  */
 export const createHold = async ({
   salonId,
@@ -25,22 +34,9 @@ export const createHold = async ({
   time,
   startTime: inputStartTime,
   totalAmount: inputTotalAmount,
-  idempotencyKey,
+  idempotencyKey: clientIdempotencyKey,
 }) => {
-  // Idempotency check: if key already used for an active hold, return existing hold
-  if (idempotencyKey) {
-    const existingHold = await BookingHold.findOne({
-      idempotencyKey,
-      customer: customerId,
-      status: "active",
-      expiresAt: { $gt: new Date() },
-    });
-    if (existingHold) {
-      return existingHold;
-    }
-  }
-
-  // 1. Calculate duration, total price, and buffer time from selected services & salon
+  // ── 1. Resolve startTime/endTime ──────────────────────────────────────────
   const {
     services: serviceDocs,
     serviceNames: fetchedServiceNames,
@@ -51,7 +47,6 @@ export const createHold = async ({
     salon,
   } = await calculateServicesDurationAndPrice(services, salonId);
 
-  // 2. Compute exact startTime and endTime ISODate objects
   let startTime;
   if (inputStartTime) {
     startTime = new Date(inputStartTime);
@@ -67,66 +62,121 @@ export const createHold = async ({
 
   const endTime = new Date(startTime.getTime() + totalDurationWithBuffer * 60 * 1000);
 
-  // 3. Validate requested time range against salon operating hours
+  // 2. Validate operating hours (fast check before acquiring the lock)
   validateOperatingHours(startTime, endTime, salon);
 
-  const expiresAt = new Date(Date.now() + HOLD_DURATION_MS);
-  const holdId = new mongoose.Types.ObjectId();
-
-  const finalTotalAmount = inputTotalAmount || calculatedAmount;
-  const finalServiceNames = serviceNames && serviceNames.length > 0 ? serviceNames : fetchedServiceNames;
   const formattedDate = date || startTime.toISOString().split("T")[0];
   const formattedTime = time || startTime.toISOString().split("T")[1].substring(0, 5);
+  const finalTotalAmount = inputTotalAmount || calculatedAmount;
+  const finalServiceNames = serviceNames && serviceNames.length > 0 ? serviceNames : fetchedServiceNames;
 
-  const holdDoc = await withTransactionRetry(async (session) => {
-    // 4. Verify time-range availability via overlap queries (no counter increments)
-    await checkTimeRangeAvailability({
-      salonId,
-      staffId,
-      startTime,
-      endTime,
-      totalSeats: salon.totalSeats || 6,
-      session,
-    });
+  // ── 3. Build idempotency key ──────────────────────────────────────────────
+  const isFallback = !clientIdempotencyKey;
+  const idempotencyKey = clientIdempotencyKey
+    ? `hold:${clientIdempotencyKey}`
+    : buildFallbackKey(customerId.toString(), "createHold", {
+        salonId: salonId.toString(),
+        staffId: staffId ? staffId.toString() : "any",
+        startTime: startTime.toISOString(),
+        services: services.map((s) => s.toString()).sort(),
+      });
 
-    // 5. Insert hold record with time-range fields
-    const [createdHold] = await BookingHold.create(
-      [
-        {
-          _id: holdId,
-          salon: salonId,
-          customer: customerId,
-          staff: staffId || undefined,
-          staffName,
-          services,
-          serviceNames: finalServiceNames,
-          date: formattedDate,
-          time: formattedTime,
-          startTime,
-          endTime,
-          durationMinutes,
-          bufferMinutes,
-          totalAmount: finalTotalAmount,
-          status: "active",
-          expiresAt,
-          idempotencyKey,
-        },
-      ],
-      { session }
-    );
+  // ── 4. Wrap in idempotency guard ─────────────────────────────────────────
+  const { body } = await withIdempotency(
+    idempotencyKey,
+    "hold",
+    { salonId, staffId, startTime: startTime.toISOString(), services },
+    isFallback,
+    async () => {
+      // ── 5. Acquire distributed slot lock ─────────────────────────────────
+      const lockKeys = buildSlotLockKeys(salonId, staffId, startTime, endTime);
+      const { acquired, token, keys: acquiredKeys } = await acquireSlotLock(lockKeys);
 
-    return createdHold;
-  });
+      if (!acquired) {
+        throw new ApiError(
+          409,
+          "This time slot is currently being booked by another customer. Please try a different time or retry in a few seconds.",
+          [{ code: "SLOT_LOCKED" }]
+        );
+      }
 
-  // 6. Schedule automated expiry background job in BullMQ
-  await scheduleHoldExpiry(holdDoc._id.toString(), HOLD_DURATION_MS);
+      let holdDoc;
+      try {
+        // ── 6. MongoDB transaction: verify + create hold + outbox ─────────
+        const holdId = new mongoose.Types.ObjectId();
+        const expiresAt = new Date(Date.now() + HOLD_DURATION_MS);
 
-  return holdDoc;
+        holdDoc = await withTransactionRetry(async (session) => {
+          // Re-check occupancy inside the transaction (belt-and-suspenders after the lock)
+          await checkTimeRangeAvailability({
+            salonId,
+            staffId,
+            startTime,
+            endTime,
+            totalSeats: salon.totalSeats || 6,
+            session,
+          });
+
+          // Create the hold
+          const [createdHold] = await BookingHold.create(
+            [
+              {
+                _id: holdId,
+                salon: salonId,
+                customer: customerId,
+                staff: staffId || undefined,
+                staffName,
+                services,
+                serviceNames: finalServiceNames,
+                date: formattedDate,
+                time: formattedTime,
+                startTime,
+                endTime,
+                durationMinutes,
+                bufferMinutes,
+                totalAmount: finalTotalAmount,
+                status: "active",
+                expiresAt,
+                idempotencyKey: clientIdempotencyKey || idempotencyKey,
+              },
+            ],
+            { session }
+          );
+
+          // Write outbox event in the SAME transaction — durable I10 invalidation
+          await writeOutboxEvent(session, "hold.created", {
+            holdId: createdHold._id.toString(),
+            salonId: salonId.toString(),
+            staffId: staffId ? staffId.toString() : null,
+            customerId: customerId.toString(),
+            date: formattedDate,
+          });
+
+          return createdHold;
+        });
+      } finally {
+        // Always release the lock, regardless of transaction outcome
+        await releaseSlotLock(acquiredKeys, token);
+      }
+
+      // ── 7. Schedule expiry background job ────────────────────────────────
+      try {
+        await scheduleHoldExpiry(holdDoc._id.toString(), HOLD_DURATION_MS);
+      } catch (err) {
+        // The outbox relay also reconciles orphaned holds — log but don't fail
+        logger.warn({ holdId: holdDoc._id, err: err.message }, "[Hold] Failed to schedule expiry job (outbox relay will reconcile)");
+      }
+
+      return { statusCode: 201, body: { hold: holdDoc } };
+    }
+  );
+
+  return body.hold;
 };
 
 /**
  * Cancels an active hold explicitly.
- * With overlap-only capacity, cancellation just marks the hold expired — no counter updates needed.
+ * Writes an outbox event so availability cache is invalidated at-least-once.
  */
 export const cancelHold = async (holdId, customerId) => {
   return await withTransactionRetry(async (session) => {
@@ -143,24 +193,41 @@ export const cancelHold = async (holdId, customerId) => {
     hold.status = "cancelled";
     await hold.save({ session });
 
+    // Write outbox event for cache invalidation
+    await writeOutboxEvent(session, "hold.cancelled", {
+      holdId: hold._id.toString(),
+      salonId: hold.salon.toString(),
+      staffId: hold.staff ? hold.staff.toString() : null,
+      customerId: customerId.toString(),
+      date: hold.date,
+    });
+
     return hold;
   });
 };
 
 /**
  * System expiry of a hold (called by BullMQ worker).
- * With overlap-only capacity, just mark as expired — the document exclusion from overlap
- * queries happens automatically because status is no longer "active".
+ * The hold-expiry write and its OutboxEvent are in the SAME transaction (I10).
  */
 export const expireHold = async (holdId) => {
   return await withTransactionRetry(async (session) => {
     const hold = await BookingHold.findById(holdId).session(session);
     if (!hold || hold.status !== "active") {
-      return null;
+      return null; // Idempotent — already expired/cancelled is not an error
     }
 
     hold.status = "expired";
     await hold.save({ session });
+
+    // Write outbox event in the same transaction — I10: never lose an invalidation
+    await writeOutboxEvent(session, "hold.expired", {
+      holdId: hold._id.toString(),
+      salonId: hold.salon.toString(),
+      staffId: hold.staff ? hold.staff.toString() : null,
+      customerId: hold.customer ? hold.customer.toString() : null,
+      date: hold.date,
+    });
 
     return hold;
   });
