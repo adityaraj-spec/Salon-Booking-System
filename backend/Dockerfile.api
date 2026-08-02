@@ -1,0 +1,37 @@
+# ─── SalonNow API Server Container ───────────────────────────────────────────
+# Purpose: Stateless API + Socket.io server. No background workers.
+# Env:     PROCESS_TYPE=api
+# Scale:   Run as many replicas as needed behind an ALB/NGINX load balancer.
+#
+# Build:   docker build -t salonnow-api -f Dockerfile.api .
+# Run:     docker run -e PROCESS_TYPE=api -e PORT=8000 ... salonnow-api
+
+FROM node:20-alpine AS base
+WORKDIR /app
+
+# Install production dependencies only
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+
+# Copy application source
+COPY src/ ./src/
+COPY public/ ./public/
+
+# ─── Runtime configuration ────────────────────────────────────────────────────
+# All sensitive config comes from environment variables at runtime.
+# No .env files are baked into the image.
+ENV NODE_ENV=production
+ENV PROCESS_TYPE=api
+
+# Non-root user for security hardening
+RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
+USER nodejs
+
+EXPOSE 8000
+
+# Liveness probe: GET /health/live
+# Readiness probe: GET /health/ready
+HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=3 \
+  CMD wget -qO- http://localhost:8000/health/ready || exit 1
+
+CMD ["node", "src/index.js"]

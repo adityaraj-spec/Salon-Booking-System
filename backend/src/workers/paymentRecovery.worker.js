@@ -4,13 +4,8 @@ import { Payment } from "../models/payment.models.js";
 import { razorpayClient } from "../utils/razorpay.js";
 import { confirmPaymentAndBooking } from "../services/payment.service.js";
 import { cancelPendingBooking } from "../services/booking.service.js";
+import { getBullMQRedisConnection } from "../lib/redis.js";
 import logger from "../lib/logger.js";
-
-const redisConnection = {
-  host: process.env.REDIS_HOST || "localhost",
-  port: parseInt(process.env.REDIS_PORT || "6379", 10),
-  maxRetriesPerRequest: null,
-};
 
 let paymentRecoveryWorkerInstance = null;
 
@@ -82,7 +77,7 @@ export const createPaymentRecoveryWorker = () => {
       }
     },
     {
-      connection: redisConnection,
+      connection: getBullMQRedisConnection(),
       concurrency: 3,
       defaultJobOptions: {
         attempts: 3,

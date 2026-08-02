@@ -1,10 +1,36 @@
-FROM node:20-alpine
+# ─── SalonNow Background Worker Container ────────────────────────────────────
+# Purpose: Isolated background worker process. No HTTP server, no Socket.io.
+# Runs:    BullMQ HoldExpiry + PaymentRecovery workers, Outbox Relay, MongoDB ChangeStream.
+# Env:     PROCESS_TYPE=worker  (set automatically by standaloneWorker.js)
+# Scale:   Run multiple replicas — BullMQ job locking + outbox atomic claim prevents
+#          duplicate processing across replicas.
+#
+# Build:   docker build -t salonnow-worker -f Dockerfile.worker .
+# Run:     docker run -e REDIS_HOST=... -e MONGODB_URI=... salonnow-worker
 
+FROM node:20-alpine AS base
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm ci --only=production
+# Install production dependencies only
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
 
-COPY . .
+# Copy application source (workers need access to all service/model files)
+COPY src/ ./src/
 
-CMD ["node", "src/workers/holdExpiry.worker.js"]
+# ─── Runtime configuration ────────────────────────────────────────────────────
+ENV NODE_ENV=production
+ENV PROCESS_TYPE=worker
+# Set ENABLE_HOLD_WATCHER=false on additional replicas (only one should watch the ChangeStream)
+ENV ENABLE_HOLD_WATCHER=true
+
+# Non-root user for security hardening
+RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
+USER nodejs
+
+# Workers have no HTTP port to expose
+# HEALTHCHECK via a simple process check or a custom script
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD pgrep -f "standaloneWorker.js" > /dev/null || exit 1
+
+CMD ["node", "src/workers/standaloneWorker.js"]

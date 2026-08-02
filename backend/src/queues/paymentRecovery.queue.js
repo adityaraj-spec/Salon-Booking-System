@@ -1,11 +1,5 @@
 import { Queue } from "bullmq";
-
-const redisConnection = {
-  host: process.env.REDIS_HOST || "localhost",
-  port: parseInt(process.env.REDIS_PORT || "6379", 10),
-  maxRetriesPerRequest: null,
-  enableOfflineQueue: false,
-};
+import { getBullMQRedisConnection } from "../lib/redis.js";
 
 let queueInstance = null;
 
@@ -15,7 +9,7 @@ export const getPaymentRecoveryQueue = () => {
   }
   if (!queueInstance) {
     queueInstance = new Queue("payment-recovery", {
-      connection: redisConnection,
+      connection: getBullMQRedisConnection(),
     });
     queueInstance.on("error", (err) => {
       console.warn("[PaymentRecoveryQueue] Connection warning:", err.message);

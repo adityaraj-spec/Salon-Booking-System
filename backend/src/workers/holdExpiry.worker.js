@@ -1,12 +1,7 @@
 import { Worker } from "bullmq";
 import { expireHold } from "../services/hold.service.js";
+import { getBullMQRedisConnection } from "../lib/redis.js";
 import logger from "../lib/logger.js";
-
-const redisConnection = {
-  host: process.env.REDIS_HOST || "localhost",
-  port: parseInt(process.env.REDIS_PORT || "6379", 10),
-  maxRetriesPerRequest: null,
-};
 
 let holdExpiryWorkerInstance = null;
 
@@ -24,7 +19,7 @@ export const createHoldExpiryWorker = () => {
       logger.info({ holdId: job.data.holdId }, "Processing hold expiry job");
       await expireHold(job.data.holdId);
     },
-    { connection: redisConnection, concurrency: 5 }
+    { connection: getBullMQRedisConnection(), concurrency: 5 }
   );
 
   holdExpiryWorkerInstance.on("completed", (job) => {
