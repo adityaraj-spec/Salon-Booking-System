@@ -10,6 +10,7 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { sendProfileUpdateEmail, sendManagementUpdateEmail, sendBookingStatusEmail } from "../utils/mailer.js";
 import { emitToUser } from "../socket.js";
 import { pickAllowedFields, STAFF_UPDATABLE_FIELDS } from "../utils/dto.js";
+import logger from "../lib/logger.js";
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
@@ -219,7 +220,7 @@ const updateOwnerBookingStatus = asyncHandler(async (req, res) => {
             booking.date,
             booking.time,
             statusLabel
-        ).catch(err => console.error("[Owner] Failed to send booking status email:", err.message));
+        ).catch(err => logger.warn({ err: err.message }, "[Owner] Failed to send booking status email"));
     }
 
     // Create notification for customer

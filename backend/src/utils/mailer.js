@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import logger from "../lib/logger.js";
 
 // Read lazily so it works after dotenv.config() runs
 const FRONTEND_URL = () => process.env.FRONTEND_URL || 'http://localhost:5173';
@@ -17,7 +18,7 @@ const getTransporter = async () => {
 
     if (smtpUser && smtpPass) {
         const isGmail = smtpHost.includes("gmail.com");
-        console.log(`[Mailer] Initializing with ${smtpHost}:${smtpPort} (User: ${smtpUser})`);
+        logger.info({ smtpHost, smtpPort, smtpUser }, "[Mailer] Initializing SMTP transporter");
         cachedTransporter = nodemailer.createTransport({
             ...(isGmail ? { service: "gmail" } : { host: smtpHost }),
             port: smtpPort,
@@ -34,7 +35,7 @@ const getTransporter = async () => {
             maxMessages: 100,    // messages per connection before reconnect
         });
     } else {
-        console.warn("[Mailer] No SMTP credentials found. Falling back to Ethereal test account.");
+        logger.warn("[Mailer] No SMTP credentials found — falling back to Ethereal test account");
         const testAccount = await nodemailer.createTestAccount();
         cachedTransporter = nodemailer.createTransport({
             host: "smtp.ethereal.email",
@@ -52,18 +53,16 @@ export const verifyTransporter = async () => {
     try {
         const transporter = await getTransporter();
         await transporter.verify();
-        console.log("[Mailer] ✅ SMTP connection verified successfully — ready to send emails.");
+        logger.info("[Mailer] SMTP connection verified — ready to send emails");
     } catch (err) {
-        // Reset cached transporter so next attempt retries
         cachedTransporter = null;
-        console.error("[Mailer] ❌ SMTP connection FAILED:", err.message);
+        logger.error({ err: err.message, code: err.code }, "[Mailer] SMTP connection FAILED");
         if (err.message.includes("535") || err.message.includes("Username and Password not accepted")) {
-            console.error("[Mailer] 👉 FIX: Your Gmail App Password is wrong or 2-Step Verification is not enabled.");
-            console.error("[Mailer] 👉 Go to: https://myaccount.google.com/apppasswords to generate a new App Password.");
+            logger.error("[Mailer] FIX: Gmail App Password is wrong or 2-Step Verification is not enabled");
         } else if (err.message.includes("ECONNREFUSED") || err.message.includes("ETIMEDOUT")) {
-            console.error("[Mailer] 👉 FIX: Cannot reach SMTP server. Check SMTP_HOST and SMTP_PORT in your .env file.");
+            logger.error({ err: err.message }, "[Mailer] FIX: Cannot reach SMTP server — check SMTP_HOST and SMTP_PORT");
         } else if (err.message.includes("EAUTH")) {
-            console.error("[Mailer] 👉 FIX: Authentication error. Make sure SMTP_USER and SMTP_PASS are correct.");
+            logger.error({ err: err.message }, "[Mailer] FIX: Authentication error — check SMTP_USER and SMTP_PASS");
         }
     }
 };
@@ -80,23 +79,21 @@ const sendMail = async (to, subject, htmlContent) => {
             html: htmlContent,
         });
 
-        console.log(`[Mailer] ✅ SUCCESS: "${subject}" sent to ${to}`);
+        logger.info({ to, subject }, "[Mailer] Email sent successfully");
         if (!smtpUser) {
-            console.log(`[Mailer] Ethereal Preview: ${nodemailer.getTestMessageUrl(info)}`);
+            logger.debug({ previewUrl: nodemailer.getTestMessageUrl(info) }, "[Mailer] Ethereal preview URL");
         }
         return { success: true, info };
     } catch (error) {
-        console.error(`[Mailer] ❌ FAILED to send "${subject}" to ${to}:`);
-        console.error(`[Mailer]    Code: ${error.code} | Response: ${error.response || error.message}`);
+        logger.error({ to, subject, code: error.code, response: error.response, err: error.message }, "[Mailer] Failed to send email");
         if (error.responseCode === 535 || error.message?.includes('535') || error.message?.includes('Username and Password not accepted')) {
-            console.error("[Mailer] 🔑 FIX: Gmail rejected credentials. Go to https://myaccount.google.com/apppasswords and generate a new App Password. Make sure 2-Step Verification is ON.");
-            // Reset transporter so next attempt retries with fresh credentials
+            logger.error({ err: error.message }, "[Mailer] FIX: Gmail rejected credentials — regenerate App Password");
             cachedTransporter = null;
         } else if (error.message?.includes('EAUTH')) {
-            console.error("[Mailer] 🔑 FIX: Authentication error — check SMTP_USER and SMTP_PASS in your Render environment variables.");
+            logger.error({ err: error.message }, "[Mailer] FIX: Authentication error — check SMTP_USER and SMTP_PASS");
             cachedTransporter = null;
         } else if (error.message?.includes('ECONNREFUSED') || error.message?.includes('ETIMEDOUT')) {
-            console.error("[Mailer] 🌐 FIX: Cannot connect to SMTP server. Render may be blocking outbound port 587. Try port 465 with SMTP_SECURE=true.");
+            logger.error({ err: error.message }, "[Mailer] FIX: Cannot connect to SMTP server — check port and firewall rules");
             cachedTransporter = null;
         }
         return { success: false, error: error.message };

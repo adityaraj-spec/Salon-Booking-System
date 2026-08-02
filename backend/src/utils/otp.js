@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import getRedisClient from "../lib/redis.js";
 import ApiError from "./apiError.js";
+import logger from "../lib/logger.js";
 
 const MAX_ATTEMPTS = 5;
 const INITIAL_LOCKOUT_SECONDS = 60; // 1 minute
@@ -55,7 +56,7 @@ export const checkOTPLockout = async (email) => {
     }
   } catch (err) {
     if (err instanceof ApiError) throw err;
-    console.warn("[OTP] Redis check failed, skipping lockout check:", err.message);
+    logger.warn({ email, err: err.message }, "[OTP] Redis lockout check failed — skipping");
   }
 };
 
@@ -92,7 +93,7 @@ export const recordOTPAttempt = async (email) => {
     }
   } catch (err) {
     if (err instanceof ApiError) throw err;
-    console.warn("[OTP] Redis record attempt failed:", err.message);
+    logger.warn({ email, err: err.message }, "[OTP] Redis record attempt failed");
   }
 };
 
@@ -109,6 +110,6 @@ export const clearOTPState = async (email) => {
     await redis.del(`otp:lockout:${email}`);
     await redis.del(`otp:lockout_count:${email}`);
   } catch (err) {
-    console.warn("[OTP] Redis clear state failed:", err.message);
+    logger.warn({ email, err: err.message }, "[OTP] Redis clear state failed");
   }
 };

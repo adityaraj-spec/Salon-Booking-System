@@ -70,8 +70,7 @@ if (process.env.NODE_ENV === "production") {
 
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {
-    logger.error({ envVar }, "FATAL STARTUP ERROR: Required environment variable is missing!");
-    console.error(`FATAL STARTUP ERROR: ${envVar} is not defined.`);
+    logger.error({ envVar }, "FATAL STARTUP ERROR: Required environment variable is missing — exiting");
     process.exit(1);
   }
 }

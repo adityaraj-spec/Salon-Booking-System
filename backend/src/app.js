@@ -23,7 +23,7 @@ import metricsRouter from "./routes/metrics.routes.js";
 import ApiError from "./utils/apiError.js";
 
 import { sanitizeNoSQL } from "./middleware/sanitize.js";
-import { requestIdMiddleware } from "./middleware/requestId.js";
+import { correlationIdMiddleware } from "./middleware/correlationId.js";
 import { prometheusMetricsMiddleware } from "./middleware/metricsMiddleware.js";
 import { requestLoggerMiddleware } from "./middleware/requestLogger.js";
 import { applySecurityHeaders } from "./middleware/securityHeaders.js";
@@ -33,7 +33,8 @@ import logger from "./lib/logger.js";
 const app = express();
 app.set("trust proxy", 1);
 
-app.use(requestIdMiddleware);
+// correlationIdMiddleware MUST be first — seeds AsyncLocalStorage for all downstream middleware
+app.use(correlationIdMiddleware);
 app.use(prometheusMetricsMiddleware);
 app.use(requestLoggerMiddleware);
 app.use(applySecurityHeaders);

@@ -1,5 +1,6 @@
 import { Queue } from "bullmq";
 import { getBullMQRedisConnection } from "../lib/redis.js";
+import logger from "../lib/logger.js";
 
 let queueInstance = null;
 
@@ -13,7 +14,7 @@ export const getHoldExpiryQueue = () => {
 
     });
     queueInstance.on("error", (err) => {
-      console.warn("BullMQ Queue Connection Warning:", err.message);
+      logger.warn({ err: err.message }, "[HoldExpiryQueue] BullMQ connection warning");
     });
   }
   return queueInstance;
@@ -43,7 +44,7 @@ export const scheduleHoldExpiry = async (holdId, delayMs) => {
       );
     }
   } catch (err) {
-    console.warn("Failed to schedule hold expiry job in BullMQ:", err.message);
+    logger.warn({ holdId, err: err.message }, "[HoldExpiryQueue] Failed to schedule hold expiry job");
   }
 };
 

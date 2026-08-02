@@ -9,6 +9,7 @@ import { ROLES } from "../constants.js"
 import { generateOTP, hashOTP, verifyOTPHash, checkOTPLockout, recordOTPAttempt, clearOTPState } from "../utils/otp.js"
 import { issueTokenPair, rotateRefreshToken, revokeSession, revokeAllUserSessions } from "../services/auth.service.js"
 import { pickAllowedFields, USER_UPDATABLE_FIELDS } from "../utils/dto.js"
+import logger from "../lib/logger.js"
 
 
 const VERIFICATION_CODE_EXPIRY_MINUTES = 15;
@@ -83,7 +84,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
     // Send verification email with raw code (do not await to avoid blocking response)
     sendVerificationEmail(email, fullName, rawVerificationCode).catch(err => {
-        console.error("[registerUser] Failed to send verification email:", err.message);
+        logger.warn({ err: err.message }, "[User] Failed to send verification email");
     });
 
     return res
@@ -144,7 +145,7 @@ const verifyEmail = asyncHandler(async (req, res) => {
 
     // Send welcome email silently
     sendWelcomeEmail(verifiedUser.email, verifiedUser.fullName).catch(err => {
-        console.error("[verifyEmail] Failed to send welcome email:", err.message);
+        logger.warn({ err: err.message }, "[User] Failed to send welcome email");
     });
 
     return res
@@ -184,7 +185,7 @@ const resendVerificationCode = asyncHandler(async (req, res) => {
     await user.save({ validateBeforeSave: false });
 
     sendVerificationEmail(email, user.fullName, rawVerificationCode).catch(err => {
-        console.error("[resendVerificationCode] Failed to send email:", err.message);
+        logger.warn({ err: err.message }, "[User] Failed to resend verification email");
     });
 
     return res
@@ -222,7 +223,7 @@ const loginUser = asyncHandler(async (req, res) => {
         await user.save({ validateBeforeSave: false });
 
         sendVerificationEmail(user.email, user.fullName, rawVerificationCode).catch(err => {
-            console.error("[loginUser] Failed to resend verification email:", err.message);
+            logger.warn({ err: err.message }, "[User] Failed to resend verification email on login");
         });
 
         throw new ApiError(403, "Email not verified. A new verification code has been sent to your email.")
@@ -240,7 +241,7 @@ const loginUser = asyncHandler(async (req, res) => {
     const refreshTokenOptions = { ...options, maxAge: 15 * 24 * 60 * 60 * 1000 };
 
     sendLoginEmail(loggedInUSer.email, loggedInUSer.fullName).catch(err => {
-        console.error("[loginUser] Failed to send login email:", err.message);
+        logger.warn({ err: err.message }, "[User] Failed to send login notification email");
     });
 
     return res
@@ -263,7 +264,7 @@ const logoutUser = asyncHandler(async (req, res) => {
     await revokeAllUserSessions(req.user._id);
 
     sendLogoutEmail(req.user.email, req.user.fullName).catch(err => {
-        console.error("[logoutUser] Failed to send logout email:", err.message);
+        logger.warn({ err: err.message }, "[User] Failed to send logout notification email");
     });
 
     const options = getCookieOptions();

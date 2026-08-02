@@ -1,5 +1,6 @@
 import { Queue } from "bullmq";
 import { getBullMQRedisConnection } from "../lib/redis.js";
+import logger from "../lib/logger.js";
 
 let queueInstance = null;
 
@@ -12,7 +13,7 @@ export const getPaymentRecoveryQueue = () => {
       connection: getBullMQRedisConnection(),
     });
     queueInstance.on("error", (err) => {
-      console.warn("[PaymentRecoveryQueue] Connection warning:", err.message);
+    logger.warn({ err: err.message }, "[PaymentRecoveryQueue] BullMQ connection warning");
     });
   }
   return queueInstance;
@@ -37,11 +38,17 @@ export const schedulePaymentRecovery = async (bookingId, delayMs = 15 * 60 * 100
           delay: delayMs,
           jobId: `payment-recovery-${bookingId}`,
           removeOnComplete: true,
-          removeOnFail: true,
+          removeOnFail: false, // keep failed jobs visible for debugging
+          // Exponential backoff: attempt 1=5s, 2=10s, 3=20s, 4=40s, 5=80s
+          attempts: 5,
+          backoff: {
+            type: "exponential",
+            delay: 5000,
+          },
         }
       );
     }
   } catch (err) {
-    console.warn("[PaymentRecoveryQueue] Failed to schedule recovery job:", err.message);
+    logger.warn({ bookingId, err: err.message }, "[PaymentRecoveryQueue] Failed to schedule recovery job");
   }
 };

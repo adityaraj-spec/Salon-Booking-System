@@ -13,6 +13,7 @@ import { ROLES } from "../constants.js";
 import { sendShopAddedEmail, testEmailConfiguration, sendWelcomeEmail } from "../utils/mailer.js";
 import { emitToAll } from "../socket.js";
 import { geocodeAddress } from "../utils/geocoding.js";
+import logger from "../lib/logger.js";
 
 // Helper: escape special regex characters in user input to prevent ReDoS
 const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -23,7 +24,7 @@ const testEmailConfig = asyncHandler(async (req, res) => {
     const { email } = req.body;
     if (!email) throw new ApiError(400, "Target email is required");
 
-    console.log(`[Admin] Triggering SMTP test to ${email}...`);
+    logger.info({ email }, "[Admin] Triggering SMTP configuration test");
     const result = await testEmailConfiguration(email);
 
     if (result.success) {

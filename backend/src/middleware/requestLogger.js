@@ -1,37 +1,50 @@
+/**
+ * requestLogger.js — HTTP request/response structured logging middleware.
+ *
+ * Reads context from AsyncLocalStorage (seeded by correlationIdMiddleware)
+ * so every log line automatically carries requestId and correlationId.
+ *
+ * Log schema per request:
+ *   - type:       "request" | "response"
+ *   - method:     GET | POST | ...
+ *   - url:        full URL path + query
+ *   - statusCode: HTTP response code (on finish)
+ *   - durationMs: elapsed time in milliseconds (on finish)
+ *   - ip:         client IP (respects X-Forwarded-For via trust proxy)
+ *   - userAgent:  client user-agent string
+ *
+ * Mount order: AFTER correlationIdMiddleware, BEFORE route handlers.
+ */
+
 import logger from "../lib/logger.js";
 
-/**
- * Gap X.4 — Request/Response Logger Middleware
- * Logs every HTTP request with method, path, requestId, userId on start,
- * and statusCode + durationMs on completion.
- */
 export const requestLoggerMiddleware = (req, res, next) => {
   const startTime = Date.now();
 
-  // Log inbound request
-  logger.info({
+  // Log inbound request at debug level (keeps info stream clean under high volume)
+  logger.debug({
     type: "request",
-    requestId: req.id,
     method: req.method,
-    path: req.path,
-    userId: req.user?._id || null,
+    url: req.originalUrl,
     ip: req.ip,
-  }, `→ ${req.method} ${req.path}`);
+    userAgent: req.headers["user-agent"],
+  }, `→ ${req.method} ${req.originalUrl}`);
 
-  // Intercept response finish to log outcome
   res.on("finish", () => {
     const durationMs = Date.now() - startTime;
-    const level = res.statusCode >= 500 ? "error" : res.statusCode >= 400 ? "warn" : "info";
+    // Use error level for 5xx, warn for 4xx, info for everything else
+    const level = res.statusCode >= 500 ? "error"
+                : res.statusCode >= 400 ? "warn"
+                : "info";
 
     logger[level]({
       type: "response",
-      requestId: req.id,
       method: req.method,
-      path: req.path,
+      url: req.originalUrl,
       statusCode: res.statusCode,
       durationMs,
-      userId: req.user?._id || null,
-    }, `← ${req.method} ${req.path} ${res.statusCode} (${durationMs}ms)`);
+      ip: req.ip,
+    }, `← ${req.method} ${req.originalUrl} ${res.statusCode} (${durationMs}ms)`);
   });
 
   next();

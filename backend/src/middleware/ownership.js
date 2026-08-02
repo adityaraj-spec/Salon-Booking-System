@@ -1,6 +1,7 @@
 import ApiError from "../utils/apiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ROLES } from "../constants.js";
+import logger from "../lib/logger.js";
 
 /**
  * IDOR Protection Middleware Factory
@@ -35,7 +36,7 @@ export const verifyOwnership = (Model, paramName = "id", ownerField = "owner") =
     const userId = req.user._id.toString();
 
     if (ownerId !== userId) {
-      console.warn(`[IDOR Guard] User ${userId} attempted unauthorized action on ${Model.modelName} ${resourceId}`);
+      logger.warn({ userId, resourceId, model: Model.modelName }, "[IDOR Guard] Unauthorized access attempt on resource");
       throw new ApiError(403, "Forbidden - You do not have permission to access or modify this resource");
     }
 

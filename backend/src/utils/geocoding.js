@@ -1,4 +1,5 @@
 import mbxGeocoding from "@mapbox/mapbox-sdk/services/geocoding.js";
+import logger from "../lib/logger.js";
 
 const mapBoxToken = process.env.MAPBOX_ACCESS_TOKEN;
 const geocodingClient = mapBoxToken ? mbxGeocoding({ accessToken: mapBoxToken }) : null;
@@ -30,7 +31,7 @@ export const geocodeAddress = async (address) => {
         }
         return null;
     } catch (error) {
-        console.error("Geocoding error:", error);
+        logger.error({ address, err: error.message }, "[Geocoding] Address lookup failed");
         return null;
     }
 };

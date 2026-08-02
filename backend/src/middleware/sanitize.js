@@ -2,6 +2,7 @@
  * NoSQL Injection Protection Middleware
  * Recursively strips keys starting with '$' or containing '.' from req.body, req.query, and req.params.
  */
+import logger from "../lib/logger.js";
 const sanitizeValue = (data) => {
   if (data instanceof Date || data instanceof RegExp) {
     return data;
@@ -16,7 +17,7 @@ const sanitizeValue = (data) => {
     for (const key of Object.keys(data)) {
       // Remove keys with Mongo operators or dot notation
       if (key.startsWith("$") || key.includes(".")) {
-        console.warn(`[NoSQL Sanitizer] Stripped suspicious key "${key}" from request input`);
+        logger.warn({ key }, "[NoSQL Sanitizer] Stripped suspicious key from request input");
         continue;
       }
       cleanObj[key] = sanitizeValue(data[key]);
@@ -31,7 +32,7 @@ const sanitizeInPlace = (obj) => {
   if (!obj || typeof obj !== "object") return;
   for (const key of Object.keys(obj)) {
     if (key.startsWith("$") || key.includes(".")) {
-      console.warn(`[NoSQL Sanitizer] Stripped suspicious key "${key}" from request input`);
+      logger.warn({ key }, "[NoSQL Sanitizer] Stripped suspicious key from request input");
       delete obj[key];
     } else if (typeof obj[key] === "object" && obj[key] !== null) {
       sanitizeInPlace(obj[key]);

@@ -1,7 +1,8 @@
 import { Payment } from "../models/payment.models.js";
 import { Refund } from "../models/refund.models.js";
 import { Booking } from "../models/booking.models.js";
-import { razorpayClient, verifyRazorpaySignature, verifyWebhookSignature } from "../utils/razorpay.js";
+import { verifyRazorpaySignature, verifyWebhookSignature } from "../utils/razorpay.js";
+import { razorpayCreateOrder, razorpayRefundPayment } from "../utils/razorpayBreaker.js";
 import { writeOutboxEvent } from "./outbox.service.js";
 import { withTransactionRetry } from "../utils/transaction.js";
 import ApiError from "../utils/apiError.js";
@@ -130,10 +131,10 @@ export const createRazorpayOrder = async ({ bookingId, customerId }) => {
     };
   }
 
-  // Create new Razorpay order (OUTSIDE any DB transaction — external call)
+  // Create new Razorpay order via circuit-breaker-protected call (OUTSIDE any DB transaction)
   let razorpayOrder;
   try {
-    razorpayOrder = await razorpayClient.orders.create({
+    razorpayOrder = await razorpayCreateOrder({
       amount: amountInPaisa,
       currency: "INR",
       receipt: booking._id.toString(),
@@ -150,7 +151,21 @@ export const createRazorpayOrder = async ({ bookingId, customerId }) => {
         currency: "INR",
       };
     } else {
-      throw new ApiError(500, `Razorpay Order creation failed: ${err.message}`);
+      // err.name === "RazorpayTimeoutError" or circuit breaker OpenCircuitError
+      const isTimeout = err.name === "RazorpayTimeoutError";
+      const isOpen    = err.message?.includes("open");
+      logger.error(
+        { err: err.message, isTimeout, isOpen },
+        "[Payment] Order creation failed — Razorpay unavailable"
+      );
+      throw new ApiError(
+        503,
+        isTimeout
+          ? "Payment gateway timed out. Please try again."
+          : isOpen
+          ? "Payment gateway is temporarily unavailable. Please try again in a moment."
+          : `Razorpay Order creation failed: ${err.message}`
+      );
     }
   }
 
@@ -310,7 +325,7 @@ export const initiateRefund = async ({ bookingId, customerId, reason }) => {
 
       if (refundAmount > 0) {
         try {
-          const refundRes = await razorpayClient.payments.refund(payment.razorpayPaymentId, {
+          const refundRes = await razorpayRefundPayment(payment.razorpayPaymentId, {
             amount: Math.round(refundAmount * 100),
             notes: { bookingId: booking._id.toString(), reason: reason || "User cancellation" },
           });
@@ -319,7 +334,17 @@ export const initiateRefund = async ({ bookingId, customerId, reason }) => {
           if (process.env.NODE_ENV === "test" || !process.env.RAZORPAY_KEY_SECRET) {
             razorpayRefundId = `rfnd_test_${Date.now()}`;
           } else {
-            throw new ApiError(500, `Razorpay refund failed: ${err.message}`);
+            const isTimeout = err.name === "RazorpayTimeoutError";
+            logger.error(
+              { bookingId: booking._id, err: err.message, isTimeout },
+              "[Payment] Refund failed — Razorpay unavailable"
+            );
+            throw new ApiError(
+              503,
+              isTimeout
+                ? "Refund gateway timed out. Please try again."
+                : `Razorpay refund failed: ${err.message}`
+            );
           }
         }
 

@@ -1,9 +1,11 @@
 import mongoose from "mongoose";
 import { BookingHold } from "../models/bookingHold.model.js";
 import { expireHold } from "../services/hold.service.js";
+import logger from "../lib/logger.js";
 
 /**
  * Monitors the bookingholds collection for real-time state changes and automated expiry cleanup.
+ * Acts as a fallback mechanism in case BullMQ misses a hold-expiry job.
  */
 export const startHoldWatcher = () => {
   try {
@@ -16,9 +18,9 @@ export const startHoldWatcher = () => {
           const now = new Date();
           const expiresAt = new Date(fullDoc.expiresAt);
           if (expiresAt <= now) {
-            console.log(`[ChangeStream] Active hold ${fullDoc._id} reached expiration time. Expiring...`);
+            logger.info({ holdId: fullDoc._id }, "[ChangeStream] Active hold reached expiration time — expiring");
             await expireHold(fullDoc._id.toString()).catch((err) =>
-              console.error("[ChangeStream] Expire error:", err.message)
+              logger.error({ holdId: fullDoc._id, err: err.message }, "[ChangeStream] Expire error")
             );
           }
         }
@@ -26,11 +28,11 @@ export const startHoldWatcher = () => {
     });
 
     changeStream.on("error", (error) => {
-      console.error("[ChangeStream] BookingHold watcher error:", error.message);
+      logger.error({ err: error.message }, "[ChangeStream] BookingHold watcher error");
     });
 
-    console.log("MongoDB ChangeStream watcher initialized for BookingHold collection.");
+    logger.info("[ChangeStream] MongoDB ChangeStream watcher initialized for BookingHold collection");
   } catch (err) {
-    console.warn("[ChangeStream] Could not start hold watcher (requires replica set):", err.message);
+    logger.warn({ err: err.message }, "[ChangeStream] Could not start hold watcher (requires replica set)");
   }
 };

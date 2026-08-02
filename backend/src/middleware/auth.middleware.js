@@ -4,7 +4,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { User } from "../models/user.models.js";
 import { cacheGet, cacheSet, cacheDel } from "../lib/cacheManager.js";
 import getRedisClient from "../lib/redis.js";
-import logger from "../lib/logger.js";
+import logger, { enrichLogContext } from "../lib/logger.js";
 
 export const verifyJWT = asyncHandler(async (req, _, next) => {
   try {
@@ -45,6 +45,9 @@ export const verifyJWT = asyncHandler(async (req, _, next) => {
     }
 
     req.user = user;
+    // Enrich the AsyncLocalStorage context with the authenticated userId
+    // so every log line in this request automatically carries it
+    enrichLogContext({ userId: user._id?.toString() || userId.toString() });
     next();
   } catch (error) {
     if (error instanceof ApiError) throw error;

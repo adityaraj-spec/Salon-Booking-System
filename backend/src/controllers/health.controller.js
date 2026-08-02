@@ -30,6 +30,7 @@ import mongoose from "mongoose";
 import getRedisClient from "../lib/redis.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/apiResponse.js";
+import { getCircuitBreakerStats } from "../utils/razorpayBreaker.js";
 
 // ─── Liveness Probe ───────────────────────────────────────────────────────────
 
@@ -113,6 +114,20 @@ export const getReadiness = asyncHandler(async (req, res) => {
   // ── BullMQ / Worker-specific checks ─────────────────────────────────────
   const processType = process.env.PROCESS_TYPE || "all";
   checks.processType = processType;
+
+  // ── Circuit Breaker States ────────────────────────────────────────────────
+  // Report breaker states inline — any OPEN breaker is a degraded dependency
+  try {
+    const breakerStats = getCircuitBreakerStats();
+    checks.razorpayBreakers = breakerStats;
+    // An open breaker means Razorpay is unreachable — mark as degraded
+    const hasOpenBreaker = Object.values(breakerStats).some((b) => b.state === "open");
+    if (hasOpenBreaker) {
+      checks.razorpayBreakerAlert = "One or more Razorpay circuit breakers are OPEN";
+    }
+  } catch {
+    checks.razorpayBreakers = { status: "unavailable" };
+  }
 
   const statusCode = isReady ? 200 : 503;
   const message = isReady ? "Service is ready" : "Service is not ready — dependency check failed";
