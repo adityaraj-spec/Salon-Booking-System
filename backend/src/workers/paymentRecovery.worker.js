@@ -6,6 +6,10 @@ import { confirmPaymentAndBooking } from "../services/payment.service.js";
 import { cancelPendingBooking } from "../services/booking.service.js";
 import { getBullMQRedisConnection } from "../lib/redis.js";
 import logger, { asyncLocalStorage } from "../lib/logger.js";
+import {
+  paymentRecoveryRetriesTotal,
+  paymentRecoveryPermanentFailuresTotal,
+} from "../lib/metrics.js";
 
 let paymentRecoveryWorkerInstance = null;
 
@@ -103,6 +107,10 @@ export const createPaymentRecoveryWorker = () => {
               : "[PaymentRecovery] Razorpay fetch failed — will retry"
           );
 
+          // Increment retry metric before throwing (M2 requirement #10)
+          const reason = isTimeout ? "timeout" : isOpen ? "breaker_open" : "other";
+          try { paymentRecoveryRetriesTotal.inc({ reason }); } catch {}
+
           // Throw to trigger BullMQ exponential-backoff retry
           throw err;
         }
@@ -157,6 +165,10 @@ export const createPaymentRecoveryWorker = () => {
         ? "[PaymentRecovery] Job attempt failed — BullMQ will retry with backoff"
         : "[PaymentRecovery] Job permanently failed — all attempts exhausted"
     );
+    // Increment permanent failure counter when no retries remain (M2 requirement #10)
+    if (!willRetry) {
+      try { paymentRecoveryPermanentFailuresTotal.inc(); } catch {}
+    }
   });
 
   paymentRecoveryWorkerInstance.on("error", (err) => {

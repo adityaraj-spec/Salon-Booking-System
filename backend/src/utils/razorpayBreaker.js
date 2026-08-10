@@ -49,6 +49,12 @@
 import CircuitBreaker from "opossum";
 import { razorpayClient } from "./razorpay.js";
 import logger from "../lib/logger.js";
+import {
+  razorpayBreakerStateTransitionsTotal,
+  razorpayBreakerRejectionsTotal,
+  razorpayTimeoutsTotal,
+  razorpayBreakerStateGauge,
+} from "../lib/metrics.js";
 
 // ─── Configuration ────────────────────────────────────────────────────────────
 const RAZORPAY_TIMEOUT_MS    = parseInt(process.env.RAZORPAY_TIMEOUT_MS    || "8000",  10);
@@ -74,6 +80,8 @@ const withTimeout = (fn, timeoutMs, operationName) => {
       err.name = "RazorpayTimeoutError";
       err.operationName = operationName;
       err.timeoutMs = timeoutMs;
+      // Increment timeout counter for this operation (M2 metric hook)
+      try { razorpayTimeoutsTotal.inc({ operation: operationName }); } catch {}
       reject(err);
     }, timeoutMs);
 
@@ -110,11 +118,19 @@ const createBreaker = (fn, name) => {
     resetTimeout: BREAKER_RESET_TIMEOUT_MS,
   });
 
+  // Initialise the gauge to 0 (closed) for each named breaker
+  try { razorpayBreakerStateGauge.set({ breaker: name }, 0); } catch {}
+
   breaker.on("open", () => {
     logger.error(
       { breaker: name, resetInMs: BREAKER_RESET_TIMEOUT_MS },
       "[RazorpayBreaker] Circuit OPEN — fast-failing all calls until reset"
     );
+    // Metrics hooks (M2 requirement #9, #10)
+    try {
+      razorpayBreakerStateTransitionsTotal.inc({ breaker: name, state: "open" });
+      razorpayBreakerStateGauge.set({ breaker: name }, 1);
+    } catch {}
   });
 
   breaker.on("halfOpen", () => {
@@ -122,6 +138,10 @@ const createBreaker = (fn, name) => {
       { breaker: name },
       "[RazorpayBreaker] Circuit HALF-OPEN — sending probe request"
     );
+    try {
+      razorpayBreakerStateTransitionsTotal.inc({ breaker: name, state: "half_open" });
+      razorpayBreakerStateGauge.set({ breaker: name }, 2);
+    } catch {}
   });
 
   breaker.on("close", () => {
@@ -129,6 +149,10 @@ const createBreaker = (fn, name) => {
       { breaker: name },
       "[RazorpayBreaker] Circuit CLOSED — normal operation restored"
     );
+    try {
+      razorpayBreakerStateTransitionsTotal.inc({ breaker: name, state: "close" });
+      razorpayBreakerStateGauge.set({ breaker: name }, 0);
+    } catch {}
   });
 
   breaker.on("fallback", (result, err) => {
@@ -150,6 +174,8 @@ const createBreaker = (fn, name) => {
       { breaker: name },
       "[RazorpayBreaker] Call rejected — circuit is OPEN"
     );
+    // Count fast-fail rejections so ops dashboards can see rejection rate
+    try { razorpayBreakerRejectionsTotal.inc({ breaker: name }); } catch {}
   });
 
   return breaker;
