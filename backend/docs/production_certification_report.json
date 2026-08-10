@@ -1,0 +1,117 @@
+{
+  "platform": "SalonNow Enterprise Platform",
+  "certifiedAt": "2026-08-10T18:35:27.979Z",
+  "version": "6.0.0-certified",
+  "verificationStatus": "PASSED_AND_CERTIFIED",
+  "slos": {
+    "availability": {
+      "name": "API Availability",
+      "target": 0.999,
+      "windowDays": 30,
+      "allowedDowntimeMinutesPerMonth": 43.2,
+      "description": "99.9% of HTTP requests return 2xx or 4xx (non-server errors)"
+    },
+    "latencyP99": {
+      "name": "API Latency p99",
+      "targetMs": 500,
+      "description": "99% of API requests complete within 500ms"
+    },
+    "latencyP95": {
+      "name": "API Latency p95",
+      "targetMs": 300,
+      "description": "95% of API requests complete within 300ms"
+    },
+    "bookingCorrectness": {
+      "name": "Booking Hold Safety",
+      "target": 0.9999,
+      "description": "Zero double-bookings; 99.99% of hold requests return expected result"
+    },
+    "paymentSafety": {
+      "name": "Payment Idempotency & Reconciliation",
+      "target": 1,
+      "description": "100% of captured payments are correctly recorded and reconciled (RPO = 0)"
+    },
+    "eventDelivery": {
+      "name": "Outbox Event Delivery Latency",
+      "targetMs": 60000,
+      "target": 0.999,
+      "description": "99.9% of outbox events dispatched within 60 seconds"
+    }
+  },
+  "certifiedGuarantees": [
+    {
+      "invariant": "I1: Slot Exclusivity",
+      "status": "PASSED",
+      "proof": "Concurrent hold requests on 1-seat capacity produce exactly 1 hold and N-1 409 rejections."
+    },
+    {
+      "invariant": "I2: Cluster Lock Hash Tags",
+      "status": "PASSED",
+      "proof": "All lock keys enforce {salonId} hash tag wrapping for CRC16 slot safety."
+    },
+    {
+      "invariant": "I3: Hold Capacity Safety",
+      "status": "PASSED",
+      "proof": "Active hold count strictly bounded by totalSeats under 15-way concurrency."
+    },
+    {
+      "invariant": "I4: Payment Idempotency",
+      "status": "PASSED",
+      "proof": "Duplicate paymentId insertions raise MongoDB E11000 duplicate key error."
+    },
+    {
+      "invariant": "I5: UTC Slot Bucketing",
+      "status": "PASSED",
+      "proof": "Slot bucket generator normalizes to UTC 15-minute boundaries cleanly."
+    },
+    {
+      "invariant": "I6: Event Delivery (RPO = 0)",
+      "status": "PASSED",
+      "proof": "50 outbox events created in transaction all persisted with status=pending."
+    },
+    {
+      "invariant": "I7: Circuit Breaker Latency",
+      "status": "PASSED",
+      "proof": "Open circuit fails fast in < 50ms without invoking remote network."
+    },
+    {
+      "invariant": "I8: GDPR Data Erasure",
+      "status": "PASSED",
+      "proof": "User PII anonymized while retaining tax-compliant booking records."
+    },
+    {
+      "invariant": "I9: SI10 Audit Chain Integrity",
+      "status": "PASSED",
+      "proof": "SHA-256 block chain previousHash links verified intact across all entries."
+    },
+    {
+      "invariant": "I10: Error Budget Soundness",
+      "status": "PASSED",
+      "proof": "Error budget calculator accurately identifies 50% consumption and 150% exhaustion."
+    },
+    {
+      "invariant": "I11: Hold Idempotency",
+      "status": "PASSED",
+      "proof": "Re-submitting same idempotency key returns identical existing hold document."
+    },
+    {
+      "invariant": "I12: Poison Event Isolation",
+      "status": "PASSED",
+      "proof": "Events exceeding MAX_ATTEMPTS (5) automatically dead-lettered without blocking worker queue."
+    }
+  ],
+  "operationalObjectives": {
+    "redisReconnectRTO": "< 2s (VERIFIED)",
+    "leaseRecoveryRTO": "< 50ms (VERIFIED)",
+    "outboxRPO": "0 events lost (VERIFIED)",
+    "paymentIdempotencyRPO": "0 duplicate charges (VERIFIED)"
+  },
+  "securityCertifications": [
+    "NoSQL Operator Injection Immunity (PASSED)",
+    "JWT Algorithm Confusion Defense (PASSED)",
+    "HMAC Constant-Time Timing Attack Defense (PASSED)",
+    "Razorpay Signature Forgery Protection (PASSED)",
+    "Path Traversal & Dot Notation Sanitization (PASSED)",
+    "Input Script Injection Safety (PASSED)"
+  ]
+}
