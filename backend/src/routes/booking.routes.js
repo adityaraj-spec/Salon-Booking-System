@@ -25,10 +25,12 @@ import {
   rescheduleBookingSchema,
 } from "../schemas/staffSchedule.schema.js";
 
+import { holdRateLimiter } from "../middleware/rateLimiter.js";
+
 const router = Router();
 
-// Hold creation (customers & staff)
-router.route("/hold").post(verifyJWT, validate(createHoldSchema), createHoldHandler);
+// Hold creation (customers & staff) protected by distributed multi-dimensional holdRateLimiter (Milestone 3)
+router.route("/hold").post(verifyJWT, holdRateLimiter, validate(createHoldSchema), createHoldHandler);
 
 // Initiate booking from hold
 router.route("/initiate").post(verifyJWT, validate(initiateBookingSchema), initiateBookingHandler);

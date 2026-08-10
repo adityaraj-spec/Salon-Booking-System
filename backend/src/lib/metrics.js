@@ -99,3 +99,162 @@ export const getPrometheusMetrics = async () => {
 };
 
 export const getContentType = () => client.register.contentType;
+
+// ─── Rate Limiter Metrics (Milestone 3) ──────────────────────────────────────
+
+/**
+ * Counts booking hold creation requests by outcome status.
+ * Labels:
+ *   status — "allowed" | "blocked" | "error"
+ */
+export const holdRequestsTotal = new client.Counter({
+  name: "salonnow_hold_requests_total",
+  help: "Total number of booking hold requests by status",
+  labelNames: ["status"],
+});
+
+/**
+ * Counts rate limiter rejections by dimension and reason.
+ * Labels:
+ *   prefix — e.g. "hold_create", "auth_strict", "general_api"
+ *   type   — "user" | "ip" | "salon" | "burst"
+ *   reason — "exceeded"
+ */
+export const rateLimitRejectionsTotal = new client.Counter({
+  name: "salonnow_rate_limit_rejections_total",
+  help: "Total number of rate-limit rejections by dimension",
+  labelNames: ["prefix", "type", "reason"],
+});
+
+/**
+ * Measures latency of Redis rate-limiter pipeline execution in seconds.
+ * Labels:
+ *   prefix — e.g. "hold_create", "auth_strict", "general_api"
+ */
+export const rateLimiterLatencySeconds = new client.Histogram({
+  name: "salonnow_rate_limiter_latency_seconds",
+  help: "Latency of rate limiter checks in seconds",
+  labelNames: ["prefix"],
+  buckets: [0.0005, 0.001, 0.005, 0.01, 0.05, 0.1, 0.5],
+});
+
+/**
+ * Counts Redis connection or execution errors encountered during rate-limit checks.
+ * Labels:
+ *   prefix — rate limiter prefix
+ *   mode   — "fail_closed" | "fail_open"
+ */
+export const rateLimiterErrorsTotal = new client.Counter({
+  name: "salonnow_rate_limiter_errors_total",
+  help: "Total number of Redis rate limiter execution errors",
+  labelNames: ["prefix", "mode"],
+});
+
+// ─── Outbox Relay Metrics (Milestone 4) ──────────────────────────────────────
+
+/**
+ * Counts total outbox events processed by final status.
+ * Labels:
+ *   status — "processed" | "failed" | "dead_letter"
+ */
+export const outboxThroughputTotal = new client.Counter({
+  name: "salonnow_outbox_throughput_total",
+  help: "Total number of outbox events processed by status",
+  labelNames: ["status"],
+});
+
+/**
+ * Measures processing latency of outbox event dispatch in seconds.
+ */
+export const outboxProcessingLatencySeconds = new client.Histogram({
+  name: "salonnow_outbox_processing_latency_seconds",
+  help: "Processing latency of outbox event dispatch in seconds",
+  buckets: [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 5],
+});
+
+/**
+ * Gauge tracking current pending/processing outbox queue backlog.
+ */
+export const outboxQueueBacklog = new client.Gauge({
+  name: "salonnow_outbox_queue_backlog",
+  help: "Current count of unprocessed outbox events in backlog",
+});
+
+/**
+ * Counts outbox event retries scheduled with exponential backoff.
+ */
+export const outboxRetriesTotal = new client.Counter({
+  name: "salonnow_outbox_retries_total",
+  help: "Total number of outbox event retries scheduled",
+});
+
+/**
+ * Counts poison events transitioned to dead-letter queue.
+ */
+export const outboxDeadLetterTotal = new client.Counter({
+  name: "salonnow_outbox_dead_letter_total",
+  help: "Total number of poison outbox events moved to dead-letter status",
+});
+
+/**
+ * Counts worker lease recoveries (claiming expired leases after worker crash).
+ */
+export const outboxLeaseRecoveriesTotal = new client.Counter({
+  name: "salonnow_outbox_lease_recoveries_total",
+  help: "Total number of expired worker leases recovered by active workers",
+});
+
+// ─── Health & Graceful Shutdown Metrics (Milestone 5) ─────────────────────────
+
+/**
+ * Measures duration of process graceful shutdown in seconds.
+ */
+export const shutdownDurationSeconds = new client.Histogram({
+  name: "salonnow_shutdown_duration_seconds",
+  help: "Duration of graceful process shutdown in seconds",
+  buckets: [0.1, 0.5, 1, 2, 5, 10, 30],
+});
+
+/**
+ * Counts readiness probe state transitions.
+ * Labels:
+ *   state — "ready" | "not_ready"
+ */
+export const readinessTransitionsTotal = new client.Counter({
+  name: "salonnow_readiness_transitions_total",
+  help: "Total number of readiness state transitions",
+  labelNames: ["state"],
+});
+
+/**
+ * Gauge tracking in-flight active HTTP requests.
+ */
+export const activeHttpRequestsGauge = new client.Gauge({
+  name: "salonnow_active_http_requests_total",
+  help: "Current number of in-flight active HTTP requests being processed",
+});
+
+/**
+ * Gauge tracking in-flight active worker jobs by worker type.
+ * Labels:
+ *   worker — e.g. "payment_recovery", "hold_expiry", "outbox_relay"
+ */
+export const activeWorkerJobsGauge = new client.Gauge({
+  name: "salonnow_active_worker_jobs_total",
+  help: "Current number of in-flight worker jobs being processed",
+  labelNames: ["worker"],
+});
+
+/**
+ * Counts process graceful shutdown outcomes.
+ * Labels:
+ *   status — "success" | "timeout" | "error"
+ */
+export const gracefulShutdownTotal = new client.Counter({
+  name: "salonnow_graceful_shutdown_total",
+  help: "Total number of graceful shutdown executions by final status",
+  labelNames: ["status"],
+});
+
+
+

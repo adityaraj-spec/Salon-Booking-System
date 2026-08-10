@@ -67,6 +67,12 @@ const outboxEventSchema = new mongoose.Schema(
       index: true,
     },
 
+    nextRetryAt: {
+      type: Date,
+      default: null,
+      index: true,
+    },
+
     attempts: {
       type: Number,
       default: 0,
@@ -83,7 +89,15 @@ const outboxEventSchema = new mongoose.Schema(
   }
 );
 
-// Compound index for atomic polling query
-outboxEventSchema.index({ status: 1, processed: 1, attempts: 1, lockedUntil: 1, createdAt: 1 });
+// Compound index for high-throughput atomic batch claiming & retry scheduling (Milestone 4)
+outboxEventSchema.index({
+  processed: 1,
+  status: 1,
+  attempts: 1,
+  nextRetryAt: 1,
+  lockedUntil: 1,
+  createdAt: 1,
+});
 
 export const OutboxEvent = mongoose.model("OutboxEvent", outboxEventSchema);
+
