@@ -27,7 +27,7 @@ let timerId = null;
  * @param {number} batchSize - max events to claim in single batch (default: 25)
  * @returns {Promise<Array<object>>} Array of claimed OutboxEvent documents
  */
-export const claimBatchOfEvents = async (batchSize = BATCH_SIZE) => {
+export const claimBatchOfEvents = async (batchSize = BATCH_SIZE, workerId = WORKER_ID) => {
   const now = new Date();
   const leaseExpiration = new Date(now.getTime() + LEASE_DURATION_MS);
 
@@ -59,7 +59,7 @@ export const claimBatchOfEvents = async (batchSize = BATCH_SIZE) => {
   for (const expired of expiredLeases) {
     try { outboxLeaseRecoveriesTotal.inc(); } catch {}
     logger.warn(
-      { eventId: expired._id, previousWorker: expired.lockedBy, expiredAt: expired.lockedUntil, workerId: WORKER_ID },
+      { eventId: expired._id, previousWorker: expired.lockedBy, expiredAt: expired.lockedUntil, workerId },
       "[OutboxRelay] Worker lease recovered from crashed or timed-out worker"
     );
   }
@@ -78,7 +78,7 @@ export const claimBatchOfEvents = async (batchSize = BATCH_SIZE) => {
     {
       $set: {
         status: "processing",
-        lockedBy: WORKER_ID,
+        lockedBy: workerId,
         lockedUntil: leaseExpiration,
       },
       $inc: { attempts: 1 },
@@ -88,13 +88,13 @@ export const claimBatchOfEvents = async (batchSize = BATCH_SIZE) => {
   // 4. Fetch the documents successfully claimed by THIS worker instance
   const claimedEvents = await OutboxEvent.find({
     _id: { $in: candidateIds },
-    lockedBy: WORKER_ID,
+    lockedBy: workerId,
     status: "processing",
   });
 
   for (const event of claimedEvents) {
     logger.debug(
-      { eventId: event._id, type: event.type, workerId: WORKER_ID, attempt: event.attempts },
+      { eventId: event._id, type: event.type, workerId, attempt: event.attempts },
       "[OutboxRelay] Event claimed"
     );
   }

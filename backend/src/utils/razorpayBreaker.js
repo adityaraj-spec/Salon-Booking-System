@@ -189,7 +189,7 @@ const _createOrderFn = (params) =>
     "orders.create"
   );
 
-const createOrderBreaker = createBreaker(_createOrderFn, "razorpay-create-order");
+export const createOrderBreaker = createBreaker(_createOrderFn, "razorpay-create-order");
 
 // ─── Fetch Payment Breaker ────────────────────────────────────────────────────
 const _fetchPaymentFn = (paymentId) =>
@@ -199,7 +199,7 @@ const _fetchPaymentFn = (paymentId) =>
     "payments.fetch"
   );
 
-const fetchPaymentBreaker = createBreaker(_fetchPaymentFn, "razorpay-fetch-payment");
+export const fetchPaymentBreaker = createBreaker(_fetchPaymentFn, "razorpay-fetch-payment");
 
 // ─── Refund Payment Breaker ───────────────────────────────────────────────────
 const _refundPaymentFn = ({ paymentId, params }) =>
@@ -209,7 +209,7 @@ const _refundPaymentFn = ({ paymentId, params }) =>
     "payments.refund"
   );
 
-const refundPaymentBreaker = createBreaker(_refundPaymentFn, "razorpay-refund-payment");
+export const refundPaymentBreaker = createBreaker(_refundPaymentFn, "razorpay-refund-payment");
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 

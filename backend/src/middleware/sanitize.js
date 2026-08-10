@@ -3,7 +3,7 @@
  * Recursively strips keys starting with '$' or containing '.' from req.body, req.query, and req.params.
  */
 import logger from "../lib/logger.js";
-const sanitizeValue = (data) => {
+export const sanitizeValue = (data) => {
   if (data instanceof Date || data instanceof RegExp) {
     return data;
   }

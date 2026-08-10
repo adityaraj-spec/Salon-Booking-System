@@ -26,7 +26,7 @@ export const executeGDPRErasure = async ({ userId, requestedBy, ipAddress = "unk
     user.email = anonymizedEmail;
     user.phone = `+0000000${anonymizedHash.slice(0, 5)}`;
     user.avatar = null;
-    user.refreshToken = [];
+    user.refreshToken = null;
     user.isDeleted = true;
     await user.save({ session });
 
