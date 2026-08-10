@@ -38,6 +38,8 @@
 
 import getRedisClient from "./redis.js";
 import logger from "./logger.js";
+import Redis from "ioredis";
+import { cacheHitTotal, cacheMissTotal } from "./metrics.js";
 
 const DEFAULT_TTL_SECONDS = 60;
 
@@ -93,21 +95,30 @@ const _l1DeleteByPrefix = (prefix) => {
  * Populates L1 on an L2 hit for subsequent fast reads within this process.
  */
 export const cacheGet = async (key) => {
+  const prefix = key ? key.split(":")[0] : "unknown";
   // L1 hit — no Redis round-trip
   const l1Hit = _l1Get(key);
-  if (l1Hit !== null) return l1Hit;
+  if (l1Hit !== null) {
+    try { cacheHitTotal.inc({ tier: "L1", key_prefix: prefix }); } catch {}
+    return l1Hit;
+  }
 
   const redis = getRedisClient();
   if (!redis) return null;
 
   try {
     const cachedData = await redis.get(key);
-    if (!cachedData) return null;
+    if (!cachedData) {
+      try { cacheMissTotal.inc({ key_prefix: prefix }); } catch {}
+      return null;
+    }
     const parsed = JSON.parse(cachedData);
     _l1Set(key, parsed); // Populate L1 from L2
+    try { cacheHitTotal.inc({ tier: "L2", key_prefix: prefix }); } catch {}
     return parsed;
   } catch (err) {
     logger.warn({ key, err: err.message }, "[CacheManager] Failed to read key");
+    try { cacheMissTotal.inc({ key_prefix: prefix }); } catch {}
     return null;
   }
 };
@@ -189,17 +200,6 @@ export const subscribeCacheInvalidation = () => {
 
   if (process.env.NODE_ENV === "test" && !process.env.USE_REDIS_IN_TESTS) {
     logger.debug("[CacheManager] Skipping Pub/Sub subscription in test environment");
-    return null;
-  }
-
-  // Cluster note: ioredis Cluster supports subscribe on cluster mode;
-  // messages are delivered to the subscribing node regardless of which node published.
-  let Redis;
-  try {
-    Redis = require("ioredis");
-  } catch {
-    // ES module import fallback — handled by the caller importing from the module
-    logger.warn("[CacheManager] Could not require ioredis for subscriber — skipping");
     return null;
   }
 
@@ -357,10 +357,45 @@ export const invalidateAvailabilityByIndex = async (salonId, dateISO) => {
 // ─── Salon Detail / Search Cache ──────────────────────────────────────────────
 
 /**
- * Invalidates all cache keys related to a specific salon.
- * Clears L2 (Redis) via direct DEL + cursor SCAN, then broadcasts L1 invalidation.
+ * Caches detailed salon projection.
  */
-export const invalidateSalonCache = async (salonId) => {
+export const cacheSetSalonDetail = async (salonId, data, ttlSeconds = 300) => {
+  const key = `salon:detail:${salonId}`;
+  await cacheSet(key, data, ttlSeconds);
+};
+
+/**
+ * Gets cached detailed salon projection.
+ */
+export const cacheGetSalonDetail = async (salonId) => {
+  const key = `salon:detail:${salonId}`;
+  return await cacheGet(key);
+};
+
+/**
+ * Registers a search cache key in a city index SET for efficient invalidation (Part 5.2).
+ */
+export const registerSearchCacheKey = async (city, searchKey, ttlSeconds = 60) => {
+  const redis = getRedisClient();
+  if (!redis || !city) return;
+
+  const cityKey = `salons:search:index:${city.toLowerCase().trim()}`;
+  try {
+    await redis.sadd(cityKey, searchKey);
+    const existingTTL = await redis.ttl(cityKey);
+    if (existingTTL < ttlSeconds) {
+      await redis.expire(cityKey, ttlSeconds + 10);
+    }
+  } catch (err) {
+    logger.warn({ cityKey, searchKey, err: err.message }, "[CacheManager] Failed to register search key in index");
+  }
+};
+
+/**
+ * Invalidates all cache keys related to a specific salon (detail + search results).
+ * Clears L2 (Redis) via index SET + cursor SCAN fallback, then broadcasts L1 invalidation.
+ */
+export const invalidateSalonCache = async (salonId, city = null) => {
   const redis = getRedisClient();
   if (!redis) return;
 
@@ -369,7 +404,21 @@ export const invalidateSalonCache = async (salonId) => {
     await redis.del(detailKey);
     _l1Delete(detailKey); // Immediate L1 clear on this instance
 
-    // Non-blocking cursor SCAN for search result keys (avoid KEYS * in production)
+    if (city) {
+      const cityKey = `salons:search:index:${city.toLowerCase().trim()}`;
+      const searchKeys = await redis.smembers(cityKey);
+      if (searchKeys && searchKeys.length > 0) {
+        const pipeline = redis.pipeline();
+        for (const k of searchKeys) {
+          pipeline.del(k);
+          _l1Delete(k);
+        }
+        pipeline.del(cityKey);
+        await pipeline.exec();
+      }
+    }
+
+    // Non-blocking cursor SCAN fallback for generic search result keys
     await _scanAndDelete(redis, `salons:search:*`);
     _l1DeleteByPrefix("salons:search:");
 
@@ -383,9 +432,6 @@ export const invalidateSalonCache = async (salonId) => {
 /**
  * Cursor-based SCAN + DEL — non-blocking alternative to redis.keys().
  * Deletes all keys matching the pattern in batches of 100.
- *
- * Redis Cluster Note: SCAN on a Cluster client scans ALL nodes automatically
- * in ioredis Cluster mode. In standalone/sentinel mode it behaves as normal SCAN.
  */
 const _scanAndDelete = async (redis, pattern) => {
   let cursor = "0";

@@ -143,6 +143,12 @@ export const createPaymentRecoveryWorker = () => {
     {
       connection: getBullMQRedisConnection(),
       concurrency: 3,
+      defaultJobOptions: {
+        attempts: 5,
+        backoff: { type: "exponential", delay: 2000 },
+        removeOnComplete: { count: 100, age: 86400 },
+        removeOnFail: { count: 200, age: 604800 },
+      },
     }
   );
 

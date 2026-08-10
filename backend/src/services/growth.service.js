@@ -9,32 +9,86 @@ import { invalidateSalonCache } from "../lib/cacheManager.js";
 import { withTransactionRetry } from "../utils/transaction.js";
 import ApiError from "../utils/apiError.js";
 
+import { salonRatingUpdateDurationSeconds } from "../lib/metrics.js";
+
 /**
- * Recalculates and updates average rating for a salon.
+ * Atomically updates average rating for a salon using O(1) $inc updates on ratingSum and ratingCount.
+ * Fallback to aggregation only if ratingSum / ratingCount are not yet populated.
+ *
+ * @param {string|object} salonId
+ * @param {number} [addedRating=null] - new rating value being added (optional O(1) path)
+ * @param {object} [session=null] - optional Mongoose session
  */
-export const updateSalonAverageRating = async (salonId, session = null) => {
+export const updateSalonAverageRating = async (salonId, addedRating = null, session = null) => {
+  const startHr = process.hrtime.bigint();
   const salonObjectId = new mongoose.Types.ObjectId(salonId.toString());
 
-  const aggregateQuery = Review.aggregate([
-    { $match: { salon: salonObjectId } },
-    {
-      $group: {
-        _id: "$salon",
-        avgRating: { $avg: "$rating" },
+  let newRating = 0;
+
+  if (addedRating !== null && !isNaN(parseFloat(addedRating))) {
+    // ── O(1) Atomic Incremental Path ──────────────────────────────────────
+    const numericRating = parseFloat(addedRating);
+    const options = session ? { session, new: true } : { new: true };
+
+    const updatedSalon = await Salon.findByIdAndUpdate(
+      salonObjectId,
+      {
+        $inc: {
+          ratingSum: numericRating,
+          ratingCount: 1,
+        },
       },
-    },
-  ]);
-  if (session) aggregateQuery.session(session);
+      options
+    );
 
-  const result = await aggregateQuery;
+    if (updatedSalon && updatedSalon.ratingCount > 0) {
+      newRating = parseFloat((updatedSalon.ratingSum / updatedSalon.ratingCount).toFixed(1));
+      const setOptions = session ? { session } : {};
+      await Salon.findByIdAndUpdate(salonObjectId, { $set: { rating: newRating } }, setOptions);
+    }
+  } else {
+    // ── Aggregation Fallback Path ──────────────────────────────────────────
+    const aggregateQuery = Review.aggregate([
+      { $match: { salon: salonObjectId } },
+      {
+        $group: {
+          _id: "$salon",
+          ratingSum: { $sum: "$rating" },
+          ratingCount: { $sum: 1 },
+          avgRating: { $avg: "$rating" },
+        },
+      },
+    ]);
+    if (session) aggregateQuery.session(session);
 
-  const newRating = result.length > 0 ? parseFloat(result[0].avgRating.toFixed(1)) : 0;
+    const result = await aggregateQuery;
 
-  const updateQuery = Salon.findByIdAndUpdate(salonId, { $set: { rating: newRating } }, { new: true });
-  if (session) updateQuery.session(session);
+    if (result.length > 0) {
+      const { ratingSum, ratingCount, avgRating } = result[0];
+      newRating = parseFloat(avgRating.toFixed(1));
+      const updateQuery = Salon.findByIdAndUpdate(
+        salonObjectId,
+        { $set: { ratingSum, ratingCount, rating: newRating } },
+        { new: true }
+      );
+      if (session) updateQuery.session(session);
+      await updateQuery;
+    } else {
+      const updateQuery = Salon.findByIdAndUpdate(
+        salonObjectId,
+        { $set: { ratingSum: 0, ratingCount: 0, rating: 0 } },
+        { new: true }
+      );
+      if (session) updateQuery.session(session);
+      await updateQuery;
+    }
+  }
 
-  await updateQuery;
   await invalidateSalonCache(salonId);
+
+  const durationSec = Number(process.hrtime.bigint() - startHr) / 1e9;
+  try { salonRatingUpdateDurationSeconds.observe(durationSec); } catch {}
+
   return newRating;
 };
 
@@ -74,8 +128,8 @@ export const createVerifiedReview = async ({ bookingId, customerId, rating, comm
       { session }
     );
 
-    // Recalculate average rating
-    await updateSalonAverageRating(booking.salon, session);
+    // Recalculate average rating using O(1) incremental update
+    await updateSalonAverageRating(booking.salon, parseFloat(rating), session);
 
     // Award loyalty points (1 point per ₹100 spent)
     const earnedPoints = Math.floor((booking.totalAmount || 0) / 100);
@@ -163,10 +217,10 @@ export const applyReferralCode = async ({ newUserId, referralCode }) => {
  * Gets user loyalty point balance and transaction history.
  */
 export const getUserLoyaltySummary = async (userId) => {
-  const user = await User.findById(userId).select("loyaltyPoints referralCode");
+  const user = await User.findById(userId).select("loyaltyPoints referralCode").lean();
   if (!user) throw new ApiError(404, "User not found");
 
-  const transactions = await LoyaltyTransaction.find({ user: userId }).sort({ createdAt: -1 }).limit(20);
+  const transactions = await LoyaltyTransaction.find({ user: userId }).sort({ createdAt: -1 }).limit(20).lean();
 
   return {
     loyaltyPoints: user.loyaltyPoints || 0,

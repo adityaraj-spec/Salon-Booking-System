@@ -78,4 +78,6 @@ const staffSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+staffSchema.index({ salon: 1, isActive: 1 });
+
 export const Staff = mongoose.model("Staff", staffSchema);

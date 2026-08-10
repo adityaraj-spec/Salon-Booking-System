@@ -1,0 +1,83 @@
+{
+  "asyncapi": "2.6.0",
+  "info": {
+    "title": "SalonNow CloudEvents Event Catalog",
+    "version": "1.0.0",
+    "description": "AsyncAPI 2.6 Event Schema Catalog for SalonNow Enterprise Architecture"
+  },
+  "channels": {
+    "com.salonnow.booking.created": {
+      "publish": {
+        "message": {
+          "name": "BookingCreatedEvent",
+          "payload": {
+            "type": "object",
+            "properties": {
+              "specversion": { "type": "string", "enum": ["1.0"] },
+              "id": { "type": "string" },
+              "source": { "type": "string" },
+              "type": { "type": "string", "enum": ["com.salonnow.booking.created"] },
+              "time": { "type": "string" },
+              "data": {
+                "type": "object",
+                "properties": {
+                  "bookingId": { "type": "string" },
+                  "salonId": { "type": "string" },
+                  "customerId": { "type": "string" },
+                  "totalAmount": { "type": "number" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "com.salonnow.booking.confirmed": {
+      "publish": {
+        "message": {
+          "name": "BookingConfirmedEvent",
+          "payload": {
+            "type": "object",
+            "properties": {
+              "specversion": { "type": "string", "enum": ["1.0"] },
+              "id": { "type": "string" },
+              "source": { "type": "string" },
+              "type": { "type": "string", "enum": ["com.salonnow.booking.confirmed"] },
+              "time": { "type": "string" },
+              "data": {
+                "type": "object",
+                "properties": {
+                  "bookingId": { "type": "string" },
+                  "paymentId": { "type": "string" },
+                  "salonId": { "type": "string" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "com.salonnow.compliance.gdpr_erasure_completed": {
+      "publish": {
+        "message": {
+          "name": "GDPRErasureCompletedEvent",
+          "payload": {
+            "type": "object",
+            "properties": {
+              "specversion": { "type": "string", "enum": ["1.0"] },
+              "id": { "type": "string" },
+              "type": { "type": "string", "enum": ["com.salonnow.compliance.gdpr_erasure_completed"] },
+              "data": {
+                "type": "object",
+                "properties": {
+                  "userId": { "type": "string" },
+                  "anonymizedEmail": { "type": "string" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

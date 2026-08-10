@@ -30,6 +30,8 @@ import { applySecurityHeaders } from "./middleware/securityHeaders.js";
 import { authStrictLimiter, generalApiLimiter } from "./middleware/rateLimiter.js";
 import logger from "./lib/logger.js";
 
+import compression from "compression";
+
 const app = express();
 app.set("trust proxy", 1);
 
@@ -38,6 +40,12 @@ app.use(correlationIdMiddleware);
 app.use(prometheusMetricsMiddleware);
 app.use(requestLoggerMiddleware);
 app.use(applySecurityHeaders);
+app.use(
+  compression({
+    level: 6,
+    threshold: 1024,
+  })
+);
 
 // Item 1: Strict CORS Whitelist with fail-closed behavior (No wildcard origin reflection)
 const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173,http://localhost:3000")

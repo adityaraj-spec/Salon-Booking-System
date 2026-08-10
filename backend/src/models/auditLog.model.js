@@ -66,6 +66,18 @@ const auditLogSchema = new mongoose.Schema(
       default: Date.now,
       index: true,
     },
+
+    // Cryptographic hash block linking (SI10 Compliance)
+    previousHash: {
+      type: String,
+      default: "0000000000000000000000000000000000000000000000000000000000000000",
+    },
+
+    hash: {
+      type: String,
+      default: null,
+      index: true,
+    },
   },
   {
     timestamps: false,
@@ -74,5 +86,7 @@ const auditLogSchema = new mongoose.Schema(
 
 // Compound index for audit queries
 auditLogSchema.index({ targetResource: 1, targetId: 1, timestamp: -1 });
+auditLogSchema.index({ actor: 1, timestamp: -1 });
+auditLogSchema.index({ action: 1, timestamp: -1 });
 
 export const AuditLog = mongoose.model("AuditLog", auditLogSchema);

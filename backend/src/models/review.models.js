@@ -43,5 +43,6 @@ const reviewSchema = new mongoose.Schema(
 );
 
 reviewSchema.index({ salon: 1, createdAt: -1 });
+reviewSchema.index({ user: 1, createdAt: -1 });
 
 export const Review = mongoose.model("Review", reviewSchema);

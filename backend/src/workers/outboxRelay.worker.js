@@ -267,20 +267,35 @@ export const pollAndProcessOutboxEvents = async (batchSize = BATCH_SIZE) => {
   return processedCount;
 };
 
+const MAX_POLL_INTERVAL_MS = parseInt(process.env.OUTBOX_MAX_POLL_INTERVAL_MS || "4000", 10);
+let currentPollIntervalMs = POLL_INTERVAL_MS;
+let idleTicks = 0;
+
 export const startOutboxRelayWorker = () => {
   if (isRunning) return;
   isRunning = true;
 
   logger.info(
     { workerId: WORKER_ID, batchSize: BATCH_SIZE, pollIntervalMs: POLL_INTERVAL_MS },
-    "[OutboxRelay] Parallel outbox relay worker started with atomic batch claiming and dead-letter queue support"
+    "[OutboxRelay] Parallel outbox relay worker started with atomic batch claiming and adaptive polling"
   );
 
   const tick = async () => {
     if (!isRunning) return;
-    await pollAndProcessOutboxEvents();
+    const processed = await pollAndProcessOutboxEvents();
+
+    if (processed === 0) {
+      idleTicks++;
+      if (idleTicks >= 3) {
+        currentPollIntervalMs = Math.min(currentPollIntervalMs * 2, MAX_POLL_INTERVAL_MS);
+      }
+    } else {
+      idleTicks = 0;
+      currentPollIntervalMs = POLL_INTERVAL_MS;
+    }
+
     if (isRunning) {
-      timerId = setTimeout(tick, POLL_INTERVAL_MS);
+      timerId = setTimeout(tick, currentPollIntervalMs);
     }
   };
 
@@ -289,6 +304,8 @@ export const startOutboxRelayWorker = () => {
 
 export const stopOutboxRelayWorker = () => {
   isRunning = false;
+  currentPollIntervalMs = POLL_INTERVAL_MS;
+  idleTicks = 0;
   if (timerId) {
     clearTimeout(timerId);
     timerId = null;

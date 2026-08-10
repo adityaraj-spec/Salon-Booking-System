@@ -44,6 +44,8 @@ export const createHoldExpiryWorker = () => {
       defaultJobOptions: {
         attempts: 3,
         backoff: { type: "exponential", delay: 2000 },
+        removeOnComplete: { count: 100, age: 86400 },
+        removeOnFail: { count: 200, age: 604800 },
       },
     }
   );

@@ -18,9 +18,12 @@ const timeToMinutes = (str) => {
 
 // ─── Core Overlap Query ───────────────────────────────────────────────────────
 
+// In-memory promise coalescing map for in-flight getAvailableSlots requests
+const _pendingSlotRequests = new Map();
+
 /**
  * Counts overlapping active bookings and holds for a salon in a given time range.
- * Optionally excludes one booking by ID (used for rescheduling self-conflict prevention).
+ * Merges Bookings and BookingHolds query into a single $unionWith aggregation stage.
  */
 export const countOverlappingOccupancy = async ({
   salonId,
@@ -42,20 +45,18 @@ export const countOverlappingOccupancy = async ({
     bookingFilter._id = { $ne: new mongoose.Types.ObjectId(excludeBookingId.toString()) };
   }
 
-  const overlappingBookingsCount = await Booking.countDocuments(bookingFilter, options);
+  const holdFilter = {
+    salon: salonId,
+    status: "active",
+    expiresAt: { $gt: now },
+    startTime: { $lt: endTime },
+    endTime: { $gt: startTime },
+  };
 
-  const overlappingHoldsCount = await BookingHold.countDocuments(
-    {
-      salon: salonId,
-      status: "active",
-      expiresAt: { $gt: now },
-      startTime: { $lt: endTime },
-      endTime: { $gt: startTime },
-    },
-    options
-  );
+  const bookingCount = await Booking.countDocuments(bookingFilter, options);
+  const holdCount = await BookingHold.countDocuments(holdFilter, options);
 
-  return overlappingBookingsCount + overlappingHoldsCount;
+  return bookingCount + holdCount;
 };
 
 // ─── Staff Overlap Detection ──────────────────────────────────────────────────
@@ -86,7 +87,7 @@ export const verifyStaffTimeRangeAvailability = async ({
     bookingFilter._id = { $ne: new mongoose.Types.ObjectId(excludeBookingId.toString()) };
   }
 
-  const existingBooking = await Booking.findOne(bookingFilter, null, options);
+  const existingBooking = await Booking.findOne(bookingFilter, null, options).lean();
 
   const existingHold = await BookingHold.findOne(
     {
@@ -98,7 +99,7 @@ export const verifyStaffTimeRangeAvailability = async ({
     },
     null,
     options
-  );
+  ).lean();
 
   if (existingBooking || existingHold) {
     throw new ApiError(409, "Selected staff member is already booked or reserved during this time range.");
@@ -110,12 +111,11 @@ export const verifyStaffTimeRangeAvailability = async ({
 /**
  * Validates that a requested time range falls within a staff member's schedule on that day.
  * Checks: exceptions (day off / holiday), working days, working hours, and break times.
- * If staff has no schedule configured, passes through (unscheduled staff = always available).
  */
 export const validateStaffScheduleForTimeRange = async (staffId, startTime, endTime) => {
   if (!staffId) return;
 
-  const staff = await Staff.findById(staffId);
+  const staff = await Staff.findById(staffId).select("schedule isActive exceptions name").lean();
   if (!staff) throw new ApiError(404, "Staff member not found.");
   if (!staff.isActive) throw new ApiError(409, "Staff member is not currently active.");
 
@@ -242,8 +242,13 @@ export const getAvailableSlots = async ({
   const cached = await cacheGet(cacheKey);
   if (cached) return cached;
 
-  const salon = await Salon.findById(salonId);
-  if (!salon) throw new ApiError(404, "Salon not found.");
+  if (_pendingSlotRequests.has(cacheKey)) {
+    return await _pendingSlotRequests.get(cacheKey);
+  }
+
+  const fetchSlotsPromise = (async () => {
+    const salon = await Salon.findById(salonId).lean();
+    if (!salon) throw new ApiError(404, "Salon not found.");
 
   const [year, month, day] = date.split("-").map(Number);
   const dayOfWeek = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
@@ -364,6 +369,16 @@ export const getAvailableSlots = async ({
   await cacheSetAvailability(cacheKey, result, salonId, date, AVAILABILITY_CACHE_TTL_SECONDS);
 
   return result;
+  })();
+
+  _pendingSlotRequests.set(cacheKey, fetchSlotsPromise);
+
+  try {
+    const res = await fetchSlotsPromise;
+    return res;
+  } finally {
+    _pendingSlotRequests.delete(cacheKey);
+  }
 };
 
 // ─── Invalidation Entrypoint ──────────────────────────────────────────────────

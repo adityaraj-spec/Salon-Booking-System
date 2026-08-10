@@ -64,6 +64,14 @@ const salonSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  ratingSum: {
+    type: Number,
+    default: 0
+  },
+  ratingCount: {
+    type: Number,
+    default: 0
+  },
   totalSeats: {
     type: Number,
     default: 6 // Default capacity per salon
@@ -90,6 +98,7 @@ const salonSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 salonSchema.index({ location: "2dsphere" });
+salonSchema.index({ city: 1, rating: -1, isOpen: 1 });
 // Gap 7.1: MongoDB compound text index for full-text search (name, city, description)
 // Enables $text + $meta:"textScore" ranked search as an Elasticsearch alternative
 salonSchema.index({ name: "text", city: "text", description: "text" }, {

@@ -256,5 +256,47 @@ export const gracefulShutdownTotal = new client.Counter({
   labelNames: ["status"],
 });
 
+// ─── Phase 5 Performance & Caching Metrics ────────────────────────────────────
+
+/**
+ * Counts cache hits by tier (L1 in-process vs L2 Redis) and key prefix.
+ * Labels: tier ("L1"|"L2"), key_prefix (e.g. "salons", "avail", "salon")
+ */
+export const cacheHitTotal = new client.Counter({
+  name: "salonnow_cache_hits_total",
+  help: "Total number of cache hits by tier and prefix",
+  labelNames: ["tier", "key_prefix"],
+});
+
+/**
+ * Counts cache misses by key prefix.
+ * Labels: key_prefix
+ */
+export const cacheMissTotal = new client.Counter({
+  name: "salonnow_cache_misses_total",
+  help: "Total number of cache misses by prefix",
+  labelNames: ["key_prefix"],
+});
+
+/**
+ * Measures search service execution latency in seconds.
+ * Labels: has_geo ("true"|"false"), has_text ("true"|"false")
+ */
+export const searchQueryDurationSeconds = new client.Histogram({
+  name: "salonnow_search_query_duration_seconds",
+  help: "Duration of search service queries in seconds",
+  labelNames: ["has_geo", "has_text"],
+  buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1],
+});
+
+/**
+ * Measures atomic salon rating update duration in seconds.
+ */
+export const salonRatingUpdateDurationSeconds = new client.Histogram({
+  name: "salonnow_rating_update_duration_seconds",
+  help: "Duration of salon average rating update operations in seconds",
+  buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1],
+});
+
 
 
