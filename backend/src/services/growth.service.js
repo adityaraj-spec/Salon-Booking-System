@@ -172,45 +172,50 @@ export const generateUserReferralCode = async (userId) => {
  * Applies a referral code to reward both referrer (+50 pts) and new user (+25 pts).
  */
 export const applyReferralCode = async ({ newUserId, referralCode }) => {
-  const referrer = await User.findOne({ referralCode: referralCode.toUpperCase() });
-  if (!referrer) {
-    throw new ApiError(400, "Invalid referral code");
-  }
+  return await withTransactionRetry(async (session) => {
+    const referrer = await User.findOne({ referralCode: referralCode.toUpperCase() }).session(session);
+    if (!referrer) {
+      throw new ApiError(400, "Invalid referral code");
+    }
 
-  if (referrer._id.toString() === newUserId.toString()) {
-    throw new ApiError(400, "Cannot use your own referral code");
-  }
+    if (referrer._id.toString() === newUserId.toString()) {
+      throw new ApiError(400, "Cannot use your own referral code");
+    }
 
-  const newUser = await User.findById(newUserId);
-  if (!newUser) throw new ApiError(404, "User not found");
+    const newUser = await User.findById(newUserId).session(session);
+    if (!newUser) throw new ApiError(404, "User not found");
 
-  if (newUser.referredBy) {
-    throw new ApiError(400, "Referral code already applied for this account");
-  }
+    if (newUser.referredBy) {
+      throw new ApiError(400, "Referral code already applied for this account");
+    }
 
-  newUser.referredBy = referrer._id;
-  newUser.loyaltyPoints += 25;
-  await newUser.save();
+    newUser.referredBy = referrer._id;
+    newUser.loyaltyPoints += 25;
+    await newUser.save({ session });
 
-  referrer.loyaltyPoints += 50;
-  await referrer.save();
+    referrer.loyaltyPoints += 50;
+    await referrer.save({ session });
 
-  await LoyaltyTransaction.create([
-    {
-      user: referrer._id,
-      points: 50,
-      type: "referral_bonus",
-      description: `Referral bonus for inviting ${newUser.fullName}`,
-    },
-    {
-      user: newUser._id,
-      points: 25,
-      type: "referral_bonus",
-      description: `Welcome bonus for using referral code ${referralCode}`,
-    },
-  ]);
+    await LoyaltyTransaction.create(
+      [
+        {
+          user: referrer._id,
+          points: 50,
+          type: "referral_bonus",
+          description: `Referral bonus for inviting ${newUser.fullName}`,
+        },
+        {
+          user: newUser._id,
+          points: 25,
+          type: "referral_bonus",
+          description: `Welcome bonus for using referral code ${referralCode}`,
+        },
+      ],
+      { session, ordered: true }
+    );
 
-  return { referrerBonus: 50, newUserBonus: 25 };
+    return { referrerBonus: 50, newUserBonus: 25 };
+  });
 };
 
 /**

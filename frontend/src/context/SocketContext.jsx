@@ -12,8 +12,10 @@ export const SocketProvider = ({ children }) => {
 
     useEffect(() => {
         if (user) {
-            const newSocket = io(import.meta.env.VITE_BACKEND_URL, {
-                query: { userId: user._id },
+            const token = localStorage.getItem("authToken");
+            const newSocket = io(import.meta.env.VITE_BACKEND_URL || "/", {
+                auth: { token },
+                query: { token, userId: user._id },
                 withCredentials: true
             });
 

@@ -65,7 +65,11 @@ const isWorker = PROCESS_TYPE === "worker" || PROCESS_TYPE === "all";
 // ─── Required environment assertions (fail-closed startup) ────────────────────
 const requiredEnvVars = ["ACCESS_TOKEN_SECRET", "REFRESH_TOKEN_SECRET"];
 if (process.env.NODE_ENV === "production") {
-  requiredEnvVars.push("RAZORPAY_KEY_SECRET", "RAZORPAY_WEBHOOK_SECRET");
+  requiredEnvVars.push("RAZORPAY_KEY_ID", "RAZORPAY_KEY_SECRET", "RAZORPAY_WEBHOOK_SECRET");
+} else {
+  if (!process.env.RAZORPAY_WEBHOOK_SECRET) {
+    logger.warn("[Startup] RAZORPAY_WEBHOOK_SECRET is not set in development — payment webhooks will fail HMAC verification");
+  }
 }
 
 for (const envVar of requiredEnvVars) {

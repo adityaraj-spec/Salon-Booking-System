@@ -36,13 +36,19 @@ export const claimBatchOfEvents = async (batchSize = BATCH_SIZE, workerId = WORK
     processed: false,
     status: { $nin: ["dead_letter", "processed"] },
     attempts: { $lt: MAX_ATTEMPTS },
-    $or: [
-      { nextRetryAt: null },
-      { nextRetryAt: { $lte: now } },
-    ],
-    $or: [
-      { lockedUntil: null },
-      { lockedUntil: { $lt: now } },
+    $and: [
+      {
+        $or: [
+          { nextRetryAt: null },
+          { nextRetryAt: { $lte: now } },
+        ],
+      },
+      {
+        $or: [
+          { lockedUntil: null },
+          { lockedUntil: { $lt: now } },
+        ],
+      },
     ],
   })
     .sort({ createdAt: 1 })

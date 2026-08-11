@@ -145,7 +145,10 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
     }
 
     const salon = await Salon.findById(booking.salon._id);
-    if (salon.owner.toString() !== req.user._id.toString()) {
+    const isOwner = salon && salon.owner.toString() === req.user._id.toString();
+    const isAdmin = ["admin", "super_admin"].includes(req.user.role?.toString().trim().toLowerCase());
+
+    if (!isOwner && !isAdmin) {
         throw new ApiError(403, "You do not have permission to manage this booking");
     }
 

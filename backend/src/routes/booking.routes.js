@@ -60,10 +60,10 @@ router.route("/my-bookings").get(verifyJWT, getUserBookings);
 router.route("/salon-bookings").get(verifyJWT, authorize("owner", "staff", "admin"), getSalonBookings);
 router.route("/availability/:salonId").get(getAvailability);
 
-// Update status (requires ABAC ownership or salon owner authorization - Item 3)
+// Update status (requires owner/staff/admin authorization)
 router.route("/:bookingId/status").patch(
   verifyJWT,
-  requireOwnership(Booking, "bookingId", "customer"),
+  authorize("owner", "staff", "admin"),
   updateBookingStatus
 );
 

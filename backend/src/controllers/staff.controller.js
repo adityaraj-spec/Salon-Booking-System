@@ -4,6 +4,11 @@ import { ApiResponse } from "../utils/apiResponse.js";
 import { Staff } from "../models/staff.models.js";
 import { Salon } from "../models/salon.models.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import {
+    updateStaffSchedule,
+    addStaffException,
+    removeStaffException,
+} from "../services/staff.service.js";
 
 const addStaff = asyncHandler(async (req, res) => {
     const { salonId, name, role, experience, skills } = req.body;
@@ -131,12 +136,6 @@ const updateStaff = asyncHandler(async (req, res) => {
         new ApiResponse(200, updatedStaff, "Staff member updated successfully")
     );
 });
-
-import {
-    updateStaffSchedule,
-    addStaffException,
-    removeStaffException,
-} from "../services/staff.service.js";
 
 const updateStaffScheduleHandler = asyncHandler(async (req, res) => {
     const { id } = req.params;
