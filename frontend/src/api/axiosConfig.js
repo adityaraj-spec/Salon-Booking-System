@@ -8,6 +8,21 @@ const axiosInstance = axios.create({
   },
 });
 
+// Attach the JWT access token from localStorage as a Bearer token on every request.
+// This is necessary in local development where cross-origin cookies (port 5173 → 8000)
+// are blocked by the browser. The backend verifyJWT middleware accepts both
+// Authorization header and accessToken cookie, so this works without backend changes.
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      config.headers["Authorization"] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 let isRefreshing = false;
 let failedQueue = [];
 
@@ -27,6 +42,11 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // If caller opted out of the interceptor (e.g. AuthContext session probe), skip refresh
+    if (originalRequest?.skipInterceptor) {
+      return Promise.reject(error);
+    }
+
     // Trigger token refresh only on 401 Unauthorized errors (excluding auth endpoints themselves)
     const isAuthEndpoint = originalRequest.url?.includes("/users/login") || originalRequest.url?.includes("/users/refresh-token");
 
@@ -43,7 +63,11 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        await axiosInstance.post("/users/refresh-token");
+        const refreshRes = await axiosInstance.post("/users/refresh-token");
+        const newToken = refreshRes.data?.data?.accessToken;
+        if (newToken) {
+          localStorage.setItem("authToken", newToken);
+        }
         processQueue(null);
         return axiosInstance(originalRequest);
       } catch (refreshError) {

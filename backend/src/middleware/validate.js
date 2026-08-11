@@ -10,7 +10,9 @@ export const validate = (schema) => async (req, res, next) => {
       req.body = await schema.body.parseAsync(req.body);
     }
     if (schema.query && req.query) {
-      req.query = await schema.query.parseAsync(req.query);
+      // Express 5 makes req.query a read-only getter — use Object.assign to avoid TypeError
+      const parsedQuery = await schema.query.parseAsync(req.query);
+      Object.assign(req, { query: parsedQuery });
     }
     if (schema.params && req.params) {
       req.params = await schema.params.parseAsync(req.params);

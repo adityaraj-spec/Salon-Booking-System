@@ -12,12 +12,15 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         const fetchCurrentUser = async () => {
             try {
-                const response = await axiosInstance.get("/users/me");
+                // skipInterceptor = true prevents the 401 interceptor from firing
+                // a pointless token refresh when the user simply has no session yet.
+                const response = await axiosInstance.get("/users/me", { skipInterceptor: true });
                 if (response.data?.data) {
                     setUser(response.data.data);
                     localStorage.setItem("user", JSON.stringify(response.data.data));
                 }
             } catch (error) {
+                // 401 here just means "not logged in" — silently fall back to localStorage
                 const storedUser = localStorage.getItem("user");
                 if (storedUser && storedUser !== "undefined") {
                     try {
