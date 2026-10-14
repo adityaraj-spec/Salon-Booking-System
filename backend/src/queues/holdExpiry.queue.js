@@ -5,7 +5,7 @@ import logger from "../lib/logger.js";
 let queueInstance = null;
 
 export const getHoldExpiryQueue = () => {
-  if (process.env.NODE_ENV === "test") {
+  if (process.env.NODE_ENV === "test" || process.env.ENABLE_REDIS === "false") {
     return null;
   }
   if (!queueInstance) {
@@ -26,7 +26,7 @@ export const getHoldExpiryQueue = () => {
  * @param {number} delayMs
  */
 export const scheduleHoldExpiry = async (holdId, delayMs) => {
-  if (process.env.NODE_ENV === "test") {
+  if (process.env.NODE_ENV === "test" || process.env.ENABLE_REDIS === "false") {
     return;
   }
   try {

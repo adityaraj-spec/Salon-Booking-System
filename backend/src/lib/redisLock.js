@@ -216,9 +216,9 @@ const _acquireTestMutex = async (keys) => {
 export const acquireSlotLock = async (lockKeys, ttlMs = LOCK_TTL_MS) => {
   const redis = getRedisClient();
   if (!redis) {
-    if (process.env.NODE_ENV === "test") {
+    if (process.env.NODE_ENV === "test" || process.env.ENABLE_REDIS === "false") {
       const { token, release } = await _acquireTestMutex(lockKeys);
-      logger.debug({ lockKeys, token }, "[RedisLock] Test mode async mutex acquired");
+      logger.debug({ lockKeys, token }, "[RedisLock] In-process fallback async mutex acquired");
       return { acquired: true, token, keys: lockKeys, stopWatchdog: release };
     }
     logger.error({ lockKeys }, "[RedisLock] Redis client unavailable — failing closed");

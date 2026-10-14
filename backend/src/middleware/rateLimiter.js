@@ -51,7 +51,7 @@ export const createRedisRateLimiter = ({
         try { holdRequestsTotal.inc({ status: "error" }); } catch {}
       }
 
-      if (failClosed) {
+      if (failClosed && process.env.ENABLE_REDIS !== "false") {
         logger.error(
           { keyPrefix, failClosed: true, ip: clientIp, userId, salonId },
           "[RateLimiter] Redis client unavailable — failing closed for reservation path"
