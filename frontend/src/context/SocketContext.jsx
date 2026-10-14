@@ -13,9 +13,11 @@ export const SocketProvider = ({ children }) => {
     useEffect(() => {
         if (user) {
             const token = localStorage.getItem("authToken");
-            const newSocket = io(import.meta.env.VITE_BACKEND_URL || "/", {
+            const userId = user._id || user.id || "";
+            const newSocket = io(import.meta.env.VITE_BACKEND_URL || "http://localhost:8000", {
                 auth: { token },
-                query: { token, userId: user._id },
+                query: { token, userId },
+                transports: ["polling", "websocket"],
                 withCredentials: true
             });
 

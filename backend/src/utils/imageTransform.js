@@ -12,11 +12,15 @@
  * @param {string} [options.quality="auto:good"] - Cloudinary quality setting
  * @returns {string} Optimized image URL
  */
-export const transformImageUrl = (rawUrl, { width = 640, quality = "auto:good" } = {}) => {
+export const transformImageUrl = (rawUrl, { width = 640, quality = "good" } = {}) => {
   if (!rawUrl || typeof rawUrl !== "string") return rawUrl;
   if (!rawUrl.includes("cloudinary.com")) return rawUrl;
 
-  const transformSegment = `f_auto,q_auto:${quality},w_${width}`;
+  // Don't re-transform if already contains transform params
+  if (rawUrl.includes("/f_auto,")) return rawUrl;
+
+  const cleanQuality = quality.replace(/^auto:/, "");
+  const transformSegment = `f_auto,q_auto:${cleanQuality},w_${width}`;
   
   if (rawUrl.includes("/image/upload/")) {
     return rawUrl.replace("/image/upload/", `/image/upload/${transformSegment}/`);

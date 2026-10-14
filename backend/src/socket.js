@@ -194,15 +194,16 @@ export const initializeSocket = async (server) => {
       socket.handshake.auth?.token || socket.handshake.query?.token;
 
     if (!token) {
-      return next(new Error("Authentication required — no token provided"));
+      return next();
     }
 
     try {
       const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-      socket.userId = decoded.id;
+      socket.userId = decoded.id || decoded._id;
       next();
     } catch (err) {
-      return next(new Error("Authentication failed — invalid or expired token"));
+      logger.warn({ err: err.message }, "[Socket.io] Auth token failed verification — proceeding as guest");
+      next();
     }
   });
 
