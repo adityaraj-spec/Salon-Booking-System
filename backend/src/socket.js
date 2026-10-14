@@ -67,11 +67,12 @@ const _createSocketRedisClient = () => {
   const baseOptions = {
     password: process.env.REDIS_PASSWORD || undefined,
     tls: process.env.REDIS_TLS === "true" ? {} : undefined,
-    maxRetriesPerRequest: 3,
+    maxRetriesPerRequest: 1,
     lazyConnect: true,
+    enableOfflineQueue: false,
     retryStrategy(times) {
-      if (times > 10) return null;
-      return Math.min(times * 100, 2000);
+      if (times > 3) return null;
+      return Math.min(times * 100, 1000);
     },
   };
 
@@ -149,7 +150,8 @@ export const initializeSocket = async (server) => {
   // ── Attach Redis Adapter (multi-server broadcast) ──────────────────────────
   // Skip adapter in test environment or when Redis is explicitly disabled
   const skipAdapter =
-    process.env.NODE_ENV === "test" && !process.env.USE_REDIS_IN_TESTS;
+    (process.env.NODE_ENV === "test" && !process.env.USE_REDIS_IN_TESTS) ||
+    process.env.ENABLE_REDIS === "false";
 
   if (!skipAdapter) {
     try {
@@ -173,11 +175,17 @@ export const initializeSocket = async (server) => {
         { err: err.message },
         "[Socket.io] Failed to attach Redis Adapter — falling back to in-memory adapter (single-server only)"
       );
+      try {
+        if (pubClient) { pubClient.disconnect(false); pubClient = null; }
+      } catch {}
+      try {
+        if (subClient) { subClient.disconnect(false); subClient = null; }
+      } catch {}
       // Fall through: io still works but only on this server instance.
       // This is acceptable during a staged Redis Cluster migration.
     }
   } else {
-    logger.debug("[Socket.io] Redis Adapter skipped (test environment)");
+    logger.debug("[Socket.io] Redis Adapter skipped (Redis disabled or test environment)");
   }
 
   // ── JWT Authentication Middleware ──────────────────────────────────────────

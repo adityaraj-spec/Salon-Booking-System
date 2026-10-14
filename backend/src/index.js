@@ -217,8 +217,12 @@ connectDB()
       }
 
       startOutboxRelayWorker();
-      createHoldExpiryWorker();
-      createPaymentRecoveryWorker();
+      if (process.env.ENABLE_REDIS !== "false") {
+        createHoldExpiryWorker();
+        createPaymentRecoveryWorker();
+      } else {
+        logger.info("[Bootstrap] Redis disabled (ENABLE_REDIS=false) — skipping BullMQ workers; MongoDB holdWatcher active");
+      }
 
       logger.info("[Bootstrap] Background workers started");
     }

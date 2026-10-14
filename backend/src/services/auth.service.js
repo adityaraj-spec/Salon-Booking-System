@@ -81,78 +81,81 @@ export const rotateRefreshToken = async (incomingRefreshToken) => {
   }
 
   const redis = getRedisClient();
-  if (redis) {
-    const familyKey = `rt:family:${familyId}`;
-    const headStr = await redis.get(familyKey);
+  const isReady = !redis?.status || redis.status === "ready" || redis.status === "connect";
+  if (redis && isReady) {
+    try {
+      const familyKey = `rt:family:${familyId}`;
+      const headStr = await redis.get(familyKey);
 
-    if (!headStr) {
-      logger.warn({ userId, familyId, incomingJti }, "[AuthService] Session not found in Redis (revoked or expired)");
-      throw new ApiError(401, "Session has been revoked or expired — please log in again");
+      if (headStr) {
+        const currentHead = JSON.parse(headStr);
+        const now = Date.now();
+
+        // ── 1. LEGAL ROTATION (Exact Head Match) ──────────────────────────────
+        if (currentHead.jti === incomingJti) {
+          const newJti = crypto.randomUUID();
+          const newAccessToken = user.generateAccessToken(familyId, newJti);
+          const newRefreshToken = user.generateRefreshToken(familyId, newJti);
+
+          const updatedSession = JSON.stringify({
+            ...currentHead,
+            jti: newJti,
+            previousJti: incomingJti,
+            rotatedAt: new Date(now).toISOString(),
+          });
+
+          await redis.set(familyKey, updatedSession, "EX", REFRESH_TTL_SECONDS);
+          await redis.set(`rt:blacklist:${incomingJti}`, "rotated", "EX", BLACKLIST_TTL_SECONDS);
+
+          await user.setRefreshToken(newRefreshToken);
+          await user.save({ validateBeforeSave: false });
+
+          logger.debug({ userId, familyId, newJti }, "[AuthService] Refresh token rotated successfully");
+          return { accessToken: newAccessToken, refreshToken: newRefreshToken };
+        }
+
+        // ── 2. CONCURRENT MULTI-TAB GRACE PERIOD MATCH (Item 5 Fix) ────────────
+        // If incoming JTI matches previousJti and within 10s of rotatedAt, return new token pair
+        if (
+          currentHead.previousJti === incomingJti &&
+          currentHead.rotatedAt &&
+          now - new Date(currentHead.rotatedAt).getTime() <= ROTATION_GRACE_PERIOD_MS
+        ) {
+          logger.info(
+            { userId, familyId, incomingJti, currentJti: currentHead.jti },
+            "[AuthService] Concurrent multi-tab refresh within grace period — issuing active token pair"
+          );
+
+          const newAccessToken = user.generateAccessToken(familyId, currentHead.jti);
+          const newRefreshToken = user.generateRefreshToken(familyId, currentHead.jti);
+          return { accessToken: newAccessToken, refreshToken: newRefreshToken };
+        }
+
+        // ── 3. REAL THEFT DETECTED ──────────────────────────────────────────────
+        logger.error(
+          { userId, familyId, incomingJti, expectedJti: currentHead.jti, previousJti: currentHead.previousJti },
+          "[AuthService] THEFT DETECTED! Stale refresh token reused outside grace period. Revoking entire token family."
+        );
+
+        await redis.del(familyKey);
+        await redis.srem(`rt:user_sessions:${userId}`, familyId);
+
+        await redis.set(`rt:blacklist:${incomingJti}`, "stolen", "EX", BLACKLIST_TTL_SECONDS);
+        await redis.set(`rt:blacklist:${currentHead.jti}`, "revoked", "EX", BLACKLIST_TTL_SECONDS);
+
+        await user.setRefreshToken(null);
+        await user.save({ validateBeforeSave: false });
+
+        throw new ApiError(
+          401,
+          "Security Alert: Session compromise detected. All active sessions have been revoked for your safety.",
+          [{ code: "TOKEN_THEFT_DETECTED" }]
+        );
+      }
+    } catch (err) {
+      if (err instanceof ApiError) throw err;
+      logger.warn({ err: err.message, userId }, "[AuthService] Redis error during token rotation, falling back to database verification");
     }
-
-    const currentHead = JSON.parse(headStr);
-    const now = Date.now();
-
-    // ── 1. LEGAL ROTATION (Exact Head Match) ──────────────────────────────
-    if (currentHead.jti === incomingJti) {
-      const newJti = crypto.randomUUID();
-      const newAccessToken = user.generateAccessToken(familyId, newJti);
-      const newRefreshToken = user.generateRefreshToken(familyId, newJti);
-
-      const updatedSession = JSON.stringify({
-        ...currentHead,
-        jti: newJti,
-        previousJti: incomingJti,
-        rotatedAt: new Date(now).toISOString(),
-      });
-
-      await redis.set(familyKey, updatedSession, "EX", REFRESH_TTL_SECONDS);
-      await redis.set(`rt:blacklist:${incomingJti}`, "rotated", "EX", BLACKLIST_TTL_SECONDS);
-
-      await user.setRefreshToken(newRefreshToken);
-      await user.save({ validateBeforeSave: false });
-
-      logger.debug({ userId, familyId, newJti }, "[AuthService] Refresh token rotated successfully");
-      return { accessToken: newAccessToken, refreshToken: newRefreshToken };
-    }
-
-    // ── 2. CONCURRENT MULTI-TAB GRACE PERIOD MATCH (Item 5 Fix) ────────────
-    // If incoming JTI matches previousJti and within 10s of rotatedAt, return new token pair
-    if (
-      currentHead.previousJti === incomingJti &&
-      currentHead.rotatedAt &&
-      now - new Date(currentHead.rotatedAt).getTime() <= ROTATION_GRACE_PERIOD_MS
-    ) {
-      logger.info(
-        { userId, familyId, incomingJti, currentJti: currentHead.jti },
-        "[AuthService] Concurrent multi-tab refresh within grace period — issuing active token pair"
-      );
-
-      const newAccessToken = user.generateAccessToken(familyId, currentHead.jti);
-      const newRefreshToken = user.generateRefreshToken(familyId, currentHead.jti);
-      return { accessToken: newAccessToken, refreshToken: newRefreshToken };
-    }
-
-    // ── 3. REAL THEFT DETECTED ──────────────────────────────────────────────
-    logger.error(
-      { userId, familyId, incomingJti, expectedJti: currentHead.jti, previousJti: currentHead.previousJti },
-      "[AuthService] THEFT DETECTED! Stale refresh token reused outside grace period. Revoking entire token family."
-    );
-
-    await redis.del(familyKey);
-    await redis.srem(`rt:user_sessions:${userId}`, familyId);
-
-    await redis.set(`rt:blacklist:${incomingJti}`, "stolen", "EX", BLACKLIST_TTL_SECONDS);
-    await redis.set(`rt:blacklist:${currentHead.jti}`, "revoked", "EX", BLACKLIST_TTL_SECONDS);
-
-    await user.setRefreshToken(null);
-    await user.save({ validateBeforeSave: false });
-
-    throw new ApiError(
-      401,
-      "Security Alert: Session compromise detected. All active sessions have been revoked for your safety.",
-      [{ code: "TOKEN_THEFT_DETECTED" }]
-    );
   }
 
   // Fallback if Redis is down

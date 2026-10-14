@@ -95,6 +95,15 @@ export const clearL1Cache = () => {
   _l1Cache.clear();
 };
 
+// Helper to verify Redis connection readiness without breaking test mocks
+const _isRedisReady = (client) => {
+  if (!client) return false;
+  if (client.status) {
+    return client.status === "ready" || client.status === "connect";
+  }
+  return true;
+};
+
 // ─── Basic Cache Operations (L1 + L2) ────────────────────────────────────────
 
 /**
@@ -111,7 +120,7 @@ export const cacheGet = async (key) => {
   }
 
   const redis = getRedisClient();
-  if (!redis) return null;
+  if (!_isRedisReady(redis)) return null;
 
   try {
     const cachedData = await redis.get(key);
@@ -137,7 +146,7 @@ export const cacheSet = async (key, data, ttlSeconds = DEFAULT_TTL_SECONDS) => {
   _l1Set(key, data);
 
   const redis = getRedisClient();
-  if (!redis) return;
+  if (!_isRedisReady(redis)) return;
 
   try {
     const serialized = JSON.stringify(data);
@@ -154,7 +163,7 @@ export const cacheDel = async (key) => {
   _l1Delete(key);
 
   const redis = getRedisClient();
-  if (!redis) return;
+  if (!_isRedisReady(redis)) return;
 
   try {
     await redis.del(key);
@@ -178,7 +187,7 @@ const INVALIDATION_CHANNEL = "cache:invalidation";
  */
 export const publishCacheInvalidation = async (payload) => {
   const redis = getRedisClient();
-  if (!redis) return;
+  if (!_isRedisReady(redis)) return;
 
   try {
     await redis.publish(INVALIDATION_CHANNEL, JSON.stringify(payload));
@@ -203,6 +212,11 @@ export const publishCacheInvalidation = async (payload) => {
  * Other instances only need to clear their own L1 caches.
  */
 export const subscribeCacheInvalidation = () => {
+  if (process.env.ENABLE_REDIS === "false") {
+    logger.debug("[CacheManager] Redis disabled — skipping Pub/Sub subscription");
+    return null;
+  }
+
   const mode = (process.env.REDIS_MODE || "standalone").toLowerCase();
 
   if (process.env.NODE_ENV === "test" && !process.env.USE_REDIS_IN_TESTS) {

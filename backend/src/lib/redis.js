@@ -37,16 +37,15 @@ export const setMockRedisClient = (mock) => {
 
 // ─── Shared retry / connection options ───────────────────────────────────────
 const SHARED_OPTIONS = {
-  maxRetriesPerRequest: 3,
+  maxRetriesPerRequest: 1,
   enableReadyCheck: true,
   lazyConnect: true,
+  enableOfflineQueue: false,
   retryStrategy(times) {
-    if (times > 10) {
-      logger.error("[Redis] Max retries exceeded. Giving up.");
+    if (times > 3) {
       return null; // Stop retrying — let the calling code fail gracefully
     }
-    const delay = Math.min(times * 100, 2000); // Exponential back-off, max 2 seconds
-    logger.warn({ times, delay }, "[Redis] Retrying connection...");
+    const delay = Math.min(times * 100, 1000); // Max 1 second
     return delay;
   },
 };
@@ -63,6 +62,10 @@ export const getRedisClient = () => {
   if (customMockClient) return customMockClient;
 
   if (process.env.NODE_ENV === "test" && !process.env.USE_REDIS_IN_TESTS) {
+    return null;
+  }
+
+  if (process.env.ENABLE_REDIS === "false") {
     return null;
   }
 

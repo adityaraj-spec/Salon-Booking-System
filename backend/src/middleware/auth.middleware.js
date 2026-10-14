@@ -23,13 +23,19 @@ export const verifyJWT = asyncHandler(async (req, _, next) => {
 
     // Part 10: Check if token JTI is in Redis blacklist (e.g. after logout or revocation)
     if (decodedToken.jti) {
-      const redis = getRedisClient();
-      if (redis) {
-        const isBlacklisted = await redis.get(`rt:blacklist:${decodedToken.jti}`);
-        if (isBlacklisted) {
-          logger.warn({ userId, jti: decodedToken.jti }, "[Auth] Blacklisted access token presented");
-          throw new ApiError(401, "Token has been revoked — please log in again");
+      try {
+        const redis = getRedisClient();
+        const isReady = !redis?.status || redis.status === "ready" || redis.status === "connect";
+        if (redis && isReady) {
+          const isBlacklisted = await redis.get(`rt:blacklist:${decodedToken.jti}`);
+          if (isBlacklisted) {
+            logger.warn({ userId, jti: decodedToken.jti }, "[Auth] Blacklisted access token presented");
+            throw new ApiError(401, "Token has been revoked — please log in again");
+          }
         }
+      } catch (redisErr) {
+        if (redisErr instanceof ApiError) throw redisErr;
+        logger.warn({ err: redisErr.message }, "[Auth] Redis blacklist check bypassed due to Redis connection issue");
       }
     }
 
