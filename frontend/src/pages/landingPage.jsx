@@ -145,25 +145,25 @@ export function LandingPage() {
                         className="absolute inset-0 bg-cover bg-center"
                         style={{ backgroundImage: `url('${currentHero.url}')` }}
                     >
-                        <div className={`absolute inset-0 ${currentHero.isDark ? 'bg-black/40' : 'bg-white/20'}`}></div>
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+                        <div className={`absolute inset-0 ${currentHero.isDark ? 'bg-black/60' : 'bg-black/40'}`}></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/25"></div>
                     </motion.div>
                 </AnimatePresence>
 
                 <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="relative z-10 px-6 max-w-4xl mx-auto flex flex-col items-center pt-8">
-                    <motion.h1 variants={fadeUpVariants} className={`text-5xl md:text-7xl font-bold mb-6 leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                        Your Beauty,<br /><span className="text-[#ff9f43]">Our Priority</span>
+                    <motion.h1 variants={fadeUpVariants} className={`text-5xl md:text-7xl font-bold mb-6 leading-tight drop-shadow-md ${isDark ? 'text-white' : 'text-white'}`}>
+                        Your Beauty,<br /><span className="text-[#ff9f43] drop-shadow-[0_4px_20px_rgba(0,0,0,0.95)]">Our Priority</span>
                     </motion.h1>
-                    <motion.p variants={fadeUpVariants} className={`text-lg md:text-xl mb-6 max-w-2xl font-light ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
+                    <motion.p variants={fadeUpVariants} className="text-lg md:text-xl mb-6 max-w-2xl font-light text-gray-100 drop-shadow-sm">
                         Discover and book appointments with top-rated salons in your city.<br className="hidden md:block" /> Professional beauty services at your fingertips.
                     </motion.p>
                     <motion.div variants={fadeUpVariants} className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 w-full sm:w-auto">
-                        <NavLink to="/home" className={`w-full sm:w-auto px-8 py-4 rounded-full font-bold flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 ${isDark ? 'bg-white text-black hover:bg-gray-100' : 'bg-[#1a1a1a] text-white hover:bg-black'}`}>
+                        <NavLink to="/home" className="w-full sm:w-auto px-8 py-4 rounded-full font-bold flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 bg-white text-black hover:bg-gray-100">
                             Browse Salons <ArrowRight size={18} />
                         </NavLink>
                         {!user && (
                             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                                <NavLink to="/signup" className={`w-full sm:w-auto px-8 py-4 rounded-full font-bold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 border text-center ${isDark ? 'border-white/80 text-white hover:bg-white/10' : 'border-black/80 text-black hover:bg-black/5'}`}>
+                                <NavLink to="/signup" className="w-full sm:w-auto px-8 py-4 rounded-full font-bold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 border text-center border-white/80 text-white hover:bg-white/10">
                                     Sign Up Now
                                 </NavLink>
                             </div>
@@ -178,12 +178,15 @@ export function LandingPage() {
             {(loading || featuredSalons.length > 0) && (
                 <section className="py-10 px-6">
                     <div className="max-w-6xl mx-auto">
-                        <div className="bg-[#fef9ec] border border-[#f0e5c0] rounded-2xl p-5">
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-xl font-bold text-[#1a1a1a]">Best Deals for Salons</h2>
-                                <NavLink to="/home" className="text-[#D4AF37] font-semibold text-xs flex items-center gap-1 hover:underline">
-                                    View all <ChevronRight size={14} />
-                                </NavLink>
+                        <div className="bg-[#fef9ec] border border-[#f0e5c0] rounded-2xl p-5 md:p-6 shadow-sm">
+                            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between mb-4 gap-2">
+                                <div className="flex items-baseline gap-3">
+                                    <h2 className="text-xl md:text-2xl font-bold text-[#1a1a1a]">Best Deals for Salons</h2>
+                                    <NavLink to="/home" className="text-[#D4AF37] hover:text-[#b89528] font-bold text-xs flex items-center gap-0.5 hover:underline">
+                                        View all <ChevronRight size={14} />
+                                    </NavLink>
+                                </div>
+                                <span className="text-xs text-gray-500 font-medium hidden sm:inline">Handpicked premium discounts</span>
                             </div>
                             <div className="relative">
                                 <button onClick={() => scroll(featuredSliderRef, -1)} className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition">
@@ -269,9 +272,14 @@ export function LandingPage() {
                 <section className="py-10 px-6">
                     <div className="max-w-6xl mx-auto">
                         <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-xl font-bold text-[#1a1a1a]">Cheapest Services</h2>
-                                <span className="text-xs text-gray-400 font-medium">Best prices across salons</span>
+                            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between mb-4 gap-2">
+                                <div className="flex items-baseline gap-3">
+                                    <h2 className="text-xl md:text-2xl font-bold text-[#1a1a1a]">Cheapest Services</h2>
+                                    <NavLink to="/home" className="text-[#D4AF37] hover:text-[#b89528] font-bold text-xs flex items-center gap-0.5 hover:underline">
+                                        View all <ChevronRight size={14} />
+                                    </NavLink>
+                                </div>
+                                <span className="text-xs text-gray-400 font-medium hidden sm:inline">Best verified prices across salons</span>
                             </div>
                             <div className="relative">
                                 <button onClick={() => scroll(cheapSliderRef, -1)} className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition">
@@ -282,19 +290,22 @@ export function LandingPage() {
                                         [...Array(6)].map((_, i) => <MiniSalonCardSkeleton key={i} />)
                                     ) : (
                                         cheapestServices.map((service) => (
-                                            <div key={service._id} className="min-w-[200px] w-[200px] flex-shrink-0 bg-white border border-gray-100 rounded-xl overflow-hidden flex flex-col hover:shadow-md transition group snap-start cursor-pointer" onClick={() => service.salon?._id && navigate(`/shop/${service.salon._id}`)}>
-                                                <div className="relative h-32 w-full overflow-hidden flex-shrink-0">
+                                            <div key={service._id} className="min-w-[210px] w-[210px] flex-shrink-0 bg-white border border-gray-100 rounded-2xl overflow-hidden flex flex-col hover:shadow-md transition group snap-start cursor-pointer" onClick={() => service.salon?._id && navigate(`/shop/${service.salon._id}`)}>
+                                                <div className="relative h-36 w-full overflow-hidden flex-shrink-0">
                                                     <img src={service.salon?.images?.[0] || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=80"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={service.name} />
-                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5">
+                                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/75 to-transparent px-3 py-2">
                                                         <span className="text-white text-xs font-bold capitalize">{service.name}</span>
                                                     </div>
                                                 </div>
-                                                <div className="p-3 flex flex-col gap-1">
-                                                    <h3 className="text-xs font-semibold text-gray-600 line-clamp-1">{service.salon?.name || "Salon"}</h3>
-                                                    <span className="text-xs text-gray-400 flex items-center gap-1"><MapPin size={10} className="shrink-0 text-[#0071c2]" />{service.salon?.city || "Unknown"}</span>
-                                                    <div className="flex items-center justify-between mt-2">
+                                                <div className="p-3.5 flex flex-col gap-1.5 flex-1">
+                                                    <h3 className="text-xs font-semibold text-gray-700 line-clamp-1">{service.salon?.name || "Salon"}</h3>
+                                                    <span className="text-xs text-gray-400 flex items-center gap-1"><MapPin size={12} className="shrink-0 text-[#0071c2]" />{service.salon?.city || "Unknown"}</span>
+                                                    <div className="flex items-center justify-between mt-auto pt-2">
                                                         <span className="text-xs text-gray-500">₹<span className="text-base font-bold text-[#1a1a1a]">{service.price}</span></span>
-                                                        <button className="bg-white border border-[#D4AF37] text-[#D4AF37] text-[10px] font-bold px-2 py-1 rounded-full hover:bg-[#D4AF37] hover:text-white transition-all" onClick={(e) => { e.stopPropagation(); service.salon?._id && navigate(`/shop/${service.salon._id}`); }}>
+                                                        <button 
+                                                            className="min-h-[40px] px-4 py-2 border border-[#D4AF37] bg-white text-[#D4AF37] hover:bg-[#D4AF37] hover:text-white text-xs font-bold rounded-full transition-all shadow-sm active:scale-95 flex items-center justify-center shrink-0" 
+                                                            onClick={(e) => { e.stopPropagation(); service.salon?._id && navigate(`/shop/${service.salon._id}`); }}
+                                                        >
                                                             Book Now
                                                         </button>
                                                     </div>
@@ -352,66 +363,73 @@ export function LandingPage() {
             </section>
 
 
-            {/* ── SEO INFORMATIONAL SECTION ── */}
+            {/* ── INFORMATIONAL FEATURE SECTION ── */}
             <section className="py-20 bg-white px-6 border-t border-gray-100">
                 <div className="max-w-6xl mx-auto">
-                    <div className="grid md:grid-cols-2 gap-16">
-                        <div className="space-y-8">
-                            <div>
-                                <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">Online Salon Booking with SalonNow</h2>
-                                <p className="text-gray-600 leading-relaxed text-sm">
-                                    SalonNow is a leading beauty and wellness platform that ensures easy and hassle-free salon bookings. With its user-friendly interface and extensive selection of salons, our platform enables users to find the perfect grooming and self-care services with just a few clicks.
-                                </p>
-                                <p className="text-gray-600 leading-relaxed text-sm mt-4">
-                                    Moreover, the platform provides an array of convenient features, including the ability to effortlessly share salon wishlists, the flexibility to pay at the salon, and 24x7 customer support to ensure a seamless experience for all beauty seekers.
-                                </p>
-                            </div>
+                    <div className="text-center max-w-2xl mx-auto mb-14">
+                        <span className="text-[#D4AF37] font-bold text-xs uppercase tracking-widest bg-amber-50 px-3 py-1 rounded-full">Discover SalonNow</span>
+                        <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#1a1a1a] mt-3 mb-3">Online Salon Booking Made Effortless</h2>
+                        <p className="text-gray-500 text-sm md:text-base leading-relaxed">
+                            Connecting customers with premier salons and wellness providers across India with live slot availability, upfront transparent pricing, and instant confirmations.
+                        </p>
+                    </div>
 
-                            <div>
-                                <h2 className="text-2xl font-bold text-[#1a1a1a] mb-6">Why book salons online with SalonNow?</h2>
-                                <p className="text-gray-600 leading-relaxed text-sm mb-6">
-                                    SalonNow has emerged as the go-to platform for hair, skin, and spa bookings. From luxury spa retreats to budget-friendly grooming centers, we ensure a safe and professional salon experience across India.
-                                </p>
-                                <div className="space-y-4">
-                                    {[
-                                        { title: "Largest selection of salons", desc: "Choose from a wide range of salons to suit your preferences — from local gems to premium chains." },
-                                        { title: "Best deals and prices", desc: "Get the lowest prices on your bookings with our curated lists and easy sorting options." },
-                                        { title: "Pay at Salon option", desc: "Make your online booking and get the flexibility to pay at the salon directly after your service." },
-                                        { title: "Collaborative wishlists", desc: "Plan your grooming together - share your favorite salons with friends and let them add their own." },
-                                        { title: "24x7 customer support", desc: "Need assistance? Our dedicated support team is available round the clock for all your booking queries." }
-                                    ].map((item, i) => (
-                                        <div key={i} className="flex flex-col gap-1">
-                                            <h3 className="font-bold text-[#1a1a1a] text-sm">{item.title}</h3>
-                                            <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-[#fafafa] p-8 md:p-12 rounded-3xl border border-gray-100 h-fit sticky top-24">
-                            <h2 className="text-2xl font-bold text-[#1a1a1a] mb-6 font-serif">How to book your perfect salon on SalonNow?</h2>
-                            <p className="text-gray-600 text-sm leading-relaxed mb-8">
-                                Booking a salon session has never been easier. Follow these simple steps to find and book your favorite beauty service:
-                            </p>
-                            <div className="space-y-6">
+                    <div className="grid md:grid-cols-2 gap-10">
+                        {/* Left: Why book with us cards */}
+                        <div className="space-y-4">
+                            <h3 className="text-xl font-bold text-[#1a1a1a] mb-2 flex items-center gap-2">
+                                <Sparkles size={20} className="text-[#D4AF37]" /> Why Book with SalonNow?
+                            </h3>
+                            <div className="grid sm:grid-cols-2 gap-3.5">
                                 {[
-                                    "Enter the city or area you want to visit.",
-                                    "Explore the list of top-rated salons near you.",
-                                    "Use our Price Sort to find the best grooming deals.",
-                                    "Apply filters to narrow down your selection.",
-                                    "Select your salon and book your appointment instantly.",
-                                    "Join the SalonNow community for exclusive beauty offers."
-                                ].map((step, i) => (
-                                    <div key={i} className="flex gap-4 items-start">
-                                        <span className="w-6 h-6 rounded-full bg-[#1a1a1a] text-white text-[10px] flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
-                                        <p className="text-gray-700 text-sm font-medium">{step}</p>
+                                    { title: "Curated Salons", desc: "Handpicked verified salons and spas across popular cities in India." },
+                                    { title: "Upfront Best Prices", desc: "No hidden charges. Transparent service menu prices and exclusive deals." },
+                                    { title: "Flexible Payment", desc: "Pay securely online via UPI/cards or directly at the salon." },
+                                    { title: "Real-Time Slots", desc: "Live seat availability ensures zero waiting and guaranteed appointments." },
+                                ].map((item, i) => (
+                                    <div key={i} className="p-4 bg-[#fafafa] border border-gray-100 rounded-2xl flex flex-col gap-1 hover:border-[#D4AF37]/30 transition-all">
+                                        <h4 className="font-bold text-[#1a1a1a] text-sm">{item.title}</h4>
+                                        <p className="text-gray-500 text-xs leading-relaxed">{item.desc}</p>
                                     </div>
                                 ))}
                             </div>
-                            <p className="text-gray-500 text-xs mt-10 italic border-t border-gray-200 pt-6">
-                                You can easily compare prices of several salons and read reviews before making a reservation. Booking budget-friendly salons has never been simpler.
-                            </p>
+                            <div className="p-4 bg-amber-50/60 border border-amber-200/50 rounded-2xl flex items-center gap-3 mt-4">
+                                <ShieldCheck size={22} className="text-[#D4AF37] shrink-0" />
+                                <p className="text-xs text-amber-950 font-medium">
+                                    <strong className="font-bold">100% Quality Assured:</strong> All partnered salons adhere to strict hygiene and professional standards.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Right: How to book steps */}
+                        <div className="bg-[#fafafa] p-6 md:p-8 rounded-3xl border border-gray-100 h-fit">
+                            <h3 className="text-xl font-bold text-[#1a1a1a] mb-4 font-serif flex items-center gap-2">
+                                <Clock size={20} className="text-[#0071c2]" /> 4 Simple Steps to Book
+                            </h3>
+                            <div className="space-y-4">
+                                {[
+                                    { step: "Select Location", desc: "Choose your city or find top-rated salons nearby." },
+                                    { step: "Pick Your Service", desc: "Browse haircut, styling, spa, and beauty treatments." },
+                                    { step: "Reserve Your Slot", desc: "Choose your preferred time and available stylist." },
+                                    { step: "Instant Confirmation", desc: "Receive immediate booking confirmation and reminder." },
+                                ].map((item, i) => (
+                                    <div key={i} className="flex gap-3.5 items-start">
+                                        <span className="w-7 h-7 rounded-full bg-[#1a1a1a] text-white text-xs font-bold flex items-center justify-center shrink-0">
+                                            {i + 1}
+                                        </span>
+                                        <div>
+                                            <h4 className="text-sm font-bold text-[#1a1a1a]">{item.step}</h4>
+                                            <p className="text-xs text-gray-500 mt-0.5">{item.desc}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="mt-6 pt-5 border-t border-gray-200 flex items-center justify-between">
+                                <span className="text-xs text-gray-500">Need immediate booking?</span>
+                                <NavLink to="/home" className="text-xs font-bold text-[#0071c2] hover:underline flex items-center gap-1">
+                                    Find Salons Now <ChevronRight size={14} />
+                                </NavLink>
+                            </div>
                         </div>
                     </div>
                 </div>

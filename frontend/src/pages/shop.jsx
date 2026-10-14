@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, NavLink, useNavigate } from "react-router-dom";
-import { Star, MapPin, Users, Clock, ShieldCheck, Sparkles, ArrowLeft, MessageSquare, Send, Trash2, Heart, Phone, Scissors, Award, ChevronLeft, ChevronRight, X, Images, Settings } from "lucide-react";
+import { Star, MapPin, Users, Clock, ShieldCheck, Sparkles, ArrowLeft, MessageSquare, Send, Trash2, Heart, Phone, Scissors, Award, ChevronLeft, ChevronRight, X, Images, Settings, Share2, Check } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
 import axiosInstance from "../api/axiosConfig";
@@ -34,6 +34,65 @@ export function Shop() {
     // Lightbox state
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState(0);
+
+    // Save and Share state
+    const [isFavorite, setIsFavorite] = useState(false);
+    const [copied, setCopied] = useState(false);
+
+    const handleShare = async () => {
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: salon?.name || "SalonNow",
+                    text: `Book an appointment at ${salon?.name || "this salon"} on SalonNow!`,
+                    url: window.location.href,
+                });
+                return;
+            } catch (err) {
+                // fallback to clipboard
+            }
+        }
+        navigator.clipboard.writeText(window.location.href);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    const handleToggleFavorite = async () => {
+        if (!user) {
+            navigate("/login");
+            return;
+        }
+        try {
+            const res = await axiosInstance.post(`/users/favorites/${id}`);
+            if (res.data.success) {
+                setIsFavorite(res.data.data.isFavorited);
+            }
+        } catch (e) {
+            // fallback toggle
+            setIsFavorite(prev => !prev);
+        }
+    };
+
+    const formatServiceName = (name) => {
+        if (!name) return "Service";
+        return name.replace(/\bhaicut\b/gi, "Haircut");
+    };
+
+    const getCleanDescription = (desc) => {
+        const fallback = "Welcome to our premier destination for luxury grooming and beauty. We combine traditional techniques with modern style to give you the perfect look. Our studio features state-of-the-art equipment and a relaxing atmosphere designed for your comfort.";
+        if (!desc || typeof desc !== "string" || desc.trim().length < 15) {
+            return fallback;
+        }
+        const trimmed = desc.trim();
+        const words = trimmed.split(/\s+/);
+        const hasLongGibberish = words.some(w => w.length > 18);
+        const vowelCount = (trimmed.match(/[aeiou]/gi) || []).length;
+        const vowelRatio = vowelCount / trimmed.length;
+        if (hasLongGibberish || vowelRatio < 0.15) {
+            return fallback;
+        }
+        return trimmed;
+    };
 
     useEffect(() => {
         const fetchSalonDetails = async () => {
@@ -298,27 +357,26 @@ export function Shop() {
                         </div>
                     </div>
                 </div>
-                <div className="flex gap-6">
-                    <button className="flex items-center gap-2 text-[#D4AF37] hover:opacity-80 transition-opacity font-medium">
-                        <span>Save</span>
-                        <Heart size={20} />
+                <div className="flex items-center gap-3">
+                    <button 
+                        onClick={handleToggleFavorite}
+                        aria-label="Save to favorites"
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-full border transition-all text-xs font-bold shadow-sm active:scale-95 ${
+                            isFavorite 
+                                ? 'border-rose-200 bg-rose-50 text-rose-600' 
+                                : 'border-gray-200 bg-white hover:bg-gray-50 text-gray-700 hover:text-rose-500'
+                        }`}
+                    >
+                        <Heart size={16} className={isFavorite ? "fill-rose-500 text-rose-500" : ""} />
+                        <span>{isFavorite ? "Saved" : "Save"}</span>
                     </button>
-                    <button className="flex items-center gap-2 text-[#D4AF37] hover:opacity-80 transition-opacity font-medium">
-                        <span>Share</span>
-                        <svg 
-                            width="20" 
-                            height="20" 
-                            viewBox="0 0 24 24" 
-                            fill="none" 
-                            stroke="currentColor" 
-                            strokeWidth="2" 
-                            strokeLinecap="round" 
-                            strokeLinejoin="round" 
-                        >
-                            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
-                            <polyline points="16 6 12 2 8 6" />
-                            <line x1="12" y1="2" x2="12" y2="15" />
-                        </svg>
+                    <button 
+                        onClick={handleShare}
+                        aria-label="Share salon"
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 hover:text-[#003b95] transition-all text-xs font-bold shadow-sm active:scale-95"
+                    >
+                        {copied ? <Check size={16} className="text-emerald-600" /> : <Share2 size={16} />}
+                        <span>{copied ? "Link Copied!" : "Share"}</span>
                     </button>
                 </div>
             </div>
@@ -443,17 +501,25 @@ export function Shop() {
                         </div>
                     </div>
 
-                    {/* Integrated Map (Placeholder linking to bottom map) */}
-                    <div className="flex-1 overflow-hidden rounded-md border border-gray-200 shadow-sm relative group bg-gray-50 cursor-pointer"
-                         onClick={() => document.getElementById('salon-location-section')?.scrollIntoView({ behavior: 'smooth' })}>
-                        <div className="w-full h-full opacity-60 filter grayscale-[0.5]">
-                            <SalonMap salons={[salon]} zoom={15} interactive={false} />
+                    {/* Location Preview Card (Anchoring smoothly to main map below) */}
+                    <div 
+                        className="flex-1 overflow-hidden rounded-xl border border-gray-200 shadow-sm relative group bg-gradient-to-br from-amber-50/50 via-white to-gray-50 p-4 flex flex-col justify-between cursor-pointer hover:border-[#D4AF37]/50 hover:shadow-md transition-all"
+                        onClick={() => document.getElementById('salon-location-section')?.scrollIntoView({ behavior: 'smooth' })}
+                    >
+                        <div>
+                            <div className="flex items-center gap-1.5 text-[#D4AF37] font-bold text-xs uppercase tracking-wider mb-2">
+                                <MapPin size={15} />
+                                <span>Studio Location</span>
+                            </div>
+                            <p className="text-xs font-semibold text-gray-800 line-clamp-3 leading-relaxed">
+                                {salon.address}, {salon.city}
+                            </p>
                         </div>
-                        <div className="absolute inset-0 bg-black/5 group-hover:bg-black/10 transition-colors"></div>
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                            <button className="bg-[#006ce4] text-white px-4 py-2 rounded-md font-bold text-sm shadow-lg whitespace-nowrap opacity-100 transition-opacity">
-                                Show on map
-                            </button>
+                        <div className="pt-3 border-t border-gray-100 flex items-center justify-between mt-auto">
+                            <span className="text-xs font-bold text-[#006ce4] group-hover:underline flex items-center gap-1">
+                                View full map below ↓
+                            </span>
+                            <span className="text-[11px] font-medium text-gray-400">Interactive Map</span>
                         </div>
                     </div>
                 </div>
@@ -555,18 +621,19 @@ export function Shop() {
                             </div>
                             <div className="grid sm:grid-cols-2 gap-4">
                                 {services.map((service) => (
-                                    <div key={service._id} className="p-6 bg-white border border-gray-100 rounded-3xl hover:border-[#D4AF37]/30 transition-all group flex justify-between items-center shadow-sm">
-                                        <div className="min-w-0 flex-1">
+                                    <div key={service._id} className="p-5 bg-white border border-gray-100 rounded-2xl hover:border-[#D4AF37]/40 transition-all group flex justify-between items-center shadow-sm">
+                                        <div className="min-w-0 flex-1 pr-3">
                                             <div className="flex items-center gap-2 mb-1">
-                                                <Scissors size={14} className="text-[#D4AF37]" />
-                                                <h4 className="font-bold text-[#1a1a1a] truncate">{service.name}</h4>
+                                                <Scissors size={15} className="text-[#D4AF37] shrink-0" />
+                                                <h4 className="font-bold text-[#1a1a1a] text-sm truncate">{formatServiceName(service.name)}</h4>
                                             </div>
-                                            <p className="text-xs text-gray-500 line-clamp-1 mb-2">{service.description || "Professional salon service"}</p>
-
+                                            <p className="text-xs text-gray-500 line-clamp-1">{service.description || "Professional salon service"}</p>
                                         </div>
-                                        <div className="text-right ml-4">
-                                            <p className="text-lg font-serif font-bold text-[#1a1a1a]">₹{service.price}</p>
-                                            <p className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-tighter">Premium</p>
+                                        <div className="text-right shrink-0 flex flex-col justify-center items-end min-h-[44px]">
+                                            <p className="text-base font-serif font-bold text-[#1a1a1a] leading-none mb-1.5">₹{service.price}</p>
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-[#D4AF37] border border-amber-200/60 leading-none">
+                                                Premium
+                                            </span>
                                         </div>
                                     </div>
                                 ))}
@@ -587,10 +654,10 @@ export function Shop() {
                                             </div>
                                         </div>
                                         <h4 className="font-bold text-[#1a1a1a] text-sm mb-1">{member.name}</h4>
-                                        <p className="text-[10px] text-[#D4AF37] font-black uppercase tracking-widest">{member.role}</p>
+                                        <p className="text-xs text-[#D4AF37] font-semibold tracking-wide">{member.role}</p>
                                         <div className="flex items-center justify-center gap-1 mt-2">
-                                            <Award size={10} className="text-orange-400" />
-                                            <span className="text-[10px] font-medium text-gray-400">{member.experience}+ Years</span>
+                                            <Award size={12} className="text-orange-400" />
+                                            <span className="text-xs font-medium text-gray-400">{member.experience}+ Years Experience</span>
                                         </div>
                                     </div>
                                 ))}
@@ -617,8 +684,8 @@ export function Shop() {
 
                     <div className="pt-8 border-t border-gray-100">
                         <h3 className="text-2xl font-serif font-bold text-[#1a1a1a] mb-4">About the Studio</h3>
-                        <p className="text-gray-600 leading-relaxed text-lg whitespace-pre-line">
-                            {salon.description || "Welcome to our premier destination for luxury grooming and beauty. We combine traditional techniques with modern style to give you the perfect look. Our studio features state-of-the-art equipment and a relaxing atmosphere designed for your comfort."}
+                        <p className="text-gray-600 leading-relaxed text-base whitespace-pre-line">
+                            {getCleanDescription(salon.description)}
                         </p>
                     </div>
 
@@ -650,7 +717,7 @@ export function Shop() {
                                             </div>
                                             <div className={rev.user?.fullName ? "flex-1" : "flex-1 text-gray-400 italic"}>
                                                 <div className="flex items-center justify-between mb-1">
-                                                    <h5 className="font-bold text-[#1a1a1a]">{rev.user?.fullName || "Anonymous"}</h5>
+                                                    <h4 className="font-bold text-sm text-[#1a1a1a]">{rev.user?.fullName || "Anonymous"}</h4>
                                                     <div className="flex items-center gap-2">
                                                         <span className="text-xs text-gray-400 font-medium">{new Date(rev.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                                                         
@@ -778,59 +845,67 @@ export function Shop() {
                     <div className="border border-gray-100 rounded-[32px] shadow-xl shadow-black/5 p-6 md:p-8 lg:sticky lg:top-32 bg-white">
                         <div className="flex justify-between items-end mb-6">
                             <div>
-                                <span className="text-gray-400 text-[10px] uppercase font-bold tracking-[0.2em]">Service Starting</span>
-                                <p className="text-4xl font-serif font-bold text-[#1a1a1a] mt-1">
+                                <span className="text-gray-500 text-xs font-semibold">Starting from</span>
+                                <p className="text-3xl font-serif font-bold text-[#1a1a1a] mt-0.5">
                                     {services.length > 0 ? `₹${Math.min(...services.map(s => s.price))}` : "₹—"}
                                 </p>
                             </div>
                             <div className="text-right">
-                                <div className="flex items-center gap-1.5 text-lg font-bold text-gray-900 justify-end">
+                                <div className="flex items-center gap-1.5 text-base font-bold text-gray-900 justify-end">
                                     <Star className="w-4 h-4 fill-yellow-400 text-yellow-400 border-none" /> {salon.rating || "NEW"}
                                 </div>
-                                <p className="text-xs text-[#D4AF37] font-bold uppercase tracking-wider">Top Rated</p>
+                                <p className="text-xs text-[#D4AF37] font-semibold mt-0.5">Top Rated Studio</p>
                             </div>
                         </div>
 
-                        <div className="space-y-4 mb-6">
-                            <div className="p-4 bg-gray-50/50 border border-gray-100 rounded-2xl flex items-center justify-between text-sm">
-                                <div className="flex items-center gap-3 text-gray-600 font-medium"><Clock size={18} className="text-[#D4AF37]" /> Opening Hours</div>
-                                <span className="font-bold text-[#1a1a1a]">{salon.openingHours || "09:00 AM"} - {salon.closingHours || "09:00 PM"}</span>
+                        <div className="space-y-3 mb-6">
+                            <div className="p-3.5 bg-gray-50/70 border border-gray-100 rounded-xl flex items-center justify-between text-xs">
+                                <div className="flex items-center gap-2.5 text-gray-600 font-medium"><Clock size={16} className="text-[#D4AF37]" /> Opening Hours</div>
+                                <span className="font-semibold text-[#1a1a1a]">{salon.openingHours || "09:00 AM"} - {salon.closingHours || "09:00 PM"}</span>
                             </div>
-                            <div className="p-4 bg-gray-50/50 border border-gray-100 rounded-2xl flex items-center justify-between text-sm">
-                                <div className="flex items-center gap-3 text-gray-600 font-medium">
-                                    <Sparkles size={18} className={salon.availableSeats > 0 ? "text-green-500" : "text-red-500"} /> 
-                                    Availability
+                            <div className="p-3.5 bg-gray-50/70 border border-gray-100 rounded-xl flex items-center justify-between text-xs">
+                                <div className="flex items-center gap-2.5 text-gray-600 font-medium">
+                                    <Sparkles size={16} className={salon.availableSeats > 0 ? "text-emerald-500" : "text-rose-500"} /> 
+                                    Live Availability
                                 </div>
-                                <span className={`font-bold ${salon.availableSeats > 0 ? "text-[#1a1a1a]" : "text-red-600"}`}>
+                                <span className={`font-semibold ${salon.availableSeats > 0 ? "text-emerald-700" : "text-rose-600"}`}>
                                     {salon.availableSeats > 0 ? `${salon.availableSeats} Seats Available` : "Full House"}
                                 </span>
                             </div>
                         </div>
 
-                        {user?.role !== "salonOwner" ? (
-                            <button 
-                                onClick={() => {
-                                    if (!user) {
-                                        navigate("/login");
-                                    } else if (salon.isOpen) {
-                                        navigate(`/booking/${salon._id}`);
-                                    }
-                                }}
-                                disabled={!salon.isOpen}
-                                className={`w-full font-bold py-5 rounded-2xl transition-all active:scale-[0.98] shadow-xl text-lg uppercase tracking-widest ${salon.isOpen ? 'bg-[#1a1a1a] text-white hover:bg-black shadow-black/10' : 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'}`}
-                            >
-                                {salon.isOpen ? 'Check Slots' : 'Temporarily Closed'}
-                            </button>
-                        ) : (
-                            <div className="w-full bg-gray-50 border border-gray-100 py-5 rounded-2xl text-center">
-                                <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Owner View Only</p>
+                        {/* Primary Customer CTA: Always Book Appointment */}
+                        <button 
+                            onClick={() => {
+                                if (!user) {
+                                    navigate("/login");
+                                } else if (salon.isOpen) {
+                                    navigate(`/booking/${salon._id}`);
+                                }
+                            }}
+                            disabled={!salon.isOpen}
+                            className={`w-full font-bold py-4 rounded-xl transition-all active:scale-[0.98] shadow-md text-base flex items-center justify-center gap-2 ${
+                                salon.isOpen 
+                                    ? 'bg-[#1a1a1a] text-white hover:bg-black shadow-black/10' 
+                                    : 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
+                            }`}
+                        >
+                            <Scissors size={18} className="text-[#D4AF37]" />
+                            {salon.isOpen ? 'Book Appointment' : 'Temporarily Closed'}
+                        </button>
+
+                        {/* Owner Indicator Pill: Non-obtrusive */}
+                        {user?._id === salon?.owner && (
+                            <div className="mt-3 w-full bg-amber-50/80 border border-amber-200/60 py-2 px-3 rounded-lg text-center flex items-center justify-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-[#D4AF37]"></span>
+                                <p className="text-xs font-semibold text-amber-900">Owner View: Active</p>
                             </div>
                         )}
 
-                        <div className="flex items-center justify-center gap-2 mt-6">
-                            <ShieldCheck size={14} className="text-green-500" />
-                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest text-center">
-                                Price Match Guarantee
+                        <div className="flex items-center justify-center gap-2 mt-5">
+                            <ShieldCheck size={16} className="text-emerald-500" />
+                            <p className="text-xs text-gray-500 font-medium text-center">
+                                Price Match Guarantee & Verified Hygiene
                             </p>
                         </div>
                     </div>

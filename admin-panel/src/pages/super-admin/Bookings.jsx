@@ -4,11 +4,11 @@ import api from '../../services/api';
 import DataTable from '../../components/UI/DataTable';
 
 const STATUS_BADGE = {
-  pending:   'bg-amber-100 text-amber-700 font-bold uppercase tracking-widest',
-  confirmed: 'bg-[#D4AF37]/10 text-[#D4AF37] font-bold uppercase tracking-widest',
-  completed: 'bg-emerald-100 text-emerald-700 font-bold uppercase tracking-widest',
-  cancelled: 'bg-red-100 text-red-600 font-bold uppercase tracking-widest',
-  rejected:  'bg-gray-100 text-gray-600 font-bold uppercase tracking-widest',
+  pending:   'bg-amber-100 text-amber-800 font-semibold',
+  confirmed: 'bg-[#D4AF37]/15 text-[#997917] font-semibold',
+  completed: 'bg-emerald-100 text-emerald-800 font-semibold',
+  cancelled: 'bg-red-100 text-red-700 font-semibold',
+  rejected:  'bg-gray-100 text-gray-700 font-semibold',
 };
 
 const ALL_STATUSES = ['pending', 'confirmed', 'completed', 'cancelled', 'rejected'];
@@ -45,45 +45,44 @@ export default function SuperBookings() {
     { key: 'customer', label: 'Customer', render: (v) => (
       <div>
         <p className="font-bold text-[#1a1a1a] text-sm">{v?.fullName || 'Guest'}</p>
-        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{v?.email}</p>
+        <p className="text-xs font-normal text-gray-500 mt-0.5">{v?.email || '—'}</p>
       </div>
     )},
-    { key: 'salon', label: 'Salon', render: (v) => v?.name || '—' },
+    { key: 'salon', label: 'Salon', render: (v) => <span className="text-sm font-medium text-gray-800">{v?.name || '—'}</span> },
     { key: 'serviceNames', label: 'Services', render: (v) => (
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap items-center gap-1.5">
         {(v || []).slice(0, 2).map((s, i) => (
-          <span key={i} className="bg-gray-50 text-gray-500 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest">{s}</span>
+          <span key={i} className="bg-gray-100 text-gray-700 text-xs font-medium px-2.5 py-1 rounded-lg capitalize">{s}</span>
         ))}
-        {v?.length > 2 && <span className="text-[10px] font-black text-[#D4AF37] ml-1">+{v.length - 2} MORE</span>}
+        {v?.length > 2 && <span className="text-xs font-semibold text-[#D4AF37] ml-1">+{v.length - 2} more</span>}
       </div>
     )},
     { key: 'date', label: 'Date & Time', render: (v, row) => (
-      <span className="text-sm text-gray-700">{v} {row.time ? `@ ${row.time}` : ''}</span>
+      <span className="text-sm text-gray-700 font-medium">{v} {row.time ? `@ ${row.time}` : ''}</span>
     )},
-    { key: 'totalAmount', label: 'Amount', render: (v) => v ? <span className="font-serif font-black text-[#1a1a1a]">₹{v}</span> : '—' },
+    { key: 'totalAmount', label: 'Amount', render: (v) => v ? <span className="font-serif font-black text-[#1a1a1a] text-sm">₹{v}</span> : '—' },
     { key: 'status', label: 'Status', render: (v, row) => (
       <select value={v} onChange={e => updateStatus(row._id, e.target.value)}
-        className={`text-[9px] font-black px-3 py-2 rounded-full border-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 transition-all ${STATUS_BADGE[v]}`}>
-        {ALL_STATUSES.map(s => <option key={s} value={s}>{s.toUpperCase()}</option>)}
+        className={`text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 transition-all capitalize ${STATUS_BADGE[v]}`}>
+        {ALL_STATUSES.map(s => <option key={s} value={s} className="capitalize">{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
       </select>
     )},
   ];
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between flex-wrap gap-6 mb-8 mt-2">
+      <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
         <div>
-          <h2 className="text-2xl font-serif font-black text-[#1a1a1a] flex items-center gap-2">
+          <h1 className="text-2xl font-serif font-black text-[#1a1a1a]">
             Platform Bookings
-            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
-          </h2>
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-2">{total} total bookings across all salons</p>
+          </h1>
+          <p className="text-xs font-medium text-gray-500 mt-1">{total} total bookings across all salons</p>
         </div>
         <div className="flex items-center gap-3">
           <select value={status} onChange={e => { setStatus(e.target.value); setPage(1); }}
-            className="bg-white border-none rounded-full px-6 py-2.5 text-[10px] font-black uppercase tracking-widest text-gray-600 focus:outline-none shadow-sm transition-all focus:ring-2 focus:ring-[#D4AF37]/30">
+            className="bg-white border border-gray-200 rounded-full px-4 py-2 text-xs font-semibold text-gray-700 focus:outline-none shadow-sm transition-all focus:ring-2 focus:ring-[#D4AF37]/30">
             <option value="">All Statuses</option>
-            {ALL_STATUSES.map(s => <option key={s} value={s}>{s.toUpperCase()}</option>)}
+            {ALL_STATUSES.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
           </select>
         </div>
       </div>

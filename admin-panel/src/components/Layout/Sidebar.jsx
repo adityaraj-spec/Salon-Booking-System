@@ -63,7 +63,7 @@ export default function Sidebar({ role, isOpen, onClose }) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+      <nav className="flex-1 px-5 py-5 space-y-1 overflow-y-auto">
         {navItems.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={label}
@@ -73,36 +73,36 @@ export default function Sidebar({ role, isOpen, onClose }) {
               onClose();
             }}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-3 rounded-2xl text-sm font-medium transition-all group ${
+              `flex items-center gap-3 px-3.5 py-3 rounded-2xl text-sm transition-all group ${
                 isActive && to !== '#'
-                   ? 'bg-[#f9f5e8] text-[#1a1a1a] shadow-lg shadow-[#D4AF37]/10 border border-[#D4AF37]/20'
-                  : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                   ? 'bg-[#D4AF37] text-gray-950 font-bold shadow-lg shadow-[#D4AF37]/25'
+                  : 'text-gray-400 hover:bg-white/5 hover:text-white font-medium'
               }`
             }
           >
-            <Icon size={17} className="shrink-0" />
+            <Icon size={18} className="shrink-0" />
             <span className="flex-1">{label}</span>
-            <ChevronRight size={13} className="opacity-0 group-hover:opacity-40 transition-opacity" />
+            <ChevronRight size={14} className="opacity-0 group-hover:opacity-40 transition-opacity" />
           </NavLink>
         ))}
       </nav>
 
       {/* User info + logout */}
-      <div className="px-3 py-4 border-t border-gray-800">
-        <div className="flex items-center gap-3 px-3 py-2.5 mb-2 rounded-2xl bg-gray-800 border border-[#D4AF37]/10">
-          <div className="w-8 h-8 rounded-full bg-[#D4AF37] flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-md">
+      <div className="px-5 py-4 border-t border-gray-800 bg-gray-900/40">
+        <div className="flex items-center gap-3 px-3.5 py-2.5 mb-2 rounded-2xl bg-gray-800/80 border border-[#D4AF37]/10">
+          <div className="w-8 h-8 rounded-full bg-[#D4AF37] flex items-center justify-center text-gray-950 text-xs font-bold shrink-0 shadow-md">
             {user?.fullName?.charAt(0).toUpperCase() || 'A'}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-white text-xs font-semibold truncate">{user?.fullName}</p>
-            <p className="text-gray-400 text-[10px] truncate font-bold mt-0.5">
+            <p className="text-gray-400 text-xs truncate font-medium mt-0.5">
               {user?.role?.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
             </p>
           </div>
         </div>
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all font-bold text-xs"
+          className="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-2xl text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all font-semibold text-xs"
         >
           <LogOut size={16} />
           Logout

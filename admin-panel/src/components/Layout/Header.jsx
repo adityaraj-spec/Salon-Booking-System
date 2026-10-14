@@ -38,8 +38,8 @@ export default function Header({ toggleSidebar }) {
         </button>
         
         <div>
-          <h1 className="text-lg md:text-xl font-serif font-black text-[#1a1a1a] leading-tight">{title}</h1>
-          <p className="hidden md:block text-[11px] font-bold text-[#D4AF37] mt-1">
+          <p className="text-sm md:text-base font-serif font-bold text-[#1a1a1a] leading-tight">{title}</p>
+          <p className="hidden md:block text-xs font-semibold text-[#D4AF37] mt-0.5">
             {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
         </div>

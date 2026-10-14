@@ -55,7 +55,7 @@ export default function DataTable({
           >
             {[10, 25, 50].map(n => <option key={n} value={n}>{n}</option>)}
           </select>
-          <span className="text-[10px] font-bold uppercase tracking-widest">rows</span>
+          <span className="text-xs font-semibold text-gray-500">rows</span>
         </div>
       </div>
 
@@ -63,13 +63,13 @@ export default function DataTable({
       <div className="overflow-x-auto scrollbar-hide">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-gray-50/50 border-b border-gray-50">
+            <tr className="bg-gray-100/60 border-b border-gray-200">
               {columns.map(col => (
-                <th key={col.key} className="text-left px-4 md:px-5 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] whitespace-nowrap">
+                <th key={col.key} className="text-left px-4 md:px-5 py-3.5 text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
                   {col.label}
                 </th>
               ))}
-              {actions && <th className="text-right px-4 md:px-5 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Actions</th>}
+              {actions && <th className="text-right px-4 md:px-5 py-3.5 text-xs font-bold text-gray-700 uppercase tracking-wider">Actions</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
@@ -100,7 +100,7 @@ export default function DataTable({
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between px-6 py-4 border-t border-gray-50 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+      <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 text-xs font-semibold text-gray-500">
         <span>Showing {from}–{to} of {total}</span>
         <div className="flex items-center gap-1.5">
           <button
