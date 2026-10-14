@@ -5,15 +5,17 @@ import toast from 'react-hot-toast';
 import { Scissors, Eye, EyeOff } from 'lucide-react';
 
 export default function Login() {
-  const { login, loading } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSubmitting(true);
     try {
       const user = await login(form.email, form.password);
       toast.success(`Welcome back, ${user.fullName}!`);
@@ -22,6 +24,8 @@ export default function Login() {
       const msg = err.message || err.response?.data?.message || 'Login failed';
       setError(msg);
       toast.error(msg);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -83,10 +87,10 @@ export default function Login() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={submitting}
               className="w-full bg-[#1a1a1a] hover:bg-black text-white py-4 rounded-full font-bold text-xs uppercase tracking-widest transition-all shadow-xl shadow-black/10 disabled:opacity-60 mt-4"
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {submitting ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 

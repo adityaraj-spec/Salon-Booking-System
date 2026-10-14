@@ -26,7 +26,13 @@ const MyStaff = lazy(() => import('./pages/owner/MyStaff'));
 const MyReports = lazy(() => import('./pages/owner/MyReports'));
 
 function ProtectedRoute({ children, allowedRoles }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  // Wait for auth to resolve before deciding — prevents flash-redirect after login
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-[#fcfcfc]">
+      <LoadingSpinner text="Authenticating..." />
+    </div>
+  );
   if (!user) return <Navigate to="/login" replace />;
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     return <Navigate to={user.role === 'super_admin' ? '/super-admin/dashboard' : '/owner/dashboard'} replace />;
@@ -37,6 +43,8 @@ function ProtectedRoute({ children, allowedRoles }) {
 function AppRoutes() {
   const { user, loading } = useAuth();
 
+  // Show global spinner only for URL-token-based auto-login (hasTokenInUrl flow)
+  // Regular login state is handled per-route in ProtectedRoute
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#fcfcfc]">

@@ -56,7 +56,6 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = async (email, password) => {
-    setLoading(true);
     try {
       const response = await api.post('/users/login', { email, password });
       const { user: userData, accessToken } = response.data.data;
@@ -69,8 +68,9 @@ export function AuthProvider({ children }) {
       sessionStorage.setItem('adminUser', JSON.stringify(userData));
       setUser(userData);
       return userData;
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      // Don't touch sessionStorage on error — let the error bubble up
+      throw err;
     }
   };
 
