@@ -20,15 +20,35 @@ export const applySecurityHeaders = (req, res, next) => {
   // Cross-Origin Resource Policy
   res.setHeader("Cross-Origin-Resource-Policy", "same-site");
 
+  // Build connect-src dynamically to allow local dev origins
+  const isDev = process.env.NODE_ENV !== "production";
+  const frontendUrl = process.env.FRONTEND_URL || "";
+  const adminUrl = process.env.ADMIN_URL || "";
+
+  const connectSrcAllowed = [
+    "'self'",
+    "wss:",
+    "ws:",
+    "https://lumberjack.razorpay.com",
+    "https://api.razorpay.com",
+    frontendUrl,
+    adminUrl,
+  ];
+
+  // In development, allow all localhost ports for easier local dev
+  if (isDev) {
+    connectSrcAllowed.push("http://localhost:*", "ws://localhost:*", "http://127.0.0.1:*");
+  }
+
   // Content Security Policy (CSP) — tailored for React + Razorpay + Cloudinary
   const cspPolicy = [
     "default-src 'self'",
     "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
-    "img-src 'self' data: blob: https://res.cloudinary.com",
+    "img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com",
     "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com",
-    "connect-src 'self' wss: ws: https://lumberjack.razorpay.com https://api.razorpay.com",
+    `connect-src ${connectSrcAllowed.filter(Boolean).join(" ")}`,
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",

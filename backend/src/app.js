@@ -53,10 +53,19 @@ const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173,http:/
     .map((o) => o.trim())
     .filter(Boolean);
 
+const isAllowedOrigin = (origin) => {
+    if (!origin) return true;
+    if (allowedOrigins.includes(origin)) return true;
+    // Allow any localhost / 127.0.0.1 port in local dev environments
+    if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+        return true;
+    }
+    return false;
+};
+
 app.use(cors({
     origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps, curl, or server-to-server)
-        if (!origin || allowedOrigins.includes(origin)) {
+        if (isAllowedOrigin(origin)) {
             return callback(null, true);
         }
         logger.warn({ origin }, "[CORS Blocked] Request origin not in whitelist");
@@ -136,6 +145,11 @@ app.get(/^(?!\/(api|health)).*$/, (req, res, next) => {
         return res.sendFile(indexPath);
     }
     next();
+});
+
+// 404 handler for undefined API routes
+app.use((req, res, next) => {
+    next(new ApiError(404, `Route ${req.originalUrl} not found`));
 });
 
 // Common error handling middleware

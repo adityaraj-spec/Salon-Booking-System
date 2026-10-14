@@ -122,7 +122,16 @@ const _createSocketRedisClient = () => {
 export const initializeSocket = async (server) => {
   io = new Server(server, {
     cors: {
-      origin: (process.env.CORS_ORIGIN || "").split(",").map((o) => o.trim()).filter(Boolean),
+      origin: (origin, callback) => {
+        const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173,http://localhost:3000")
+          .split(",")
+          .map((o) => o.trim())
+          .filter(Boolean);
+        if (!origin || allowedOrigins.includes(origin) || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+          return callback(null, true);
+        }
+        return callback(new Error("CORS not allowed"), false);
+      },
       credentials: true,
     },
     // Recommended transports: polling first for compatibility, then upgrade to WS

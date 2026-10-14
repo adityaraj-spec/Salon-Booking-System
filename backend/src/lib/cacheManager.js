@@ -88,6 +88,13 @@ const _l1DeleteByPrefix = (prefix) => {
   }
 };
 
+/**
+ * Clears the entire in-process L1 cache (useful for testing and deterministic cache reset).
+ */
+export const clearL1Cache = () => {
+  _l1Cache.clear();
+};
+
 // ─── Basic Cache Operations (L1 + L2) ────────────────────────────────────────
 
 /**
