@@ -427,6 +427,7 @@ export function Shop() {
                 >
                     {/* Close Button */}
                     <button
+                        aria-label="Close photo viewer"
                         className="absolute top-5 right-5 z-10 bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition-colors"
                         onClick={(e) => { e.stopPropagation(); setLightboxOpen(false); }}
                     >
@@ -441,6 +442,7 @@ export function Shop() {
                     {/* Prev Button */}
                     {displayImages.length > 1 && (
                         <button
+                            aria-label="Previous salon photo"
                             className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full transition-colors z-10"
                             onClick={(e) => { e.stopPropagation(); setLightboxIndex(i => (i - 1 + displayImages.length) % displayImages.length); }}
                         >
@@ -460,6 +462,7 @@ export function Shop() {
                     {/* Next Button */}
                     {displayImages.length > 1 && (
                         <button
+                            aria-label="Next salon photo"
                             className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full transition-colors z-10"
                             onClick={(e) => { e.stopPropagation(); setLightboxIndex(i => (i + 1) % displayImages.length); }}
                         >
@@ -473,6 +476,8 @@ export function Shop() {
                             {displayImages.map((img, idx) => (
                                 <button
                                     key={idx}
+                                    aria-label={`Show salon photo ${idx + 1}`}
+                                    aria-pressed={idx === lightboxIndex}
                                     onClick={() => setLightboxIndex(idx)}
                                     className={`w-12 h-12 rounded-md overflow-hidden shrink-0 border-2 transition-all ${
                                         idx === lightboxIndex ? 'border-white opacity-100' : 'border-transparent opacity-50 hover:opacity-75'
@@ -535,12 +540,14 @@ export function Shop() {
                 
                 {/* Navigation Arrows */}
                 <button 
+                    aria-label="Previous salon gallery image"
                     onClick={() => setCurrentImageIndex((prev) => (prev === 0 ? galleryImages.length - 1 : prev - 1))}
                     className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/70 backdrop-blur-md text-black rounded-full flex items-center justify-center shadow-md active:scale-95 transition-transform z-10 hover:bg-white"
                 >
                     <ChevronLeft size={20} />
                 </button>
                 <button 
+                    aria-label="Next salon gallery image"
                     onClick={() => setCurrentImageIndex((prev) => (prev === galleryImages.length - 1 ? 0 : prev + 1))}
                     className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/70 backdrop-blur-md text-black rounded-full flex items-center justify-center shadow-md active:scale-95 transition-transform z-10 hover:bg-white"
                 >
@@ -795,6 +802,8 @@ export function Shop() {
                                                     <button 
                                                         key={star}
                                                         type="button"
+                                                        aria-label={`Rate ${star} out of 5`}
+                                                        aria-pressed={rating === star}
                                                         onClick={() => setRating(star)}
                                                         className={`p-2 rounded-xl transition-all ${rating >= star ? "text-[#D4AF37] bg-orange-50/50" : "text-gray-200 bg-gray-50/30"}`}
                                                     >
@@ -804,8 +813,9 @@ export function Shop() {
                                             </div>
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-xs text-gray-400 uppercase font-black tracking-widest">Your Experience</label>
+                                            <label htmlFor="review-text" className="text-xs text-gray-400 uppercase font-black tracking-widest">Your Experience</label>
                                             <textarea 
+                                                id="review-text"
                                                 className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-5 text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all h-32"
                                                 placeholder="Share your experience at this salon..."
                                                 value={reviewText}

@@ -34,13 +34,13 @@ export function Footer() {
                     <div>
                         <h3 className="text-xl font-bold mb-6 text-white">Connect With Us</h3>
                         <div className="flex items-center gap-4 mb-8">
-                            <a href="https://www.instagram.com/aaditya_raj_2310?igsh=enRtZmpvN3RnZTV4" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center text-gray-400 hover:text-[#ff9f43] hover:bg-black transition-all border border-gray-800">
+                            <a aria-label="SalonNow on Instagram" href="https://www.instagram.com/aaditya_raj_2310?igsh=enRtZmpvN3RnZTV4" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center text-gray-400 hover:text-[#ff9f43] hover:bg-black transition-all border border-gray-800">
                                 <Instagram size={20} />
                             </a>
                              <a href="https://x.com/Aaditya_raj_70?t=qvI4FEr3TKf1D2lPsHRWow&s=09" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center text-gray-400 hover:text-[#ff9f43] hover:bg-black transition-all border border-gray-800">
                                 <svg viewBox="0 0 24 24" aria-hidden="true" className="w-5 h-5 fill-current"><g><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.25h-6.657l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></g></svg>
                             </a>
-                            <a href="#" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center text-gray-400 hover:text-[#ff9f43] hover:bg-black transition-all border border-gray-800">
+                            <a aria-label="SalonNow on Facebook" href="#" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center text-gray-400 hover:text-[#ff9f43] hover:bg-black transition-all border border-gray-800">
                                 <Facebook size={20} />
                             </a>
                         </div>
@@ -78,7 +78,7 @@ export function Footer() {
                     </p>
                 </div>
                 {/* Scroll to Top Button */}
-                <button 
+                <button aria-label="Scroll to top"
                     onClick={scrollToTop}
                     className="absolute right-6 -top-5 w-10 h-10 bg-[#ff9f43] border border-white/20 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-orange-500 transition-colors z-10"
                 >

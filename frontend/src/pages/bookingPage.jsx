@@ -59,10 +59,10 @@ function CustomCalendar({ selectedDate, onDateSelect }) {
                     {viewDate.toLocaleString('default', { month: 'long' })} {currentYear}
                 </h3>
                 <div className="flex gap-2">
-                    <button onClick={prevMonth} className="p-2 hover:bg-gray-50 rounded-full transition-colors">
+                    <button aria-label="Previous month" onClick={prevMonth} className="p-2 min-w-10 min-h-10 hover:bg-gray-50 rounded-full transition-colors">
                         <ChevronLeft size={18} />
                     </button>
-                    <button onClick={nextMonth} className="p-2 hover:bg-gray-50 rounded-full transition-colors">
+                    <button aria-label="Next month" onClick={nextMonth} className="p-2 min-w-10 min-h-10 hover:bg-gray-50 rounded-full transition-colors">
                         <ChevronRight size={18} />
                     </button>
                 </div>
@@ -91,6 +91,8 @@ function CustomCalendar({ selectedDate, onDateSelect }) {
                                 const formattedDate = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                                 onDateSelect(formattedDate);
                             }}
+                            aria-label={`${isToday(day) ? 'Today, ' : ''}${isSelected(day) ? 'Selected, ' : ''}${viewDate.toLocaleString('default', { month: 'long' })} ${day}, ${currentYear}`}
+                            aria-pressed={isSelected(day)}
                             className={`
                                 aspect-square rounded-full flex items-center justify-center text-sm font-medium transition-all relative
                                 ${disabled ? "text-gray-200 cursor-not-allowed" : "text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37]"}
@@ -319,13 +321,15 @@ export function BookingPage() {
                             <div className="grid gap-2">
                                 {services.length > 0 ? (
                                     services.map(service => (
-                                        <div
+                                        <button
                                             key={service._id}
                                             onClick={() => toggleService(service)}
                                             className={`group cursor-pointer p-5 rounded-2xl border-2 transition-all flex items-center justify-between ${selectedServices.find(s => s._id === service._id)
                                                 ? "border-[#D4AF37] bg-orange-50/30"
                                                 : "border-gray-100 bg-white hover:border-gray-200"
-                                                }`}
+                                            }`}
+                                            aria-pressed={Boolean(selectedServices.find(s => s._id === service._id))}
+                                            type="button"
                                         >
                                             <div className="flex-1">
                                                 <div className="flex items-center gap-2 mb-1">
@@ -345,7 +349,7 @@ export function BookingPage() {
                                                     {selectedServices.find(s => s._id === service._id) && <Check size={12} className="text-white" />}
                                                 </div>
                                             </div>
-                                        </div>
+                                        </button>
                                     ))
                                 ) : (
                                     <div className="text-center py-10 bg-white rounded-2xl border border-dashed border-gray-200 text-gray-400">
@@ -364,13 +368,15 @@ export function BookingPage() {
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                 {staffMembers.length > 0 ? (
                                     staffMembers.map(staff => (
-                                        <div
+                                        <button
                                             key={staff._id}
                                             onClick={() => setSelectedStaff(selectedStaff?._id === staff._id ? null : staff)}
                                             className={`cursor-pointer p-4 rounded-2xl border-2 transition-all text-center ${selectedStaff?._id === staff._id
                                                 ? "border-[#D4AF37] bg-orange-50/30 shadow-sm"
                                                 : "border-gray-100 bg-white hover:border-gray-200"
-                                                }`}
+                                            }`}
+                                            aria-pressed={selectedStaff?._id === staff._id}
+                                            type="button"
                                         >
                                             <div className="relative inline-block mb-3">
                                                 <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-[#1a1a1a] flex items-center justify-center text-white font-bold text-lg border-2 border-[#D4AF37]/20 mx-auto">
@@ -384,7 +390,7 @@ export function BookingPage() {
                                             </div>
                                             <h3 className="font-bold text-gray-900 text-xs md:text-sm truncate">{staff.name}</h3>
                                             <p className="text-[10px] text-gray-400 mt-0.5 truncate">{staff.role}</p>
-                                        </div>
+                                        </button>
                                     ))
                                 ) : (
                                     <div className="col-span-full text-center py-6 bg-white rounded-2xl border border-dashed border-gray-200 text-gray-400 text-sm">
@@ -396,7 +402,7 @@ export function BookingPage() {
 
                         {/* 3. Date & Time Section */}
                         <section className="grid md:grid-cols-2 gap-10 md:gap-8">
-                            <div>
+                            <div className="bg-white rounded-[24px] p-1">
                                 <div className="flex items-center gap-2 mb-4">
                                     <span className="bg-[#1a1a1a] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold font-serif">3</span>
                                     <h2 className="text-lg md:text-xl font-serif font-bold text-[#1a1a1a]">Pick a Date</h2>
@@ -406,7 +412,7 @@ export function BookingPage() {
                                     onDateSelect={(newDate) => setDate(newDate)} 
                                 />
                             </div>
-                            <div>
+                            <div className="bg-white border border-gray-100 rounded-[24px] p-6 shadow-sm">
                                 <div className="flex items-center gap-2 mb-4">
                                     <span className="bg-[#1a1a1a] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold font-serif">4</span>
                                     <h2 className="text-lg md:text-xl font-serif font-bold text-[#1a1a1a]">Select Time</h2>
@@ -441,7 +447,7 @@ export function BookingPage() {
                                                 <span>{t}</span>
                                                 {date && !isFull && (
                                                     <span className={`text-[9px] font-bold uppercase tracking-tight ${time === t ? "text-[#D4AF37]" : "text-green-500"}`}>
-                                                        {seatsLeft} Seats Left
+                                                        {seatsLeft} available
                                                     </span>
                                                 )}
                                                 {date && isFull && (

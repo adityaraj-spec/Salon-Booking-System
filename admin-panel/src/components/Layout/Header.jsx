@@ -31,6 +31,7 @@ export default function Header({ toggleSidebar }) {
       <div className="flex items-center gap-3">
         {/* Mobile Toggle */}
         <button 
+          aria-label="Open navigation menu"
           onClick={toggleSidebar}
           className="lg:hidden p-2 hover:bg-gray-100 rounded-xl text-gray-600 transition-colors"
         >
@@ -46,7 +47,7 @@ export default function Header({ toggleSidebar }) {
       </div>
       
       <div className="flex items-center gap-2 md:gap-3">
-        <button className="relative p-2 rounded-xl hover:bg-gray-50 text-gray-500 transition-colors">
+        <button aria-label="Open notifications" className="relative p-2 rounded-xl hover:bg-gray-50 text-gray-500 transition-colors">
           <Bell size={20} />
         </button>
         <div className="w-px h-6 bg-gray-200" />

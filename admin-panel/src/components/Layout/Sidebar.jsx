@@ -55,6 +55,7 @@ export default function Sidebar({ role, isOpen, onClose }) {
         
         {/* Mobile Close */}
         <button 
+          aria-label="Close navigation menu"
           onClick={onClose}
           className="lg:hidden p-2 hover:bg-gray-800 rounded-xl text-gray-400 transition-colors"
         >

@@ -174,7 +174,7 @@ export function NavBar() {
                 }`}>
                 <div className="max-w-[1280px] mx-auto px-6 md:px-10 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <NavLink to="/home" className="text-[#D4AF37] cursor-pointer" >
+                        <NavLink to="/home" aria-label="SalonNow home" className="text-[#8a6500] cursor-pointer" >
                             <div className="bg-[#1a1a1a] p-2 rounded-full text-white">
                                 <Scissors size={20} className="md:w-6 md:h-6" />
                             </div>
@@ -184,7 +184,7 @@ export function NavBar() {
 
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center gap-6">
-                        <NavLink to="/home" className={`${isTransparent ? (isDark ? 'text-white' : 'text-gray-900') : 'text-[#1a1a1a]'} font-semibold text-sm hover:text-[#D4AF37] transition-colors duration-1000`}>
+                        <NavLink to="/home" aria-current={location.pathname === '/home' ? 'page' : undefined} className={`${isTransparent ? (isDark ? 'text-white' : 'text-gray-900') : 'text-[#1a1a1a]'} font-semibold text-sm hover:text-[#8a6500] transition-colors duration-1000`}>
                             Discover
                         </NavLink>
 
@@ -207,6 +207,8 @@ export function NavBar() {
                                 {/* Notifications Bell */}
                                 <div className="relative" ref={notificationsRef}>
                                     <button
+                                        aria-label={`Notifications${unreadCount ? `, ${unreadCount} unread` : ''}`}
+                                        aria-expanded={isNotificationsOpen}
                                         onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
                                         className="p-2.5 bg-gray-50 rounded-full text-gray-500 hover:text-[#D4AF37] hover:bg-[#D4AF37]/5 transition-all relative group"
                                     >
@@ -279,6 +281,8 @@ export function NavBar() {
 
                                 <div className="relative ml-2" ref={menuRef}>
                                     <button
+                                        aria-label="Open account menu"
+                                        aria-expanded={isMenuOpen}
                                         onClick={() => setIsMenuOpen(!isMenuOpen)}
                                         className="flex items-center gap-3 p-1.5 pr-4 bg-gray-50 hover:bg-gray-100 rounded-full transition-all group"
                                     >
@@ -400,6 +404,8 @@ export function NavBar() {
                         {user && (
                             <div className="relative" ref={notificationsRef}>
                                 <button
+                                    aria-label={`Notifications${unreadCount ? `, ${unreadCount} unread` : ''}`}
+                                    aria-expanded={isNotificationsOpen}
                                     onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
                                     className="p-1.5 text-gray-500 hover:text-[#D4AF37] transition-all relative"
                                 >
@@ -454,11 +460,13 @@ export function NavBar() {
                             </div>
                         )}
                         {user && (
-                            <NavLink to="/profile" className="w-8 h-8 rounded-full bg-[#1a1a1a] flex items-center justify-center text-white font-bold text-xs border border-[#D4AF37]/30">
+                            <NavLink to="/profile" aria-label="Open profile" className="w-8 h-8 rounded-full bg-[#1a1a1a] flex items-center justify-center text-white font-bold text-xs border border-[#D4AF37]/30">
                                 {user.fullName?.charAt(0).toUpperCase()}
                             </NavLink>
                         )}
                         <button
+                            aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+                            aria-expanded={isMobileMenuOpen}
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             className="text-gray-900 focus:outline-none p-1"
                         >
@@ -488,6 +496,7 @@ export function NavBar() {
                         </span>
                     </div>
                     <button
+                        aria-label="Close navigation menu"
                         onClick={() => setIsMobileMenuOpen(false)}
                         className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500"
                     >
