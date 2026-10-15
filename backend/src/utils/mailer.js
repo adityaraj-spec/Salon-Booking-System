@@ -68,24 +68,30 @@ export const verifyTransporter = async () => {
 };
 
 const sendMail = async (to, subject, htmlContent) => {
+    const normalizedTo = typeof to === "string" ? to.trim().toLowerCase() : to;
+    if (!normalizedTo) {
+        logger.error({ subject }, "[Mailer] Email skipped because the recipient address is empty");
+        return { success: false, error: "Recipient email is required" };
+    }
+
     try {
         const mailTransporter = await getTransporter();
         const smtpUser = process.env.SMTP_USER?.trim();
         
         const info = await mailTransporter.sendMail({
             from: `"SalonNow" <${smtpUser || 'no-reply@salonnow.app'}>`,
-            to,
+            to: normalizedTo,
             subject,
             html: htmlContent,
         });
 
-        logger.info({ to, subject }, "[Mailer] Email sent successfully");
+        logger.info({ to: normalizedTo, subject, messageId: info.messageId }, "[Mailer] Email sent successfully");
         if (!smtpUser) {
             logger.debug({ previewUrl: nodemailer.getTestMessageUrl(info) }, "[Mailer] Ethereal preview URL");
         }
         return { success: true, info };
     } catch (error) {
-        logger.error({ to, subject, code: error.code, response: error.response, err: error.message }, "[Mailer] Failed to send email");
+        logger.error({ to: normalizedTo, subject, code: error.code, response: error.response, err: error.message }, "[Mailer] Failed to send email");
         if (error.responseCode === 535 || error.message?.includes('535') || error.message?.includes('Username and Password not accepted')) {
             logger.error({ err: error.message }, "[Mailer] FIX: Gmail rejected credentials — regenerate App Password");
             cachedTransporter = null;
@@ -280,6 +286,33 @@ export const sendBookingConfirmationEmail = async (email, name, shopName, bookin
     return sendMail(email, "Your SalonNow Booking is Confirmed!", html);
 };
 
+export const sendPaymentReceiptEmail = async (email, name, shopName, bookingTime, amount, paymentId) => {
+    const html = `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:32px;border:1px solid #eee;border-radius:12px;">
+      <h1 style="color:#1a1a1a;">Salon<span style="color:#D4AF37;">Now</span></h1>
+      <h2>Payment successful</h2>
+      <p>Hi <strong>${name}</strong>, your payment and appointment at <strong>${shopName}</strong> are confirmed.</p>
+      <p><strong>Appointment:</strong> ${bookingTime}</p>
+      <p><strong>Amount paid:</strong> ₹${amount}</p>
+      <p><strong>Payment ID:</strong> ${paymentId}</p>
+      <p>Thank you for booking with SalonNow.</p>
+    </div>`;
+    return sendMail(email, "Payment successful - SalonNow booking confirmed", html);
+};
+
+export const sendOwnerPaymentNotificationEmail = async (email, ownerName, customerName, shopName, bookingTime, amount, paymentId) => {
+    const html = `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:32px;border:1px solid #eee;border-radius:12px;">
+      <h1 style="color:#1a1a1a;">Salon<span style="color:#D4AF37;">Now</span></h1>
+      <h2>New paid booking</h2>
+      <p>Hi <strong>${ownerName}</strong>, <strong>${customerName}</strong> paid for an appointment at <strong>${shopName}</strong>.</p>
+      <p><strong>Appointment:</strong> ${bookingTime}</p>
+      <p><strong>Amount received:</strong> ₹${amount}</p>
+      <p><strong>Payment ID:</strong> ${paymentId}</p>
+    </div>`;
+    return sendMail(email, "New paid booking - SalonNow", html);
+};
+
 // ─── Booking Status Update Email ──────────────────────────────────────────────
 export const sendBookingStatusEmail = async (email, name, shopName, date, time, status) => {
     const statusColors = {
@@ -433,7 +466,7 @@ export const sendVerificationEmail = async (email, name, code) => {
       <div style="padding:40px;">
         <h2 style="color:#1a1a1a;font-size:22px;margin:0 0 12px;text-align:center;">Verify Your Email Address</h2>
         <p style="color:#555555;font-size:15px;line-height:1.7;text-align:center;margin:0 0 28px;">
-          Hi <strong>${name}</strong>, thank you for registering with SalonNow. Please enter the following 4-digit verification code to complete your signup process. This code will expire in <strong>15 minutes</strong>.
+          Hi <strong>${name}</strong>, thank you for registering with SalonNow. Please enter the following 4-digit verification code to complete your signup process. This code will expire in <strong>5 minutes</strong>.
         </p>
         <div style="text-align:center;margin-bottom:32px;">
           <div style="display:inline-block;background:#f9f5e8;border:2px dashed #D4AF37;border-radius:12px;padding:16px 40px;font-size:36px;font-weight:900;letter-spacing:8px;color:#1a1a1a;text-align:center;">

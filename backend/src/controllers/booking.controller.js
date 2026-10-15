@@ -44,12 +44,12 @@ const createBooking = asyncHandler(async (req, res) => {
 
     const salon = await Salon.findById(salonId);
     if (salon) {
-        sendBookingConfirmationEmail(
-            req.user.email,
+        await sendBookingConfirmationEmail(
+            req.user.email?.trim().toLowerCase(),
             req.user.fullName,
             salon.name,
             `${date} at ${time}`,
-            totalAmount || 0,
+            booking.totalAmount,
             staffName || "Any Available",
             serviceNames || []
         );
@@ -170,8 +170,8 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
         bookingId: booking._id
     });
 
-    sendBookingStatusEmail(
-        booking.customer.email,
+    await sendBookingStatusEmail(
+        booking.customer.email?.trim().toLowerCase(),
         booking.customer.fullName,
         booking.salon.name,
         booking.date,

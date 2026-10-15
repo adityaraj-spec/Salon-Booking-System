@@ -25,12 +25,18 @@ export const loginUserSchema = {
 export const verifyEmailSchema = {
   body: z.object({
     email: z.string().trim().email("Invalid email address"),
-    code: z.string().trim().length(6, "Verification code must be exactly 6 digits"),
+    code: z.string().trim().regex(/^\d{4}$/, "Verification code must be exactly 4 digits"),
   }),
 };
 
 export const resendVerificationSchema = {
   body: z.object({
     email: z.string().trim().email("Invalid email address"),
+  }),
+};
+
+export const selectRoleSchema = {
+  body: z.object({
+    role: z.enum(["customer", "salonOwner"]),
   }),
 };

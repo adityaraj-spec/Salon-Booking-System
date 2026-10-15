@@ -5,13 +5,41 @@ import logger from "../lib/logger.js";
 
 const MAX_ATTEMPTS = 5;
 const INITIAL_LOCKOUT_SECONDS = 60; // 1 minute
+const OTP_REQUEST_LIMIT = 3;
+const OTP_REQUEST_WINDOW_SECONDS = 10 * 60;
 
 /**
- * Generates a cryptographically secure 6-digit OTP code.
+ * Generates a cryptographically secure 4-digit OTP code.
  * @returns {string}
  */
 export const generateOTP = () => {
-  return crypto.randomInt(100000, 999999).toString();
+  return crypto.randomInt(1000, 10000).toString();
+};
+
+export const checkOTPRequestRateLimit = async (email, ipAddress = "unknown") => {
+  const redis = getRedisClient();
+  if (!redis) {
+    if (process.env.NODE_ENV === "production") {
+      throw new ApiError(503, "Verification service is temporarily unavailable. Please try again later.");
+    }
+    return;
+  }
+
+  const keys = [`otp:requests:email:${email.toLowerCase()}`, `otp:requests:ip:${ipAddress}`];
+  try {
+    const counts = [];
+    for (const key of keys) {
+      const count = await redis.incr(key);
+      if (count === 1) await redis.expire(key, OTP_REQUEST_WINDOW_SECONDS);
+      counts.push(count);
+    }
+    if (counts.some((count) => count > OTP_REQUEST_LIMIT)) {
+      throw new ApiError(429, "Too many verification code requests. Please try again later.");
+    }
+  } catch (err) {
+    if (err instanceof ApiError) throw err;
+    logger.warn({ err: err.message }, "[OTP] Request rate-limit check failed");
+  }
 };
 
 /**

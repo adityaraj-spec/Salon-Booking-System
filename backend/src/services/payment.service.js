@@ -7,6 +7,7 @@ import { writeOutboxEvent } from "./outbox.service.js";
 import { withTransactionRetry } from "../utils/transaction.js";
 import ApiError from "../utils/apiError.js";
 import logger from "../lib/logger.js";
+import { sendPaymentReceiptEmail, sendOwnerPaymentNotificationEmail } from "../utils/mailer.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SHARED IDEMPOTENT CONFIRMATION FUNCTION — I3, I4, I8, I9
@@ -36,7 +37,7 @@ export const confirmPaymentAndBooking = async ({
   razorpaySignature,
   source,
 }) => {
-  return await withTransactionRetry(async (session) => {
+  const result = await withTransactionRetry(async (session) => {
     // Look up the Payment by orderId — this is the canonical record
     const payment = await Payment.findOne({ razorpayOrderId }).session(session);
     if (!payment) {
@@ -87,6 +88,47 @@ export const confirmPaymentAndBooking = async ({
 
     return { payment, booking, alreadyConfirmed: false };
   });
+
+  if (!result.alreadyConfirmed && result.booking) {
+    const booking = await Booking.findById(result.booking._id)
+      .populate("customer", "fullName email")
+      .populate("staff", "name")
+      .populate({
+        path: "salon",
+        select: "name owner",
+        populate: { path: "owner", select: "fullName email" },
+      });
+
+    if (booking) {
+      const bookingTime = `${booking.date || ""} at ${booking.time || ""}`;
+      await Promise.allSettled([
+        booking.customer?.email
+          ? sendPaymentReceiptEmail(
+              booking.customer.email,
+              booking.customer.fullName,
+              booking.salon?.name || "Salon",
+              bookingTime,
+              booking.totalAmount,
+              result.payment.razorpayPaymentId
+            )
+          : Promise.resolve(),
+        booking.salon?.owner?.email
+          ? sendOwnerPaymentNotificationEmail(
+              booking.salon.owner.email,
+              booking.salon.owner.fullName,
+              booking.customer?.fullName || "A customer",
+              booking.salon.name,
+              bookingTime,
+              booking.totalAmount,
+              result.payment.razorpayPaymentId
+            )
+          : Promise.resolve(),
+      ]);
+      logger.info({ bookingId: booking._id }, "[Payment] Confirmation emails dispatched");
+    }
+  }
+
+  return result;
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -279,8 +321,26 @@ export const processRazorpayWebhook = async ({ eventPayload }) => {
         payment.status = "failed";
         payment.gatewayResponse = paymentEntity;
         await payment.save({ session });
+
+        const booking = await Booking.findOne({
+          _id: payment.booking,
+          status: "pending_payment",
+        }).session(session);
+
+        if (booking) {
+          booking.status = "cancelled";
+          booking.paymentStatus = "failed";
+          await booking.save({ session });
+          await writeOutboxEvent(session, "booking.cancelled", {
+            bookingId: booking._id.toString(),
+            salonId: booking.salon.toString(),
+            staffId: booking.staff ? booking.staff.toString() : null,
+            customerId: booking.customer ? booking.customer.toString() : null,
+            date: booking.date,
+          });
+        }
       }
-      return { status: "marked_failed" };
+      return { status: "marked_failed", bookingCancelled: true };
     });
   }
 

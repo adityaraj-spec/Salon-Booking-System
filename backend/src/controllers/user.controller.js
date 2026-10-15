@@ -6,13 +6,13 @@ import { User } from "../models/user.models.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
 import { sendWelcomeEmail, sendLoginEmail, sendLogoutEmail, sendVerificationEmail } from "../utils/mailer.js"
 import { ROLES } from "../constants.js"
-import { generateOTP, hashOTP, verifyOTPHash, checkOTPLockout, recordOTPAttempt, clearOTPState } from "../utils/otp.js"
+import { generateOTP, hashOTP, verifyOTPHash, checkOTPLockout, recordOTPAttempt, clearOTPState, checkOTPRequestRateLimit } from "../utils/otp.js"
 import { issueTokenPair, rotateRefreshToken, revokeSession, revokeAllUserSessions } from "../services/auth.service.js"
 import { pickAllowedFields, USER_UPDATABLE_FIELDS } from "../utils/dto.js"
 import logger from "../lib/logger.js"
 
 
-const VERIFICATION_CODE_EXPIRY_MINUTES = 15;
+const VERIFICATION_CODE_EXPIRY_MINUTES = 5;
 
 const generateAccessAndRefreshToken = async (userId) => {
     try {
@@ -43,7 +43,8 @@ const getCookieOptions = () => {
 };
 
 const registerUser = asyncHandler(async (req, res) => {
-    const { fullName, email, username, password, phonenumber, role = "unassigned" } = req.body
+    const { fullName, email: rawEmail, username, password, phonenumber, role = "unassigned" } = req.body
+    const email = rawEmail.trim().toLowerCase();
     
     if (
         [
@@ -53,6 +54,8 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(400, "All fields are required")
     }
 
+    await checkOTPRequestRateLimit(email, req.ip);
+
     const existedUser = await User.findOne({
         $or: [{ username }, { email }]
     })
@@ -60,7 +63,7 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(409, "User with email or username already exists")
     }
 
-    // Generate a secure 6-digit verification code and hash it for storage
+    // Generate a secure 4-digit verification code and hash it for storage
     const rawVerificationCode = generateOTP();
     const verificationCodeHash = hashOTP(rawVerificationCode);
     const verificationCodeExpiry = new Date(Date.now() + VERIFICATION_CODE_EXPIRY_MINUTES * 60 * 1000);
@@ -90,12 +93,13 @@ const registerUser = asyncHandler(async (req, res) => {
     return res
         .status(201)
         .json(
-            new ApiResponse(201, { email: createdUser.email }, "Account created! Please check your email for the 6-digit verification code.")
+            new ApiResponse(201, { email: createdUser.email }, "Account created! Please check your email for the 4-digit verification code.")
         )
 })
 
 const verifyEmail = asyncHandler(async (req, res) => {
-    const { email, code } = req.body;
+    const { email: rawEmail, code } = req.body;
+    const email = rawEmail?.trim().toLowerCase();
 
     if (!email || !code) {
         throw new ApiError(400, "Email and verification code are required");
@@ -158,12 +162,14 @@ const verifyEmail = asyncHandler(async (req, res) => {
 });
 
 const resendVerificationCode = asyncHandler(async (req, res) => {
-    const { email } = req.body;
+    const { email: rawEmail } = req.body;
+    const email = rawEmail?.trim().toLowerCase();
 
     if (!email) {
         throw new ApiError(400, "Email is required");
     }
 
+    await checkOTPRequestRateLimit(email, req.ip);
     await checkOTPLockout(email);
 
     const user = await User.findOne({ email });
@@ -175,7 +181,7 @@ const resendVerificationCode = asyncHandler(async (req, res) => {
         throw new ApiError(400, "This email is already verified. Please log in.");
     }
 
-    // Generate a fresh 6-digit code and hash it
+    // Generate a fresh 4-digit code and hash it
     const rawVerificationCode = generateOTP();
     const verificationCodeHash = hashOTP(rawVerificationCode);
     const verificationCodeExpiry = new Date(Date.now() + VERIFICATION_CODE_EXPIRY_MINUTES * 60 * 1000);
@@ -194,7 +200,8 @@ const resendVerificationCode = asyncHandler(async (req, res) => {
 });
 
 const loginUser = asyncHandler(async (req, res) => {
-    const { username, email, password } = req.body
+    const { username, email: rawEmail, password } = req.body
+    const email = rawEmail?.trim().toLowerCase();
     if (!username && !email) {
         throw new ApiError(400, "username or email is required")
     }
@@ -213,6 +220,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
     // Block login for unverified users and resend a fresh code
     if (!user.isVerified) {
+        await checkOTPRequestRateLimit(user.email, req.ip);
         await checkOTPLockout(user.email);
         const rawVerificationCode = generateOTP();
         const verificationCodeHash = hashOTP(rawVerificationCode);
@@ -323,6 +331,31 @@ const updateUserRole = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .json(new ApiResponse(200, user, "User role updated successfully"))
+})
+
+const selectOwnRole = asyncHandler(async (req, res) => {
+    if (!req.user?._id) {
+        throw new ApiError(401, "Authentication required to select a role")
+    }
+
+    const { role } = req.body;
+    if (![ROLES.CUSTOMER, ROLES.OWNER].includes(role)) {
+        throw new ApiError(400, "Choose either Customer or Salon Owner")
+    }
+
+    const user = await User.findOneAndUpdate(
+        { _id: req.user._id, role: ROLES.UNASSIGNED },
+        { $set: { role } },
+        { new: true }
+    ).select("-password -refreshToken -verificationCode -verificationCodeExpiry");
+
+    if (!user) {
+        throw new ApiError(409, "Your account role has already been selected")
+    }
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, user, "Account role selected successfully"))
 })
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
@@ -438,6 +471,7 @@ export {
     loginUser,
     logoutUser,
     updateUserRole,
+    selectOwnRole,
     updateAccountDetails,
     toggleFavorite,
     getFavorites,
@@ -446,4 +480,3 @@ export {
     resendVerificationCode,
     refreshAccessToken
 }
-

@@ -142,10 +142,29 @@ const getSalonById = asyncHandler(async (req, res) => {
     const totalSeats = salon.totalSeats || 6;
     const availableSeats = Math.max(0, totalSeats - activeBookingsCount);
 
+    let resolvedCoordinates = salon.location?.coordinates;
+    const hasCoordinates = Array.isArray(resolvedCoordinates) && resolvedCoordinates.length === 2 &&
+        resolvedCoordinates.every((value) => Number.isFinite(Number(value))) &&
+        !(Number(resolvedCoordinates[0]) === 0 && Number(resolvedCoordinates[1]) === 0);
+
+    if (!hasCoordinates) {
+        resolvedCoordinates = await geocodeAddress(`${salon.address}, ${salon.city}, ${salon.state || ""}, ${salon.pincode || ""}`);
+        if (resolvedCoordinates) {
+            await Salon.updateOne({ _id: salon._id }, {
+                $set: { location: { type: "Point", coordinates: resolvedCoordinates } },
+            });
+        }
+    }
+
     // Merge into response
     const salonData = {
         ...salon.toObject(),
-        availableSeats
+        availableSeats,
+        location: {
+            ...(salon.location?.toObject?.() || salon.location || {}),
+            type: "Point",
+            coordinates: resolvedCoordinates || [0, 0],
+        },
     };
 
     return res.status(200).json(

@@ -5,9 +5,9 @@ import { jest } from "@jest/globals";
 
 describe("Phase 1 Security & Validation Suite", () => {
   describe("OTP Security Utility", () => {
-    it("should generate a 6-digit numerical string", () => {
+    it("should generate a 4-digit numerical string", () => {
       const otp = generateOTP();
-      expect(otp).toMatch(/^\d{6}$/);
+      expect(otp).toMatch(/^\d{4}$/);
     });
 
     it("should hash OTP using SHA-256 and verify correctly", () => {

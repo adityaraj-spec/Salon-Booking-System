@@ -117,8 +117,9 @@ export const webhookHandler = asyncHandler(async (req, res) => {
   }
 
   // ── Step 3: WebhookEvent deduplication (I8 — first line of defense) ─────
+  let webhookRecord;
   try {
-    await WebhookEvent.create({
+    webhookRecord = await WebhookEvent.create({
       razorpayEventId,
       eventType,
       razorpayCreatedAt: eventPayload.created_at,
@@ -127,12 +128,21 @@ export const webhookHandler = asyncHandler(async (req, res) => {
     });
   } catch (err) {
     if (err.code === 11000) {
-      // Duplicate key — this event was already received and processed
-      logger.info({ razorpayEventId, eventType }, "[Webhook] Duplicate event — already processed (I8)");
-      return res.status(200).json(new ApiResponse(200, { status: "duplicate" }, "Event already processed"));
+      webhookRecord = await WebhookEvent.findOne({ razorpayEventId });
+      if (webhookRecord?.status === "processed" || webhookRecord?.status === "ignored") {
+        logger.info({ razorpayEventId, eventType }, "[Webhook] Duplicate event — already processed (I8)");
+        return res.status(200).json(new ApiResponse(200, { status: "duplicate" }, "Event already processed"));
+      }
     }
     // Non-dedup error — log and continue (processing is more important than the audit record)
     logger.warn({ err: err.message, razorpayEventId }, "[Webhook] Failed to insert WebhookEvent record");
+  }
+
+  if (webhookRecord) {
+    await WebhookEvent.updateOne(
+      { _id: webhookRecord._id, status: { $in: ["received", "error"] } },
+      { $set: { status: "received", errorMessage: null } }
+    );
   }
 
   // ── Step 4: Process the event (delegates to shared confirmation function) ─

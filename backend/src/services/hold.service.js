@@ -67,7 +67,7 @@ export const createHold = async ({
 
   const formattedDate = date || startTime.toISOString().split("T")[0];
   const formattedTime = time || startTime.toISOString().split("T")[1].substring(0, 5);
-  const finalTotalAmount = inputTotalAmount || calculatedAmount;
+   const finalTotalAmount = calculatedAmount;
   const finalServiceNames = serviceNames && serviceNames.length > 0 ? serviceNames : fetchedServiceNames;
 
   // ── 3. Build idempotency key ──────────────────────────────────────────────

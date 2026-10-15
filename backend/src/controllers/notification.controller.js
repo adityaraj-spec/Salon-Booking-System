@@ -34,7 +34,7 @@ const markAsRead = asyncHandler(async (req, res) => {
 
 const markAllAsRead = asyncHandler(async (req, res) => {
     const result = await Notification.updateMany(
-        { recipient: req.user?._id, isRead: false },
+        { recipient: req.user?._id, isRead: { $ne: true } },
         { $set: { isRead: true } }
     );
 

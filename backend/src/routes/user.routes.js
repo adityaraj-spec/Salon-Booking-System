@@ -4,6 +4,7 @@ import {
   loginUser,
   logoutUser,
   updateUserRole,
+  selectOwnRole,
   updateAccountDetails,
   toggleFavorite,
   getFavorites,
@@ -19,6 +20,7 @@ import {
   loginUserSchema,
   verifyEmailSchema,
   resendVerificationSchema,
+  selectRoleSchema,
 } from "../schemas/user.schema.js";
 
 const router = Router();
@@ -32,6 +34,7 @@ router.route("/refresh-token").post(refreshAccessToken);
 
 router.route("/logout").post(verifyJWT, logoutUser);
 router.route("/update-role").patch(verifyJWT, updateUserRole);
+router.route("/select-role").patch(verifyJWT, validate(selectRoleSchema), selectOwnRole);
 router.route("/update-account").patch(verifyJWT, updateAccountDetails);
 router.route("/favorites").get(verifyJWT, getFavorites);
 router.route("/favorites/:salonId").post(verifyJWT, toggleFavorite);

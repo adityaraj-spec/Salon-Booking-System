@@ -8,7 +8,7 @@ import { cacheGet, cacheSetAvailability, invalidateAvailabilityByIndex } from ".
 import logger from "../lib/logger.js";
 
 const ACTIVE_BOOKING_STATUSES = ["pending", "pending_payment", "confirmed"];
-const AVAILABILITY_CACHE_TTL_SECONDS = 30;
+const AVAILABILITY_CACHE_TTL_SECONDS = 5;
 
 // ─── Helper: parse "HH:MM" to total minutes from midnight ────────────────────
 const timeToMinutes = (str) => {
