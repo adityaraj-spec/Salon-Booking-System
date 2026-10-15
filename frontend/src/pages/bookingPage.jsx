@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, NavLink, useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosConfig";
 import { useAuth } from "../context/AuthContext";
@@ -20,6 +20,27 @@ const TIME_SLOTS = [
     "09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM",
     "02:00 PM", "03:00 PM", "04:00 PM", "05:00 PM", "06:00 PM"
 ];
+
+const loadRazorpay = () => new Promise((resolve, reject) => {
+    if (window.Razorpay) {
+        resolve(true);
+        return;
+    }
+
+    const existingScript = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]');
+    if (existingScript) {
+        existingScript.addEventListener("load", () => resolve(true), { once: true });
+        existingScript.addEventListener("error", () => reject(new Error("Unable to load the payment gateway.")), { once: true });
+        return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => resolve(true);
+    script.onerror = () => reject(new Error("Unable to load the payment gateway."));
+    document.body.appendChild(script);
+});
 
 function CustomCalendar({ selectedDate, onDateSelect }) {
     const [viewDate, setViewDate] = useState(new Date());
@@ -131,7 +152,6 @@ export function BookingPage() {
     // Real Data State
     const [services, setServices] = useState([]);
     const [staffMembers, setStaffMembers] = useState([]);
-    const [servicesLoading, setServicesLoading] = useState(false);
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -154,7 +174,7 @@ export function BookingPage() {
                 if (servicesRes.data.success) setServices(servicesRes.data.data);
                 if (staffRes.data.success) setStaffMembers(staffRes.data.data);
                 
-            } catch (err) {
+            } catch {
                 // silently fail - user will see empty state
             } finally {
                 setLoading(false);
@@ -175,9 +195,19 @@ export function BookingPage() {
                     params: { date, staffId: selectedStaff?._id }
                 });
                 if (response.data.success) {
-                    setAvailability(response.data.data.availability || {});
+                    const slots = response.data.data?.slots || [];
+                    const slotAvailability = Object.fromEntries(slots.map((slot) => [
+                        new Date(slot.startTime).toLocaleTimeString("en-US", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                            timeZone: "UTC",
+                        }),
+                        slot.availableSeats,
+                    ]));
+                    setAvailability(slotAvailability);
                 }
-            } catch (err) {
+            } catch {
                 // silently fail - slots will show as unavailable
             } finally {
                 setAvailabilityLoading(false);
@@ -185,6 +215,24 @@ export function BookingPage() {
         };
 
         fetchAvailability();
+    }, [id, date, selectedStaff]);
+
+    useEffect(() => {
+        if (!id || !date) return undefined;
+        const refreshTimer = window.setInterval(() => {
+            axiosInstance.get(`/bookings/availability/${id}`, {
+                params: { date, staffId: selectedStaff?._id },
+            }).then((response) => {
+                const slots = response.data.data?.slots || [];
+                setAvailability(Object.fromEntries(slots.map((slot) => [
+                    new Date(slot.startTime).toLocaleTimeString("en-US", {
+                        hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "UTC",
+                    }),
+                    slot.availableSeats,
+                ])));
+            }).catch(() => {});
+        }, 5000);
+        return () => window.clearInterval(refreshTimer);
     }, [id, date, selectedStaff]);
 
     const toggleService = (service) => {
@@ -206,6 +254,8 @@ export function BookingPage() {
         }
         setBookingLoading(true);
         setBookingError("");
+        let pendingBookingId = null;
+        let paymentVerified = false;
 
         // Generate fresh idempotency key per checkout attempt
         const idempotencyKey = crypto.randomUUID();
@@ -237,7 +287,7 @@ export function BookingPage() {
                 throw new Error("Failed to reserve slot hold.");
             }
 
-            // Step 2: Initiate booking from hold
+            // Step 2: Convert the hold into a pending-payment booking
             const initiateResponse = await axiosInstance.post(
                 "/bookings/initiate",
                 { holdId },
@@ -247,11 +297,61 @@ export function BookingPage() {
                 }
             );
 
-            if (initiateResponse.data?.success) {
-                setBookingSuccess(true);
+            const booking = initiateResponse.data?.data;
+            const bookingId = booking?._id;
+            pendingBookingId = bookingId;
+            if (!initiateResponse.data?.success || !bookingId) {
+                throw new Error("Unable to start payment for this reservation.");
             }
+
+            // Step 3: Create the server-priced Razorpay order.
+            const orderResponse = await axiosInstance.post("/payments/create-order", { bookingId });
+            const order = orderResponse.data?.data;
+            await loadRazorpay();
+
+            await new Promise((resolve, reject) => {
+                const checkout = new window.Razorpay({
+                    key: order.keyId,
+                    amount: Math.round(Number(order.amount) * 100),
+                    currency: order.currency || "INR",
+                    name: "SalonNow",
+                    description: `Appointment at ${salon?.name || "SalonNow"}`,
+                    order_id: order.orderId,
+                    prefill: {
+                        name: user?.fullName || "",
+                        email: user?.email || "",
+                        contact: user?.phonenumber || "",
+                    },
+                    theme: { color: "#D4AF37" },
+                    handler: async (paymentResponse) => {
+                        try {
+                            paymentVerified = "pending";
+                            await axiosInstance.post("/payments/verify", {
+                                bookingId,
+                                razorpayOrderId: paymentResponse.razorpay_order_id,
+                                razorpayPaymentId: paymentResponse.razorpay_payment_id,
+                                razorpaySignature: paymentResponse.razorpay_signature,
+                            });
+                            paymentVerified = true;
+                            resolve();
+                        } catch (verificationError) {
+                            reject(Object.assign(verificationError, { paymentVerificationPending: true }));
+                        }
+                    },
+                    modal: {
+                        ondismiss: () => reject(new Error("Payment was cancelled.")),
+                    },
+                });
+                checkout.on("payment.failed", (paymentError) => reject(new Error(paymentError.error?.description || "Payment failed.")));
+                checkout.open();
+            });
+
+            setBookingSuccess(true);
         } catch (err) {
             console.error("Booking error:", err);
+            if (pendingBookingId && !paymentVerified && !err.paymentVerificationPending) {
+                await axiosInstance.post(`/bookings/${pendingBookingId}/cancel-pending`).catch(() => {});
+            }
             const status = err.response?.status;
             if (status === 409) {
                 setBookingError("This slot or staff member is no longer available. Please select a different time or stylist.");
@@ -302,7 +402,7 @@ export function BookingPage() {
                     </NavLink>
                     <div>
                         <h1 className="text-3xl md:text-4xl font-serif font-bold text-[#1a1a1a] leading-tight">Secure Your Appointment</h1>
-                        <p className="text-gray-500 mt-2 uppercase tracking-widest text-[10px] md:text-xs font-bold leading-relaxed">
+                        <p className="ui-subtext mt-2 text-sm">
                             Experience the difference with SalonNow at <span className="text-[#D4AF37]">{salon?.name || "Glamour Studio"}</span>
                         </p>
                     </div>
@@ -335,7 +435,7 @@ export function BookingPage() {
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <h3 className="font-bold text-gray-900">{service.name}</h3>
                                                 </div>
-                                                <p className="text-sm text-gray-500 line-clamp-1">{service.description}</p>
+                                                <p className="ui-subtext line-clamp-1">{service.description}</p>
                                             </div>
                                             <div className="text-right ml-4">
                                                 <p className={`font-bold transition-colors ${selectedServices.find(s => s._id === service._id) ? "text-[#D4AF37]" : "text-gray-900"
@@ -389,7 +489,7 @@ export function BookingPage() {
                                                 )}
                                             </div>
                                             <h3 className="font-bold text-gray-900 text-xs md:text-sm truncate">{staff.name}</h3>
-                                            <p className="text-[10px] text-gray-400 mt-0.5 truncate">{staff.role}</p>
+                                                <p className="ui-meta mt-0.5 truncate">{staff.role}</p>
                                         </button>
                                     ))
                                 ) : (
@@ -424,9 +524,8 @@ export function BookingPage() {
                                         </div>
                                     )}
                                     {TIME_SLOTS.map(t => {
-                                        const bookedCount = availability[t] || 0;
                                         const totalSeats = salon?.totalSeats || 6;
-                                        const seatsLeft = Math.max(0, totalSeats - bookedCount);
+                                        const seatsLeft = Math.max(0, availability[t] ?? totalSeats);
                                         const isFull = seatsLeft <= 0;
 
                                         return (
@@ -446,17 +545,17 @@ export function BookingPage() {
                                             >
                                                 <span>{t}</span>
                                                 {date && !isFull && (
-                                                    <span className={`text-[9px] font-bold uppercase tracking-tight ${time === t ? "text-[#D4AF37]" : "text-green-500"}`}>
+                                                    <span className={`text-sm font-normal ${time === t ? "text-[#D4AF37]" : "text-green-500"}`}>
                                                         {seatsLeft} available
                                                     </span>
                                                 )}
                                                 {date && isFull && (
-                                                    <span className="text-[9px] font-black uppercase tracking-tight text-red-500">
+                                                    <span className="text-sm font-normal text-red-500">
                                                         FULL
                                                     </span>
                                                 )}
                                                 {!date && (
-                                                    <span className="text-[8px] font-medium uppercase tracking-tight text-gray-300 italic">
+                                                    <span className="ui-meta text-xs italic">
                                                         Pick Date
                                                     </span>
                                                 )}
@@ -489,7 +588,7 @@ export function BookingPage() {
 
                             {selectedStaff && (
                                 <div className="mb-8 pt-4 border-t border-gray-50">
-                                    <p className="text-xs text-gray-400 uppercase tracking-widest mb-2 font-bold">Your Stylist</p>
+                                    <p className="ui-label mb-2">Your Stylist</p>
                                     <div className="flex items-center gap-3">
                                         <div className="w-8 h-8 rounded-full bg-[#1a1a1a] flex items-center justify-center text-white font-bold text-sm border border-[#D4AF37]/20">
                                             {selectedStaff.name?.charAt(0).toUpperCase()}
@@ -535,8 +634,8 @@ export function BookingPage() {
                                         <>Confirm Reservation <ChevronRight size={18} /></>
                                     )}
                                 </button>
-                                <p className="text-center text-xs text-gray-400 mt-4">
-                                    Payment will be handled at the salon.
+                                <p className="ui-subtext text-center mt-4">
+                                    Secure payment is required to confirm your reservation.
                                 </p>
                             </div>
                         </div>

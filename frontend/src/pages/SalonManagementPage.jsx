@@ -28,6 +28,10 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
 
+const formatLabel = (value, fallback = "") => {
+    if (!value) return fallback;
+    return value.toString().replace(/\b\w/g, (character) => character.toUpperCase());
+};
 
 export function SalonManagementPage() {
     const { user } = useAuth();
@@ -332,6 +336,10 @@ export function SalonManagementPage() {
     return (
         <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-20 md:pt-24 pb-8 font-sans">
             <div>
+                <header className="mb-6">
+                    <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Manage your salon</h1>
+                    <p className="text-gray-500 mt-2">Update your salon details, services, staff, and gallery.</p>
+                </header>
                 {/* Header & Multi-Salon Selector */}
                 {/* Header & Multi-Salon Selector - Redesigned 3-Column Layout */}
                 <div className="bg-white rounded-[40px] p-6 lg:p-10 shadow-sm border border-gray-100 mb-8 relative overflow-hidden flex flex-col lg:flex-row gap-8 lg:gap-12">
@@ -370,7 +378,7 @@ export function SalonManagementPage() {
                                     
                                     {isSalonSelectorOpen && (
                                         <div className="absolute top-full left-0 mt-4 w-72 bg-white rounded-3xl shadow-2xl border border-gray-100 p-3 z-50 animate-in fade-in zoom-in slide-in-from-top-1 px-4">
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest p-3 border-b border-gray-50 mb-2">My Salons</p>
+                                            <p className="ui-label p-3 border-b border-gray-50 mb-2">My Salons</p>
                                             <div className="space-y-1 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
                                                 {salons.map(s => (
                                                     <button
@@ -388,7 +396,7 @@ export function SalonManagementPage() {
                                             </div>
                                             <NavLink 
                                                 to="/create-salon"
-                                                className="mt-3 flex items-center gap-2 p-3 text-[#D4AF37] font-bold text-xs uppercase tracking-widest hover:bg-gray-50 rounded-2xl transition-all"
+                                                className="mt-3 flex items-center gap-2 p-3 text-[#D4AF37] text-sm font-normal hover:bg-gray-50 rounded-2xl transition-all"
                                             >
                                                 <PlusCircle size={16} />
                                                 Add New Salon
@@ -401,14 +409,14 @@ export function SalonManagementPage() {
                             <div className="flex items-start gap-4 text-gray-500 bg-gray-50/80 w-fit px-5 py-3.5 rounded-3xl border border-gray-100 shadow-sm max-w-sm lg:max-w-md">
                                 <MapPin size={22} className="text-[#D4AF37] shrink-0 mt-0.5" />
                                 <div className="flex flex-col">
-                                    <span className="text-sm md:text-base font-bold tracking-tight text-gray-900 leading-snug">{activeSalon?.address || "No address provided"}</span>
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1.5">{activeSalon?.city || "Location details"}</span>
+                                    <span className="ui-subtext text-sm md:text-base">{activeSalon?.address || "No address provided"}</span>
+                                    <span className="ui-meta mt-1.5">{formatLabel(activeSalon?.city, "Location details")}</span>
                                 </div>
                             </div>
 
                             <div className="flex flex-wrap items-center gap-6">
                                 <div className="bg-gray-50 p-2.5 rounded-2xl flex items-center gap-3 border border-gray-100 shadow-sm">
-                                    <span className={`text-[10px] font-black uppercase tracking-widest pl-2 ${activeSalon?.isOpen ? 'text-emerald-500' : 'text-red-400'}`}>
+                                    <span className={`text-sm font-normal pl-2 ${activeSalon?.isOpen ? 'text-emerald-500' : 'text-red-400'}`}>
                                         {activeSalon?.isOpen ? 'Live Now' : 'Offline'}
                                     </span>
                                     <button 
@@ -420,7 +428,7 @@ export function SalonManagementPage() {
                                 </div>
                                 <button 
                                     onClick={() => setTab("settings")}
-                                    className="px-5 py-2.5 bg-white border border-gray-200 rounded-2xl text-[10px] font-black text-gray-400 uppercase tracking-widest hover:border-[#D4AF37] hover:text-[#D4AF37] transition-all flex items-center gap-2 shadow-sm group"
+                                    className="salon-action-button salon-action-button--secondary shadow-sm group"
                                 >
                                     <Settings size={14} className="group-hover:rotate-90 transition-transform duration-500" />
                                     Edit Details
@@ -438,7 +446,7 @@ export function SalonManagementPage() {
                                     <Scissors size={24} />
                                 </div>
                                 <div>
-                                    <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1 leading-none">Services</p>
+                                    <p className="ui-label mb-1 leading-none">Services</p>
                                     <h4 className="text-xl lg:text-2xl font-serif font-black text-gray-900">{services.length}</h4>
                                 </div>
                             </div>
@@ -449,7 +457,7 @@ export function SalonManagementPage() {
                                     <Users size={24} />
                                 </div>
                                 <div>
-                                    <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1 leading-none">Stylists</p>
+                                    <p className="ui-label mb-1 leading-none">Stylists</p>
                                     <h4 className="text-xl lg:text-2xl font-serif font-black text-gray-900">{staff.length}</h4>
                                 </div>
                             </div>
@@ -460,7 +468,7 @@ export function SalonManagementPage() {
                                     <TrendingUp size={24} />
                                 </div>
                                 <div>
-                                    <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1 leading-none">Status</p>
+                                    <p className="ui-label mb-1 leading-none">Status</p>
                                     <h4 className="text-xl lg:text-2xl font-serif font-black text-gray-900">Good</h4>
                                 </div>
                             </div>
@@ -471,7 +479,7 @@ export function SalonManagementPage() {
                                 className="bg-[#1A1A1A] hover:bg-black text-white p-4 lg:p-5 rounded-3xl shadow-xl shadow-black/10 flex flex-col items-center justify-center gap-2 group transition-all"
                             >
                                 <CalendarCheck size={26} className="text-[#D4AF37] group-hover:scale-110 transition-transform duration-300" />
-                                <span className="text-[10px] font-black uppercase tracking-[0.2em] leading-none">Bookings</span>
+                                    <span className="text-sm font-normal leading-none">Bookings</span>
                             </NavLink>
                         </div>
                     </div>
@@ -519,7 +527,7 @@ export function SalonManagementPage() {
                         <form onSubmit={handleUpdateSalonSettings} className="space-y-6 max-w-3xl">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-1.5 md:col-span-2">
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Salon Name</label>
+                                    <label className="ui-label">Salon Name</label>
                                     <input 
                                         className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all"
                                         value={salonSettings.name}
@@ -529,7 +537,7 @@ export function SalonManagementPage() {
                                     />
                                 </div>
                                 <div className="space-y-1.5 md:col-span-2">
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Description</label>
+                                    <label className="ui-label">Description</label>
                                     <textarea 
                                         className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all resize-none h-32"
                                         value={salonSettings.description}
@@ -538,7 +546,7 @@ export function SalonManagementPage() {
                                     />
                                 </div>
                                 <div className="space-y-1.5 md:col-span-2">
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Street Address</label>
+                                    <label className="ui-label">Street Address</label>
                                     <input 
                                         className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all"
                                         value={salonSettings.address}
@@ -549,7 +557,7 @@ export function SalonManagementPage() {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4 md:col-span-2">
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">State</label>
+                                        <label className="ui-label">State</label>
                                         <select 
                                             required
                                             className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all appearance-none cursor-pointer"
@@ -595,7 +603,7 @@ export function SalonManagementPage() {
                                         </select>
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">City</label>
+                                        <label className="ui-label">City</label>
                                         <input 
                                             className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all"
                                             value={salonSettings.city}
@@ -605,7 +613,7 @@ export function SalonManagementPage() {
                                         />
                                     </div>
                                     <div className="space-y-1.5 md:col-span-2">
-                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Pincode / Zip Code</label>
+                                        <label className="ui-label">Pincode / Zip Code</label>
                                         <input 
                                             className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all"
                                             value={salonSettings.pincode}
@@ -618,7 +626,7 @@ export function SalonManagementPage() {
                                 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Opens At</label>
+                                        <label className="ui-label">Opens At</label>
                                         <input 
                                             className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all"
                                             value={salonSettings.openingHours}
@@ -627,7 +635,7 @@ export function SalonManagementPage() {
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Closes At</label>
+                                        <label className="ui-label">Closes At</label>
                                         <input 
                                             className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all"
                                             value={salonSettings.closingHours}
@@ -641,7 +649,7 @@ export function SalonManagementPage() {
                                 <button 
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="px-8 bg-[#D4AF37] text-white py-4 rounded-2xl font-bold text-sm tracking-widest uppercase hover:bg-[#B8962E] transition-all flex items-center justify-center gap-2 shadow-xl shadow-[#D4AF37]/20"
+                                    className="salon-action-button salon-action-button--primary px-8 py-4 rounded-2xl shadow-xl shadow-[#D4AF37]/20"
                                 >
                                     {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : "Save Changes"}
                                 </button>
@@ -680,7 +688,7 @@ export function SalonManagementPage() {
                                     type="submit"
                                     disabled={isSubmitting}
                                     onClick={(e) => e.stopPropagation()}
-                                    className="bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-sm uppercase tracking-widest inline-flex items-center gap-2 hover:bg-black transition-colors"
+                                    className="salon-action-button salon-action-button--dark px-8 rounded-full"
                                 >
                                     {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : "Upload Images"}
                                 </button>
@@ -716,7 +724,7 @@ export function SalonManagementPage() {
                             {tab === "services" ? (
                                 <form onSubmit={handleAddService} className="space-y-4">
                                     <div>
-                                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Service Name</label>
+                                        <label className="ui-label block mb-1.5">Service Name</label>
                                         <input 
                                             required
                                             value={serviceForm.name}
@@ -727,7 +735,7 @@ export function SalonManagementPage() {
                                     </div>
                                     <div className="grid grid-cols-1 gap-4">
                                         <div>
-                                            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Price (₹)</label>
+                                            <label className="ui-label block mb-1.5">Price (₹)</label>
                                             <input 
                                                 required
                                                 type="number"
@@ -739,7 +747,7 @@ export function SalonManagementPage() {
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Description</label>
+                                        <label className="ui-label block mb-1.5">Description</label>
                                         <textarea 
                                             rows="3"
                                             value={serviceForm.description}
@@ -750,7 +758,7 @@ export function SalonManagementPage() {
                                     </div>
                                     <button 
                                         disabled={isSubmitting}
-                                        className="w-full bg-[#1a1a1a] text-white py-4 rounded-2xl font-bold text-sm tracking-widest uppercase hover:bg-black transition-all flex items-center justify-center gap-2 mt-4"
+                                        className="salon-action-button salon-action-button--dark w-full py-4 rounded-2xl mt-4"
                                     >
                                         {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : "Save Service"}
                                     </button>
@@ -758,7 +766,7 @@ export function SalonManagementPage() {
                             ) : (
                                 <form onSubmit={handleAddStaff} className="space-y-4">
                                     <div>
-                                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Staff Name</label>
+                                        <label className="ui-label block mb-1.5">Staff Name</label>
                                         <input 
                                             required
                                             value={staffForm.name}
@@ -768,7 +776,7 @@ export function SalonManagementPage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Specialization / Role</label>
+                                        <label className="ui-label block mb-1.5">Specialization / Role</label>
                                         <input 
                                             required
                                             value={staffForm.role}
@@ -778,7 +786,7 @@ export function SalonManagementPage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Exp (Years)</label>
+                                        <label className="ui-label block mb-1.5">Experience (Years)</label>
                                         <input 
                                             type="number"
                                             value={staffForm.experience}
@@ -788,7 +796,7 @@ export function SalonManagementPage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Skills (Comma separated)</label>
+                                        <label className="ui-label block mb-1.5">Skills (Comma separated)</label>
                                         <input 
                                             value={staffForm.skills}
                                             onChange={e => setStaffForm({...staffForm, skills: e.target.value})}
@@ -798,7 +806,7 @@ export function SalonManagementPage() {
                                     </div>
                                     <button 
                                         disabled={isSubmitting}
-                                        className="w-full bg-[#1a1a1a] text-white py-4 rounded-2xl font-bold text-sm tracking-widest uppercase hover:bg-black transition-all flex items-center justify-center gap-2 mt-4"
+                                        className="salon-action-button salon-action-button--dark w-full py-4 rounded-2xl mt-4"
                                     >
                                         {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : "Add to Team"}
                                     </button>
@@ -844,8 +852,8 @@ export function SalonManagementPage() {
                                                      <>
                                                          <div className="w-full">
                                                              <div className="flex items-center justify-between mb-4">
-                                                                 <span className="bg-[#D4AF37]/5 text-[#D4AF37] px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-[#D4AF37]/10">
-                                                                     {s.category || "Premium"}
+                                                                 <span className="ui-badge bg-[#D4AF37]/5 px-3 py-1 rounded-full border border-[#D4AF37]/10">
+                                                                     {formatLabel(s.category, "Premium")}
                                                                  </span>
                                                                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                                      <button 
@@ -865,8 +873,8 @@ export function SalonManagementPage() {
                                                                      </button>
                                                                  </div>
                                                              </div>
-                                                             <h3 className="text-lg font-bold text-gray-900 mb-2">{s.name}</h3>
-                                                             <p className="text-xs text-gray-400 leading-relaxed line-clamp-3 mb-4">{s.description || "Indulge in our premium signature treatment designed for excellence."}</p>
+                                                             <h3 className="text-lg font-bold text-gray-900 mb-2">{formatLabel(s.name, "Service")}</h3>
+                                                             <p className="ui-subtext line-clamp-3 mb-4">{s.description || "Indulge in our premium signature treatment designed for excellence."}</p>
                                                              <div className="flex items-center justify-between pt-4 border-t border-gray-50">
                                                                  <div className="flex items-center gap-1.5 text-lg font-black text-gray-900">
                                                                      <IndianRupee size={16} className="text-[#D4AF37]" />
@@ -920,10 +928,10 @@ export function SalonManagementPage() {
                                                              </div>
                                                              <div>
                                                                  <h3 className="font-bold text-gray-900 text-lg">{m.name}</h3>
-                                                                 <p className="text-xs text-[#D4AF37] font-black uppercase tracking-widest mt-1">{m.role}</p>
+                                                                 <p className="ui-meta mt-1">{formatLabel(m.role, "Stylist")}</p>
                                                                  <div className="flex flex-wrap gap-1 mt-3">
                                                                      {m.skills?.map((skill, index) => (
-                                                                         <span key={index} className="text-[10px] bg-gray-50 px-3 py-1 rounded-full text-gray-500 font-bold border border-gray-100">{skill}</span>
+                                                                         <span key={index} className="ui-badge bg-gray-50 px-3 py-1 rounded-full border border-gray-100">{formatLabel(skill)}</span>
                                                                      ))}
                                                                  </div>
                                                              </div>
