@@ -11,24 +11,28 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const fetchCurrentUser = async () => {
+            const token = localStorage.getItem("authToken");
+            if (!token) {
+                // Visitor has no auth token — treat as guest and skip unnecessary 401 probe
+                setUser(null);
+                setLoading(false);
+                return;
+            }
+
             try {
                 // skipInterceptor = true prevents the 401 interceptor from firing
-                // a pointless token refresh when the user simply has no session yet.
+                // a token refresh loop when checking initial session state.
                 const response = await axiosInstance.get("/users/me", { skipInterceptor: true });
-                if (response.data?.data) {
-                    setUser(response.data.data);
-                    localStorage.setItem("user", JSON.stringify(response.data.data));
+                const userData = response.data?.data?.user || response.data?.data;
+                if (userData) {
+                    setUser(userData);
+                    localStorage.setItem("user", JSON.stringify(userData));
                 }
             } catch (error) {
-                // 401 here just means "not logged in" — silently fall back to localStorage
-                const storedUser = localStorage.getItem("user");
-                if (storedUser && storedUser !== "undefined") {
-                    try {
-                        setUser(JSON.parse(storedUser));
-                    } catch (e) {
-                        localStorage.removeItem("user");
-                    }
-                }
+                // Token is expired or invalid — clear stale credentials
+                localStorage.removeItem("authToken");
+                localStorage.removeItem("user");
+                setUser(null);
             } finally {
                 setLoading(false);
             }
