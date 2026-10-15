@@ -22,6 +22,29 @@ export function SalonMap({ salons = [], center = [77.2090, 28.6139], zoom = 12 }
         }
     }, [salons]);
 
+    const coordinates = salons[0]?.location?.coordinates;
+    const hasCoordinates = Array.isArray(coordinates) && coordinates.length === 2 &&
+        Number.isFinite(Number(coordinates[0])) && Number.isFinite(Number(coordinates[1])) &&
+        !(Number(coordinates[0]) === 0 && Number(coordinates[1]) === 0);
+
+    if (!MAPBOX_TOKEN || !hasCoordinates) {
+        const [longitude, latitude] = hasCoordinates ? coordinates.map(Number) : center;
+        const delta = 0.03;
+        const bbox = `${longitude - delta}%2C${latitude - delta}%2C${longitude + delta}%2C${latitude + delta}`;
+        const query = encodeURIComponent([salons[0]?.address, salons[0]?.city, salons[0]?.state, salons[0]?.pincode].filter(Boolean).join(", "));
+        return (
+            <div className="w-full h-full min-h-[240px] rounded-2xl overflow-hidden border border-gray-100 bg-gray-50">
+                <iframe
+                    title="Salon location map"
+                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${latitude}%2C${longitude}`}
+                    className="w-full h-full border-0"
+                    loading="lazy"
+                />
+                <a className="sr-only" href={`https://www.google.com/maps/search/?api=1&query=${query}`}>Open salon location</a>
+            </div>
+        );
+    }
+
     return (
         <div className="w-full h-full min-h-[400px] rounded-2xl overflow-hidden shadow-inner border border-gray-100">
             <Map

@@ -92,10 +92,10 @@ const SalonBookingsPage = () => {
                         <p className="text-gray-500">Manage incoming appointments and salon schedule.</p>
                     </div>
 
-                    <div className="relative">
+                    <div className="relative flex items-center gap-3">
                         <button
                             onClick={() => setIsFilterOpen(!isFilterOpen)}
-                            className="flex items-center gap-3 bg-white px-5 py-2.5 rounded-full shadow-sm border border-gray-100 font-bold text-xs uppercase tracking-widest text-gray-700 hover:bg-gray-50 transition-colors"
+                            className="salon-action-button salon-action-button--secondary rounded-full"
                         >
                             <Filter size={16} />
                             Filter: {filter.replace('_', ' ')}
@@ -104,10 +104,10 @@ const SalonBookingsPage = () => {
 
                         <NavLink
                             to="/salon/manage"
-                            className="flex items-center gap-2 bg-[#1A1A1A] px-5 py-2.5 rounded-full shadow-md text-white font-bold text-xs uppercase tracking-widest hover:bg-black transition-all"
+                            className="salon-action-button salon-action-button--dark rounded-full"
                         >
                             <Settings size={16} className="text-[#D4AF37]" />
-                            Manage Services & Staff
+                            Manage services and staff
                         </NavLink>
 
                         {isFilterOpen && (
@@ -169,7 +169,7 @@ const SalonBookingsPage = () => {
                                             </div>
 
                                             <div className="flex flex-col items-end gap-3">
-                                                <div className={`px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border flex items-center gap-2 ${getStatusColor(booking.status)}`}>
+                                                <div className={`px-5 py-2 rounded-full text-sm font-normal capitalize border flex items-center gap-2 ${getStatusColor(booking.status)}`}>
                                                     {booking.status === 'confirmed' && <CheckCircle size={14} />}
                                                     {booking.status}
                                                 </div>
@@ -185,7 +185,7 @@ const SalonBookingsPage = () => {
                                             <div className="flex items-center gap-3">
                                                 <Calendar size={18} className="text-[#D4AF37] shrink-0" />
                                                 <div>
-                                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Date</p>
+                                                    <p className="ui-label">Date</p>
                                                     <p className="text-sm font-bold text-[#1a1a1a]">{booking.date}</p>
                                                 </div>
                                             </div>
@@ -193,7 +193,7 @@ const SalonBookingsPage = () => {
                                             <div className="flex items-center gap-3">
                                                 <Clock size={18} className="text-[#D4AF37] shrink-0" />
                                                 <div>
-                                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Time</p>
+                                                    <p className="ui-label">Time</p>
                                                     <p className="text-sm font-bold text-[#1a1a1a]">{booking.time}</p>
                                                 </div>
                                             </div>
@@ -201,7 +201,7 @@ const SalonBookingsPage = () => {
                                             <div className="flex items-center gap-3">
                                                 <Scissors size={18} className="text-[#D4AF37] shrink-0" />
                                                 <div>
-                                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Services</p>
+                                                    <p className="ui-label">Services</p>
                                                     <p className="text-sm font-bold text-[#1a1a1a] truncate">
                                                         {booking.serviceNames?.join(", ")}
                                                     </p>
@@ -215,14 +215,14 @@ const SalonBookingsPage = () => {
                                                 <>
                                                     <button
                                                         onClick={() => handleStatusUpdate(booking._id, "confirmed")}
-                                                        className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] uppercase tracking-widest py-3 rounded-xl transition-all shadow-md shadow-emerald-600/10 flex items-center justify-center gap-2"
+                                                        className="salon-action-button salon-action-button--success flex-1 shadow-md shadow-emerald-600/10"
                                                     >
                                                         <CheckCircle size={16} />
                                                         Accept
                                                     </button>
                                                     <button
                                                         onClick={() => handleStatusUpdate(booking._id, "rejected")}
-                                                        className="flex-1 bg-white border-2 border-red-50 hover:border-red-500 text-red-500 font-bold text-[11px] uppercase tracking-widest py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+                                                        className="salon-action-button salon-action-button--danger flex-1"
                                                     >
                                                         <XCircle size={16} />
                                                         Decline
@@ -232,7 +232,7 @@ const SalonBookingsPage = () => {
                                             {booking.status === "confirmed" && (
                                                 <button
                                                     onClick={() => handleStatusUpdate(booking._id, "completed")}
-                                                    className="flex-1 bg-[#1A1A1A] hover:bg-black text-white font-bold text-[11px] uppercase tracking-widest py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+                                                    className="salon-action-button salon-action-button--dark flex-1"
                                                 >
                                                     <CheckCircle size={16} className="text-[#D4AF37]" />
                                                     Mark as Completed

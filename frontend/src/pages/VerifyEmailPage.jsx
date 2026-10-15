@@ -15,13 +15,12 @@ export function VerifyEmailPage() {
     const emailFromState = location.state?.email || new URLSearchParams(location.search).get("email") || "";
 
     const [email] = useState(emailFromState);
-    const [code, setCode] = useState(["", "", "", "", "", ""]);
+    const [code, setCode] = useState(["", "", "", ""]);
     const [loading, setLoading] = useState(false);
     const [resendLoading, setResendLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
-    const [cooldown, setCooldown] = useState(60); // Start 1-minute timer immediately
-    const [codeExpiry, setCodeExpiry] = useState(60); // 1-minute code expiry countdown
+    const [codeExpiry, setCodeExpiry] = useState(300); // 5-minute code expiry countdown
 
     const inputRefs = useRef([]);
 
@@ -32,32 +31,11 @@ export function VerifyEmailPage() {
         }
     }, [email, navigate]);
 
-    // Countdown timer for resend cooldown
+    // The code expiry is also the resend timer. The backend remains authoritative.
     useEffect(() => {
-        if (cooldown <= 0) return;
-        const timer = setInterval(() => {
-            setCooldown(prev => {
-                if (prev <= 1) {
-                    clearInterval(timer);
-                    return 0;
-                }
-                return prev - 1;
-            });
-        }, 1000);
-        return () => clearInterval(timer);
-    }, [cooldown]);
-
-    // 15-minute code expiry countdown
-    useEffect(() => {
-        if (success || codeExpiry <= 0) return;
+        if (success) return;
         const expiryTimer = setInterval(() => {
-            setCodeExpiry(prev => {
-                if (prev <= 1) {
-                    clearInterval(expiryTimer);
-                    return 0;
-                }
-                return prev - 1;
-            });
+            setCodeExpiry(prev => Math.max(prev - 1, 0));
         }, 1000);
         return () => clearInterval(expiryTimer);
     }, [success]);
@@ -68,12 +46,6 @@ export function VerifyEmailPage() {
         const s = (secs % 60).toString().padStart(2, "0");
         return `${m}:${s}`;
     };
-
-    // SVG circular progress (radius 20, circumference ~125.6)
-    const RADIUS = 20;
-    const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-    const progress = cooldown / 60; // 1.0 = full, 0.0 = empty
-    const dashOffset = CIRCUMFERENCE * (1 - progress);
 
     const handleDigitChange = (index, value) => {
         // Only allow digits
@@ -95,15 +67,15 @@ export function VerifyEmailPage() {
         if (e.key === "Backspace" && !code[index] && index > 0) {
             inputRefs.current[index - 1]?.focus();
         }
-        // Allow pasting a full 6-digit code
+        // Allow pasting a full 4-digit code
         if (e.key === "v" && (e.ctrlKey || e.metaKey)) return;
     };
 
     const handlePaste = (e) => {
-        const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
-        if (pasted.length === 6) {
+        const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 4);
+        if (pasted.length === 4) {
             setCode(pasted.split(""));
-            inputRefs.current[5]?.focus();
+            inputRefs.current[3]?.focus();
             e.preventDefault();
         }
     };
@@ -111,8 +83,12 @@ export function VerifyEmailPage() {
     const handleVerify = async (e) => {
         e.preventDefault();
         const fullCode = code.join("");
-        if (fullCode.length !== 6) {
-            setError("Please enter the complete 6-digit code.");
+        if (codeExpiry <= 0) {
+            setError("This verification code has expired. Please request a new code.");
+            return;
+        }
+        if (fullCode.length !== 4) {
+            setError("Please enter the complete 4-digit code.");
             return;
         }
 
@@ -140,7 +116,7 @@ export function VerifyEmailPage() {
             setError(msg);
             showNotification(msg, "error");
             // Clear the code inputs on failure
-            setCode(["", "", "", "", "", ""]);
+            setCode(["", "", "", ""]);
             inputRefs.current[0]?.focus();
         } finally {
             setLoading(false);
@@ -148,16 +124,15 @@ export function VerifyEmailPage() {
     };
 
     const handleResend = async () => {
-        if (cooldown > 0 || resendLoading) return;
+        if (codeExpiry > 0 || resendLoading) return;
         setResendLoading(true);
         setError("");
 
         try {
             await axiosInstance.post("/users/resend-verification", { email });
             showNotification("A new verification code has been sent to your email.", "success");
-            setCooldown(60); // reset to 1 minute
-            setCodeExpiry(60); // reset 1-minute expiry
-            setCode(["", "", "", "", "", ""]);
+            setCodeExpiry(300); // reset 5-minute expiry
+            setCode(["", "", "", ""]);
             inputRefs.current[0]?.focus();
         } catch (err) {
             const msg = err.response?.data?.message || "Could not resend code. Please try again.";
@@ -206,7 +181,7 @@ export function VerifyEmailPage() {
                         </h2>
                         {!success && (
                             <p className="text-gray-500 text-sm leading-relaxed">
-                                We sent a 6-digit verification code to<br />
+                                We sent a 4-digit verification code to<br />
                                 <span className="font-semibold text-gray-700">{maskedEmail}</span>
                             </p>
                         )}
@@ -221,7 +196,7 @@ export function VerifyEmailPage() {
 
                     {!success && (
                         <form onSubmit={handleVerify} className="space-y-6">
-                            {/* 6-digit code inputs */}
+                            {/* 4-digit code inputs */}
                             <div>
                                 <label className="block text-sm text-gray-700 mb-3 text-center font-medium">
                                     Enter Verification Code
@@ -262,7 +237,7 @@ export function VerifyEmailPage() {
                             {/* Verify Button */}
                             <button
                                 type="submit"
-                                disabled={loading || code.join("").length !== 6}
+                                disabled={loading || code.join("").length !== 4}
                                 className="w-full bg-[#1a1a1a] hover:bg-black text-white font-medium py-3.5 rounded-full 
                                            transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
                                            flex items-center justify-center gap-2"
@@ -288,37 +263,10 @@ export function VerifyEmailPage() {
                             <div className="text-center">
                                 <p className="text-sm text-gray-500 mb-3">Didn't receive the code?</p>
 
-                                {cooldown > 0 ? (
-                                    /* Circular countdown timer */
-                                    <div className="flex flex-col items-center gap-2">
-                                        <div className="relative w-14 h-14">
-                                            <svg className="w-14 h-14 -rotate-90" viewBox="0 0 48 48">
-                                                {/* Track */}
-                                                <circle
-                                                    cx="24" cy="24" r={RADIUS}
-                                                    fill="none"
-                                                    stroke="#f0f0f0"
-                                                    strokeWidth="4"
-                                                />
-                                                {/* Progress */}
-                                                <circle
-                                                    cx="24" cy="24" r={RADIUS}
-                                                    fill="none"
-                                                    stroke="#D4AF37"
-                                                    strokeWidth="4"
-                                                    strokeLinecap="round"
-                                                    strokeDasharray={CIRCUMFERENCE}
-                                                    strokeDashoffset={dashOffset}
-                                                    style={{ transition: "stroke-dashoffset 1s linear" }}
-                                                />
-                                            </svg>
-                                            {/* Timer text in center */}
-                                            <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-[#1a1a1a]">
-                                                {formatTime(cooldown)}
-                                            </span>
-                                        </div>
-                                        <p className="text-xs text-gray-400">Resend available after timer</p>
-                                    </div>
+                                {codeExpiry > 0 ? (
+                                    <p className="text-xs text-gray-400">
+                                        Resend available when the code expires
+                                    </p>
                                 ) : (
                                     <button
                                         type="button"
@@ -387,7 +335,7 @@ export function VerifyEmailPage() {
                     <div className="space-y-4 text-left max-w-xs mx-auto">
                         {[
                             { step: "1", text: "Check your inbox for the code" },
-                            { step: "2", text: "Enter the 6-digit code" },
+                            { step: "2", text: "Enter the 4-digit code" },
                             { step: "3", text: "Start booking your appointments" }
                         ].map(({ step, text }) => (
                             <div key={step} className="flex items-center gap-3">

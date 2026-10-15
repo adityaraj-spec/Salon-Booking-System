@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { User, Store, Scissors, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosConfig";
@@ -8,13 +8,28 @@ import { useNotification } from "../context/NotificationContext";
 export function RoleSelectionPage() {
     const [loading, setLoading] = useState(null); // 'customer' or 'salonOwner'
     const navigate = useNavigate();
-    const { updateUserRole } = useAuth();
+    const { user, loading: authLoading, updateUserRole } = useAuth();
     const { showNotification } = useNotification();
+
+    useEffect(() => {
+        if (authLoading) return;
+        if (!user) {
+            navigate("/login", { replace: true });
+            return;
+        }
+        if (user.role && user.role !== "unassigned") {
+            navigate(user.role === "salonOwner" ? "/create-salon" : "/home", { replace: true });
+        }
+    }, [authLoading, user, navigate]);
+
+    if (authLoading || !user || user.role !== "unassigned") {
+        return <div className="min-h-[60vh] flex items-center justify-center" />;
+    }
 
     const handleRoleSelect = async (role) => {
         setLoading(role);
         try {
-            const response = await axiosInstance.patch("/users/update-role", { role }, {
+            const response = await axiosInstance.patch("/users/select-role", { role }, {
                 withCredentials: true,
             });
 

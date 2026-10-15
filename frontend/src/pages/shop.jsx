@@ -75,8 +75,24 @@ export function Shop() {
 
     const formatServiceName = (name) => {
         if (!name) return "Service";
-        return name.replace(/\bhaicut\b/gi, "Haircut");
+        return name
+            .replace(/\bhaicut\b/gi, "Haircut")
+            .toLowerCase()
+            .replace(/\b\w/g, (character) => character.toUpperCase());
     };
+
+    const formatLabel = (value, fallback = "") => {
+        if (!value) return fallback;
+        return value.toString().toLowerCase().replace(/\b\w/g, (character) => character.toUpperCase());
+    };
+
+    const formatAddress = (address) => (address || "No address provided")
+        .replace(/\bpost\b/gi, "Post")
+        .replace(/\bdisct\b/gi, "District")
+        .replace(/\bdist\b/gi, "District")
+        .replace(/\bpincode\b/gi, "Pincode")
+        .replace(/\bcity\b/gi, "City")
+        .replace(/\bstate\b/gi, "State");
 
     const getCleanDescription = (desc) => {
         const fallback = "Welcome to our premier destination for luxury grooming and beauty. We combine traditional techniques with modern style to give you the perfect look. Our studio features state-of-the-art equipment and a relaxing atmosphere designed for your comfort.";
@@ -321,7 +337,7 @@ export function Shop() {
                             <p className="text-red-400 text-sm font-medium">This salon is not accepting immediate bookings right now.</p>
                         </div>
                     </div>
-                    <div className="px-6 py-2 bg-red-100 rounded-full text-red-600 text-[10px] font-black uppercase tracking-widest">
+                    <div className="px-6 py-2 bg-red-100 rounded-full text-red-600 text-sm font-normal">
                         Closed
                     </div>
                 </div>
@@ -332,7 +348,7 @@ export function Shop() {
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
                 <div>
                     <div className="flex items-center gap-2 mb-2">
-                        <span className="bg-orange-50 text-[#e65c00] text-xs font-bold px-2 py-1 rounded uppercase tracking-wider flex items-center gap-1">
+                        <span className="ui-badge bg-orange-50 px-2 py-1 rounded flex items-center gap-1">
                             <Sparkles size={12} /> {salon.rating > 4.5 ? "Top Rated Salon" : "Verified Salon"}
                         </span>
                     </div>
@@ -511,14 +527,10 @@ export function Shop() {
                         className="flex-1 overflow-hidden rounded-xl border border-gray-200 shadow-sm relative group bg-gradient-to-br from-amber-50/50 via-white to-gray-50 p-4 flex flex-col justify-between cursor-pointer hover:border-[#D4AF37]/50 hover:shadow-md transition-all"
                         onClick={() => document.getElementById('salon-location-section')?.scrollIntoView({ behavior: 'smooth' })}
                     >
-                        <div>
-                            <div className="flex items-center gap-1.5 text-[#D4AF37] font-bold text-xs uppercase tracking-wider mb-2">
-                                <MapPin size={15} />
-                                <span>Studio Location</span>
+                        <div className="flex-1 min-h-[280px] pointer-events-none">
+                            <div className="h-full min-h-[280px] rounded-lg overflow-hidden">
+                                <SalonMap salons={[salon]} zoom={14} />
                             </div>
-                            <p className="text-xs font-semibold text-gray-800 line-clamp-3 leading-relaxed">
-                                {salon.address}, {salon.city}
-                            </p>
                         </div>
                         <div className="pt-3 border-t border-gray-100 flex items-center justify-between mt-auto">
                             <span className="text-xs font-bold text-[#006ce4] group-hover:underline flex items-center gap-1">
@@ -597,8 +609,8 @@ export function Shop() {
                                 <div className="flex-1 flex gap-4 items-start bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
                                     <div className="p-3 bg-gray-50 rounded-xl text-[#D4AF37]"><MapPin size={24} /></div>
                                     <div className="min-w-0">
-                                        <p className="text-[#1a1a1a] font-bold text-lg mb-1 truncate">{salon.city}</p>
-                                        <p className="text-gray-500 break-words">{salon.address}</p>
+                                    <p className="ui-subtext text-lg mb-1 truncate">{salon.city}</p>
+                                    <p className="ui-subtext break-words">{formatAddress(salon.address)}</p>
                                     </div>
                                 </div>
                                 {salon.owner && (
@@ -606,7 +618,7 @@ export function Shop() {
                                         <div className="p-3 bg-gray-50 rounded-xl text-[#D4AF37]"><Phone size={24} /></div>
                                         <div className="min-w-0">
                                             <p className="text-[#1a1a1a] font-bold text-lg mb-1">Contact Salon</p>
-                                            <p className="text-gray-900 font-medium truncate">{salon.owner?.fullName || "Salon Staff"}</p>
+                                            <p className="ui-subtext truncate">{salon.owner?.fullName || "Salon Staff"}</p>
                                             <a href={`tel:${salon.contactNumber || salon.owner?.phonenumber}`} className="text-[#D4AF37] font-bold hover:underline">
                                                 {salon.contactNumber || salon.owner?.phonenumber}
                                             </a>
@@ -622,7 +634,7 @@ export function Shop() {
                         <div className="py-6 border-b border-gray-100">
                             <div className="flex items-center justify-between mb-6">
                                 <h3 className="text-2xl font-serif font-bold text-[#1a1a1a]">Our Services</h3>
-                                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest bg-gray-50 px-3 py-1 rounded-full">
+                                <span className="ui-badge bg-gray-50 px-3 py-1 rounded-full">
                                     {services.length} {services.length === 1 ? 'Service' : 'Services'}
                                 </span>
                             </div>
@@ -634,7 +646,7 @@ export function Shop() {
                                                 <Scissors size={15} className="text-[#D4AF37] shrink-0" />
                                                 <h4 className="font-bold text-[#1a1a1a] text-sm truncate">{formatServiceName(service.name)}</h4>
                                             </div>
-                                            <p className="text-xs text-gray-500 line-clamp-1">{service.description || "Professional salon service"}</p>
+                                            <p className="ui-subtext line-clamp-1">{service.description || "Professional salon service"}</p>
                                         </div>
                                         <div className="text-right shrink-0 flex flex-col justify-center items-end min-h-[44px]">
                                             <p className="text-base font-serif font-bold text-[#1a1a1a] leading-none mb-1.5">₹{service.price}</p>
@@ -661,10 +673,10 @@ export function Shop() {
                                             </div>
                                         </div>
                                         <h4 className="font-bold text-[#1a1a1a] text-sm mb-1">{member.name}</h4>
-                                        <p className="text-xs text-[#D4AF37] font-semibold tracking-wide">{member.role}</p>
+                                        <p className="ui-meta">{formatLabel(member.role, "Stylist")}</p>
                                         <div className="flex items-center justify-center gap-1 mt-2">
                                             <Award size={12} className="text-orange-400" />
-                                            <span className="text-xs font-medium text-gray-400">{member.experience}+ Years Experience</span>
+                                            <span className="subtext-style-target">{member.experience}+ Years Experience</span>
                                         </div>
                                     </div>
                                 ))}
@@ -796,7 +808,7 @@ export function Shop() {
                                     <h4 className="text-lg font-bold text-[#1a1a1a] mb-6">Write a Review</h4>
                                     <form onSubmit={handleReviewSubmit} className="space-y-6">
                                         <div>
-                                            <p className="text-xs text-gray-400 uppercase font-black mb-3 tracking-widest">Select Rating</p>
+                                            <p className="ui-label mb-3">Select Rating</p>
                                             <div className="flex gap-2">
                                                 {[1, 2, 3, 4, 5].map((star) => (
                                                     <button 
@@ -813,7 +825,7 @@ export function Shop() {
                                             </div>
                                         </div>
                                         <div className="space-y-2">
-                                            <label htmlFor="review-text" className="text-xs text-gray-400 uppercase font-black tracking-widest">Your Experience</label>
+                                            <label htmlFor="review-text" className="ui-label">Your Experience</label>
                                             <textarea 
                                                 id="review-text"
                                                 className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-5 text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all h-32"
@@ -928,10 +940,6 @@ export function Shop() {
                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                     <div>
                         <h3 className="text-3xl font-serif font-bold text-[#1a1a1a] mb-2">Salon Location</h3>
-                        <p className="text-gray-500 flex items-center gap-2">
-                            <MapPin size={16} className="text-[#D4AF37]" />
-                            {salon.address}, {salon.city}
-                        </p>
                     </div>
                     <button 
                         onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(salon.address + ' ' + salon.city)}`, '_blank')}

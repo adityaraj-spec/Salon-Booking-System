@@ -22,6 +22,8 @@ export function NavBar() {
     const [notifications, setNotifications] = useState([]);
     const [hasSalon, setHasSalon] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [notificationsBusy, setNotificationsBusy] = useState(false);
+    const [markingNotificationIds, setMarkingNotificationIds] = useState(() => new Set());
     const menuRef = useRef(null);
     const notificationsRef = useRef(null);
 
@@ -34,7 +36,7 @@ export function NavBar() {
                     if (response.data.success && response.data.data) {
                         setHasSalon(true);
                     }
-                } catch (error) {
+                } catch {
                     // silently fail — hasSalon defaults to false
                 }
             }
@@ -125,25 +127,37 @@ export function NavBar() {
 
 
     const markAsRead = async (id) => {
+        const notification = notifications.find((item) => item._id === id);
+        if (!notification || notification.isRead === true || markingNotificationIds.has(id)) return;
         // Optimistic update
         const originalNotifications = [...notifications];
         const originalUnreadCount = unreadCount;
 
         setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
         setUnreadCount(prev => Math.max(0, prev - 1));
+        setMarkingNotificationIds(prev => new Set(prev).add(id));
 
         try {
             await axiosInstance.patch(`/notifications/${id}/read`);
+            await fetchNotifications();
         } catch (error) {
             console.error("Failed to mark notification as read:", error);
             // Revert state on error
             setNotifications(originalNotifications);
             setUnreadCount(originalUnreadCount);
             showNotification("Failed to update notification. Please try again.", "error");
+        } finally {
+            setMarkingNotificationIds(prev => {
+                const next = new Set(prev);
+                next.delete(id);
+                return next;
+            });
         }
     };
 
     const markAllAsRead = async () => {
+        const hasUnreadNotifications = notifications.some((notification) => notification.isRead !== true);
+        if (notificationsBusy || !hasUnreadNotifications) return;
         // Optimistic update
         const originalNotifications = [...notifications];
         const originalUnreadCount = unreadCount;
@@ -151,14 +165,18 @@ export function NavBar() {
         setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
         setUnreadCount(0);
 
+        setNotificationsBusy(true);
         try {
             await axiosInstance.patch("/notifications/mark-all-read");
+            await fetchNotifications();
         } catch (error) {
             console.error("Failed to mark all notifications as read:", error);
             // Revert state on error
             setNotifications(originalNotifications);
             setUnreadCount(originalUnreadCount);
             showNotification("Failed to update notifications. Please try again.", "error");
+        } finally {
+            setNotificationsBusy(false);
         }
     };
 
@@ -226,7 +244,9 @@ export function NavBar() {
                                                 <h3 className="font-bold text-gray-900">Notifications</h3>
                                                 {unreadCount > 0 && (
                                                     <button
+                                                        type="button"
                                                         onClick={markAllAsRead}
+                                                        disabled={notificationsBusy}
                                                         className="text-[10px] font-bold text-[#D4AF37] hover:text-black transition-colors"
                                                     >
                                                         Mark all as read
@@ -237,10 +257,14 @@ export function NavBar() {
                                                 {notifications.length > 0 ? (
                                                     <div className="divide-y divide-gray-50">
                                                         {notifications.map((notif) => (
-                                                            <div
+                                                            <button
                                                                 key={notif._id}
-                                                                onClick={() => !notif.isRead && markAsRead(notif._id)}
-                                                                className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer flex gap-4 ${!notif.isRead ? 'bg-[#D4AF37]/5' : ''}`}
+                                                                type="button"
+                                                                onClick={(event) => {
+                                                                    event.stopPropagation();
+                                                                    markAsRead(notif._id);
+                                                                }}
+                                                                className={`w-full text-left p-4 hover:bg-gray-50 transition-colors cursor-pointer flex gap-4 ${!notif.isRead ? 'bg-[#D4AF37]/5' : ''}`}
                                                             >
                                                                 <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${notif.type.includes('confirmed') ? 'bg-emerald-50 text-emerald-600' :
                                                                         notif.type.includes('rejected') ? 'bg-red-50 text-red-600' :
@@ -258,7 +282,7 @@ export function NavBar() {
                                                                     </p>
                                                                 </div>
                                                                 {!notif.isRead && <div className="w-2 h-2 rounded-full bg-[#D4AF37] mt-2 shrink-0"></div>}
-                                                            </div>
+                                                            </button>
                                                         ))}
                                                     </div>
                                                 ) : (
@@ -422,7 +446,7 @@ export function NavBar() {
                                         <div className="p-4 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
                                             <h3 className="font-bold text-gray-900 text-sm">Notifications</h3>
                                             {unreadCount > 0 && (
-                                                <button onClick={markAllAsRead} className="text-[10px] font-bold text-[#D4AF37]">
+                                                    <button onClick={markAllAsRead} disabled={notificationsBusy} className="text-[10px] font-bold text-[#D4AF37] disabled:opacity-50">
                                                     Mark all as read
                                                 </button>
                                             )}
@@ -431,13 +455,14 @@ export function NavBar() {
                                             {notifications.length > 0 ? (
                                                 <div className="divide-y divide-gray-50">
                                                     {notifications.map((notif) => (
-                                                        <div
+                                                        <button
                                                             key={notif._id}
+                                                            type="button"
                                                             onClick={() => {
-                                                                !notif.isRead && markAsRead(notif._id);
+                                                                markAsRead(notif._id);
                                                                 setIsNotificationsOpen(false);
                                                             }}
-                                                            className={`p-4 active:bg-gray-50 transition-colors flex gap-3 ${!notif.isRead ? 'bg-[#D4AF37]/5' : ''}`}
+                                                            className={`w-full text-left p-4 active:bg-gray-50 transition-colors flex gap-3 ${!notif.isRead ? 'bg-[#D4AF37]/5' : ''}`}
                                                         >
                                                             <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${notif.type.includes('confirmed') ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-50 text-gray-500'}`}>
                                                                 <Clock size={16} />
@@ -446,7 +471,7 @@ export function NavBar() {
                                                                 <p className={`text-xs ${!notif.isRead ? 'font-bold text-gray-900' : 'text-gray-600'}`}>{notif.title}</p>
                                                                 <p className="text-[10px] text-gray-500 line-clamp-2 mt-0.5">{notif.message}</p>
                                                             </div>
-                                                        </div>
+                                                        </button>
                                                     ))}
                                                 </div>
                                             ) : (

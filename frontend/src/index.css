@@ -23,36 +23,117 @@ body {
   font-family: 'Poppins', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   color: #1a1a1a;
   background-color: #ffffff;
+  letter-spacing: -0.01em;
+  line-height: 1.5;
 }
 
-button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
   outline: 3px solid #8a6500;
   outline-offset: 3px;
 }
 
-h1, h2, h3, h4, h5, h6, .font-serif {
+input::placeholder,
+textarea::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+@layer components {
+
+  .subtext-style-target,
+  .ui-subtext,
+  .ui-meta,
+  .ui-label,
+  .ui-badge {
+    color: #444b58;
+    font-size: 0.875rem;
+    font-weight: 500 !important;
+    line-height: 1.5;
+    letter-spacing: normal;
+    text-transform: none;
+  }
+
+  .salon-action-button {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .salon-action-button--primary {
+    @apply bg-[#D4AF37] text-white hover:bg-[#B8962E];
+  }
+
+  .salon-action-button--dark {
+    @apply bg-[#1A1A1A] text-white hover:bg-black;
+  }
+
+  .salon-action-button--secondary {
+    @apply border border-gray-200 bg-white text-gray-700 hover:border-[#D4AF37] hover:text-[#8a6500];
+  }
+
+  .salon-action-button--success {
+    @apply bg-emerald-600 text-white hover:bg-emerald-700;
+  }
+
+  .salon-action-button--danger {
+    @apply border border-red-200 bg-white text-red-600 hover:bg-red-50;
+  }
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.font-serif {
   font-family: 'Poppins', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  letter-spacing: -0.025em;
+  line-height: 1.15;
 }
 
 /* Project Slider */
 .project-slider-track {
-    transform: translateX(calc(var(--active) * -100%));
+  transform: translateX(calc(var(--active) * -100%));
 }
+
 @media (min-width: 768px) {
-    .project-slider-track {
-        transform: translateX(calc(var(--active) * -33.333333% + 33.333333%));
-    }
+  .project-slider-track {
+    transform: translateX(calc(var(--active) * -33.333333% + 33.333333%));
+  }
 }
 
 /* Force pointer cursor on all interactable elements */
-button, a, select, [role="button"], input[type="submit"], input[type="button"], input[type="checkbox"], input[type="radio"] {
+button,
+a,
+select,
+[role="button"],
+input[type="submit"],
+input[type="button"],
+input[type="checkbox"],
+input[type="radio"] {
   cursor: pointer !important;
 }
 
 /* ── Skeleton Loading System ── */
 @keyframes shimmer {
-  0%   { background-position: -400px 0; }
-  100% { background-position: 400px 0; }
+  0% {
+    background-position: -400px 0;
+  }
+
+  100% {
+    background-position: 400px 0;
+  }
 }
 
 .skeleton {

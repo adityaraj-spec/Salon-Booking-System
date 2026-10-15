@@ -13,7 +13,7 @@ export function MyBookingsPage() {
             try {
                 const response = await axiosInstance.get("/bookings/my-bookings");
                 if (response.data.success) {
-                    setBookings(response.data.data);
+                    setBookings(response.data.data?.bookings || []);
                 }
             } catch (err) {
                 // silently fail - empty state is shown
@@ -93,8 +93,8 @@ export function MyBookingsPage() {
                                         <div className="flex items-start gap-3 text-gray-500 bg-gray-50/50 w-fit px-4 py-2.5 rounded-2xl border border-gray-100/50 max-w-sm lg:max-w-md">
                                             <MapPin size={18} className="text-[#D4AF37] shrink-0 mt-0.5" />
                                             <div className="flex flex-col">
-                                                <span className="text-sm font-bold tracking-tight text-gray-900 leading-snug">{booking.salon?.address || "No address provided"}</span>
-                                                <span className="text-[10px] font-bold text-gray-400 mt-1">{booking.salon?.city}</span>
+                                                <span className="ui-subtext text-sm leading-snug">{booking.salon?.address || "No address provided"}</span>
+                                                <span className="ui-meta mt-1">{booking.salon?.city}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -103,15 +103,15 @@ export function MyBookingsPage() {
                                         <div className="flex items-center gap-3 bg-gray-50/50 px-4 py-3 rounded-2xl border border-gray-100/50">
                                             <Clock size={18} className="text-[#D4AF37]" />
                                             <div className="flex flex-col">
-                                                <p className="text-[10px] text-gray-400 font-bold leading-none mb-1">Time</p>
-                                                <p className="text-sm font-bold text-gray-900 leading-none">{booking.time}</p>
+                                                <p className="ui-label leading-none mb-1">Time</p>
+                                                <p className="ui-subtext text-sm leading-none">{booking.time}</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-3 bg-gray-50/50 px-4 py-3 rounded-2xl border border-gray-100/50">
                                             <Calendar size={18} className="text-[#D4AF37]" />
                                             <div className="flex flex-col">
-                                                <p className="text-[10px] text-gray-400 font-bold leading-none mb-1">Date</p>
-                                                <p className="text-sm font-bold text-gray-900 leading-none">{new Date(booking.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                                                <p className="ui-label leading-none mb-1">Date</p>
+                                                <p className="ui-subtext text-sm leading-none">{new Date(booking.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -126,17 +126,17 @@ export function MyBookingsPage() {
                                                 <Scissors size={22} />
                                             </div>
                                             <div>
-                                                <p className="text-[10px] text-gray-400 font-bold leading-none mb-3">Services</p>
+                                                <p className="ui-label leading-none mb-3">Services</p>
                                                 <div className="flex flex-col gap-2">
                                                     {booking.serviceNames?.length > 0 ? (
                                                         booking.serviceNames.map((service, index) => (
                                                             <div key={index} className="flex items-center gap-2">
                                                                 <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] shrink-0"></div>
-                                                                <p className="text-sm font-bold text-gray-900 leading-tight">{service}</p>
+                                                                <p className="ui-subtext text-sm leading-tight">{service}</p>
                                                             </div>
                                                         ))
                                                     ) : (
-                                                        <p className="text-sm font-bold text-gray-900">Standard Salon Visit</p>
+                                                        <p className="ui-subtext text-sm">Standard Salon Visit</p>
                                                     )}
                                                 </div>
                                             </div>
@@ -148,8 +148,8 @@ export function MyBookingsPage() {
                                                 <User size={22} />
                                             </div>
                                             <div>
-                                                <p className="text-[10px] text-gray-400 font-bold leading-none mb-3">Stylist</p>
-                                                <p className="text-sm font-bold text-gray-900 leading-snug">
+                                                <p className="ui-label leading-none mb-3">Stylist</p>
+                                                <p className="ui-subtext text-sm leading-snug">
                                                     {booking.staff?.name || (typeof booking.staff === 'string' && booking.staff.length > 20 ? "Any Available Professional" : booking.staff || "Any Available Professional")}
                                                 </p>
                                             </div>
@@ -162,7 +162,7 @@ export function MyBookingsPage() {
                                                 <Phone size={22} />
                                             </div>
                                             <div className="flex-1">
-                                                <p className="text-[10px] text-gray-400 font-bold leading-none mb-1.5">Contact Support</p>
+                                                <p className="ui-label leading-none mb-1.5">Contact Support</p>
                                                 <a href={`tel:${booking.salon?.contactNumber}`} className="text-base font-black text-[#1a1a1a] hover:text-[#D4AF37] transition-colors">
                                                     {booking.salon?.contactNumber || booking.salon?.owner?.phonenumber || "N/A"}
                                                 </a>
@@ -175,7 +175,7 @@ export function MyBookingsPage() {
                                                     <span className="text-xl font-bold">₹</span>
                                                 </div>
                                                 <div className="flex-1">
-                                                    <p className="text-[10px] text-gray-400 font-bold leading-none mb-1.5">Total Paid</p>
+                                                    <p className="ui-label leading-none mb-1.5">Total Paid</p>
                                                     <p className="text-xl font-black text-[#1a1a1a] tracking-tighter leading-none">
                                                         <span className="text-xl mr-1">₹</span>{booking.totalAmount}
                                                     </p>
