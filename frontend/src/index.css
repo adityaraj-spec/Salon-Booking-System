@@ -25,6 +25,11 @@ body {
   background-color: #ffffff;
 }
 
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 3px solid #8a6500;
+  outline-offset: 3px;
+}
+
 h1, h2, h3, h4, h5, h6, .font-serif {
   font-family: 'Poppins', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
@@ -56,4 +61,3 @@ button, a, select, [role="button"], input[type="submit"], input[type="button"], 
   animation: shimmer 1.5s infinite linear;
   border-radius: 8px;
 }
-

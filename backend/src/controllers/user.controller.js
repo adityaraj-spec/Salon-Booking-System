@@ -1,12 +1,18 @@
 import { asyncHandler } from "../utils/asyncHandler.js"
 import ApiError from "../utils/apiError.js"
+import jwt from "jsonwebtoken"
 import { ApiResponse } from "../utils/apiResponse.js"
 import { User } from "../models/user.models.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
 import { sendWelcomeEmail, sendLoginEmail, sendLogoutEmail, sendVerificationEmail } from "../utils/mailer.js"
 import { ROLES } from "../constants.js"
+import { generateOTP, hashOTP, verifyOTPHash, checkOTPLockout, recordOTPAttempt, clearOTPState, checkOTPRequestRateLimit } from "../utils/otp.js"
+import { issueTokenPair, rotateRefreshToken, revokeSession, revokeAllUserSessions } from "../services/auth.service.js"
+import { pickAllowedFields, USER_UPDATABLE_FIELDS } from "../utils/dto.js"
+import logger from "../lib/logger.js"
 
-const VERIFICATION_CODE_EXPIRY_MINUTES = 15;
+
+const VERIFICATION_CODE_EXPIRY_MINUTES = 5;
 
 const generateAccessAndRefreshToken = async (userId) => {
     try {
@@ -14,7 +20,7 @@ const generateAccessAndRefreshToken = async (userId) => {
         const accessToken = user.generateAccessToken()
         const refreshToken = user.generateRefreshToken()
 
-        user.refreshToken = refreshToken
+        await user.setRefreshToken(refreshToken)
         await user.save({
             validateBeforeSave: false
         }) //jab bhi save karate hai to mongoose ke field kin in ho jata hai to wo save hone se pahke ye puchhta hai ki pass word kaha hai to usi ko resolve karne ke liye false kiye hai
@@ -37,7 +43,8 @@ const getCookieOptions = () => {
 };
 
 const registerUser = asyncHandler(async (req, res) => {
-    const { fullName, email, username, password, phonenumber, role = "unassigned" } = req.body
+    const { fullName, email: rawEmail, username, password, phonenumber, role = "unassigned" } = req.body
+    const email = rawEmail.trim().toLowerCase();
     
     if (
         [
@@ -47,6 +54,8 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(400, "All fields are required")
     }
 
+    await checkOTPRequestRateLimit(email, req.ip);
+
     const existedUser = await User.findOne({
         $or: [{ username }, { email }]
     })
@@ -54,8 +63,9 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(409, "User with email or username already exists")
     }
 
-    // Generate a 4-digit verification code
-    const verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
+    // Generate a secure 4-digit verification code and hash it for storage
+    const rawVerificationCode = generateOTP();
+    const verificationCodeHash = hashOTP(rawVerificationCode);
     const verificationCodeExpiry = new Date(Date.now() + VERIFICATION_CODE_EXPIRY_MINUTES * 60 * 1000);
 
     const user = await User.create({
@@ -66,7 +76,7 @@ const registerUser = asyncHandler(async (req, res) => {
         phonenumber,
         role,
         isVerified: false,
-        verificationCode,
+        verificationCode: verificationCodeHash,
         verificationCodeExpiry
     })
 
@@ -75,9 +85,9 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(505, "Something went wrong registering the user")
     }
 
-    // Send verification email (do not await to avoid blocking response)
-    sendVerificationEmail(email, fullName, verificationCode).catch(err => {
-        console.error("[registerUser] Failed to send verification email:", err.message);
+    // Send verification email with raw code (do not await to avoid blocking response)
+    sendVerificationEmail(email, fullName, rawVerificationCode).catch(err => {
+        logger.warn({ err: err.message }, "[User] Failed to send verification email");
     });
 
     return res
@@ -88,11 +98,15 @@ const registerUser = asyncHandler(async (req, res) => {
 })
 
 const verifyEmail = asyncHandler(async (req, res) => {
-    const { email, code } = req.body;
+    const { email: rawEmail, code } = req.body;
+    const email = rawEmail?.trim().toLowerCase();
 
     if (!email || !code) {
         throw new ApiError(400, "Email and verification code are required");
     }
+
+    // Check if account is locked out due to prior failed attempts
+    await checkOTPLockout(email);
 
     const user = await User.findOne({ email });
     if (!user) {
@@ -103,15 +117,20 @@ const verifyEmail = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Email is already verified. Please log in.");
     }
 
-    // Check if code matches
-    if (user.verificationCode !== code.toString()) {
-        throw new ApiError(400, "Invalid verification code");
-    }
-
     // Check if code has expired
     if (!user.verificationCodeExpiry || user.verificationCodeExpiry < new Date()) {
         throw new ApiError(400, "Verification code has expired. Please request a new one.");
     }
+
+    // Check if code matches (constant-time comparison against SHA-256 hash)
+    const isValid = verifyOTPHash(code.toString(), user.verificationCode);
+    if (!isValid) {
+        await recordOTPAttempt(email);
+        throw new ApiError(400, "Invalid verification code");
+    }
+
+    // Clear attempt/lockout state in Redis
+    await clearOTPState(email);
 
     // Mark user as verified and clear the code fields
     user.isVerified = true;
@@ -130,7 +149,7 @@ const verifyEmail = asyncHandler(async (req, res) => {
 
     // Send welcome email silently
     sendWelcomeEmail(verifiedUser.email, verifiedUser.fullName).catch(err => {
-        console.error("[verifyEmail] Failed to send welcome email:", err.message);
+        logger.warn({ err: err.message }, "[User] Failed to send welcome email");
     });
 
     return res
@@ -143,11 +162,15 @@ const verifyEmail = asyncHandler(async (req, res) => {
 });
 
 const resendVerificationCode = asyncHandler(async (req, res) => {
-    const { email } = req.body;
+    const { email: rawEmail } = req.body;
+    const email = rawEmail?.trim().toLowerCase();
 
     if (!email) {
         throw new ApiError(400, "Email is required");
     }
+
+    await checkOTPRequestRateLimit(email, req.ip);
+    await checkOTPLockout(email);
 
     const user = await User.findOne({ email });
     if (!user) {
@@ -158,16 +181,17 @@ const resendVerificationCode = asyncHandler(async (req, res) => {
         throw new ApiError(400, "This email is already verified. Please log in.");
     }
 
-    // Generate a fresh 4-digit code
-    const verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
+    // Generate a fresh 4-digit code and hash it
+    const rawVerificationCode = generateOTP();
+    const verificationCodeHash = hashOTP(rawVerificationCode);
     const verificationCodeExpiry = new Date(Date.now() + VERIFICATION_CODE_EXPIRY_MINUTES * 60 * 1000);
 
-    user.verificationCode = verificationCode;
+    user.verificationCode = verificationCodeHash;
     user.verificationCodeExpiry = verificationCodeExpiry;
     await user.save({ validateBeforeSave: false });
 
-    sendVerificationEmail(email, user.fullName, verificationCode).catch(err => {
-        console.error("[resendVerificationCode] Failed to send email:", err.message);
+    sendVerificationEmail(email, user.fullName, rawVerificationCode).catch(err => {
+        logger.warn({ err: err.message }, "[User] Failed to resend verification email");
     });
 
     return res
@@ -176,7 +200,8 @@ const resendVerificationCode = asyncHandler(async (req, res) => {
 });
 
 const loginUser = asyncHandler(async (req, res) => {
-    const { username, email, password } = req.body
+    const { username, email: rawEmail, password } = req.body
+    const email = rawEmail?.trim().toLowerCase();
     if (!username && !email) {
         throw new ApiError(400, "username or email is required")
     }
@@ -195,21 +220,27 @@ const loginUser = asyncHandler(async (req, res) => {
 
     // Block login for unverified users and resend a fresh code
     if (!user.isVerified) {
-        const verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
+        await checkOTPRequestRateLimit(user.email, req.ip);
+        await checkOTPLockout(user.email);
+        const rawVerificationCode = generateOTP();
+        const verificationCodeHash = hashOTP(rawVerificationCode);
         const verificationCodeExpiry = new Date(Date.now() + VERIFICATION_CODE_EXPIRY_MINUTES * 60 * 1000);
 
-        user.verificationCode = verificationCode;
+        user.verificationCode = verificationCodeHash;
         user.verificationCodeExpiry = verificationCodeExpiry;
         await user.save({ validateBeforeSave: false });
 
-        sendVerificationEmail(user.email, user.fullName, verificationCode).catch(err => {
-            console.error("[loginUser] Failed to resend verification email:", err.message);
+        sendVerificationEmail(user.email, user.fullName, rawVerificationCode).catch(err => {
+            logger.warn({ err: err.message }, "[User] Failed to resend verification email on login");
         });
 
         throw new ApiError(403, "Email not verified. A new verification code has been sent to your email.")
     }
 
-    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id)
+
+    // Issue token pair with family tracking and JTI claims (Part 4)
+    const deviceId = req.headers["user-agent"] || "unknown";
+    const { accessToken, refreshToken } = await issueTokenPair(user, deviceId);
 
     const loggedInUSer = await User.findById(user._id).select("-password -refreshToken -verificationCode -verificationCodeExpiry")
 
@@ -217,9 +248,8 @@ const loginUser = asyncHandler(async (req, res) => {
     const accessTokenOptions = { ...options, maxAge: 7 * 24 * 60 * 60 * 1000 };
     const refreshTokenOptions = { ...options, maxAge: 15 * 24 * 60 * 60 * 1000 };
 
-    // Trigger login email silently
     sendLoginEmail(loggedInUSer.email, loggedInUSer.fullName).catch(err => {
-        console.error("[loginUser] Failed to send login email:", err.message);
+        logger.warn({ err: err.message }, "[User] Failed to send login notification email");
     });
 
     return res
@@ -238,31 +268,31 @@ const loginUser = asyncHandler(async (req, res) => {
 })
 
 const logoutUser = asyncHandler(async (req, res) => {
-    await User.findByIdAndUpdate(
-        req.user._id,
-        {
-            $set: {
-                refreshToken: undefined,
-            }
-        },
-        {
-            new: true
-        }
-    )
+    // Revoke all sessions for this user in Redis & Mongo (SI6)
+    await revokeAllUserSessions(req.user._id);
+
+    sendLogoutEmail(req.user.email, req.user.fullName).catch(err => {
+        logger.warn({ err: err.message }, "[User] Failed to send logout notification email");
+    });
 
     const options = getCookieOptions();
-
-    // Trigger logout email silently
-    sendLogoutEmail(req.user.email, req.user.fullName).catch(err => {
-        console.error("[logoutUser] Failed to send logout email:", err.message);
-    });
 
     return res
         .status(200)
         .clearCookie("accessToken", options)
         .clearCookie("refreshToken", options)
-        .json(new ApiResponse(200, {}, "User logged Out Successfully"))
-})
+        .json(new ApiResponse(200, {}, "User logged out successfully across all devices"));
+});
+
+const logoutAllDevices = asyncHandler(async (req, res) => {
+    await revokeAllUserSessions(req.user._id);
+    const options = getCookieOptions();
+    return res
+        .status(200)
+        .clearCookie("accessToken", options)
+        .clearCookie("refreshToken", options)
+        .json(new ApiResponse(200, {}, "All active devices logged out successfully"));
+});
 
 const updateUserRole = asyncHandler(async (req, res) => {
     const { role, userId } = req.body
@@ -301,6 +331,31 @@ const updateUserRole = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .json(new ApiResponse(200, user, "User role updated successfully"))
+})
+
+const selectOwnRole = asyncHandler(async (req, res) => {
+    if (!req.user?._id) {
+        throw new ApiError(401, "Authentication required to select a role")
+    }
+
+    const { role } = req.body;
+    if (![ROLES.CUSTOMER, ROLES.OWNER].includes(role)) {
+        throw new ApiError(400, "Choose either Customer or Salon Owner")
+    }
+
+    const user = await User.findOneAndUpdate(
+        { _id: req.user._id, role: ROLES.UNASSIGNED },
+        { $set: { role } },
+        { new: true }
+    ).select("-password -refreshToken -verificationCode -verificationCodeExpiry");
+
+    if (!user) {
+        throw new ApiError(409, "Your account role has already been selected")
+    }
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, user, "Account role selected successfully"))
 })
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
@@ -384,15 +439,44 @@ const getCurrentUser = asyncHandler(async (req, res) => {
     );
 });
 
+const refreshAccessToken = asyncHandler(async (req, res) => {
+    const incomingRefreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
+
+    if (!incomingRefreshToken) {
+        throw new ApiError(401, "Refresh token is required");
+    }
+
+    // Call central auth service with automatic theft detection and rotation (SI7)
+    const { accessToken, refreshToken: newRefreshToken } = await rotateRefreshToken(incomingRefreshToken);
+
+    const options = getCookieOptions();
+    const accessTokenOptions = { ...options, maxAge: 7 * 24 * 60 * 60 * 1000 };
+    const refreshTokenOptions = { ...options, maxAge: 15 * 24 * 60 * 60 * 1000 };
+
+    return res
+        .status(200)
+        .cookie("accessToken", accessToken, accessTokenOptions)
+        .cookie("refreshToken", newRefreshToken, refreshTokenOptions)
+        .json(
+            new ApiResponse(
+                200,
+                { accessToken, refreshToken: newRefreshToken },
+                "Access token refreshed successfully"
+            )
+        );
+});
+
 export {
     registerUser,
     loginUser,
     logoutUser,
     updateUserRole,
+    selectOwnRole,
     updateAccountDetails,
     toggleFavorite,
     getFavorites,
     getCurrentUser,
     verifyEmail,
-    resendVerificationCode
+    resendVerificationCode,
+    refreshAccessToken
 }

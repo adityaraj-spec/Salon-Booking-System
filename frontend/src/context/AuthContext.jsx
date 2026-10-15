@@ -10,18 +10,35 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Here you could fetch the current user if you had a /me endpoint
-        // For now, let's assume session is handled by cookies
-        const storedUser = localStorage.getItem("user");
-        if (storedUser && storedUser !== "undefined") {
-            try {
-                setUser(JSON.parse(storedUser));
-            } catch (error) {
-                console.error("Failed to parse stored user", error);
-                localStorage.removeItem("user");
+        const fetchCurrentUser = async () => {
+            const token = localStorage.getItem("authToken");
+            if (!token) {
+                // Visitor has no auth token — treat as guest and skip unnecessary 401 probe
+                setUser(null);
+                setLoading(false);
+                return;
             }
-        }
-        setLoading(false);
+
+            try {
+                // skipInterceptor = true prevents the 401 interceptor from firing
+                // a token refresh loop when checking initial session state.
+                const response = await axiosInstance.get("/users/me", { skipInterceptor: true });
+                const userData = response.data?.data?.user || response.data?.data;
+                if (userData) {
+                    setUser(userData);
+                    localStorage.setItem("user", JSON.stringify(userData));
+                }
+            } catch (error) {
+                // Token is expired or invalid — clear stale credentials
+                localStorage.removeItem("authToken");
+                localStorage.removeItem("user");
+                setUser(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCurrentUser();
     }, []);
 
     const login = (userData) => {

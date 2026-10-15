@@ -5,15 +5,17 @@ import toast from 'react-hot-toast';
 import { Scissors, Eye, EyeOff } from 'lucide-react';
 
 export default function Login() {
-  const { login, loading } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSubmitting(true);
     try {
       const user = await login(form.email, form.password);
       toast.success(`Welcome back, ${user.fullName}!`);
@@ -22,6 +24,8 @@ export default function Login() {
       const msg = err.message || err.response?.data?.message || 'Login failed';
       setError(msg);
       toast.error(msg);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -72,6 +76,7 @@ export default function Login() {
                   className="w-full px-4 py-3 pr-11 border-none rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 transition-all bg-gray-50 font-bold"
                 />
                 <button
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                   type="button"
                   onClick={() => setShowPass(v => !v)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1"
@@ -83,10 +88,10 @@ export default function Login() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={submitting}
               className="w-full bg-[#1a1a1a] hover:bg-black text-white py-4 rounded-full font-bold text-xs uppercase tracking-widest transition-all shadow-xl shadow-black/10 disabled:opacity-60 mt-4"
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {submitting ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 

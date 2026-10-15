@@ -25,6 +25,7 @@ export function Notification() {
                     {message}
                 </div>
                 <button 
+                    aria-label="Dismiss notification"
                     onClick={hideNotification}
                     className="p-1 hover:bg-black/5 rounded-full transition-colors"
                 >

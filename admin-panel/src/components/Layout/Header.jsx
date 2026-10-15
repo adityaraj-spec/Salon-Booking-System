@@ -31,6 +31,7 @@ export default function Header({ toggleSidebar }) {
       <div className="flex items-center gap-3">
         {/* Mobile Toggle */}
         <button 
+          aria-label="Open navigation menu"
           onClick={toggleSidebar}
           className="lg:hidden p-2 hover:bg-gray-100 rounded-xl text-gray-600 transition-colors"
         >
@@ -38,15 +39,15 @@ export default function Header({ toggleSidebar }) {
         </button>
         
         <div>
-          <h1 className="text-lg md:text-xl font-serif font-black text-[#1a1a1a] leading-tight">{title}</h1>
-          <p className="hidden md:block text-[11px] font-bold text-[#D4AF37] mt-1">
+          <p className="text-sm md:text-base font-serif font-bold text-[#1a1a1a] leading-tight">{title}</p>
+          <p className="hidden md:block text-xs font-semibold text-[#D4AF37] mt-0.5">
             {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
         </div>
       </div>
       
       <div className="flex items-center gap-2 md:gap-3">
-        <button className="relative p-2 rounded-xl hover:bg-gray-50 text-gray-500 transition-colors">
+        <button aria-label="Open notifications" className="relative p-2 rounded-xl hover:bg-gray-50 text-gray-500 transition-colors">
           <Bell size={20} />
         </button>
         <div className="w-px h-6 bg-gray-200" />

@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import fs from "fs";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
@@ -14,20 +15,85 @@ import serviceRouter from "./routes/service.routes.js";
 import staffRouter from "./routes/staff.routes.js";
 import adminRouter from "./routes/admin.routes.js";
 import ownerRouter from "./routes/owner.routes.js";
+import paymentRouter from "./routes/payment.routes.js";
+import paymentWebhookRouter from "./routes/payment.webhook.routes.js";
+import healthRouter from "./routes/health.routes.js";
+import growthRouter from "./routes/growth.routes.js";
+import metricsRouter from "./routes/metrics.routes.js";
 import ApiError from "./utils/apiError.js";
+
+import { sanitizeNoSQL } from "./middleware/sanitize.js";
+import { correlationIdMiddleware } from "./middleware/correlationId.js";
+import { prometheusMetricsMiddleware } from "./middleware/metricsMiddleware.js";
+import { requestLoggerMiddleware } from "./middleware/requestLogger.js";
+import { applySecurityHeaders } from "./middleware/securityHeaders.js";
+import { authStrictLimiter, generalApiLimiter } from "./middleware/rateLimiter.js";
+import logger from "./lib/logger.js";
+
+import compression from "compression";
 
 const app = express();
 app.set("trust proxy", 1);
 
+// correlationIdMiddleware MUST be first — seeds AsyncLocalStorage for all downstream middleware
+app.use(correlationIdMiddleware);
+app.use(prometheusMetricsMiddleware);
+app.use(requestLoggerMiddleware);
+app.use(applySecurityHeaders);
+app.use(
+  compression({
+    level: 6,
+    threshold: 1024,
+  })
+);
+
+// Item 1: Strict CORS Whitelist with fail-closed behavior (No wildcard origin reflection)
+const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173,http://localhost:3000")
+    .split(",")
+    .map((o) => o.trim())
+    .filter(Boolean);
+
+const isAllowedOrigin = (origin) => {
+    if (!origin) return true;
+    if (allowedOrigins.includes(origin)) return true;
+    // Allow any localhost / 127.0.0.1 port in local dev environments
+    if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+        return true;
+    }
+    return false;
+};
+
 app.use(cors({
-    origin: (process.env.CORS_ORIGIN || "").split(","),
-    credentials: true
+    origin: (origin, callback) => {
+        if (isAllowedOrigin(origin)) {
+            return callback(null, true);
+        }
+        logger.warn({ origin }, "[CORS Blocked] Request origin not in whitelist");
+        return callback(new ApiError(403, "CORS policy violation: Origin not allowed"), false);
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Idempotency-Key"],
 }));
+
+// ─── CRITICAL: Webhook router MUST be mounted BEFORE express.json() ─────────
+// Razorpay signs the raw byte buffer. express.json() would parse and discard it,
+// making HMAC verification impossible. The webhook route has its own express.raw() parser.
+app.use("/api/v1/payments/webhook", paymentWebhookRouter);
 
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ limit: "16kb", extended: true }));
-app.use(express.static("public"));
+
+// Health check probes and Metrics endpoint (mounted before static middleware)
+app.use("/health", healthRouter);
+app.use("/api/v1/health", healthRouter);
+app.use("/metrics", metricsRouter);
+
+
+app.use(express.static("public", { fallthrough: true }));
 app.use(cookieParser());
+app.use(sanitizeNoSQL);
+
 
 // ─── Rate Limiters ───────────────────────────────────────────────────────────
 const generalLimiter = rateLimit({
@@ -54,22 +120,11 @@ const resendLimiter = rateLimit({
     message: { success: false, message: "Too many resend attempts. Please wait before requesting again." }
 });
 
-// Apply general limiter to all API routes
-app.use("/api/", generalLimiter);
+// Apply Redis sliding-window limiters (SI11, SI12)
+app.use("/api/", generalApiLimiter);
+app.use("/api/v1/users/login", authStrictLimiter);
+app.use("/api/v1/users/register", authStrictLimiter);
 
-// routes declaration
-app.get("/", (req, res) => {
-    res.status(200).json({
-        success: true,
-        message: "Salon Booking System API is running successfully."
-    });
-});
-
-// Apply strict auth rate limiters to sensitive auth endpoints
-app.use("/api/v1/users/login", authLimiter);
-app.use("/api/v1/users/register", authLimiter);
-app.use("/api/v1/users/verify-email", authLimiter);
-app.use("/api/v1/users/resend-verification", resendLimiter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/salons", salonRouter);
 app.use("/api/v1/bookings", bookingRouter);
@@ -79,32 +134,46 @@ app.use("/api/v1/services", serviceRouter);
 app.use("/api/v1/staff", staffRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/owner", ownerRouter);
+app.use("/api/v1/payments", paymentRouter); // non-webhook payment routes (create-order, verify) — JSON body is fine here
+app.use("/api/v1/growth", growthRouter);
 
 
 // SPA Fallback for generic routes (must be placed before generic error handler)
-app.get(/^(?!\/api).*$/, (req, res) => {
-    res.sendFile(path.resolve("public", "index.html"));
+app.get(/^(?!\/(api|health)).*$/, (req, res, next) => {
+    const indexPath = path.resolve("public", "index.html");
+    if (fs.existsSync(indexPath)) {
+        return res.sendFile(indexPath);
+    }
+    next();
 });
 
-// common error handling middleware
+// 404 handler for undefined API routes
+app.use((req, res, next) => {
+    next(new ApiError(404, `Route ${req.originalUrl} not found`));
+});
+
+// Common error handling middleware
 app.use((err, req, res, next) => {
-    // Log error for debugging in server logs
-    console.error(`Error [${err.statusCode || 500}]:`, err.message);
-    if (err.stack) console.error(err.stack);
+    const requestId = req.id || "N/A";
+    logger.error({ requestId, statusCode: err.statusCode || 500, err: err.message, stack: err.stack }, "Request error");
 
     if (err instanceof ApiError) {
         return res.status(err.statusCode).json({
             success: false,
             message: err.message,
-            errors: err.errors,
-            data: err.data
+            code: err.code || `ERR_${err.statusCode}`,
+            errors: err.errors || [],
+            data: err.data || null,
+            requestId,
         });
     }
 
-    // Default error response for non-ApiError instances
     return res.status(500).json({
         success: false,
         message: err.message || "Internal Server Error",
+        code: "INTERNAL_SERVER_ERROR",
+        errors: [],
+        requestId,
     });
 });
 

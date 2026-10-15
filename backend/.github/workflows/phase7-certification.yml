@@ -1,0 +1,57 @@
+name: Phase 7 — Production Readiness Certification
+
+on:
+  push:
+    branches: [main, release/*]
+  pull_request:
+    branches: [main]
+
+jobs:
+  formal-verification:
+    name: Formal Verification & Chaos Testing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install Dependencies
+        run: |
+          cd backend
+          npm ci
+
+      - name: Run Formal Architecture Invariant Verification
+        run: |
+          cd backend
+          npx jest tests/phase11.invariants.formal.test.js --runInBand
+
+      - name: Run Chaos Engineering Failure Injection Suite
+        run: |
+          cd backend
+          npx jest tests/phase12.chaos.test.js --runInBand
+
+      - name: Run RTO & RPO Formal Verification Suite
+        run: |
+          cd backend
+          npx jest tests/phase13.rto.rpo.test.js --runInBand
+
+      - name: Run Security Penetration Certification Suite
+        run: |
+          cd backend
+          npx jest tests/phase14.pentest.test.js --runInBand
+
+      - name: Run Full Regression Suite
+        run: |
+          cd backend
+          npm test
+
+      - name: Generate Production Readiness Certification Report
+        run: |
+          cd backend
+          node tests/generateCertificationReport.js

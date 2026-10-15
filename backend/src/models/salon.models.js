@@ -34,13 +34,51 @@ const salonSchema = new mongoose.Schema({
   },
   openingHours: String,
   closingHours: String,
+  operatingHours: [
+    {
+      dayOfWeek: {
+        type: Number,
+        min: 0,
+        max: 6,
+        required: true,
+      },
+      openTime: {
+        type: String,
+        default: "09:00",
+      },
+      closeTime: {
+        type: String,
+        default: "21:00",
+      },
+      isClosed: {
+        type: Boolean,
+        default: false,
+      },
+    },
+  ],
+  defaultBufferMinutes: {
+    type: Number,
+    default: 15,
+  },
   rating: {
+    type: Number,
+    default: 0
+  },
+  ratingSum: {
+    type: Number,
+    default: 0
+  },
+  ratingCount: {
     type: Number,
     default: 0
   },
   totalSeats: {
     type: Number,
     default: 6 // Default capacity per salon
+  },
+  timezone: {
+    type: String,
+    default: "Asia/Kolkata"
   },
   isOpen: {
     type: Boolean,
@@ -54,11 +92,18 @@ const salonSchema = new mongoose.Schema({
     },
     coordinates: {
       type: [Number], // [longitude, latitude]
-      index: '2dsphere'
+      default: [0, 0]
     }
   }
 }, { timestamps: true });
 
 salonSchema.index({ location: "2dsphere" });
+salonSchema.index({ city: 1, rating: -1, isOpen: 1 });
+// Gap 7.1: MongoDB compound text index for full-text search (name, city, description)
+// Enables $text + $meta:"textScore" ranked search as an Elasticsearch alternative
+salonSchema.index({ name: "text", city: "text", description: "text" }, {
+  weights: { name: 10, city: 5, description: 1 },
+  name: "salon_fulltext_search"
+});
 
 export const Salon = mongoose.model("Salon", salonSchema);

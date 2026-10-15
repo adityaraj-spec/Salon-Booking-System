@@ -15,7 +15,7 @@ export function VerifyEmailPage() {
     const emailFromState = location.state?.email || new URLSearchParams(location.search).get("email") || "";
 
     const [email] = useState(emailFromState);
-    const [code, setCode] = useState(["", "", "", ""]);
+    const [code, setCode] = useState(["", "", "", "", "", ""]);
     const [loading, setLoading] = useState(false);
     const [resendLoading, setResendLoading] = useState(false);
     const [error, setError] = useState("");
@@ -85,7 +85,7 @@ export function VerifyEmailPage() {
         setError("");
 
         // Auto-focus next input
-        if (value && index < 3) {
+        if (value && index < 5) {
             inputRefs.current[index + 1]?.focus();
         }
     };
@@ -95,15 +95,15 @@ export function VerifyEmailPage() {
         if (e.key === "Backspace" && !code[index] && index > 0) {
             inputRefs.current[index - 1]?.focus();
         }
-        // Allow pasting a full 4-digit code
+        // Allow pasting a full 6-digit code
         if (e.key === "v" && (e.ctrlKey || e.metaKey)) return;
     };
 
     const handlePaste = (e) => {
-        const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 4);
-        if (pasted.length === 4) {
+        const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+        if (pasted.length === 6) {
             setCode(pasted.split(""));
-            inputRefs.current[3]?.focus();
+            inputRefs.current[5]?.focus();
             e.preventDefault();
         }
     };
@@ -111,8 +111,8 @@ export function VerifyEmailPage() {
     const handleVerify = async (e) => {
         e.preventDefault();
         const fullCode = code.join("");
-        if (fullCode.length !== 4) {
-            setError("Please enter the complete 4-digit code.");
+        if (fullCode.length !== 6) {
+            setError("Please enter the complete 6-digit code.");
             return;
         }
 
@@ -140,7 +140,7 @@ export function VerifyEmailPage() {
             setError(msg);
             showNotification(msg, "error");
             // Clear the code inputs on failure
-            setCode(["", "", "", ""]);
+            setCode(["", "", "", "", "", ""]);
             inputRefs.current[0]?.focus();
         } finally {
             setLoading(false);
@@ -157,7 +157,7 @@ export function VerifyEmailPage() {
             showNotification("A new verification code has been sent to your email.", "success");
             setCooldown(60); // reset to 1 minute
             setCodeExpiry(60); // reset 1-minute expiry
-            setCode(["", "", "", ""]);
+            setCode(["", "", "", "", "", ""]);
             inputRefs.current[0]?.focus();
         } catch (err) {
             const msg = err.response?.data?.message || "Could not resend code. Please try again.";
@@ -206,7 +206,7 @@ export function VerifyEmailPage() {
                         </h2>
                         {!success && (
                             <p className="text-gray-500 text-sm leading-relaxed">
-                                We sent a 4-digit verification code to<br />
+                                We sent a 6-digit verification code to<br />
                                 <span className="font-semibold text-gray-700">{maskedEmail}</span>
                             </p>
                         )}
@@ -221,13 +221,13 @@ export function VerifyEmailPage() {
 
                     {!success && (
                         <form onSubmit={handleVerify} className="space-y-6">
-                            {/* 4-digit code inputs */}
+                            {/* 6-digit code inputs */}
                             <div>
                                 <label className="block text-sm text-gray-700 mb-3 text-center font-medium">
                                     Enter Verification Code
                                 </label>
                                 <div
-                                    className="flex justify-center gap-3"
+                                    className="flex justify-center gap-2 sm:gap-3"
                                     onPaste={handlePaste}
                                 >
                                     {code.map((digit, index) => (
@@ -241,7 +241,7 @@ export function VerifyEmailPage() {
                                             value={digit}
                                             onChange={(e) => handleDigitChange(index, e.target.value)}
                                             onKeyDown={(e) => handleKeyDown(index, e)}
-                                            className="w-14 h-14 text-center text-2xl font-bold border-2 rounded-xl text-[#1a1a1a] 
+                                            className="w-11 h-12 sm:w-13 sm:h-14 text-center text-xl sm:text-2xl font-bold border-2 rounded-xl text-[#1a1a1a] 
                                                        transition-all duration-200 outline-none
                                                        border-gray-200 focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/30
                                                        bg-white shadow-sm"
@@ -262,7 +262,7 @@ export function VerifyEmailPage() {
                             {/* Verify Button */}
                             <button
                                 type="submit"
-                                disabled={loading || code.join("").length !== 4}
+                                disabled={loading || code.join("").length !== 6}
                                 className="w-full bg-[#1a1a1a] hover:bg-black text-white font-medium py-3.5 rounded-full 
                                            transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
                                            flex items-center justify-center gap-2"
@@ -387,7 +387,7 @@ export function VerifyEmailPage() {
                     <div className="space-y-4 text-left max-w-xs mx-auto">
                         {[
                             { step: "1", text: "Check your inbox for the code" },
-                            { step: "2", text: "Enter the 4-digit code" },
+                            { step: "2", text: "Enter the 6-digit code" },
                             { step: "3", text: "Start booking your appointments" }
                         ].map(({ step, text }) => (
                             <div key={step} className="flex items-center gap-3">

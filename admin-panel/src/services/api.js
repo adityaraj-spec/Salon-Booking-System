@@ -17,11 +17,14 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle 401 → redirect to login
+// Handle 401 → redirect to login, but NOT during the login request itself
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const isLoginRequest = error.config?.url?.includes('/users/login');
+    const isAlreadyOnLogin = window.location.pathname === '/login';
+
+    if (error.response?.status === 401 && !isLoginRequest && !isAlreadyOnLogin) {
       sessionStorage.removeItem('adminToken');
       sessionStorage.removeItem('adminUser');
       window.location.href = '/login';
