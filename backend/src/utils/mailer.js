@@ -787,10 +787,24 @@ export const welcomeToSalonNow = (email, name, role = "Customer") => {
 };
 
 // ==========================================
-// COMPATIBILITY EXPORT ALIASES (FOR CONTROLLERS)
+// ALL COMPATIBILITY EXPORT ALIASES
 // ==========================================
 export const sendWelcomeEmail = (email, name, role) => welcomeToSalonNow(email, name, role);
 export const sendVerificationEmail = (email, userName, code) => emailVerification(email, userName, code);
 export const sendLoginEmail = (email, userName, details) => accountNotification(email, userName, details || "New login detected on your account", new Date());
 export const sendLogoutEmail = (email, userName, details) => accountNotification(email, userName, details || "Account session ended", new Date());
 export const sendShopAddedEmail = (email, ownerName, shopName) => listingUpdate(email, ownerName, shopName, "Your salon has been successfully added to SalonNow.");
+export const sendPaymentReceiptEmail = (email, customerName, salonName, amount, paymentId, bookingReference) => paymentReceipt(email, customerName, salonName, amount, paymentId, bookingReference);
+export const sendOwnerPaymentNotificationEmail = (email, ownerName, customerName, shopName, bookingTime, amount, paymentId) => ownerPaidBooking(email, ownerName, customerName, shopName, bookingTime, amount, paymentId);
+export const sendBookingConfirmationEmail = (email, customerName, salonName, bookingTime, bookingReference, services, amount) => bookingConfirmation(email, customerName, salonName, bookingTime, bookingReference, services, amount);
+export const sendBookingPendingEmail = (email, customerName, salonName, bookingTime, bookingReference) => bookingPending(email, customerName, salonName, bookingTime, bookingReference);
+export const sendAppointmentCancelledEmail = (email, customerName, salonName, bookingTime, bookingReference, reason) => appointmentCancelled(email, customerName, salonName, bookingTime, bookingReference, reason);
+export const sendBookingUpdateEmail = (email, customerName, salonName, oldBookingTime, newBookingTime, bookingReference) => bookingUpdate(email, customerName, salonName, oldBookingTime, newBookingTime, bookingReference);
+export const sendNewBookingRequestEmail = (email, ownerName, customerName, salonName, bookingTime, services, bookingReference) => newBookingRequest(email, ownerName, customerName, salonName, bookingTime, services, bookingReference);
+export const sendAccountNotificationEmail = (email, userName, actionDescription, timestamp) => accountNotification(email, userName, actionDescription, timestamp);
+export const sendListingUpdateEmail = (email, ownerName, shopName, updateDetails) => listingUpdate(email, ownerName, shopName, updateDetails);
+export const sendProfileUpdateEmail = (email, userName, updateType) => profileUpdate(email, userName, updateType);
+export const sendManagementUpdateEmail = (email, ownerName, shopName, details) => managementUpdate(email, ownerName, shopName, details);
+export const sendBookingStatusEmail = (email, customerName, salonName, bookingTime, bookingReference, status) => bookingUpdate(email, customerName, salonName, bookingTime, bookingTime, bookingReference);
+export const sendOwnerNewBookingEmail = (email, ownerName, customerName, salonName, bookingTime, services, bookingReference) => newBookingRequest(email, ownerName, customerName, salonName, bookingTime, services, bookingReference);
+export const testEmailConfiguration = (email, testRecipient) => emailConfigurationTest(email, testRecipient);
