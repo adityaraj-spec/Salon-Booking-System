@@ -91,11 +91,19 @@ app.use("/api/v1/payments/webhook", paymentWebhookRouter);
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ limit: "16kb", extended: true }));
 
+// Root endpoint to handle base URL pings cleanly and prevent 404 logs
+app.get("/", (req, res) => {
+    return res.status(200).json({
+        success: true,
+        message: "SalonNow API is up and running successfully",
+        timestamp: new Date().toISOString(),
+    });
+});
+
 // Health check probes and Metrics endpoint (mounted before static middleware)
 app.use("/health", healthRouter);
 app.use("/api/v1/health", healthRouter);
 app.use("/metrics", metricsRouter);
-
 
 app.use(express.static("public", { fallthrough: true }));
 app.use(cookieParser());
