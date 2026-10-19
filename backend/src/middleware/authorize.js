@@ -1,6 +1,14 @@
 import ApiError from "../utils/apiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import logger from "../lib/logger.js";
+import { ROLES } from "../constants.js";
+
+const normalizeRole = (role) => {
+  const normalized = role?.toString().trim().toLowerCase();
+  if (normalized === "owner") return ROLES.OWNER.toLowerCase();
+  if (normalized === "admin") return ROLES.ADMIN.toLowerCase();
+  return normalized;
+};
 
 /**
  * Role-Based Access Control (RBAC) middleware.
@@ -14,7 +22,10 @@ export const authorize = (...allowedRoles) => {
       throw new ApiError(401, "Authentication required");
     }
 
-    if (!allowedRoles.includes(req.user.role)) {
+    const userRole = normalizeRole(req.user.role);
+    const normalizedAllowedRoles = allowedRoles.map(normalizeRole);
+
+    if (!normalizedAllowedRoles.includes(userRole)) {
       logger.warn(
         { userId: req.user._id, role: req.user.role, allowedRoles, path: req.originalUrl },
         "[RBAC Blocked] User role insufficient for route"
@@ -56,13 +67,13 @@ export const requireOwnership = (model, ownerParamKey = "id", ownerFieldOnDoc = 
     }
 
     // 1. Admins bypass ownership checks
-    if (req.user.role === "admin") {
+    if (normalizeRole(req.user.role) === normalizeRole(ROLES.ADMIN)) {
       req.resourceDoc = doc;
       return next();
     }
 
     // 2. Salon Owners checking salon-bound resources (e.g. bookings at their salon)
-    if (req.user.role === "owner" && doc.salon && req.ownerSalonId) {
+    if (normalizeRole(req.user.role) === normalizeRole(ROLES.OWNER) && doc.salon && req.ownerSalonId) {
       if (doc.salon.toString() === req.ownerSalonId.toString()) {
         req.resourceDoc = doc;
         return next();

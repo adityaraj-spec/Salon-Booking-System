@@ -18,6 +18,7 @@ let testOwner;
 let testSalon;
 let testService;
 let customerToken;
+let ownerToken;
 
 beforeAll(async () => {
   replSet = await MongoMemoryReplSet.create({
@@ -47,6 +48,7 @@ beforeAll(async () => {
   });
 
   customerToken = testCustomer.generateAccessToken();
+  ownerToken = testOwner.generateAccessToken();
 
   testSalon = await Salon.create({
     owner: testOwner._id,
@@ -137,6 +139,18 @@ describe("Automated API Testing: Booking Operations Suite", () => {
       expect(res.body.data.bookings.length).toBe(1);
       expect(res.body.data.bookings[0].totalAmount).toBe(350);
       expect(res.body.data.pagination).toBeDefined();
+    });
+  });
+
+  describe("GET /api/v1/bookings/salon-bookings", () => {
+    it("allows a salonOwner role through the owner authorization alias", async () => {
+      const res = await request(app)
+        .get("/api/v1/bookings/salon-bookings")
+        .set("Authorization", `Bearer ${ownerToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(Array.isArray(res.body.data.bookings)).toBe(true);
     });
   });
 

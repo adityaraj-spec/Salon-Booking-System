@@ -1,19 +1,10 @@
 import * as Brevo from "@getbrevo/brevo";
 import logger from "../lib/logger.js";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
 const FRONTEND_URL = () => process.env.FRONTEND_URL || "http://localhost:5173";
-
-// ─── Brevo Client Singleton (lazy-initialized, safe) ─────────────────────────
 
 let _brevoClient = null;
 
-/**
- * Returns a cached TransactionalEmailsApi instance, or null when unconfigured.
- * Uses Brevo's v3.x setApiKey() method with an 'xkeysib-...' REST API key.
- * Never throws — callers receive null and handle it gracefully.
- */
 const getBrevoClient = () => {
     const apiKey = process.env.BREVO_API_KEY?.trim();
     if (!apiKey) return null;
@@ -67,11 +58,6 @@ const htmlToText = (html = "") => html
     .replace(/\n\s*\n+/g, "\n\n")
     .trim();
 
-/**
- * Non-blocking startup probe.
- * Checks whether Brevo REST API credentials are configured.
- * Never throws or calls process.exit().
- */
 export const verifyEmailService = async () => {
     try {
         const apiKey = process.env.BREVO_API_KEY?.trim();
@@ -106,12 +92,6 @@ export const verifyEmailService = async () => {
     }
 };
 
-/**
- * Central email dispatcher using Brevo's HTTPS REST API.
- *
- * Returns `{ success: true, id }` on delivery, or `{ success: false, error }` on
- * any failure — it NEVER throws. Controllers can safely fire-and-forget.
- */
 export const sendBrevoEmail = async ({
     to,
     subject,
@@ -164,7 +144,6 @@ export const sendBrevoEmail = async ({
     }
 };
 
-// Alias sendEmail to sendBrevoEmail for backwards compatibility
 export const sendEmail = sendBrevoEmail;
 
 export const sendTemplateEmail = (to, subject, htmlContent, textContent) => sendBrevoEmail({
@@ -174,434 +153,627 @@ export const sendTemplateEmail = (to, subject, htmlContent, textContent) => send
     text: textContent,
 });
 
-// ─── Diagnostic Function ──────────────────────────────────────────────────────
+const COLORS = {
+    header: "#222222",
+    text: "#222222",
+    warm: "#F7F4EE",
+    gold: "#C5A05A",
+    muted: "#73777B",
+    border: "#E4E0D8",
+    success: "#287747",
+    danger: "#A34B4B",
+    pending: "#9A6A20",
+    page: "#F1F1EF",
+};
+
+const SOCIAL_LINKS = [
+    { label: "Instagram", href: "https://www.instagram.com/aaditya_raj_2310?igsh=enRtZmpvN3RnZTV4" },
+    { label: "X", href: "https://x.com/Aaditya_raj_70?t=qvI4FEr3TKf1D2lPsHRWow&s=09" },
+];
+
+const escapeHtml = (value) => String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
+const displayValue = (value, fallback = "Not provided") => {
+    const normalized = value === null || value === undefined ? "" : String(value).trim();
+    return normalized || fallback;
+};
+
+const hasValue = (value) => value !== null && value !== undefined && String(value).trim() !== "";
+
+const displayServices = (services) => {
+    if (Array.isArray(services)) {
+        const items = services.map((service) => displayValue(service, "")).filter(Boolean);
+        return items.length ? items.join(", ") : "Salon services";
+    }
+    return displayValue(services, "Salon services");
+};
+
+const getInitials = (value) => displayValue(value, "SN")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+
+const frontendLink = (path) => `${FRONTEND_URL()}${path}`;
+
+const supportEmail = () => process.env.SUPPORT_EMAIL?.trim() || process.env.EMAIL_REPLY_TO?.trim() || "support@salonnow.in";
+
+const renderDetailCard = (rows = []) => {
+    const safeRows = rows
+        .filter((row) => row && hasValue(row.value))
+        .map((row) => ({
+            label: displayValue(row.label, "Details"),
+            value: displayValue(row.value),
+            emphasis: Boolean(row.emphasis),
+        }));
+
+    if (!safeRows.length) return { html: "", lines: [] };
+
+    return {
+        html: `
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background:${COLORS.warm};border:1px solid ${COLORS.border};border-radius:5px;overflow:hidden;margin:24px 0;">
+          ${safeRows.map((row, index) => `<tr${index < safeRows.length - 1 ? ` style="border-bottom:1px solid ${COLORS.border};"` : ""}>
+            <td style="padding:13px 16px;color:${COLORS.muted};font-size:10px;line-height:1.4;letter-spacing:1.1px;text-transform:uppercase;vertical-align:top;width:36%;">${escapeHtml(row.label)}</td>
+            <td style="padding:13px 16px;color:${row.emphasis ? COLORS.text : "#41464B"};font-size:${row.emphasis ? "17px" : "13px"};font-weight:${row.emphasis ? "700" : "600"};line-height:1.5;text-align:right;word-break:break-word;">${escapeHtml(row.value)}</td>
+          </tr>`).join("")}
+        </table>`,
+        lines: safeRows.map((row) => `${row.label}: ${row.value}`),
+    };
+};
+
+const renderBookingPanel = ({
+    bookingReference,
+    bookingTime,
+    salonName,
+    salonAddress,
+    stylist,
+    services,
+    price,
+    customerName,
+    status,
+    statusColor = COLORS.pending,
+}) => {
+    const safeSalonName = displayValue(salonName, "Salon");
+    const hasAppointmentDetails = hasValue(bookingTime) || hasValue(stylist) || hasValue(services);
+    const hasTotal = hasValue(price);
+    const hasBookingReference = hasValue(bookingReference);
+    const hasCustomer = hasValue(customerName);
+    const serviceText = hasValue(services) ? displayServices(services) : "";
+    const bookingStatus = hasValue(status) ? displayValue(status) : "";
+    const appointmentValue = hasValue(bookingTime) ? displayValue(bookingTime) : "";
+
+    return {
+        html: `
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background:#ffffff;border:1px solid ${COLORS.border};border-radius:5px;overflow:hidden;margin:24px 0;">
+          ${hasBookingReference ? `<tr style="background:${COLORS.warm};border-bottom:1px solid ${COLORS.border};">
+            <td style="padding:13px 16px;">
+              <p style="margin:0 0 4px;color:${COLORS.muted};font-size:10px;letter-spacing:1.1px;text-transform:uppercase;">Booking reference</p>
+              <p style="margin:0;color:${COLORS.text};font-size:16px;font-weight:700;">${escapeHtml(displayValue(bookingReference))}</p>
+            </td>
+          </tr>` : ""}
+          <tr>
+            <td style="padding:18px 16px 14px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+                <tr>
+                  <td width="44" valign="top">
+                    <span style="display:inline-block;width:34px;height:34px;border-radius:50%;background:${COLORS.header};color:#ffffff;font-size:14px;line-height:34px;text-align:center;">${escapeHtml(getInitials(safeSalonName))}</span>
+                  </td>
+                  <td valign="top" style="padding-left:10px;">
+                    <p style="margin:0;color:${COLORS.text};font-size:14px;font-weight:700;line-height:1.4;">${escapeHtml(safeSalonName)}</p>
+                    ${hasValue(salonAddress) ? `<p style="margin:3px 0 0;color:${COLORS.muted};font-size:11px;line-height:1.5;">${escapeHtml(displayValue(salonAddress))}</p>` : ""}
+                  </td>
+                  ${bookingStatus ? `<td align="right" valign="top" style="padding-left:8px;"><span style="display:inline-block;padding:5px 9px;border:1px solid ${statusColor};border-radius:20px;color:${statusColor};font-size:10px;font-weight:700;">${escapeHtml(bookingStatus)}</span></td>` : ""}
+                </tr>
+              </table>
+            </td>
+          </tr>
+          ${hasCustomer ? `<tr>
+            <td style="padding:12px 16px;border-top:1px solid ${COLORS.border};">
+              <p style="margin:0 0 4px;color:${COLORS.muted};font-size:10px;letter-spacing:1.1px;text-transform:uppercase;">Customer</p>
+              <p style="margin:0;color:${COLORS.text};font-size:14px;font-weight:700;">${escapeHtml(displayValue(customerName))}</p>
+            </td>
+          </tr>` : ""}
+          ${hasAppointmentDetails ? `<tr>
+            <td style="padding:14px 16px 16px;border-top:1px solid ${COLORS.border};">
+              <p style="margin:0 0 11px;color:${COLORS.text};font-size:10px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;">Appointment details</p>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+                <tr>
+                  ${appointmentValue ? `<td width="50%" valign="top" style="padding-right:16px;${serviceText || hasValue(stylist) ? `border-right:1px solid ${COLORS.border};` : ""}">
+                    <p style="margin:0 0 4px;color:${COLORS.muted};font-size:10px;">Date &amp; Time</p>
+                    <p style="margin:0;color:#41464B;font-size:12px;line-height:1.5;">${escapeHtml(appointmentValue)}</p>
+                  </td>` : ""}
+                  ${(serviceText || hasValue(stylist)) ? `<td valign="top" style="padding-left:${appointmentValue ? "16px" : "0"};">
+                    <p style="margin:0 0 4px;color:${COLORS.muted};font-size:10px;">Service</p>
+                    ${serviceText ? `<p style="margin:0;color:#41464B;font-size:12px;line-height:1.5;">${escapeHtml(serviceText)}</p>` : ""}
+                    ${hasValue(stylist) ? `<p style="margin:4px 0 0;color:${COLORS.muted};font-size:10px;line-height:1.5;">Stylist: <span style="color:#41464B;">${escapeHtml(displayValue(stylist))}</span></p>` : ""}
+                  </td>` : ""}
+                </tr>
+              </table>
+            </td>
+          </tr>` : ""}
+          ${hasTotal ? `<tr>
+            <td style="padding:14px 16px;background:${COLORS.warm};border-top:1px solid ${COLORS.border};">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr>
+                <td style="color:${COLORS.text};font-size:12px;font-weight:700;">Total amount</td>
+                <td align="right" style="color:${COLORS.text};font-size:16px;font-weight:700;">₹${escapeHtml(displayValue(price, "0"))}</td>
+              </tr></table>
+            </td>
+          </tr>` : ""}
+        </table>`,
+        lines: [
+            ...(hasBookingReference ? [`Booking reference: ${displayValue(bookingReference)}`] : []),
+            `Salon: ${safeSalonName}`,
+            ...(hasCustomer ? [`Customer: ${displayValue(customerName)}`] : []),
+            ...(appointmentValue ? [`Date & Time: ${appointmentValue}`] : []),
+            ...(serviceText ? [`Service: ${serviceText}`] : []),
+            ...(hasValue(stylist) ? [`Stylist: ${displayValue(stylist)}`] : []),
+            ...(bookingStatus ? [`Status: ${bookingStatus}`] : []),
+            ...(hasTotal ? [`Total amount: ₹${displayValue(price, "0")}`] : []),
+        ],
+    };
+};
+
+const renderPaymentDetails = ({ status, reference, method }) => {
+    const cells = [
+        { label: "Payment status", value: status, color: COLORS.success },
+        { label: "Payment reference", value: reference },
+        { label: "Payment method", value: method },
+    ].filter((cell) => hasValue(cell.value));
+
+    if (!cells.length) return { html: "", lines: [] };
+
+    return {
+        html: `
+        <p style="margin:26px 0 10px;color:${COLORS.text};font-size:10px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;">Payment details</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 22px;">
+          <tr>
+            ${cells.map((cell, index) => `<td width="${Math.floor(100 / cells.length)}%" valign="top" style="padding:${index ? "0 0 0 12px" : "0 12px 0 0"};${index < cells.length - 1 ? `border-right:1px solid ${COLORS.border};` : ""}">
+              <p style="margin:0 0 5px;color:${COLORS.muted};font-size:10px;line-height:1.4;">${escapeHtml(cell.label)}</p>
+              <p style="margin:0;color:${cell.color || "#41464B"};font-size:11px;font-weight:700;line-height:1.5;word-break:break-word;">${escapeHtml(displayValue(cell.value))}</p>
+            </td>`).join("")}
+          </tr>
+        </table>`,
+        lines: cells.map((cell) => `${cell.label}: ${displayValue(cell.value)}`),
+    };
+};
+
+const renderSupportLine = () => {
+    const email = supportEmail();
+    const contact = email
+        ? `<a href="mailto:${escapeHtml(email)}" style="color:${COLORS.gold};text-decoration:underline;">Contact us</a>`
+        : `<span style="color:${COLORS.gold};">Contact support</span>`;
+    return {
+        html: `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:24px 0 4px;">
+          <tr>
+            <td width="28" valign="top" style="color:${COLORS.header};font-size:17px;line-height:1.4;">◉</td>
+            <td style="color:${COLORS.muted};font-size:11px;line-height:1.6;">Need help? Our support team is here for you. ${contact}</td>
+          </tr>
+        </table>`,
+        text: `Need help? Our support team is here for you. ${email ? `Contact us at ${email}.` : "Contact support."}`,
+    };
+};
+
+const renderEmail = ({
+    preheader,
+    category,
+    icon = "•",
+    heading,
+    greeting,
+    paragraphs = [],
+    rows = [],
+    booking,
+    payment,
+    notice,
+    code,
+    cta,
+    accent = COLORS.gold,
+    footer = "SalonNow",
+}) => {
+    const safeHeading = displayValue(heading, "SalonNow");
+    const safePreheader = displayValue(preheader, safeHeading);
+    const safeCategory = displayValue(category, "SalonNow");
+    const safeGreeting = hasValue(greeting) ? displayValue(greeting) : "";
+    const safeParagraphs = paragraphs.map((paragraph) => displayValue(paragraph, "")).filter(Boolean);
+    const safeNotice = notice && hasValue(notice.text) ? {
+        label: displayValue(notice.label, "Update"),
+        text: displayValue(notice.text),
+        color: notice.color || accent,
+    } : null;
+    const safeCode = code === undefined || code === null ? "" : String(code);
+    const safeCta = cta ? {
+        label: displayValue(cta.label, "Open SalonNow"),
+        href: String(cta.href),
+    } : null;
+    const detailCard = renderDetailCard(rows);
+    const support = renderSupportLine();
+    const noticeHtml = safeNotice ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:24px 0;">
+      <tr><td style="border-left:4px solid ${safeNotice.color};background:${COLORS.warm};padding:13px 15px;">
+        <p style="margin:0 0 4px;color:${safeNotice.color};font-size:10px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;">${escapeHtml(safeNotice.label)}</p>
+        <p style="margin:0;color:#41464B;font-size:12px;line-height:1.6;">${escapeHtml(safeNotice.text)}</p>
+      </td></tr>
+    </table>` : "";
+    const codeHtml = safeCode ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:24px 0;">
+      <tr><td align="center" style="background:${COLORS.warm};border:1px dashed ${accent};padding:18px 12px;">
+        <p style="margin:0 0 8px;color:${COLORS.muted};font-size:10px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;">Your verification code</p>
+        <p style="margin:0;color:${COLORS.text};font-size:30px;font-weight:700;letter-spacing:8px;line-height:1.2;">${escapeHtml(safeCode)}</p>
+      </td></tr>
+    </table>` : "";
+    const ctaHtml = safeCta ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:24px 0 8px;">
+      <tr><td align="center" bgcolor="${COLORS.header}" style="background:${COLORS.header};border-radius:4px;">
+        <a href="${escapeHtml(safeCta.href)}" style="display:block;padding:13px 18px;color:#ffffff;font-size:12px;font-weight:700;letter-spacing:.3px;text-decoration:none;">${escapeHtml(safeCta.label)} &nbsp;→</a>
+      </td></tr>
+    </table>` : "";
+    const footerHtml = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${COLORS.warm}" style="border-collapse:collapse;background:${COLORS.warm};">
+      <tr>
+        <td style="padding:18px 28px 12px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr>
+            <td valign="top"><p style="margin:0;color:${COLORS.text};font-size:17px;font-weight:700;letter-spacing:-.3px;">salon<span style="color:${COLORS.gold};">now</span></p><p style="margin:4px 0 0;color:${COLORS.muted};font-size:9px;letter-spacing:.8px;text-transform:uppercase;">Hair / Beauty / Wellness</p></td>
+            <td align="right" valign="top"><p style="margin:3px 0 0;color:${COLORS.muted};font-size:10px;line-height:1.5;">${SOCIAL_LINKS.map((link) => `<a href="${escapeHtml(link.href)}" style="color:${COLORS.muted};text-decoration:none;">${escapeHtml(link.label)}</a>`).join(" &nbsp;·&nbsp; ")}</p></td>
+          </tr></table>
+          <p style="margin:17px 0 0;padding-top:10px;border-top:1px solid ${COLORS.border};color:#9A9A95;font-size:9px;line-height:1.6;text-align:center;">This email was sent by SalonNow because of an action on your account. © ${new Date().getFullYear()} SalonNow.</p>
+        </td>
+      </tr>
+    </table>`;
+
+    const html = `<!doctype html>
+<html lang="en">
+  <body style="margin:0;padding:0;background:${COLORS.page};color:${COLORS.text};font-family:Arial,Helvetica,sans-serif;">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">${escapeHtml(safePreheader)}</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${COLORS.page}" style="border-collapse:collapse;width:100%;background:${COLORS.page};">
+      <tr><td align="center" style="padding:22px 10px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;width:100%;max-width:640px;background:#ffffff;">
+          <tr><td bgcolor="${COLORS.header}" style="padding:17px 20px;background:${COLORS.header};">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr>
+              <td valign="middle"><p style="margin:0;color:#ffffff;font-size:19px;font-weight:700;letter-spacing:-.4px;">salon<span style="color:${COLORS.gold};">now</span></p></td>
+              <td align="right" valign="middle"><p style="margin:0;color:#D5C59E;font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Hair / Beauty / Wellness</p></td>
+            </tr></table>
+          </td></tr>
+          <tr><td style="padding:28px 30px 24px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 10px;"><tr>
+              <td valign="middle"><span style="display:inline-block;width:25px;height:25px;border:1px solid ${accent};border-radius:50%;color:${accent};font-size:13px;line-height:25px;text-align:center;">${escapeHtml(icon)}</span></td>
+              <td valign="middle" style="padding-left:10px;"><p style="margin:0;color:${COLORS.muted};font-size:9px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;">${escapeHtml(safeCategory)}</p></td>
+            </tr></table>
+            <h1 style="margin:0 0 13px;color:${COLORS.text};font-size:25px;line-height:1.2;font-weight:700;letter-spacing:-.3px;">${escapeHtml(safeHeading)}</h1>
+            ${safeGreeting ? `<p style="margin:0 0 8px;color:#41464B;font-size:12px;line-height:1.6;">${escapeHtml(safeGreeting)}</p>` : ""}
+            ${safeParagraphs.map((paragraph) => `<p style="margin:0 0 10px;color:${COLORS.muted};font-size:12px;line-height:1.7;">${escapeHtml(paragraph)}</p>`).join("")}
+            ${noticeHtml}
+            ${safeCode ? codeHtml : ""}
+            ${booking?.html || ""}
+            ${payment?.cardHtml || ""}
+            ${detailCard.html}
+            ${payment?.detailsHtml || ""}
+            ${ctaHtml}
+            ${support.html}
+          </td></tr>
+          <tr><td>${footerHtml}</td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </body>
+</html>`;
+
+    const textLines = [safeCategory, safeHeading, ...(safeGreeting ? [safeGreeting] : []), ...safeParagraphs];
+    if (safeNotice) textLines.push(`${safeNotice.label}: ${safeNotice.text}`);
+    if (safeCode) textLines.push(`Verification code: ${safeCode}`);
+    if (booking?.lines) textLines.push(...booking.lines);
+    if (payment?.cardLines) textLines.push(...payment.cardLines);
+    textLines.push(...detailCard.lines);
+    if (payment?.detailsLines) textLines.push(...payment.detailsLines);
+    if (safeCta) textLines.push(`${safeCta.label}: ${safeCta.href}`);
+    textLines.push(support.text, footer);
+
+    return { html, text: textLines.join("\n\n") };
+};
+
+const renderPaymentCard = ({ shopName, bookingTime, amount, paymentId }) => {
+    const cells = [
+        { label: "Amount paid", value: hasValue(amount) ? `₹${displayValue(amount, "0")}` : "", emphasis: true },
+        { label: "Payment reference", value: paymentId },
+        { label: "Salon", value: shopName },
+        { label: "Appointment", value: bookingTime },
+    ].filter((cell) => hasValue(cell.value));
+    const rows = [];
+
+    for (let index = 0; index < cells.length; index += 2) {
+        const left = cells[index];
+        const right = cells[index + 1];
+        rows.push(`<tr${index + 2 < cells.length ? ` style="border-bottom:1px solid ${COLORS.border};"` : ""}>
+          <td width="50%" valign="top" style="padding:13px 14px 13px 16px;${right ? `border-right:1px solid ${COLORS.border};` : ""}">
+            <p style="margin:0 0 5px;color:${COLORS.muted};font-size:10px;line-height:1.4;">${escapeHtml(left.label)}</p>
+            <p style="margin:0;color:${left.emphasis ? COLORS.text : "#41464B"};font-size:${left.emphasis ? "17px" : "12px"};font-weight:${left.emphasis ? "700" : "600"};line-height:1.5;word-break:break-word;">${escapeHtml(displayValue(left.value))}</p>
+          </td>
+          ${right ? `<td width="50%" valign="top" style="padding:13px 16px 13px 14px;">
+            <p style="margin:0 0 5px;color:${COLORS.muted};font-size:10px;line-height:1.4;">${escapeHtml(right.label)}</p>
+            <p style="margin:0;color:${right.emphasis ? COLORS.text : "#41464B"};font-size:${right.emphasis ? "17px" : "12px"};font-weight:${right.emphasis ? "700" : "600"};line-height:1.5;word-break:break-word;">${escapeHtml(displayValue(right.value))}</p>
+          </td>` : ""}
+        </tr>`);
+    }
+
+    return {
+        cardHtml: cells.length ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background:${COLORS.warm};border:1px solid ${COLORS.border};border-radius:5px;overflow:hidden;margin:24px 0;">${rows.join("")}</table>` : "",
+        cardLines: cells.map((cell) => `${cell.label}: ${displayValue(cell.value)}`),
+    };
+};
+
 export const testEmailConfiguration = async (targetEmail) => {
-    const html = `
-    <div style="font-family:sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
-        <h2 style="color: #D4AF37;">Brevo REST API Configuration Test</h2>
-        <p>If you are reading this, your Brevo REST API mailing system is operational and delivering emails successfully over HTTPS!</p>
-        <hr/>
-        <p><strong>Environment Check:</strong></p>
-        <ul>
-            <li><strong>BREVO_API_KEY:</strong> ${process.env.BREVO_API_KEY ? (process.env.BREVO_API_KEY.startsWith('xkeysib-') ? 'Valid REST API Key (Active)' : 'WARNING: Key does not start with xkeysib-') : 'MISSING'}</li>
-            <li><strong>SENDER_NAME:</strong> ${process.env.SENDER_NAME || 'SalonNow (default)'}</li>
-            <li><strong>SENDER_EMAIL:</strong> ${process.env.SENDER_EMAIL || 'noreply@salonnow.com (default)'}</li>
-            <li><strong>FRONTEND_URL:</strong> ${process.env.FRONTEND_URL || 'NOT SET'}</li>
-        </ul>
-    </div>`;
-    return sendTemplateEmail(targetEmail, "SalonNow - Brevo REST API Configuration Test", html);
+    const rendered = renderEmail({
+        preheader: "SalonNow email configuration test",
+        category: "Email configuration test",
+        icon: "✓",
+        heading: "Test email from SalonNow.",
+        greeting: "Hi there,",
+        paragraphs: ["This message confirms that the SalonNow transactional email service is configured to deliver messages."],
+        rows: [
+            { label: "Recipient", value: targetEmail },
+            { label: "Brevo API key", value: process.env.BREVO_API_KEY ? (process.env.BREVO_API_KEY.startsWith("xkeysib-") ? "Configured REST API key" : "Configured, but prefix should be xkeysib-") : "Missing" },
+            { label: "Sender email", value: process.env.SENDER_EMAIL || "noreply@salonnow.com (default)" },
+        ],
+        footer: "SalonNow configuration test",
+    });
+    return sendTemplateEmail(targetEmail, "SalonNow - Brevo REST API Configuration Test", rendered.html, rendered.text);
 };
 
-// ─── Welcome Email ────────────────────────────────────────────────────────────
 export const sendWelcomeEmail = async (email, name) => {
-    const html = `
-    <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #f0f0f0;">
-      <div style="background:#1a1a1a;padding:32px 40px;text-align:center;">
-        <div style="display:inline-block;background:#D4AF37;border-radius:50%;width:64px;height:64px;text-align:center;line-height:64px;margin-bottom:16px;font-size:28px;color:#1a1a1a;">&#9986;</div>
-        <h1 style="color:#ffffff;margin:0;font-size:26px;font-weight:700;letter-spacing:1px;">Salon<span style="color:#D4AF37;">Now</span></h1>
-      </div>
-      <div style="padding:40px;">
-        <div style="text-align:center;margin-bottom:20px;">
-          <span style="font-size:36px;color:#D4AF37;">&#9733;&#9733;&#9733;</span>
-        </div>
-        <h2 style="color:#1a1a1a;font-size:22px;margin:0 0 12px;text-align:center;">Welcome aboard, ${name}!</h2>
-        <p style="color:#555555;font-size:15px;line-height:1.7;text-align:center;margin:0 0 28px;">
-          Thank you for joining <strong>SalonNow</strong>. You're now part of a community of beauty lovers and top salons. Ready to discover your perfect look?
-        </p>
-        <div style="text-align:center;margin:0 0 28px;">
-          <span style="display:inline-block;width:40px;height:2px;background:#D4AF37;vertical-align:middle;"></span>
-          &nbsp;&#9670;&nbsp;
-          <span style="display:inline-block;width:40px;height:2px;background:#D4AF37;vertical-align:middle;"></span>
-        </div>
-        <div style="text-align:center;margin-bottom:32px;">
-          <a href="${FRONTEND_URL()}/home" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">EXPLORE SALONS</a>
-        </div>
-        <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
-        <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Team &nbsp;&bull;&nbsp; Making every day a good hair day</p>
-      </div>
-    </div>`;
-    return sendTemplateEmail(email, "Welcome to SalonNow!", html);
+    const rendered = renderEmail({
+        preheader: "Welcome to SalonNow",
+        category: "Welcome to SalonNow",
+        icon: "✦",
+        heading: "Welcome to SalonNow.",
+        greeting: `Hi ${displayValue(name, "there")},`,
+        paragraphs: ["Your account is ready. Discover salons, choose a service, and book a time that works for you."],
+        cta: { label: "Explore salons", href: frontendLink("/home") },
+        footer: "The SalonNow Team",
+    });
+    return sendTemplateEmail(email, "Welcome to SalonNow!", rendered.html, rendered.text);
 };
 
-// ─── Login Email ──────────────────────────────────────────────────────────────
 export const sendLoginEmail = async (email, name) => {
-    const html = `
-    <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #f0f0f0;">
-      <div style="background:#1a1a1a;padding:32px 40px;text-align:center;">
-        <div style="display:inline-block;background:#D4AF37;border-radius:50%;width:64px;height:64px;text-align:center;line-height:64px;margin-bottom:16px;font-size:32px;color:#1a1a1a;font-weight:900;">&#10003;</div>
-        <h1 style="color:#ffffff;margin:0;font-size:26px;font-weight:700;letter-spacing:1px;">Salon<span style="color:#D4AF37;">Now</span></h1>
-      </div>
-      <div style="padding:40px;">
-        <div style="background:#f9f5e8;border:2px solid #D4AF37;border-radius:12px;padding:16px;text-align:center;margin-bottom:24px;">
-          <p style="margin:0;font-size:13px;color:#D4AF37;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Login Successful</p>
-        </div>
-        <h2 style="color:#1a1a1a;font-size:22px;margin:0 0 12px;text-align:center;">Welcome back, ${name}!</h2>
-        <p style="color:#555555;font-size:15px;line-height:1.7;text-align:center;margin:0 0 28px;">
-          You've successfully logged in to your SalonNow account. Your next perfect salon experience is just a click away!
-        </p>
-        <div style="text-align:center;margin-bottom:32px;">
-          <a href="${FRONTEND_URL()}/home" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">BROWSE SALONS</a>
-        </div>
-        <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
-        <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Team &nbsp;&bull;&nbsp; Making every day a good hair day</p>
-      </div>
-    </div>`;
-    return sendTemplateEmail(email, "Successfully Logged In to SalonNow", html);
+    const rendered = renderEmail({
+        preheader: "A sign-in to your SalonNow account occurred",
+        category: "Account notification",
+        icon: "●",
+        heading: "A sign-in to your account occurred.",
+        greeting: `Hi ${displayValue(name, "there")},`,
+        paragraphs: ["This email confirms that your SalonNow account was accessed successfully."],
+        notice: { label: "Sign-in notification", text: "Your account was accessed successfully.", color: COLORS.success },
+        cta: { label: "Go to account settings", href: frontendLink("/home") },
+        footer: "The SalonNow Account Team",
+    });
+    return sendTemplateEmail(email, "Successfully Logged In to SalonNow", rendered.html, rendered.text);
 };
 
-// ─── Logout Email ─────────────────────────────────────────────────────────────
 export const sendLogoutEmail = async (email, name) => {
-    const html = `
-    <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #f0f0f0;">
-      <div style="background:#1a1a1a;padding:32px 40px;text-align:center;">
-        <div style="display:inline-block;background:#D4AF37;border-radius:50%;width:64px;height:64px;text-align:center;line-height:64px;margin-bottom:16px;font-size:32px;color:#1a1a1a;font-weight:900;">&#10005;</div>
-        <h1 style="color:#ffffff;margin:0;font-size:26px;font-weight:700;letter-spacing:1px;">Salon<span style="color:#D4AF37;">Now</span></h1>
-      </div>
-      <div style="padding:40px;">
-        <h2 style="color:#1a1a1a;font-size:22px;margin:0 0 12px;text-align:center;">See you soon, ${name}!</h2>
-        <p style="color:#555555;font-size:15px;line-height:1.7;text-align:center;margin:0 0 28px;">
-          You've successfully logged out of your SalonNow account. We've enjoyed having you! Don't forget to check back for new services and deals.
-        </p>
-        <div style="text-align:center;margin-bottom:32px;">
-          <a href="${FRONTEND_URL()}/home" style="display:inline-block;background:#D4AF37;color:#1a1a1a;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">RETURN TO SITE</a>
-        </div>
-        <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
-        <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Team &nbsp;&bull;&nbsp; Always here for your style needs</p>
-      </div>
-    </div>`;
-    return sendTemplateEmail(email, "Logged Out of SalonNow", html);
+    const rendered = renderEmail({
+        preheader: "You have signed out of SalonNow",
+        category: "Account notification",
+        icon: "↗",
+        heading: "You've signed out.",
+        greeting: `Hi ${displayValue(name, "there")},`,
+        paragraphs: ["You have successfully signed out of SalonNow. You can sign in again whenever you are ready."],
+        cta: { label: "Sign in again", href: frontendLink("/home") },
+        footer: "The SalonNow Account Team",
+    });
+    return sendTemplateEmail(email, "Logged Out of SalonNow", rendered.html, rendered.text);
 };
 
-// ─── Shop Added Email ─────────────────────────────────────────────────────────
 export const sendShopAddedEmail = async (email, name, shopName) => {
-    const html = `
-    <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #f0f0f0;">
-      <div style="background:#1a1a1a;padding:32px 40px;text-align:center;">
-        <div style="display:inline-block;background:#D4AF37;border-radius:50%;width:64px;height:64px;text-align:center;line-height:64px;margin-bottom:16px;font-size:28px;color:#1a1a1a;">&#127978;</div>
-        <h1 style="color:#ffffff;margin:0;font-size:26px;font-weight:700;letter-spacing:1px;">Salon<span style="color:#D4AF37;">Now</span></h1>
-      </div>
-      <div style="padding:40px;">
-        <div style="text-align:center;margin-bottom:20px;">
-          <span style="font-size:40px;">&#127942;</span>
-        </div>
-        <h2 style="color:#1a1a1a;font-size:22px;margin:0 0 12px;text-align:center;">Your shop is live!</h2>
-        <p style="color:#555555;font-size:15px;line-height:1.7;text-align:center;margin:0 0 20px;">
-          Hi <strong>${name}</strong>, congratulations! Your shop has been successfully registered on SalonNow. You are ready to receive bookings!
-        </p>
-        <div style="background:#f9f5e8;border-left:4px solid #D4AF37;padding:16px 20px;border-radius:0 8px 8px 0;margin:0 0 28px;">
-          <p style="margin:0 0 4px;color:#999;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Your Shop</p>
-          <p style="margin:0;color:#1a1a1a;font-size:18px;font-weight:700;">${shopName}</p>
-        </div>
-        <div style="text-align:center;margin-bottom:32px;">
-          <a href="${FRONTEND_URL()}/home" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">VIEW YOUR SHOP</a>
-        </div>
-        <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
-        <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Team &nbsp;&bull;&nbsp; We can't wait to see your business grow!</p>
-      </div>
-    </div>`;
-    return sendTemplateEmail(email, `Your shop "${shopName}" is now live on SalonNow!`, html);
+    const safeShopName = displayValue(shopName, "Your salon");
+    const rendered = renderEmail({
+        preheader: `${safeShopName} is now live on SalonNow`,
+        category: "Listing update",
+        icon: "▥",
+        heading: "Your salon is now live.",
+        greeting: `Hi ${displayValue(name, "there")},`,
+        paragraphs: [`${safeShopName} is now live on SalonNow. Customers can discover your salon and book appointments through the platform.`],
+        rows: [{ label: "Salon", value: safeShopName, emphasis: true }],
+        cta: { label: "Manage salon listing", href: frontendLink("/home") },
+        footer: "The SalonNow Team",
+    });
+    return sendTemplateEmail(email, `Your shop "${shopName}" is now live on SalonNow!`, rendered.html, rendered.text);
 };
 
-// ─── Booking Confirmation Email ───────────────────────────────────────────────
 export const sendBookingConfirmationEmail = async (email, name, shopName, bookingTime, price, stylist, services) => {
-    const servicesList = Array.isArray(services) ? services.join(", ") : services;
-    
-    const html = `
-    <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #f0f0f0;">
-      <div style="background:#1a1a1a;padding:32px 40px;text-align:center;">
-        <div style="display:inline-block;background:#D4AF37;border-radius:50%;width:64px;height:64px;text-align:center;line-height:64px;margin-bottom:16px;font-size:28px;color:#1a1a1a;">&#128197;</div>
-        <h1 style="color:#ffffff;margin:0;font-size:26px;font-weight:700;letter-spacing:1px;">Salon<span style="color:#D4AF37;">Now</span></h1>
-      </div>
-      <div style="padding:40px;">
-        <div style="background:#f9f5e8;border:2px solid #D4AF37;border-radius:12px;padding:16px;text-align:center;margin-bottom:24px;">
-          <p style="margin:0;font-size:13px;color:#D4AF37;font-weight:700;letter-spacing:2px;text-transform:uppercase;">&#10003; &nbsp; Booking Confirmed</p>
-        </div>
-        <h2 style="color:#1a1a1a;font-size:22px;margin:0 0 12px;text-align:center;">You're all set, ${name}!</h2>
-        <p style="color:#555555;font-size:15px;line-height:1.7;text-align:center;margin:0 0 20px;">
-          Your appointment has been successfully booked. We look forward to seeing you!
-        </p>
-        <div style="background:#f9f5e8;border-radius:12px;padding:20px 24px;margin:0 0 28px;">
-          <table width="100%" cellpadding="10" cellspacing="0" style="border-collapse:collapse;">
-            <tr style="border-bottom:1px solid #e8dfc0;">
-              <td style="color:#999;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">SALON</td>
-              <td style="color:#1a1a1a;font-size:14px;font-weight:700;text-align:right;">${shopName}</td>
-            </tr>
-            <tr style="border-bottom:1px solid #e8dfc0;">
-              <td style="color:#999;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">TIME</td>
-              <td style="color:#1a1a1a;font-size:14px;font-weight:700;text-align:right;">${bookingTime}</td>
-            </tr>
-            <tr style="border-bottom:1px solid #e8dfc0;">
-              <td style="color:#999;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">STYLIST</td>
-              <td style="color:#1a1a1a;font-size:14px;font-weight:700;text-align:right;">${stylist}</td>
-            </tr>
-            <tr style="border-bottom:1px solid #e8dfc0;">
-              <td style="color:#999;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">SERVICES</td>
-              <td style="color:#1a1a1a;font-size:14px;font-weight:700;text-align:right;">${servicesList}</td>
-            </tr>
-            <tr>
-              <td style="color:#999;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">TOTAL PRICE</td>
-              <td style="color:#D4AF37;font-size:18px;font-weight:900;text-align:right;">₹${price}</td>
-            </tr>
-          </table>
-        </div>
-        <div style="text-align:center;margin-bottom:32px;">
-          <a href="${FRONTEND_URL()}/bookings" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">VIEW BOOKING</a>
-        </div>
-        <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
-        <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Team &nbsp;&bull;&nbsp; Enjoy your visit!</p>
-      </div>
-    </div>`;
-    return sendTemplateEmail(email, "Your SalonNow Booking is Confirmed!", html);
+    const safeShopName = displayValue(shopName, "Salon");
+    const booking = renderBookingPanel({
+        bookingTime,
+        salonName: safeShopName,
+        stylist,
+        services,
+        price,
+        status: "Confirmed",
+        statusColor: COLORS.success,
+    });
+    const rendered = renderEmail({
+        preheader: `Your appointment at ${safeShopName} is confirmed`,
+        category: "Booking confirmation",
+        icon: "✓",
+        heading: "Your appointment is confirmed!",
+        greeting: `Hi ${displayValue(name, "there")},`,
+        paragraphs: [`We're ready for you at ${safeShopName}. Here are the details you'll need for your visit.`],
+        booking,
+        cta: { label: "View booking details", href: frontendLink("/bookings") },
+        footer: "The SalonNow Team",
+    });
+    return sendTemplateEmail(email, "Your SalonNow Booking is Confirmed!", rendered.html, rendered.text);
 };
 
 export const sendPaymentReceiptEmail = async (email, name, shopName, bookingTime, amount, paymentId) => {
-    const html = `
-    <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:32px;border:1px solid #eee;border-radius:12px;">
-      <h1 style="color:#1a1a1a;">Salon<span style="color:#D4AF37;">Now</span></h1>
-      <h2>Payment successful</h2>
-      <p>Hi <strong>${name}</strong>, your payment and appointment at <strong>${shopName}</strong> are confirmed.</p>
-      <p><strong>Appointment:</strong> ${bookingTime}</p>
-      <p><strong>Amount paid:</strong> ₹${amount}</p>
-      <p><strong>Payment ID:</strong> ${paymentId}</p>
-      <p>Thank you for booking with SalonNow.</p>
-    </div>`;
-    return sendTemplateEmail(email, "Payment successful - SalonNow booking confirmed", html);
+    const safeShopName = displayValue(shopName, "Salon");
+    const payment = renderPaymentCard({ shopName: safeShopName, bookingTime, amount, paymentId });
+    const paymentDetails = renderPaymentDetails({ status: "Paid", reference: paymentId });
+    const rendered = renderEmail({
+        preheader: `Payment received for your appointment at ${safeShopName}`,
+        category: "Payment receipt",
+        icon: "▣",
+        heading: "Payment received.",
+        greeting: `Hi ${displayValue(name, "there")},`,
+        paragraphs: [`Your payment for the ${safeShopName} appointment was received successfully.`],
+        payment: { ...payment, detailsHtml: paymentDetails.html, detailsLines: paymentDetails.lines },
+        footer: "The SalonNow Payments Team",
+    });
+    return sendTemplateEmail(email, "Payment successful - SalonNow booking confirmed", rendered.html, rendered.text);
 };
 
 export const sendOwnerPaymentNotificationEmail = async (email, ownerName, customerName, shopName, bookingTime, amount, paymentId) => {
-    const html = `
-    <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:32px;border:1px solid #eee;border-radius:12px;">
-      <h1 style="color:#1a1a1a;">Salon<span style="color:#D4AF37;">Now</span></h1>
-      <h2>New paid booking</h2>
-      <p>Hi <strong>${ownerName}</strong>, <strong>${customerName}</strong> paid for an appointment at <strong>${shopName}</strong>.</p>
-      <p><strong>Appointment:</strong> ${bookingTime}</p>
-      <p><strong>Amount received:</strong> ₹${amount}</p>
-      <p><strong>Payment ID:</strong> ${paymentId}</p>
-    </div>`;
-    return sendTemplateEmail(email, "New paid booking - SalonNow", html);
+    const safeShopName = displayValue(shopName, "your salon");
+    const payment = renderPaymentCard({ shopName: safeShopName, bookingTime, amount, paymentId });
+    const paymentDetails = renderPaymentDetails({ status: "Paid", reference: paymentId });
+    const rendered = renderEmail({
+        preheader: `Payment recorded for a booking at ${safeShopName}`,
+        category: "Owner payment notification",
+        icon: "▣",
+        heading: "Payment recorded for a booking.",
+        greeting: `Hi ${displayValue(ownerName, "there")},`,
+        paragraphs: [`${displayValue(customerName, "A customer")} paid for an appointment at ${safeShopName}.`],
+        payment: { ...payment, detailsHtml: paymentDetails.html, detailsLines: paymentDetails.lines },
+        footer: "The SalonNow Dashboard Team",
+    });
+    return sendTemplateEmail(email, "New paid booking - SalonNow", rendered.html, rendered.text);
 };
 
-// ─── Booking Status Update Email ──────────────────────────────────────────────
 export const sendBookingStatusEmail = async (email, name, shopName, date, time, status) => {
-    const statusColors = {
-        confirmed: "#22c55e",
-        completed: "#D4AF37",
-        rejected: "#ef4444",
-        cancelled: "#6b7280"
-    };
-    const color = statusColors[status.toLowerCase()] || "#1a1a1a";
-    
-    const html = `
-    <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #f0f0f0;">
-      <div style="background:#1a1a1a;padding:32px 40px;text-align:center;">
-        <div style="display:inline-block;background:${color};border-radius:50%;width:64px;height:64px;text-align:center;line-height:64px;margin-bottom:16px;font-size:28px;color:#ffffff;">&#128365;</div>
-        <h1 style="color:#ffffff;margin:0;font-size:26px;font-weight:700;letter-spacing:1px;">Salon<span style="color:#D4AF37;">Now</span></h1>
-      </div>
-      <div style="padding:40px;">
-        <div style="background:${color}11;border:2px solid ${color};border-radius:12px;padding:16px;text-align:center;margin-bottom:24px;">
-          <p style="margin:0;font-size:13px;color:${color};font-weight:700;letter-spacing:2px;text-transform:uppercase;">Booking ${status}</p>
-        </div>
-        <h2 style="color:#1a1a1a;font-size:22px;margin:0 0 12px;text-align:center;">Important Update for ${name}</h2>
-        <p style="color:#555555;font-size:15px;line-height:1.7;text-align:center;margin:0 0 24px;">
-          Your appointment status at <strong>${shopName}</strong> has been updated to <strong>${status}</strong>.
-        </p>
-        <div style="background:#f9f9f9;border-radius:12px;padding:20px;margin-bottom:28px;text-align:center;">
-          <p style="margin:0 0 8px;color:#999;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Appointment Details</p>
-          <p style="margin:0;color:#1a1a1a;font-size:16px;font-weight:700;">${date} at ${time}</p>
-        </div>
-        <div style="text-align:center;margin-bottom:32px;">
-          <a href="${FRONTEND_URL()}/bookings" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">GO TO BOOKINGS</a>
-        </div>
-        <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
-        <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Team &nbsp;&bull;&nbsp; Making every visit special</p>
-      </div>
-    </div>`;
-    return sendTemplateEmail(email, `Your booking at ${shopName} is ${status}`, html);
+    const safeStatus = displayValue(status, "updated");
+    const statusKey = safeStatus.toLowerCase();
+    const statusCopy = {
+        confirmed: { category: "Booking confirmation", icon: "✓", heading: "Your appointment is confirmed!", color: COLORS.success, message: "Your appointment has been confirmed." },
+        completed: { category: "Booking update", icon: "✓", heading: "Your appointment is complete.", color: COLORS.success, message: "Your appointment has been marked complete." },
+        cancelled: { category: "Appointment cancelled", icon: "×", heading: "Your appointment has been cancelled.", color: COLORS.danger, message: "Your appointment has been cancelled. Here are the details for your records." },
+        rejected: { category: "Booking update", icon: "×", heading: "Your appointment was not accepted.", color: COLORS.danger, message: "Your appointment request was not accepted by the salon." },
+        pending: { category: "Booking pending", icon: "◷", heading: "Your booking request is pending.", color: COLORS.pending, message: "The salon is reviewing your booking request." },
+    }[statusKey] || { category: "Booking update", icon: "↻", heading: "An update to your appointment.", color: COLORS.gold, message: `The current booking status is ${safeStatus}.` };
+    const booking = renderBookingPanel({
+        bookingTime: `${displayValue(date)} at ${displayValue(time)}`,
+        salonName: shopName,
+        status: safeStatus,
+        statusColor: statusCopy.color,
+    });
+    const rendered = renderEmail({
+        preheader: `Your appointment at ${displayValue(shopName, "the salon")} is ${safeStatus}`,
+        category: statusCopy.category,
+        icon: statusCopy.icon,
+        heading: statusCopy.heading,
+        greeting: `Hi ${displayValue(name, "there")},`,
+        paragraphs: [statusCopy.message],
+        booking,
+        cta: { label: "View booking details", href: frontendLink("/bookings") },
+        accent: statusCopy.color,
+        footer: "The SalonNow Team",
+    });
+    return sendTemplateEmail(email, `Your booking at ${shopName} is ${status}`, rendered.html, rendered.text);
 };
 
-// ─── Booking Pending Email ─────────────────────────────────────────────────────
 export const sendBookingPendingEmail = async (email, name, shopName, bookingTime, price, stylist, services) => {
-    const servicesList = Array.isArray(services) ? services.join(", ") : services;
-    
-    const html = `
-    <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #f0f0f0;">
-      <div style="background:#1a1a1a;padding:32px 40px;text-align:center;">
-        <div style="display:inline-block;background:#D4AF37;border-radius:50%;width:64px;height:64px;text-align:center;line-height:64px;margin-bottom:16px;font-size:28px;color:#1a1a1a;">&#128366;</div>
-        <h1 style="color:#ffffff;margin:0;font-size:26px;font-weight:700;letter-spacing:1px;">Salon<span style="color:#D4AF37;">Now</span></h1>
-      </div>
-      <div style="padding:40px;">
-        <div style="background:#fefce8;border:2px solid #facc15;border-radius:12px;padding:16px;text-align:center;margin-bottom:24px;">
-          <p style="margin:0;font-size:13px;color:#ca8a04;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Request Received &bull; Pending Approval</p>
-        </div>
-        <h2 style="color:#1a1a1a;font-size:22px;margin:0 0 12px;text-align:center;">Almost there, ${name}!</h2>
-        <p style="color:#555555;font-size:15px;line-height:1.7;text-align:center;margin:0 0 20px;">
-          We have received your booking request for <strong>${shopName}</strong>. Since the salon is currently at high capacity for this slot, the owner needs to review your request manually. 
-        </p>
-        <p style="color:#555555;font-size:14px;line-height:1.7;text-align:center;margin:0 0 24px;background:#f9f9f9;padding:12px;border-radius:8px;">
-          <strong>What happens next?</strong><br/>
-          You will receive another email as soon as the salon owner reviews and updates your booking status.
-        </p>
-        <div style="background:#f9f5e8;border-radius:12px;padding:20px 24px;margin:0 0 28px;">
-          <table width="100%" cellpadding="8" cellspacing="0" style="border-collapse:collapse;">
-            <tr style="border-bottom:1px solid #e8dfc0;">
-              <td style="color:#999;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">SALON</td>
-              <td style="color:#1a1a1a;font-size:13px;font-weight:700;text-align:right;">${shopName}</td>
-            </tr>
-            <tr style="border-bottom:1px solid #e8dfc0;">
-              <td style="color:#999;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">TIME</td>
-              <td style="color:#1a1a1a;font-size:13px;font-weight:700;text-align:right;">${bookingTime}</td>
-            </tr>
-            <tr style="border-bottom:1px solid #e8dfc0;">
-              <td style="color:#999;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">STYLIST</td>
-              <td style="color:#1a1a1a;font-size:13px;font-weight:700;text-align:right;">${stylist}</td>
-            </tr>
-            <tr>
-              <td style="color:#999;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">ESTIMATED PRICE</td>
-              <td style="color:#D4AF37;font-size:16px;font-weight:900;text-align:right;">₹${price}</td>
-            </tr>
-          </table>
-        </div>
-        <div style="text-align:center;margin-bottom:32px;">
-          <a href="${FRONTEND_URL()}/bookings" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">CHECK MY REQUEST</a>
-        </div>
-        <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
-        <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Team &nbsp;&bull;&nbsp; We'll notify you soon!</p>
-      </div>
-    </div>`;
-    return sendTemplateEmail(email, "Your SalonNow booking request is pending review", html);
+    const safeShopName = displayValue(shopName, "Salon");
+    const booking = renderBookingPanel({
+        bookingTime,
+        salonName: safeShopName,
+        stylist,
+        services,
+        price,
+        status: "Pending",
+        statusColor: COLORS.pending,
+    });
+    const rendered = renderEmail({
+        preheader: `Your booking request at ${safeShopName} is pending`,
+        category: "Booking pending",
+        icon: "◷",
+        heading: "Your booking request has been sent.",
+        greeting: `Hi ${displayValue(name, "there")},`,
+        paragraphs: [`${safeShopName} has received your appointment request. We'll notify you once the booking status changes.`],
+        booking,
+        cta: { label: "View booking details", href: frontendLink("/bookings") },
+        accent: COLORS.pending,
+        footer: "The SalonNow Team",
+    });
+    return sendTemplateEmail(email, "Your SalonNow booking request is pending review", rendered.html, rendered.text);
 };
 
-// ─── Owner New Booking Notification Email ──────────────────────────────────────
 export const sendOwnerNewBookingEmail = async (email, ownerName, customerName, shopName, bookingDate, bookingTime, price, stylist, services) => {
-    const servicesList = Array.isArray(services) ? services.join(", ") : (services || "Salon Services");
-    const html = `
-    <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #f0f0f0;">
-      <div style="background:#1a1a1a;padding:32px 40px;text-align:center;">
-        <div style="display:inline-block;background:#D4AF37;border-radius:50%;width:64px;height:64px;text-align:center;line-height:64px;margin-bottom:16px;font-size:28px;color:#1a1a1a;">&#128197;</div>
-        <h1 style="color:#ffffff;margin:0;font-size:26px;font-weight:700;letter-spacing:1px;">Salon<span style="color:#D4AF37;">Now</span></h1>
-      </div>
-      <div style="padding:40px;">
-        <div style="background:#f9f5e8;border:2px solid #D4AF37;border-radius:12px;padding:16px;text-align:center;margin-bottom:24px;">
-          <p style="margin:0;font-size:13px;color:#D4AF37;font-weight:700;letter-spacing:2px;text-transform:uppercase;">New Booking Received!</p>
-        </div>
-        <h2 style="color:#1a1a1a;font-size:22px;margin:0 0 12px;text-align:center;">Hi ${ownerName}, you have a new appointment!</h2>
-        <p style="color:#555555;font-size:15px;line-height:1.7;text-align:center;margin:0 0 20px;">
-          <strong>${customerName}</strong> has booked an appointment at <strong>${shopName}</strong>.
-        </p>
-        <div style="background:#f9f5e8;border-radius:12px;padding:20px 24px;margin:0 0 28px;">
-          <table width="100%" cellpadding="10" cellspacing="0" style="border-collapse:collapse;">
-            <tr style="border-bottom:1px solid #e8dfc0;">
-              <td style="color:#999;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">CUSTOMER</td>
-              <td style="color:#1a1a1a;font-size:14px;font-weight:700;text-align:right;">${customerName}</td>
-            </tr>
-            <tr style="border-bottom:1px solid #e8dfc0;">
-              <td style="color:#999;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">DATE &amp; TIME</td>
-              <td style="color:#1a1a1a;font-size:14px;font-weight:700;text-align:right;">${bookingDate} at ${bookingTime}</td>
-            </tr>
-            <tr style="border-bottom:1px solid #e8dfc0;">
-              <td style="color:#999;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">STYLIST</td>
-              <td style="color:#1a1a1a;font-size:14px;font-weight:700;text-align:right;">${stylist}</td>
-            </tr>
-            <tr style="border-bottom:1px solid #e8dfc0;">
-              <td style="color:#999;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">SERVICES</td>
-              <td style="color:#1a1a1a;font-size:14px;font-weight:700;text-align:right;">${servicesList}</td>
-            </tr>
-            <tr>
-              <td style="color:#999;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">TOTAL AMOUNT</td>
-              <td style="color:#D4AF37;font-size:18px;font-weight:900;text-align:right;">₹${price}</td>
-            </tr>
-          </table>
-        </div>
-        <div style="text-align:center;margin-bottom:32px;">
-          <a href="${FRONTEND_URL()}/owner/dashboard" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">MANAGE APPOINTMENTS</a>
-        </div>
-        <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
-        <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Dashboard Team &nbsp;&bull;&nbsp; Making appointments effortless</p>
-      </div>
-    </div>`;
-    return sendTemplateEmail(email, `New Booking at ${shopName}: ${customerName} (${bookingDate} at ${bookingTime})`, html);
+    const safeShopName = displayValue(shopName, "your salon");
+    const booking = renderBookingPanel({
+        bookingTime: `${displayValue(bookingDate)} at ${displayValue(bookingTime)}`,
+        salonName: safeShopName,
+        customerName,
+        stylist,
+        services,
+        price,
+        status: "Pending",
+        statusColor: COLORS.pending,
+    });
+    const rendered = renderEmail({
+        preheader: `A new booking request has arrived at ${safeShopName}`,
+        category: "New booking request",
+        icon: "▣",
+        heading: "A new booking request has arrived.",
+        greeting: `Hi ${displayValue(ownerName, "there")},`,
+        paragraphs: [`${displayValue(customerName, "A customer")} has requested an appointment at ${safeShopName}. Review the details below and take the next action.`],
+        booking,
+        cta: { label: "Open owner dashboard", href: frontendLink("/owner/dashboard") },
+        accent: COLORS.pending,
+        footer: "The SalonNow Dashboard Team",
+    });
+    return sendTemplateEmail(email, `New Booking at ${shopName}: ${customerName} (${bookingDate} at ${bookingTime})`, rendered.html, rendered.text);
 };
 
-// ─── Profile Update Email ─────────────────────────────────────────────────────
 export const sendProfileUpdateEmail = async (email, name, salonName) => {
-    const html = `
-    <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #f0f0f0;">
-      <div style="background:#1a1a1a;padding:32px 40px;text-align:center;">
-        <div style="display:inline-block;background:#D4AF37;border-radius:50%;width:64px;height:64px;text-align:center;line-height:64px;margin-bottom:16px;font-size:28px;color:#1a1a1a;">&#9881;</div>
-        <h1 style="color:#ffffff;margin:0;font-size:26px;font-weight:700;letter-spacing:1px;">Salon<span style="color:#D4AF37;">Now</span></h1>
-      </div>
-      <div style="padding:40px;">
-        <h2 style="color:#1a1a1a;font-size:22px;margin:0 0 12px;text-align:center;">Salon Profile Updated</h2>
-        <p style="color:#555555;font-size:15px;line-height:1.7;text-align:center;margin:0 0 24px;">
-          Hi <strong>${name}</strong>, this is a confirmation that the profile for <strong>${salonName}</strong> has been successfully updated on the platform.
-        </p>
-        <div style="background:#f9f9f9;padding:20px;border-radius:12px;text-align:center;margin-bottom:28px;">
-          <p style="margin:0;color:#666;font-size:13px;">If you did not perform this action, please contact support immediately.</p>
-        </div>
-        <div style="text-align:center;margin-bottom:32px;">
-          <a href="${FRONTEND_URL()}/salon/manage" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">REVIEW CHANGES</a>
-        </div>
-        <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
-        <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Security Team</p>
-      </div>
-    </div>`;
-    return sendTemplateEmail(email, `Profile Updated: ${salonName}`, html);
+    const safeSalonName = displayValue(salonName, "your salon");
+    const rendered = renderEmail({
+        preheader: `Your profile for ${safeSalonName} has been updated`,
+        category: "Profile update",
+        icon: "●",
+        heading: "Your profile has been updated.",
+        greeting: `Hi ${displayValue(name, "there")},`,
+        paragraphs: [`The profile information for ${safeSalonName} has been updated.`],
+        rows: [{ label: "Updated profile", value: safeSalonName, emphasis: true }],
+        cta: { label: "View profile", href: frontendLink("/salon/manage") },
+        footer: "The SalonNow Security Team",
+    });
+    return sendTemplateEmail(email, `Profile Updated: ${salonName}`, rendered.html, rendered.text);
 };
 
-// ─── Management Update Email (Services/Staff) ─────────────────────────────────
 export const sendManagementUpdateEmail = async (email, name, action, itemName, category) => {
-    const html = `
-    <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #f0f0f0;">
-      <div style="background:#1a1a1a;padding:32px 40px;text-align:center;">
-        <div style="display:inline-block;background:#D4AF37;border-radius:50%;width:64px;height:64px;text-align:center;line-height:64px;margin-bottom:16px;font-size:28px;color:#1a1a1a;">&#128203;</div>
-        <h1 style="color:#ffffff;margin:0;font-size:26px;font-weight:700;letter-spacing:1px;">Salon<span style="color:#D4AF37;">Now</span></h1>
-      </div>
-      <div style="padding:40px;">
-        <h2 style="color:#1a1a1a;font-size:22px;margin:0 0 12px;text-align:center;">${category} Management Update</h2>
-        <p style="color:#555555;font-size:15px;line-height:1.7;text-align:center;margin:0 0 24px;">
-          Hi <strong>${name}</strong>, a ${category.toLowerCase()} action was performed on your salon dashboard:
-        </p>
-        <div style="background:#f9f5e8;border-left:4px solid #D4AF37;padding:16px 20px;margin-bottom:28px;">
-          <p style="margin:0 0 4px;color:#999;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Action</p>
-          <p style="margin:0 0 12px;color:#1a1a1a;font-size:16px;font-weight:700;">${action}</p>
-          <p style="margin:0 0 4px;color:#999;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Item</p>
-          <p style="margin:0;color:#1a1a1a;font-size:16px;font-weight:700;">${itemName}</p>
-        </div>
-        <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
-        <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Dashboard Team</p>
-      </div>
-    </div>`;
-    return sendTemplateEmail(email, `${category} Alert: ${action}`, html);
+    const safeCategory = displayValue(category, "Salon");
+    const rendered = renderEmail({
+        preheader: `${safeCategory} management update`,
+        category: "Management update",
+        icon: "⚙",
+        heading: "An update to your salon management.",
+        greeting: `Hi ${displayValue(name, "there")},`,
+        paragraphs: ["A change was recorded on your salon dashboard."],
+        rows: [
+            { label: "Action", value: action, emphasis: true },
+            { label: "Item", value: itemName },
+            { label: "Category", value: safeCategory },
+        ],
+        footer: "The SalonNow Dashboard Team",
+    });
+    return sendTemplateEmail(email, `${category} Alert: ${action}`, rendered.html, rendered.text);
 };
 
-// ─── Verification Email ───────────────────────────────────────────────────────
 export const sendVerificationEmail = async (email, name, code) => {
-    // Console log safeguard: always print OTP to terminal for local debugging
     logger.info({ email, code }, "🔐 [AUTH] Verification OTP generated");
     console.log(`\n======================================================`);
     console.log(`🔐 [VERIFICATION CODE] For: ${email}`);
     console.log(`🔐 Code: ${code} (expires in 5 minutes)`);
     console.log(`======================================================\n`);
 
-    const html = `
-    <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #f0f0f0;">
-      <div style="background:#1a1a1a;padding:32px 40px;text-align:center;">
-        <div style="display:inline-block;background:#D4AF37;border-radius:50%;width:64px;height:64px;text-align:center;line-height:64px;margin-bottom:16px;font-size:28px;color:#1a1a1a;">&#9993;</div>
-        <h1 style="color:#ffffff;margin:0;font-size:26px;font-weight:700;letter-spacing:1px;">Salon<span style="color:#D4AF37;">Now</span></h1>
-      </div>
-      <div style="padding:40px;">
-        <h2 style="color:#1a1a1a;font-size:22px;margin:0 0 12px;text-align:center;">Verify Your Email Address</h2>
-        <p style="color:#555555;font-size:15px;line-height:1.7;text-align:center;margin:0 0 28px;">
-          Hi <strong>${name}</strong>, thank you for registering with SalonNow. Please enter the following 4-digit verification code to complete your signup process. This code will expire in <strong>5 minutes</strong>.
-        </p>
-        <div style="text-align:center;margin-bottom:32px;">
-          <div style="display:inline-block;background:#f9f5e8;border:2px dashed #D4AF37;border-radius:12px;padding:16px 40px;font-size:36px;font-weight:900;letter-spacing:8px;color:#1a1a1a;text-align:center;">
-            ${code}
-          </div>
-        </div>
-        <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
-        <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Security Team</p>
-      </div>
-    </div>`;
-    return sendTemplateEmail(email, "Verify your email - SalonNow", html);
+    const rendered = renderEmail({
+        preheader: "Your SalonNow verification code expires in 5 minutes",
+        category: "Email verification",
+        icon: "✓",
+        heading: "Verify your email address.",
+        greeting: `Hi ${displayValue(name, "there")},`,
+        paragraphs: ["Use the code below to verify your email address and complete your SalonNow signup. It expires in 5 minutes."],
+        code,
+        rows: [{ label: "Security note", value: "If you did not request this code, you can ignore this email." }],
+        footer: "The SalonNow Security Team",
+    });
+    return sendTemplateEmail(email, "Verify your email - SalonNow", rendered.html, rendered.text);
 };
