@@ -11,7 +11,7 @@ let _brevoClient = null;
 
 /**
  * Returns a cached TransactionalEmailsApi instance, or null when unconfigured.
- * Uses the v3.x canonical setApiKey() method.
+ * Uses Brevo's v3.x setApiKey() method with an 'xkeysib-...' REST API key.
  * Never throws — callers receive null and handle it gracefully.
  */
 const getBrevoClient = () => {
@@ -69,7 +69,8 @@ const htmlToText = (html = "") => html
 
 /**
  * Non-blocking startup probe.
- * Logs a warning if unconfigured; NEVER throws or calls process.exit().
+ * Checks whether Brevo REST API credentials are configured.
+ * Never throws or calls process.exit().
  */
 export const verifyEmailService = async () => {
     try {
@@ -84,13 +85,20 @@ export const verifyEmailService = async () => {
             return { configured: false };
         }
 
+        if (!apiKey.startsWith("xkeysib-")) {
+            logger.warn(
+                { senderEmail: sender.email },
+                "[Mailer] BREVO_API_KEY does not start with 'xkeysib-'. Please verify this is a Brevo REST API v3 key."
+            );
+        }
+
         const client = getBrevoClient();
         if (!client) {
             logger.warn("[Mailer] Brevo client could not be initialised");
             return { configured: false };
         }
 
-        logger.info({ senderEmail: sender.email }, "[Mailer] Brevo email service configured");
+        logger.info({ senderEmail: sender.email }, "[Mailer] Brevo REST API email service configured");
         return { configured: true };
     } catch (err) {
         logger.error({ err: err?.message }, "[Mailer] Unexpected error during email service verification");
@@ -99,12 +107,12 @@ export const verifyEmailService = async () => {
 };
 
 /**
- * Central email dispatcher. All template helpers route through here.
+ * Central email dispatcher using Brevo's HTTPS REST API.
  *
  * Returns `{ success: true, id }` on delivery, or `{ success: false, error }` on
  * any failure — it NEVER throws. Controllers can safely fire-and-forget.
  */
-export const sendEmail = async ({
+export const sendBrevoEmail = async ({
     to,
     subject,
     html,
@@ -146,17 +154,20 @@ export const sendEmail = async ({
         const info = response?.body || response || {};
         const messageId = info.messageId || info.message_id;
 
-        logger.info({ subject, messageId }, "[Mailer] Email accepted by Brevo");
+        logger.info({ subject, messageId }, "[Mailer] Email accepted by Brevo REST API");
         return { success: true, id: messageId, info: { messageId } };
     } catch (error) {
         const code = error?.response?.statusCode || error?.statusCode || error?.code;
         const msg = error?.response?.body?.message || error?.message;
-        logger.error({ subject, code, err: msg }, "[Mailer] Brevo API error");
+        logger.error({ subject, code, err: msg }, "[Mailer] Brevo REST API error");
         return { success: false, error: "Email delivery failed" };
     }
 };
 
-const sendTemplateEmail = (to, subject, htmlContent, textContent) => sendEmail({
+// Alias sendEmail to sendBrevoEmail for backwards compatibility
+export const sendEmail = sendBrevoEmail;
+
+export const sendTemplateEmail = (to, subject, htmlContent, textContent) => sendBrevoEmail({
     to,
     subject,
     html: htmlContent,
@@ -167,18 +178,18 @@ const sendTemplateEmail = (to, subject, htmlContent, textContent) => sendEmail({
 export const testEmailConfiguration = async (targetEmail) => {
     const html = `
     <div style="font-family:sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
-        <h2 style="color: #D4AF37;">Brevo Configuration Test</h2>
-        <p>If you are reading this, your mailing system is correctly configured on your deployment platform!</p>
+        <h2 style="color: #D4AF37;">Brevo REST API Configuration Test</h2>
+        <p>If you are reading this, your Brevo REST API mailing system is operational and delivering emails successfully over HTTPS!</p>
         <hr/>
         <p><strong>Environment Check:</strong></p>
         <ul>
-            <li><strong>BREVO_API_KEY:</strong> ${process.env.BREVO_API_KEY ? 'SET (Active)' : 'MISSING'}</li>
+            <li><strong>BREVO_API_KEY:</strong> ${process.env.BREVO_API_KEY ? (process.env.BREVO_API_KEY.startsWith('xkeysib-') ? 'Valid REST API Key (Active)' : 'WARNING: Key does not start with xkeysib-') : 'MISSING'}</li>
             <li><strong>SENDER_NAME:</strong> ${process.env.SENDER_NAME || 'SalonNow (default)'}</li>
             <li><strong>SENDER_EMAIL:</strong> ${process.env.SENDER_EMAIL || 'aadityajandaha07@gmail.com (default)'}</li>
             <li><strong>FRONTEND_URL:</strong> ${process.env.FRONTEND_URL || 'NOT SET'}</li>
         </ul>
     </div>`;
-    return sendTemplateEmail(targetEmail, "SalonNow - Brevo Configuration Test", html);
+    return sendTemplateEmail(targetEmail, "SalonNow - Brevo REST API Configuration Test", html);
 };
 
 // ─── Welcome Email ────────────────────────────────────────────────────────────
@@ -460,6 +471,57 @@ export const sendBookingPendingEmail = async (email, name, shopName, bookingTime
     return sendTemplateEmail(email, "Your SalonNow booking request is pending review", html);
 };
 
+// ─── Owner New Booking Notification Email ──────────────────────────────────────
+export const sendOwnerNewBookingEmail = async (email, ownerName, customerName, shopName, bookingDate, bookingTime, price, stylist, services) => {
+    const servicesList = Array.isArray(services) ? services.join(", ") : (services || "Salon Services");
+    const html = `
+    <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #f0f0f0;">
+      <div style="background:#1a1a1a;padding:32px 40px;text-align:center;">
+        <div style="display:inline-block;background:#D4AF37;border-radius:50%;width:64px;height:64px;text-align:center;line-height:64px;margin-bottom:16px;font-size:28px;color:#1a1a1a;">&#128197;</div>
+        <h1 style="color:#ffffff;margin:0;font-size:26px;font-weight:700;letter-spacing:1px;">Salon<span style="color:#D4AF37;">Now</span></h1>
+      </div>
+      <div style="padding:40px;">
+        <div style="background:#f9f5e8;border:2px solid #D4AF37;border-radius:12px;padding:16px;text-align:center;margin-bottom:24px;">
+          <p style="margin:0;font-size:13px;color:#D4AF37;font-weight:700;letter-spacing:2px;text-transform:uppercase;">New Booking Received!</p>
+        </div>
+        <h2 style="color:#1a1a1a;font-size:22px;margin:0 0 12px;text-align:center;">Hi ${ownerName}, you have a new appointment!</h2>
+        <p style="color:#555555;font-size:15px;line-height:1.7;text-align:center;margin:0 0 20px;">
+          <strong>${customerName}</strong> has booked an appointment at <strong>${shopName}</strong>.
+        </p>
+        <div style="background:#f9f5e8;border-radius:12px;padding:20px 24px;margin:0 0 28px;">
+          <table width="100%" cellpadding="10" cellspacing="0" style="border-collapse:collapse;">
+            <tr style="border-bottom:1px solid #e8dfc0;">
+              <td style="color:#999;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">CUSTOMER</td>
+              <td style="color:#1a1a1a;font-size:14px;font-weight:700;text-align:right;">${customerName}</td>
+            </tr>
+            <tr style="border-bottom:1px solid #e8dfc0;">
+              <td style="color:#999;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">DATE &amp; TIME</td>
+              <td style="color:#1a1a1a;font-size:14px;font-weight:700;text-align:right;">${bookingDate} at ${bookingTime}</td>
+            </tr>
+            <tr style="border-bottom:1px solid #e8dfc0;">
+              <td style="color:#999;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">STYLIST</td>
+              <td style="color:#1a1a1a;font-size:14px;font-weight:700;text-align:right;">${stylist}</td>
+            </tr>
+            <tr style="border-bottom:1px solid #e8dfc0;">
+              <td style="color:#999;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">SERVICES</td>
+              <td style="color:#1a1a1a;font-size:14px;font-weight:700;text-align:right;">${servicesList}</td>
+            </tr>
+            <tr>
+              <td style="color:#999;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">TOTAL AMOUNT</td>
+              <td style="color:#D4AF37;font-size:18px;font-weight:900;text-align:right;">₹${price}</td>
+            </tr>
+          </table>
+        </div>
+        <div style="text-align:center;margin-bottom:32px;">
+          <a href="${FRONTEND_URL()}/owner/dashboard" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:2px;">MANAGE APPOINTMENTS</a>
+        </div>
+        <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 20px;"/>
+        <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Dashboard Team &nbsp;&bull;&nbsp; Making appointments effortless</p>
+      </div>
+    </div>`;
+    return sendTemplateEmail(email, `New Booking at ${shopName}: ${customerName} (${bookingDate} at ${bookingTime})`, html);
+};
+
 // ─── Profile Update Email ─────────────────────────────────────────────────────
 export const sendProfileUpdateEmail = async (email, name, salonName) => {
     const html = `
@@ -514,6 +576,13 @@ export const sendManagementUpdateEmail = async (email, name, action, itemName, c
 
 // ─── Verification Email ───────────────────────────────────────────────────────
 export const sendVerificationEmail = async (email, name, code) => {
+    // Console log safeguard: always print OTP to terminal for local debugging
+    logger.info({ email, code }, "🔐 [AUTH] Verification OTP generated");
+    console.log(`\n======================================================`);
+    console.log(`🔐 [VERIFICATION CODE] For: ${email}`);
+    console.log(`🔐 Code: ${code} (expires in 5 minutes)`);
+    console.log(`======================================================\n`);
+
     const html = `
     <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #f0f0f0;">
       <div style="background:#1a1a1a;padding:32px 40px;text-align:center;">

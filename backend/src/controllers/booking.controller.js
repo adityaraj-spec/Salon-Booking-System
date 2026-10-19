@@ -5,7 +5,8 @@ import { Booking } from "../models/booking.models.js";
 import { BookingHold } from "../models/bookingHold.model.js";
 import { Salon } from "../models/salon.models.js";
 import { Notification } from "../models/notification.models.js";
-import { sendBookingConfirmationEmail, sendBookingStatusEmail } from "../utils/mailer.js";
+import { sendBookingConfirmationEmail, sendBookingStatusEmail, sendOwnerNewBookingEmail } from "../utils/mailer.js";
+import logger from "../lib/logger.js";
 import { emitToUser } from "../socket.js";
 import { createHold, cancelHold } from "../services/hold.service.js";
 import { initiateBookingFromHold, cancelPendingBooking } from "../services/booking.service.js";
@@ -42,7 +43,7 @@ const createBooking = asyncHandler(async (req, res) => {
         idempotencyKey,
     });
 
-    const salon = await Salon.findById(salonId);
+    const salon = await Salon.findById(salonId).populate("owner", "fullName email");
     if (salon) {
         sendBookingConfirmationEmail(
             req.user.email?.trim().toLowerCase(),
@@ -54,8 +55,26 @@ const createBooking = asyncHandler(async (req, res) => {
             serviceNames || []
         ).catch(err => logger.warn({ err: err?.message }, "[Booking] Failed to send booking confirmation email"));
 
+        const ownerId = salon.owner?._id || salon.owner;
+        const ownerEmail = salon.owner?.email;
+        const ownerName = salon.owner?.fullName || "Salon Owner";
+
+        if (ownerEmail) {
+            sendOwnerNewBookingEmail(
+                ownerEmail,
+                ownerName,
+                req.user.fullName,
+                salon.name,
+                date,
+                time,
+                booking.totalAmount,
+                staffName || "Any Available",
+                serviceNames || []
+            ).catch(err => logger.warn({ err: err?.message }, "[Booking] Failed to send owner booking notification email"));
+        }
+
         const notification = await Notification.create({
-            recipient: salon.owner,
+            recipient: ownerId,
             sender: req.user._id,
             title: "New Confirmed Booking",
             message: `New booking from ${req.user.fullName} for ${date} at ${time}.`,
@@ -63,8 +82,8 @@ const createBooking = asyncHandler(async (req, res) => {
             bookingId: booking._id
         });
 
-        emitToUser(salon.owner, "newNotification", notification);
-        emitToUser(salon.owner, "bookingUpdate", { booking, type: "NEW_REQUEST" });
+        emitToUser(ownerId, "newNotification", notification);
+        emitToUser(ownerId, "bookingUpdate", { booking, type: "NEW_REQUEST" });
     }
 
     return res.status(201).json(
