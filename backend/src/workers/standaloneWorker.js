@@ -33,7 +33,7 @@
  *   - I9: Worker crashes don't affect API availability — they are separate processes.
  */
 
-import dotenv from "dotenv";
+import "../loadEnv.js";
 import mongoose from "mongoose";
 import connectDB from "../db/index.js";
 import { startHoldWatcher } from "../changeStreams/holdWatcher.js";
@@ -43,7 +43,7 @@ import { startOutboxRelayWorker, stopOutboxRelayWorker } from "./outboxRelay.wor
 import getRedisClient from "../lib/redis.js";
 import logger from "../lib/logger.js";
 
-dotenv.config({ path: "./.env" });
+// Environment variables loaded via ../loadEnv.js
 
 // Force process type to worker — affects DB pool sizing in db/index.js
 process.env.PROCESS_TYPE = "worker";

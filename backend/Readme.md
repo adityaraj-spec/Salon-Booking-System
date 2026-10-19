@@ -7,7 +7,7 @@ This is the core Node.js backend for the SalonNow booking platform. It handles a
 - **Real-Time Notifications**: Integrated Socket.io for instant booking confirmations and status updates.
 - **Geospatial Queries**: Mapbox geocoding integration to convert salon addresses into precise map coordinates.
 - **Cloud Media**: Automatic image uploading and cleanup using Cloudinary.
-- **Automated Emails**: Nodemailer integration with Ethereal fallback for booking receipts and shop registrations.
+- **Automated Emails**: Brevo API integration for verification, account, booking, payment, and salon-owner notifications.
 - **Ownership Security**: Advanced controller logic to ensure salon owners can only modify their own salon's data.
 
 ## 🛠️ Tech Stack

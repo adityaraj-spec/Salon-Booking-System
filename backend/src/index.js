@@ -40,13 +40,13 @@
  *   - I11: Graceful shutdown drains in-flight requests before terminating.
  */
 
-import dotenv from "dotenv";
+import "./loadEnv.js";
 import { createServer } from "http";
 import mongoose from "mongoose";
 import connectDB from "./db/index.js";
 import app from "./app.js";
 import { initializeSocket, shutdownSocketServer } from "./socket.js";
-import { verifyTransporter } from "./utils/mailer.js";
+import { verifyEmailService } from "./utils/mailer.js";
 import { startHoldWatcher } from "./changeStreams/holdWatcher.js";
 import { createHoldExpiryWorker, closeHoldExpiryWorker } from "./workers/holdExpiry.worker.js";
 import { createPaymentRecoveryWorker, closePaymentRecoveryWorker } from "./workers/paymentRecovery.worker.js";
@@ -55,7 +55,7 @@ import { subscribeCacheInvalidation } from "./lib/cacheManager.js";
 import getRedisClient from "./lib/redis.js";
 import logger from "./lib/logger.js";
 
-dotenv.config({ path: "./.env" });
+// Environment variables loaded via ./loadEnv.js
 
 // ─── Process type ─────────────────────────────────────────────────────────────
 const PROCESS_TYPE = (process.env.PROCESS_TYPE || "all").toLowerCase();
@@ -204,7 +204,7 @@ connectDB()
       const port = parseInt(process.env.PORT || "8000", 10);
       server.listen(port, () => {
         logger.info({ port, processType: PROCESS_TYPE }, "HTTP server listening");
-        verifyTransporter();
+        verifyEmailService().catch(function(err) { logger.error({ err: err && err.message }, "[Bootstrap] Email service verification failed - continuing without email"); });
       });
     }
 

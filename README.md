@@ -62,7 +62,7 @@ Before you begin, ensure you have the following installed and set up:
 2.  **MongoDB** - A local instance or a free MongoDB Atlas URI.
 3.  **Cloudinary Account** - For image uploads. Get your API keys [here](https://cloudinary.com/).
 4.  **Mapbox Account** - For the map token. Get it [here](https://www.mapbox.com/).
-5.  **Gmail Account** - Used to send outgoing emails via nodemailer (App Passwords required).
+5.  **Brevo Account** - Used to send outgoing emails through the Brevo Transactional Email API.
 
 ### Step 1: Clone the Repository
 ```bash
@@ -144,13 +144,14 @@ CLOUDINARY_CLOUD_NAME=your_cloudinary_name
 CLOUDINARY_CLOUD_API_KEY=your_cloudinary_api_key
 CLOUDINARY_CLOUD_API_SECRET=your_cloudinary_api_secret
 
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=your_email@gmail.com
-SMTP_PASS=your_gmail_app_password
+BREVO_API_KEY=xkeysib_your_api_key
+SENDER_NAME=SalonNow
+SENDER_EMAIL=aadityajandaha07@gmail.com
+# EMAIL_REPLY_TO=support@your-domain.com
 VITE_MAPBOX_TOKEN=your_mapbox_token_here
 ```
+
+For production, set `SENDER_EMAIL` to a sender address permitted and verified in Brevo. The default sender is suitable for local configuration only; production delivery still requires sender verification in Brevo.
 
 ### `/frontend/.env`
 ```env

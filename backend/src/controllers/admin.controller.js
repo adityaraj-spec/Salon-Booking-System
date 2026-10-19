@@ -24,13 +24,13 @@ const testEmailConfig = asyncHandler(async (req, res) => {
     const { email } = req.body;
     if (!email) throw new ApiError(400, "Target email is required");
 
-    logger.info({ email }, "[Admin] Triggering SMTP configuration test");
+    logger.info("[Admin] Triggering Brevo configuration test");
     const result = await testEmailConfiguration(email);
 
     if (result.success) {
         return res.status(200).json(new ApiResponse(200, result.info, "Test email sent successfully! Check your inbox."));
     } else {
-        throw new ApiError(500, `SMTP Error: ${result.error}`);
+        throw new ApiError(500, result.error || "Email delivery failed");
     }
 });
 

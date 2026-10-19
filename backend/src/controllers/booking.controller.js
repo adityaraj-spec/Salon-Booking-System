@@ -44,7 +44,7 @@ const createBooking = asyncHandler(async (req, res) => {
 
     const salon = await Salon.findById(salonId);
     if (salon) {
-        await sendBookingConfirmationEmail(
+        sendBookingConfirmationEmail(
             req.user.email?.trim().toLowerCase(),
             req.user.fullName,
             salon.name,
@@ -52,7 +52,7 @@ const createBooking = asyncHandler(async (req, res) => {
             booking.totalAmount,
             staffName || "Any Available",
             serviceNames || []
-        );
+        ).catch(err => logger.warn({ err: err?.message }, "[Booking] Failed to send booking confirmation email"));
 
         const notification = await Notification.create({
             recipient: salon.owner,
@@ -170,14 +170,14 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
         bookingId: booking._id
     });
 
-    await sendBookingStatusEmail(
+    sendBookingStatusEmail(
         booking.customer.email?.trim().toLowerCase(),
         booking.customer.fullName,
         booking.salon.name,
         booking.date,
         booking.time,
         status.charAt(0).toUpperCase() + status.slice(1)
-    );
+    ).catch(err => logger.warn({ err: err?.message }, "[Booking] Failed to send booking status email"));
 
     emitToUser(booking.customer, "newNotification", notification);
     emitToUser(booking.customer, "bookingUpdate", { booking, type: "STATUS_CHANGE" });

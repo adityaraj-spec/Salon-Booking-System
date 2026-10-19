@@ -105,7 +105,8 @@ const updateOwnerSalon = asyncHandler(async (req, res) => {
     const updated = await Salon.findByIdAndUpdate(salon._id, { $set: updates }, { new: true });
 
     // Trigger notification email
-    sendProfileUpdateEmail(req.user.email, req.user.fullName, updated.name);
+    sendProfileUpdateEmail(req.user.email, req.user.fullName, updated.name)
+        .catch(err => logger.warn({ err: err?.message }, "[Owner] Failed to send profile update email"));
 
     return res.status(200).json(new ApiResponse(200, updated, "Salon updated successfully"));
 });
@@ -137,7 +138,8 @@ const createOwnerService = asyncHandler(async (req, res) => {
     const service = await Service.create({ name, category, price, duration, description, salon: salon._id });
 
     // Trigger notification email
-    sendManagementUpdateEmail(req.user.email, req.user.fullName, "Created new service", name, "Service");
+    sendManagementUpdateEmail(req.user.email, req.user.fullName, "Created new service", name, "Service")
+        .catch(err => logger.warn({ err: err?.message }, "[Owner] Failed to send service creation email"));
 
     return res.status(201).json(new ApiResponse(201, service, "Service created"));
 });
@@ -159,7 +161,8 @@ const updateOwnerService = asyncHandler(async (req, res) => {
     const updated = await Service.findByIdAndUpdate(id, { $set: updates }, { new: true });
 
     // Trigger notification email
-    sendManagementUpdateEmail(req.user.email, req.user.fullName, "Updated service details", updated.name, "Service");
+    sendManagementUpdateEmail(req.user.email, req.user.fullName, "Updated service details", updated.name, "Service")
+        .catch(err => logger.warn({ err: err?.message }, "[Owner] Failed to send service update email"));
 
     return res.status(200).json(new ApiResponse(200, updated, "Service updated"));
 });
@@ -261,7 +264,8 @@ const createOwnerStaff = asyncHandler(async (req, res) => {
     const staff = await Staff.create({ name, role, experience, skills, salon: salon._id });
 
     // Trigger notification email
-    sendManagementUpdateEmail(req.user.email, req.user.fullName, `Added new staff member: ${role || 'Stylist'}`, name, "Staff");
+    sendManagementUpdateEmail(req.user.email, req.user.fullName, `Added new staff member: ${role || 'Stylist'}`, name, "Staff")
+        .catch(err => logger.warn({ err: err?.message }, "[Owner] Failed to send staff creation email"));
 
     return res.status(201).json(new ApiResponse(201, staff, "Staff member added"));
 });
@@ -281,7 +285,8 @@ const updateOwnerStaff = asyncHandler(async (req, res) => {
     );
 
     // Trigger notification email
-    sendManagementUpdateEmail(req.user.email, req.user.fullName, "Updated staff profile", updated.name, "Staff");
+    sendManagementUpdateEmail(req.user.email, req.user.fullName, "Updated staff profile", updated.name, "Staff")
+        .catch(err => logger.warn({ err: err?.message }, "[Owner] Failed to send staff update email"));
 
     return res.status(200).json(new ApiResponse(200, updated, "Staff updated"));
 });

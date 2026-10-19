@@ -1,127 +1,184 @@
-import nodemailer from 'nodemailer';
+import * as Brevo from "@getbrevo/brevo";
 import logger from "../lib/logger.js";
 
-// Read lazily so it works after dotenv.config() runs
-const FRONTEND_URL = () => process.env.FRONTEND_URL || 'http://localhost:5173';
+// ─── Constants ────────────────────────────────────────────────────────────────
 
-// ─── Singleton Transporter ────────────────────────────────────────────────────
-let cachedTransporter = null;
+const FRONTEND_URL = () => process.env.FRONTEND_URL || "http://localhost:5173";
 
-const getTransporter = async () => {
-    if (cachedTransporter) return cachedTransporter;
+// ─── Brevo Client Singleton (lazy-initialized, safe) ─────────────────────────
 
-    const smtpUser = process.env.SMTP_USER?.trim();
-    const smtpPass = process.env.SMTP_PASS?.trim();
-    const smtpHost = process.env.SMTP_HOST?.trim() || "smtp.gmail.com";
-    const smtpPort = parseInt(process.env.SMTP_PORT || "587");
-    const smtpSecure = process.env.SMTP_SECURE === "true";
+let _brevoClient = null;
 
-    if (smtpUser && smtpPass) {
-        const isGmail = smtpHost.includes("gmail.com");
-        logger.info({ smtpHost, smtpPort, smtpUser }, "[Mailer] Initializing SMTP transporter");
-        cachedTransporter = nodemailer.createTransport({
-            ...(isGmail ? { service: "gmail" } : { host: smtpHost }),
-            port: smtpPort,
-            secure: smtpSecure,
-            auth: { user: smtpUser, pass: smtpPass },
-            tls: {
-                rejectUnauthorized: process.env.NODE_ENV === "production", // strict in prod, lenient in dev
-            },
-            connectionTimeout: 10000,
-            greetingTimeout: 10000,
-            socketTimeout: 15000,
-            pool: true,          // use connection pooling
-            maxConnections: 3,   // limit concurrent connections
-            maxMessages: 100,    // messages per connection before reconnect
-        });
-    } else {
-        logger.warn("[Mailer] No SMTP credentials found — falling back to Ethereal test account");
-        const testAccount = await nodemailer.createTestAccount();
-        cachedTransporter = nodemailer.createTransport({
-            host: "smtp.ethereal.email",
-            port: 587,
-            secure: false,
-            auth: { user: testAccount.user, pass: testAccount.pass },
-        });
+/**
+ * Returns a cached TransactionalEmailsApi instance, or null when unconfigured.
+ * Uses the v3.x canonical setApiKey() method.
+ * Never throws — callers receive null and handle it gracefully.
+ */
+const getBrevoClient = () => {
+    const apiKey = process.env.BREVO_API_KEY?.trim();
+    if (!apiKey) return null;
+
+    if (!_brevoClient) {
+        try {
+            const client = new Brevo.TransactionalEmailsApi();
+            client.setApiKey(Brevo.TransactionalEmailsApiApiKeys.apiKey, apiKey);
+            _brevoClient = client;
+        } catch (err) {
+            logger.error({ err: err?.message }, "[Mailer] Failed to initialise Brevo client");
+            return null;
+        }
     }
 
-    return cachedTransporter;
+    return _brevoClient;
 };
 
-// ─── Startup SMTP Verification ────────────────────────────────────────────────
-export const verifyTransporter = async () => {
+const getSender = () => {
+    return {
+        name: process.env.SENDER_NAME?.trim() || "SalonNow",
+        email: process.env.SENDER_EMAIL?.trim() || "aadityajandaha07@gmail.com",
+    };
+};
+
+const normalizeRecipients = (recipients) => {
+    const recipientList = Array.isArray(recipients) ? recipients : [recipients];
+    return recipientList
+        .map((recipient) => {
+            if (typeof recipient === "string") {
+                const email = recipient.trim().toLowerCase();
+                return email ? { email } : null;
+            }
+            if (recipient?.email) {
+                return { email: recipient.email.trim().toLowerCase(), ...(recipient.name ? { name: recipient.name } : {}) };
+            }
+            return null;
+        })
+        .filter(Boolean);
+};
+
+const htmlToText = (html = "") => html
+    .replace(/<style[\s\S]*?<\/style>|<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>|<\/div>|<\/li>|<\/h[1-6]>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\n\s*\n+/g, "\n\n")
+    .trim();
+
+/**
+ * Non-blocking startup probe.
+ * Logs a warning if unconfigured; NEVER throws or calls process.exit().
+ */
+export const verifyEmailService = async () => {
     try {
-        const transporter = await getTransporter();
-        await transporter.verify();
-        logger.info("[Mailer] SMTP connection verified — ready to send emails");
+        const apiKey = process.env.BREVO_API_KEY?.trim();
+        const sender = getSender();
+
+        if (!apiKey) {
+            logger.warn(
+                { senderEmail: sender.email },
+                "[Mailer] BREVO_API_KEY is not set — transactional emails will be skipped"
+            );
+            return { configured: false };
+        }
+
+        const client = getBrevoClient();
+        if (!client) {
+            logger.warn("[Mailer] Brevo client could not be initialised");
+            return { configured: false };
+        }
+
+        logger.info({ senderEmail: sender.email }, "[Mailer] Brevo email service configured");
+        return { configured: true };
     } catch (err) {
-        cachedTransporter = null;
-        logger.error({ err: err.message, code: err.code }, "[Mailer] SMTP connection FAILED");
-        if (err.message.includes("535") || err.message.includes("Username and Password not accepted")) {
-            logger.error("[Mailer] FIX: Gmail App Password is wrong or 2-Step Verification is not enabled");
-        } else if (err.message.includes("ECONNREFUSED") || err.message.includes("ETIMEDOUT")) {
-            logger.error({ err: err.message }, "[Mailer] FIX: Cannot reach SMTP server — check SMTP_HOST and SMTP_PORT");
-        } else if (err.message.includes("EAUTH")) {
-            logger.error({ err: err.message }, "[Mailer] FIX: Authentication error — check SMTP_USER and SMTP_PASS");
-        }
+        logger.error({ err: err?.message }, "[Mailer] Unexpected error during email service verification");
+        return { configured: false };
     }
 };
 
-const sendMail = async (to, subject, htmlContent) => {
-    const normalizedTo = typeof to === "string" ? to.trim().toLowerCase() : to;
-    if (!normalizedTo) {
-        logger.error({ subject }, "[Mailer] Email skipped because the recipient address is empty");
-        return { success: false, error: "Recipient email is required" };
-    }
-
+/**
+ * Central email dispatcher. All template helpers route through here.
+ *
+ * Returns `{ success: true, id }` on delivery, or `{ success: false, error }` on
+ * any failure — it NEVER throws. Controllers can safely fire-and-forget.
+ */
+export const sendEmail = async ({
+    to,
+    subject,
+    html,
+    text,
+    cc,
+    bcc,
+    replyTo,
+    attachments,
+} = {}) => {
     try {
-        const mailTransporter = await getTransporter();
-        const smtpUser = process.env.SMTP_USER?.trim();
-        
-        const info = await mailTransporter.sendMail({
-            from: `"SalonNow" <${smtpUser || 'no-reply@salonnow.app'}>`,
-            to: normalizedTo,
-            subject,
-            html: htmlContent,
-        });
+        const client = getBrevoClient();
+        if (!client) {
+            logger.warn({ subject }, "[Mailer] BREVO_API_KEY is not configured — email skipped");
+            return { success: false, error: "Email service not configured" };
+        }
 
-        logger.info({ to: normalizedTo, subject, messageId: info.messageId }, "[Mailer] Email sent successfully");
-        if (!smtpUser) {
-            logger.debug({ previewUrl: nodemailer.getTestMessageUrl(info) }, "[Mailer] Ethereal preview URL");
+        const normalizedTo = normalizeRecipients(to);
+        if (normalizedTo.length === 0) {
+            logger.error({ subject }, "[Mailer] Email skipped — recipient address is empty");
+            return { success: false, error: "Recipient email is required" };
         }
-        return { success: true, info };
+
+        const message = new Brevo.SendSmtpEmail();
+        message.sender = getSender();
+        message.to = normalizedTo;
+        message.subject = subject;
+        message.htmlContent = html;
+        message.textContent = text || htmlToText(html);
+
+        if (cc) message.cc = normalizeRecipients(cc);
+        if (bcc) message.bcc = normalizeRecipients(bcc);
+
+        const replyToAddr = replyTo || process.env.EMAIL_REPLY_TO?.trim();
+        if (replyToAddr) message.replyTo = { email: replyToAddr };
+
+        if (attachments) message.attachment = attachments;
+
+        const response = await client.sendTransacEmail(message);
+        const info = response?.body || response || {};
+        const messageId = info.messageId || info.message_id;
+
+        logger.info({ subject, messageId }, "[Mailer] Email accepted by Brevo");
+        return { success: true, id: messageId, info: { messageId } };
     } catch (error) {
-        logger.error({ to: normalizedTo, subject, code: error.code, response: error.response, err: error.message }, "[Mailer] Failed to send email");
-        if (error.responseCode === 535 || error.message?.includes('535') || error.message?.includes('Username and Password not accepted')) {
-            logger.error({ err: error.message }, "[Mailer] FIX: Gmail rejected credentials — regenerate App Password");
-            cachedTransporter = null;
-        } else if (error.message?.includes('EAUTH')) {
-            logger.error({ err: error.message }, "[Mailer] FIX: Authentication error — check SMTP_USER and SMTP_PASS");
-            cachedTransporter = null;
-        } else if (error.message?.includes('ECONNREFUSED') || error.message?.includes('ETIMEDOUT')) {
-            logger.error({ err: error.message }, "[Mailer] FIX: Cannot connect to SMTP server — check port and firewall rules");
-            cachedTransporter = null;
-        }
-        return { success: false, error: error.message };
+        const code = error?.response?.statusCode || error?.statusCode || error?.code;
+        const msg = error?.response?.body?.message || error?.message;
+        logger.error({ subject, code, err: msg }, "[Mailer] Brevo API error");
+        return { success: false, error: "Email delivery failed" };
     }
 };
+
+const sendTemplateEmail = (to, subject, htmlContent, textContent) => sendEmail({
+    to,
+    subject,
+    html: htmlContent,
+    text: textContent,
+});
 
 // ─── Diagnostic Function ──────────────────────────────────────────────────────
 export const testEmailConfiguration = async (targetEmail) => {
     const html = `
     <div style="font-family:sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
-        <h2 style="color: #D4AF37;">SMTP Configuration Test</h2>
+        <h2 style="color: #D4AF37;">Brevo Configuration Test</h2>
         <p>If you are reading this, your mailing system is correctly configured on your deployment platform!</p>
         <hr/>
         <p><strong>Environment Check:</strong></p>
         <ul>
-            <li><strong>SMTP_HOST:</strong> ${process.env.SMTP_HOST || 'smtp.gmail.com (default)'}</li>
-            <li><strong>SMTP_PORT:</strong> ${process.env.SMTP_PORT || '587 (default)'}</li>
-            <li><strong>SMTP_USER:</strong> ${process.env.SMTP_USER ? 'SET (Active)' : 'MISSING (Fallback active)'}</li>
+            <li><strong>BREVO_API_KEY:</strong> ${process.env.BREVO_API_KEY ? 'SET (Active)' : 'MISSING'}</li>
+            <li><strong>SENDER_NAME:</strong> ${process.env.SENDER_NAME || 'SalonNow (default)'}</li>
+            <li><strong>SENDER_EMAIL:</strong> ${process.env.SENDER_EMAIL || 'aadityajandaha07@gmail.com (default)'}</li>
             <li><strong>FRONTEND_URL:</strong> ${process.env.FRONTEND_URL || 'NOT SET'}</li>
         </ul>
     </div>`;
-    return sendMail(targetEmail, "SalonNow - SMTP Configuration Test", html);
+    return sendTemplateEmail(targetEmail, "SalonNow - Brevo Configuration Test", html);
 };
 
 // ─── Welcome Email ────────────────────────────────────────────────────────────
@@ -152,7 +209,7 @@ export const sendWelcomeEmail = async (email, name) => {
         <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Team &nbsp;&bull;&nbsp; Making every day a good hair day</p>
       </div>
     </div>`;
-    return sendMail(email, "Welcome to SalonNow!", html);
+    return sendTemplateEmail(email, "Welcome to SalonNow!", html);
 };
 
 // ─── Login Email ──────────────────────────────────────────────────────────────
@@ -178,7 +235,7 @@ export const sendLoginEmail = async (email, name) => {
         <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Team &nbsp;&bull;&nbsp; Making every day a good hair day</p>
       </div>
     </div>`;
-    return sendMail(email, "Successfully Logged In to SalonNow", html);
+    return sendTemplateEmail(email, "Successfully Logged In to SalonNow", html);
 };
 
 // ─── Logout Email ─────────────────────────────────────────────────────────────
@@ -201,7 +258,7 @@ export const sendLogoutEmail = async (email, name) => {
         <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Team &nbsp;&bull;&nbsp; Always here for your style needs</p>
       </div>
     </div>`;
-    return sendMail(email, "Logged Out of SalonNow", html);
+    return sendTemplateEmail(email, "Logged Out of SalonNow", html);
 };
 
 // ─── Shop Added Email ─────────────────────────────────────────────────────────
@@ -231,7 +288,7 @@ export const sendShopAddedEmail = async (email, name, shopName) => {
         <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Team &nbsp;&bull;&nbsp; We can't wait to see your business grow!</p>
       </div>
     </div>`;
-    return sendMail(email, `Your shop "${shopName}" is now live on SalonNow!`, html);
+    return sendTemplateEmail(email, `Your shop "${shopName}" is now live on SalonNow!`, html);
 };
 
 // ─── Booking Confirmation Email ───────────────────────────────────────────────
@@ -283,7 +340,7 @@ export const sendBookingConfirmationEmail = async (email, name, shopName, bookin
         <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Team &nbsp;&bull;&nbsp; Enjoy your visit!</p>
       </div>
     </div>`;
-    return sendMail(email, "Your SalonNow Booking is Confirmed!", html);
+    return sendTemplateEmail(email, "Your SalonNow Booking is Confirmed!", html);
 };
 
 export const sendPaymentReceiptEmail = async (email, name, shopName, bookingTime, amount, paymentId) => {
@@ -297,7 +354,7 @@ export const sendPaymentReceiptEmail = async (email, name, shopName, bookingTime
       <p><strong>Payment ID:</strong> ${paymentId}</p>
       <p>Thank you for booking with SalonNow.</p>
     </div>`;
-    return sendMail(email, "Payment successful - SalonNow booking confirmed", html);
+    return sendTemplateEmail(email, "Payment successful - SalonNow booking confirmed", html);
 };
 
 export const sendOwnerPaymentNotificationEmail = async (email, ownerName, customerName, shopName, bookingTime, amount, paymentId) => {
@@ -310,7 +367,7 @@ export const sendOwnerPaymentNotificationEmail = async (email, ownerName, custom
       <p><strong>Amount received:</strong> ₹${amount}</p>
       <p><strong>Payment ID:</strong> ${paymentId}</p>
     </div>`;
-    return sendMail(email, "New paid booking - SalonNow", html);
+    return sendTemplateEmail(email, "New paid booking - SalonNow", html);
 };
 
 // ─── Booking Status Update Email ──────────────────────────────────────────────
@@ -348,7 +405,7 @@ export const sendBookingStatusEmail = async (email, name, shopName, date, time, 
         <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Team &nbsp;&bull;&nbsp; Making every visit special</p>
       </div>
     </div>`;
-    return sendMail(email, `Your booking at ${shopName} is ${status}`, html);
+    return sendTemplateEmail(email, `Your booking at ${shopName} is ${status}`, html);
 };
 
 // ─── Booking Pending Email ─────────────────────────────────────────────────────
@@ -400,7 +457,7 @@ export const sendBookingPendingEmail = async (email, name, shopName, bookingTime
         <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Team &nbsp;&bull;&nbsp; We'll notify you soon!</p>
       </div>
     </div>`;
-    return sendMail(email, "Your SalonNow booking request is pending review", html);
+    return sendTemplateEmail(email, "Your SalonNow booking request is pending review", html);
 };
 
 // ─── Profile Update Email ─────────────────────────────────────────────────────
@@ -426,7 +483,7 @@ export const sendProfileUpdateEmail = async (email, name, salonName) => {
         <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Security Team</p>
       </div>
     </div>`;
-    return sendMail(email, `Profile Updated: ${salonName}`, html);
+    return sendTemplateEmail(email, `Profile Updated: ${salonName}`, html);
 };
 
 // ─── Management Update Email (Services/Staff) ─────────────────────────────────
@@ -452,7 +509,7 @@ export const sendManagementUpdateEmail = async (email, name, action, itemName, c
         <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Dashboard Team</p>
       </div>
     </div>`;
-    return sendMail(email, `${category} Alert: ${action}`, html);
+    return sendTemplateEmail(email, `${category} Alert: ${action}`, html);
 };
 
 // ─── Verification Email ───────────────────────────────────────────────────────
@@ -477,5 +534,5 @@ export const sendVerificationEmail = async (email, name, code) => {
         <p style="color:#aaaaaa;font-size:12px;text-align:center;margin:0;">The SalonNow Security Team</p>
       </div>
     </div>`;
-    return sendMail(email, "Verify your email - SalonNow", html);
+    return sendTemplateEmail(email, "Verify your email - SalonNow", html);
 };
