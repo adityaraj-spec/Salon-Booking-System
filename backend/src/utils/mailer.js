@@ -429,7 +429,7 @@ const renderEmail = ({ preheader, category, icon = "dot", heading, greeting, par
 <td style="background:${COLORS.header};padding:18px 24px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
 <tr>
-<td><span style="font-size:20px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;">salon<span style="color:${COLORS.gold};">now</span></span></td>
+<td><span style="font-size:20px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;">Salon<span style="color:${COLORS.gold};">Now</span></span></td>
 <td align="right"><span style="font-size:11px;font-weight:700;color:${COLORS.gold};letter-spacing:1px;text-transform:uppercase;">HAIR / BEAUTY / WELLNESS</span></td>
 </tr>
 </table>
@@ -469,7 +469,7 @@ ${support.html}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
 <tr>
 <td align="center" style="padding-bottom:12px;">
-<span style="font-size:16px;font-weight:700;color:${COLORS.text};">salon<span style="color:${COLORS.gold};">now</span></span>
+<span style="font-size:16px;font-weight:700;color:${COLORS.text};">Salon<span style="color:${COLORS.gold};">Now</span></span>
 <p style="margin:4px 0 0;font-size:12px;color:${COLORS.muted};font-style:italic;">Look good. Feel better.</p>
 </td>
 </tr>
@@ -481,14 +481,9 @@ ${renderSocialIcon(SOCIAL_LINKS[2].type, SOCIAL_LINKS[2].href, SOCIAL_LINKS[2].t
 </td>
 </tr>
 <tr>
-<td align="center" style="padding-bottom:16px;">
-${renderAppBadge("apple")}
-${renderAppBadge("google")}
-</td>
-</tr>
-<tr>
-<td align="center">
-<p style="margin:0;font-size:11px;color:${COLORS.muted};line-height:1.5;">&copy; ${new Date().getFullYear()} SalonNow Technologies Inc. All rights reserved.<br>You are receiving this email because you have an account with SalonNow.</p>
+<td align="center" style="font-size:11px;color:${COLORS.muted};line-height:1.5;">
+<p style="margin:0 0 8px;">&copy; ${new Date().getFullYear()} SalonNow Technologies Inc. All rights reserved.</p>
+<p style="margin:0;"><a href="${escapeHtml(FRONTEND_URL())}/privacy" style="color:${COLORS.muted};text-decoration:underline;">Privacy Policy</a> &bull; <a href="${escapeHtml(FRONTEND_URL())}/terms" style="color:${COLORS.muted};text-decoration:underline;">Terms of Service</a></p>
 </td>
 </tr>
 </table>
