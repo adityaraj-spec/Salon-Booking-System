@@ -141,34 +141,34 @@ export const sendTemplateEmail = (to, subject, htmlContent, textContent) => send
 });
 
 const COLORS = {
-    header: "#202020",
-    text: "#242424",
+    header: "#1A1A1A",
+    text: "#1A1A1A",
     body: "#4C5358",
-    warm: "#F7F4EE",
-    gold: "#B88A42",
+    warm: "#F9F8F6",
+    gold: "#C59B27",
     muted: "#7C8388",
-    border: "#E2DED6",
+    border: "#EAE8E3",
     success: "#237443",
     danger: "#A34B4B",
     pending: "#9A6A20",
     page: "#F1F2F0",
 };
 
-const ICON_GLYPHS = {
-    check: "&#10003;",
-    clock: "&#9684;",
-    close: "&#10005;",
-    receipt: "&#9633;",
-    calendar: "&#9634;",
-    scissors: "&#9986;",
-    card: "&#9643;",
-    person: "&#9673;",
-    store: "&#9638;",
-    settings: "&#9881;",
-    shield: "&#9678;",
-    arrow: "&#8594;",
-    support: "&#9742;",
-    dot: "&#8226;",
+const ICON_PATHS = {
+    check: '<path d="M5 12.5 9.2 17 19 7"/>',
+    clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/>',
+    close: '<path d="m7 7 10 10M17 7 7 17"/>',
+    receipt: '<rect x="5" y="3.5" width="14" height="17" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/>',
+    calendar: '<rect x="4" y="5.5" width="16" height="14" rx="2"/><path d="M7 3.5v4M17 3.5v4M4 9.5h16"/>',
+    scissors: '<circle cx="7" cy="8" r="2.2"/><circle cx="7" cy="16" r="2.2"/><path d="m9 9.5 9 7M9 14.5l9-7"/>',
+    card: '<rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="M4 9.5h16M7 14h4"/>',
+    person: '<circle cx="12" cy="8" r="3"/><path d="M5.5 20c.7-3.5 2.8-5.2 6.5-5.2s5.8 1.7 6.5 5.2"/>',
+    store: '<path d="M4 10v9.5h16V10M3 10l2-5h14l2 5M8 19.5v-5h8v5M3 10c0 1.5 1 2.5 2.5 2.5S8 11.5 8 10c0 1.5 1 2.5 2.5 2.5S13 11.5 13 10c0 1.5 1 2.5 2.5 2.5S18 11.5 18 10c0 1.5 1 2.5 2 2.5"/>',
+    settings: '<circle cx="12" cy="12" r="3"/><path d="M12 3.5v2M12 18.5v2M3.5 12h2M18.5 12h2M6 6l1.5 1.5M16.5 16.5 18 18M18 6l-1.5 1.5M7.5 16.5 6 18"/>',
+    shield: '<path d="M12 3.5 19 6v5.2c0 4.2-2.6 7.5-7 9.3-4.4-1.8-7-5.1-7-9.3V6z"/><path d="m8.5 12 2.2 2.2 4.8-4.8"/>',
+    support: '<path d="M5 13v-1a7 7 0 0 1 14 0v1"/><path d="M5 13H4a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h2v-4M19 13h1a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2v-4M17 18c-.8 1.3-2.1 2-4 2"/>',
+    arrow: '<path d="M4 12h15M13 6l6 6-6 6"/>',
+    dot: '<circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/>',
 };
 
 const CATEGORY_ICONS = {
@@ -189,8 +189,9 @@ const CATEGORY_ICONS = {
 };
 
 const SOCIAL_LINKS = [
-    { label: "IG", title: "Instagram", href: "https://www.instagram.com/aaditya_raj_2310?igsh=enRtZmpvN3RnZTV4" },
-    { label: "X", title: "X", href: "https://x.com/Aaditya_raj_70?t=qvI4FEr3TKf1D2lPsHRWow&s=09" },
+    { type: "instagram", title: "Instagram", href: process.env.INSTAGRAM_URL || "https://www.instagram.com/aaditya_raj_2310" },
+    { type: "youtube", title: "YouTube", href: process.env.YOUTUBE_URL || "https://www.youtube.com/" },
+    { type: "x", title: "X", href: process.env.X_URL || "https://x.com/Aaditya_raj_70" },
 ];
 
 const escapeHtml = (value) => String(value ?? "")
@@ -223,22 +224,71 @@ const getInitials = (value) => displayValue(value, "SN")
     .join("")
     .toUpperCase();
 
-const renderIcon = (name, color = COLORS.gold, size = 18, circle = false) => {
-    const glyph = ICON_GLYPHS[name] || ICON_GLYPHS.dot;
-    const circleStyles = circle
-        ? `border:1px solid ${color};border-radius:50%;width:28px;height:28px;line-height:28px;`
-        : `width:${size}px;height:${size}px;line-height:${size}px;`;
-    return `<span aria-hidden="true" style="display:inline-block;${circleStyles}color:${color};font-size:${Math.max(12, size - 1)}px;font-weight:400;text-align:center;vertical-align:middle;">${glyph}</span>`;
+const renderIcon = (name, color = COLORS.gold, size = 16, circle = false) => {
+    const path = ICON_PATHS[name] || ICON_PATHS.dot;
+    const circleMarkup = circle ? `<circle cx="12" cy="12" r="10" stroke="${color}" fill="none"/>` : "";
+    return `<span aria-hidden="true" style="display:inline-block;width:${size}px;height:${size}px;line-height:0;vertical-align:middle;margin-right:4px;"><svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" role="img" aria-label="${escapeHtml(name)} icon" fill="none" stroke="${color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${circleMarkup}${path}</svg></span>`;
 };
 
-const frontendLink = (path) => `${FRONTEND_URL()}${path}`;
+const getFieldIcon = (label) => {
+    const value = String(label || "").toLowerCase();
+    if (value.includes("amount") || value.includes("payment")) return "receipt";
+    if (value.includes("reference") || value.includes("brevo")) return "card";
+    if (value.includes("appointment") || value.includes("date") || value.includes("time")) return "calendar";
+    if (value.includes("salon") || value.includes("category") || value.includes("shop")) return "store";
+    if (value.includes("security") || value.includes("verification")) return "shield";
+    if (value.includes("profile") || value.includes("recipient") || value.includes("sender") || value.includes("customer")) return "person";
+    if (value.includes("action") || value.includes("management")) return "settings";
+    return "receipt";
+};
 
 const safeHref = (href) => {
     const value = String(href || "");
     return /^(https?:\/\/|mailto:)/i.test(value) ? value : "#";
 };
 
+const renderSocialIcon = (type, href, title) => {
+    const paths = {
+        instagram: '<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8" fill="currentColor" stroke="none"/>',
+        youtube: '<rect x="3" y="5.5" width="18" height="13" rx="4"/><path d="m10 9 5 3-5 3z" fill="currentColor" stroke="none"/>',
+        x: '<path d="M5 4.5 19 19.5M19 4.5 5 19.5"/>',
+    };
+    return `<a href="${escapeHtml(safeHref(href))}" title="${escapeHtml(title)}" style="display:inline-block;margin:0 6px;color:${COLORS.text};text-decoration:none;line-height:0;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" role="img" aria-label="${escapeHtml(title)}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${paths[type] || paths.x}</svg></a>`;
+};
+
+const renderAppBadge = (type) => {
+    const isApple = type === "apple";
+    const href = safeHref(isApple ? process.env.APP_STORE_URL : process.env.GOOGLE_PLAY_URL);
+    const icon = isApple
+        ? '<path d="M10.8 7.8c-.1-1.2.5-2.2 1.6-2.8.1 1.1-.3 2.2-1.6 2.8ZM12.4 8.8c.8 0 1.7-.8 2.6-.8.9 0 1.7.5 2.2 1.2-1.1.7-1.3 2.5-.2 3.4-.3.8-.7 1.6-1.3 2.4-.6.8-1.2 1.7-2.2 1.7-.9 0-1.2-.6-2.2-.6-1 0-1.3.6-2.2.6-1 0-1.7-.9-2.3-1.7-1.3-1.8-2.3-5-.9-6.6.7-.8 1.7-1.2 2.6-1.2 1 0 1.8.8 2.3.8Z" fill="currentColor" stroke="none"/>'
+        : '<path d="m6 4 10 8-10 8z" fill="#36A853" stroke="none"/><path d="m6 4 6 8-6 8z" fill="#4285F4" stroke="none"/><path d="m6 4 10 8-4 0z" fill="#FBBC04" stroke="none"/><path d="m6 20 6-8 4 0z" fill="#EA4335" stroke="none"/>';
+    const title = isApple ? "Download on the App Store" : "Get it on Google Play";
+    const label = isApple ? "App Store" : "Google Play";
+    return `<a href="${escapeHtml(href)}" title="${title}" style="display:inline-block;margin:4px;vertical-align:middle;text-decoration:none;"><svg xmlns="http://www.w3.org/2000/svg" width="110" height="34" viewBox="0 0 78 24" role="img" aria-label="${title}"><rect width="78" height="24" rx="4" fill="#111111"/><g transform="translate(5 4)" fill="#ffffff">${icon}</g><text x="22" y="9" fill="#ffffff" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="4">${isApple ? "Download on the" : "GET IT ON"}</text><text x="22" y="17" fill="#ffffff" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="8" font-weight="700">${label}</text></svg></a>`;
+};
+
 const supportEmail = () => process.env.SUPPORT_EMAIL?.trim() || process.env.EMAIL_REPLY_TO?.trim() || "support@salonnow.in";
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+const formatDateTime = (value) => {
+    if (!hasValue(value)) return "";
+    if (value instanceof Date && !Number.isNaN(value.getTime())) return formatDateObject(value);
+
+    const source = String(value).trim();
+    const normalized = source.replace(/\s+at\s+/i, " ").replace(/\s+/g, " ");
+    const parsed = new Date(normalized);
+    if (Number.isNaN(parsed.getTime()) || !/\d{4}/.test(normalized)) return source;
+    return formatDateObject(parsed);
+};
+
+const formatDateObject = (value) => {
+    const hours = value.getHours();
+    const minutes = String(value.getMinutes()).padStart(2, "0");
+    const meridiem = hours >= 12 ? "PM" : "AM";
+    const twelveHour = String(hours % 12 || 12).padStart(2, "0");
+    return `${value.getDate()} ${MONTHS[value.getMonth()]} ${value.getFullYear()}, ${twelveHour}:${minutes} ${meridiem}`;
+};
 
 const renderDetailCard = (rows = []) => {
     const safeRows = rows
@@ -247,16 +297,17 @@ const renderDetailCard = (rows = []) => {
             label: displayValue(row.label, "Details"),
             value: displayValue(row.value),
             emphasis: Boolean(row.emphasis),
+            icon: getFieldIcon(row.label),
         }));
 
     if (!safeRows.length) return { html: "", lines: [] };
 
     return {
-        html: `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background:${COLORS.warm};border:1px solid ${COLORS.border};border-radius:6px;overflow:hidden;margin:24px 0;">
-          ${safeRows.map((row, index) => `<tr${index < safeRows.length - 1 ? ` style="border-bottom:1px solid ${COLORS.border};"` : ""}>
-            <td style="padding:14px 16px;color:${COLORS.muted};font-size:10px;line-height:1.45;letter-spacing:1px;text-transform:uppercase;vertical-align:top;width:38%;">${escapeHtml(row.label)}</td>
-            <td style="padding:14px 16px;color:${row.emphasis ? COLORS.text : COLORS.body};font-size:${row.emphasis ? "15px" : "13px"};font-weight:${row.emphasis ? "700" : "400"};line-height:1.5;text-align:right;word-break:break-word;">${escapeHtml(row.value)}</td>
-          </tr>`).join("")}
+        html: `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background:${COLORS.warm};border:1px solid ${COLORS.border};border-radius:8px;overflow:hidden;margin:24px 0;">
+            ${safeRows.map((row, index) => `<tr${index < safeRows.length - 1 ? ` style="border-bottom:1px solid ${COLORS.border};"` : ""}>
+                <td style="padding:14px 16px;color:${COLORS.muted};font-size:12px;font-weight:500;line-height:1.45;letter-spacing:1px;text-transform:uppercase;vertical-align:top;width:40\%;">${renderIcon(row.icon, COLORS.gold, 16)}<span style="vertical-align:middle;">${escapeHtml(row.label)}</span></td>
+                <td style="padding:14px 16px;color:${row.emphasis ? COLORS.text : COLORS.body};font-size:${row.emphasis ? "16px" : "14px"};font-weight:${row.emphasis ? "700" : "600"};line-height:1.5;text-align:right;word-break:break-word;">${escapeHtml(row.value)}</td>
+            </tr>`).join("")}
         </table>`,
         lines: safeRows.map((row) => `${row.label}: ${row.value}`),
     };
@@ -267,24 +318,25 @@ const renderBookingPanel = ({ bookingReference, bookingTime, salonName, salonAdd
     const hasAppointmentDetails = hasValue(bookingTime) || hasValue(stylist) || hasValue(services);
     const serviceText = hasValue(services) ? displayServices(services) : "";
     const bookingStatus = hasValue(status) ? displayValue(status) : "";
-    const appointmentValue = hasValue(bookingTime) ? displayValue(bookingTime) : "";
+    const appointmentValue = hasValue(bookingTime) ? formatDateTime(bookingTime) : "";
     const hasTotal = hasValue(price);
+    const hasBookingReference = hasValue(bookingReference);
     const hasCustomer = hasValue(customerName);
 
     return {
-        html: `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background:#ffffff;border:1px solid ${COLORS.border};border-radius:6px;overflow:hidden;margin:24px 0;">
-          ${hasBookingReference ? `<tr style="background:${COLORS.warm};border-bottom:1px solid ${COLORS.border};"><td style="padding:14px 16px;"><p style="margin:0 0 4px;color:${COLORS.muted};font-size:10px;letter-spacing:1px;text-transform:uppercase;">Booking reference</p><p style="margin:0;color:${COLORS.text};font-size:17px;font-weight:700;word-break:break-word;">${escapeHtml(displayValue(bookingReference))}</p></td></tr>` : ""}
+        html: `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background:#ffffff;border:1px solid ${COLORS.border};border-radius:8px;overflow:hidden;margin:24px 0;">
+          ${hasBookingReference ? `<tr style="background:${COLORS.warm};border-bottom:1px solid${COLORS.border};"><td style="padding:14px 16px;"><p style="margin:0 0 4px;color:${COLORS.muted};font-size:11px;font-weight:500;letter-spacing:1px;text-transform:uppercase;">${renderIcon("receipt", COLORS.gold, 16)}<span style="vertical-align:middle;">Booking reference</span></p><p style="margin:0;color:${COLORS.text};font-size:16px;font-weight:700;word-break:break-word;">${escapeHtml(displayValue(bookingReference))}</p></td></tr>` : ""}
           <tr><td style="padding:20px 16px 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr>
-            <td width="50" valign="top"><span style="display:inline-block;width:40px;height:40px;border-radius:50%;background:${COLORS.header};color:#ffffff;font-size:15px;line-height:40px;text-align:center;">${escapeHtml(getInitials(safeSalonName))}</span></td>
-            <td valign="top" style="padding-left:11px;"><p style="margin:0;color:${COLORS.text};font-size:16px;font-weight:700;line-height:1.35;">${escapeHtml(safeSalonName)}</p>${hasValue(salonAddress) ? `<p style="margin:5px 0 0;color:${COLORS.muted};font-size:11px;line-height:1.5;">${renderIcon("store", COLORS.muted, 13)} <span style="vertical-align:middle;">${escapeHtml(displayValue(salonAddress))}</span></p>` : ""}</td>
-            ${bookingStatus ? `<td align="right" valign="top" style="padding-left:8px;"><span style="display:inline-block;padding:5px 9px;border:1px solid ${statusColor};border-radius:20px;color:${statusColor};font-size:10px;font-weight:700;">${escapeHtml(bookingStatus)}</span></td>` : ""}
+            <td width="48" valign="top"><span style="display:inline-block;width:40px;height:40px;border-radius:50%;background:${COLORS.header};color:#ffffff;font-size:15px;line-height:40px;text-align:center;font-weight:700;">${escapeHtml(getInitials(safeSalonName))}</span></td>
+            <td valign="top" style="padding-left:12px;"><p style="margin:0;color:${COLORS.text};font-size:16px;font-weight:700;line-height:1.35;">${escapeHtml(safeSalonName)}</p>${hasValue(salonAddress) ? `<p style="margin:4px 0 0;color:${COLORS.muted};font-size:12px;line-height:1.5;">${renderIcon("store", COLORS.muted, 14)}<span style="vertical-align:middle;">${escapeHtml(displayValue(salonAddress))}</span></p>` : ""}</td>
+            ${bookingStatus ? `<td align="right" valign="top" style="padding-left:8px;"><span style="display:inline-block;padding:4px 10px;border:1px solid ${statusColor};border-radius:20px;color:${statusColor};font-size:11px;font-weight:700;">${escapeHtml(bookingStatus)}</span></td>` : ""}
           </tr></table></td></tr>
-          ${hasCustomer ? `<tr><td style="padding:13px 16px;border-top:1px solid ${COLORS.border};"><p style="margin:0 0 4px;color:${COLORS.muted};font-size:10px;letter-spacing:1px;text-transform:uppercase;">Customer</p><p style="margin:0;color:${COLORS.text};font-size:14px;font-weight:700;word-break:break-word;">${escapeHtml(displayValue(customerName))}</p></td></tr>` : ""}
-          ${hasAppointmentDetails ? `<tr><td style="padding:16px;border-top:1px solid ${COLORS.border};"><p style="margin:0 0 12px;color:${COLORS.text};font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Appointment details</p><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr>
-            ${appointmentValue ? `<td class="sn-stack-cell" width="50%" valign="top" style="padding-right:16px;${serviceText || hasValue(stylist) ? `border-right:1px solid ${COLORS.border};` : ""}"><p style="margin:0 0 5px;color:${COLORS.muted};font-size:10px;">${renderIcon("calendar", COLORS.gold, 16)} <span style="vertical-align:middle;">Date &amp; Time</span></p><p style="margin:0;color:${COLORS.body};font-size:13px;line-height:1.55;word-break:break-word;">${escapeHtml(appointmentValue)}</p></td>` : ""}
-            ${(serviceText || hasValue(stylist)) ? `<td class="sn-stack-cell" valign="top" style="padding-left:${appointmentValue ? "16px" : "0"};"><p style="margin:0 0 5px;color:${COLORS.muted};font-size:10px;">${renderIcon("scissors", COLORS.gold, 16)} <span style="vertical-align:middle;">Service</span></p>${serviceText ? `<p style="margin:0;color:${COLORS.body};font-size:13px;line-height:1.55;word-break:break-word;">${escapeHtml(serviceText)}</p>` : ""}${hasValue(stylist) ? `<p style="margin:5px 0 0;color:${COLORS.muted};font-size:10px;line-height:1.5;">Stylist: <span style="color:${COLORS.body};">${escapeHtml(displayValue(stylist))}</span></p>` : ""}</td>` : ""}
+          ${hasCustomer ? `<tr><td style="padding:14px 16px;border-top:1px solid ${COLORS.border};"><p style="margin:0 0 4px;color:${COLORS.muted};font-size:11px;font-weight:500;letter-spacing:1px;text-transform:uppercase;">${renderIcon("person", COLORS.gold, 16)}<span style="vertical-align:middle;">Customer</span></p><p style="margin:0;color:${COLORS.text};font-size:14px;font-weight:700;word-break:break-word;">${escapeHtml(displayValue(customerName))}</p></td></tr>` : ""}
+          ${hasAppointmentDetails ? `<tr><td style="padding:16px;border-top:1px solid ${COLORS.border};"><p style="margin:0 0 12px;color:${COLORS.text};font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Appointment details</p><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr>
+            ${appointmentValue ? `<td class="sn-stack-cell" width="50%" valign="top" style="padding-right:12px;${serviceText || hasValue(stylist) ? `border-right:1px solid ${COLORS.border};` : ""}"><p style="margin:0 0 6px;color:${COLORS.muted};font-size:12px;font-weight:500;">${renderIcon("calendar", COLORS.gold, 16)}<span style="vertical-align:middle;">Date &amp; Time</span></p><p style="margin:0;color:${COLORS.body};font-size:14px;font-weight:600;line-height:1.55;word-break:break-word;">${escapeHtml(appointmentValue)}</p></td>` : ""}
+            ${(serviceText || hasValue(stylist)) ? `<td class="sn-stack-cell" valign="top" style="padding-left:${appointmentValue ? "12px" : "0"};"><p style="margin:0 0 6px;color:${COLORS.muted};font-size:12px;font-weight:500;">${renderIcon("scissors", COLORS.gold, 16)}<span style="vertical-align:middle;">Service</span></p>${serviceText ? `<p style="margin:0;color:${COLORS.body};font-size:14px;font-weight:600;line-height:1.55;word-break:break-word;">${escapeHtml(serviceText)}</p>` : ""}${hasValue(stylist) ? `<p style="margin:6px 0 0;color:${COLORS.muted};font-size:12px;line-height:1.5;">Stylist: <span style="color:${COLORS.body};font-weight:600;">${escapeHtml(displayValue(stylist))}</span></p>` : ""}</td>` : ""}
           </tr></table></td></tr>` : ""}
-          ${hasTotal ? `<tr><td style="padding:15px 16px;background:${COLORS.warm};border-top:1px solid ${COLORS.border};"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr><td style="color:${COLORS.text};font-size:12px;font-weight:700;">Total amount</td><td align="right" style="color:${COLORS.text};font-size:17px;font-weight:700;">&#8377;${escapeHtml(displayValue(price, "0"))}</td></tr></table></td></tr>` : ""}
+          ${hasTotal ? `<tr><td style="padding:16px;background:${COLORS.warm};border-top:1px solid${COLORS.border};"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr><td style="color:${COLORS.text};font-size:13px;font-weight:700;">Total amount</td><td align="right" style="color:${COLORS.text};font-size:18px;font-weight:700;">&#8377;${escapeHtml(displayValue(price, "0"))}</td></tr></table></td></tr>` : ""}
         </table>`,
         lines: [
             ...(hasBookingReference ? [`Booking reference: ${displayValue(bookingReference)}`] : []),
@@ -299,26 +351,11 @@ const renderBookingPanel = ({ bookingReference, bookingTime, salonName, salonAdd
     };
 };
 
-const renderPaymentDetails = ({ status, reference, method }) => {
-    const cells = [
-        { label: "Payment status", value: status, color: COLORS.success, icon: "check" },
-        { label: "Payment reference", value: reference, icon: "receipt" },
-        { label: "Payment method", value: method, icon: "card" },
-    ].filter((cell) => hasValue(cell.value));
-
-    if (!cells.length) return { html: "", lines: [] };
-
-    return {
-        html: `<p style="margin:26px 0 11px;color:${COLORS.text};font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Payment details</p><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 22px;"><tr>${cells.map((cell, index) => `<td class="sn-stack-cell" width="${Math.floor(100 / cells.length)}%" valign="top" style="padding:${index ? "0 0 0 12px" : "0 12px 0 0"};${index < cells.length - 1 ? `border-right:1px solid ${COLORS.border};` : ""}"><p style="margin:0 0 5px;color:${COLORS.muted};font-size:10px;line-height:1.4;">${renderIcon(cell.icon, cell.color || COLORS.gold, 16)} <span style="vertical-align:middle;">${escapeHtml(cell.label)}</span></p><p style="margin:0;color:${cell.color || COLORS.body};font-size:12px;font-weight:700;line-height:1.5;word-break:break-word;">${escapeHtml(displayValue(cell.value))}</p></td>`).join("")}</tr></table>`,
-        lines: cells.map((cell) => `${cell.label}: ${displayValue(cell.value)}`),
-    };
-};
-
 const renderSupportLine = () => {
     const email = supportEmail();
-    const contact = `<a href="mailto:${escapeHtml(email)}" style="color:${COLORS.gold};text-decoration:underline;">Contact us</a>`;
+    const contact = `<a href="mailto:${escapeHtml(email)}" style="color:${COLORS.gold};text-decoration:underline;font-weight:600;">Contact us</a>`;
     return {
-        html: `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:26px 0 4px;"><tr><td width="28" valign="top">${renderIcon("support", COLORS.header, 17)}</td><td style="color:${COLORS.muted};font-size:12px;line-height:1.6;">Need help? Our support team is here for you. ${contact}</td></tr></table>`,
+        html: `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:26px 0 4px;"><tr><td width="28" valign="top">${renderIcon("support", COLORS.header, 18)}</td><td style="color:${COLORS.muted};font-size:13px;line-height:1.6;">Need help? Our support team is here for you. ${contact}</td></tr></table>`,
         text: `Need help? Our support team is here for you. Contact us at ${email}.`,
     };
 };
@@ -328,7 +365,7 @@ const renderPaymentCard = ({ shopName, bookingTime, amount, paymentId }) => {
         { label: "Amount paid", value: amount, textValue: hasValue(amount) ? `Rs ${displayValue(amount, "0")}` : "", emphasis: true, currency: true, icon: "receipt" },
         { label: "Payment reference", value: paymentId, textValue: paymentId, icon: "card" },
         { label: "Salon", value: shopName, textValue: shopName, icon: "store" },
-        { label: "Appointment", value: bookingTime, textValue: bookingTime, icon: "calendar" },
+        { label: "Appointment", value: hasValue(bookingTime) ? formatDateTime(bookingTime) : "", textValue: hasValue(bookingTime) ? formatDateTime(bookingTime) : "", icon: "calendar" },
     ].filter((cell) => hasValue(cell.value));
     const rows = [];
 
@@ -337,21 +374,21 @@ const renderPaymentCard = ({ shopName, bookingTime, amount, paymentId }) => {
         const right = cells[index + 1];
         const leftValue = left.currency ? `&#8377;${escapeHtml(displayValue(left.value, "0"))}` : escapeHtml(displayValue(left.value));
         const rightValue = right ? (right.currency ? `&#8377;${escapeHtml(displayValue(right.value, "0"))}` : escapeHtml(displayValue(right.value))) : "";
-        rows.push(`<tr${index + 2 < cells.length ? ` style="border-bottom:1px solid ${COLORS.border};"` : ""}><td class="sn-stack-cell" width="50%" valign="top" style="padding:14px 14px 14px 16px;${right ? `border-right:1px solid ${COLORS.border};` : ""}"><p style="margin:0 0 5px;color:${COLORS.muted};font-size:10px;line-height:1.4;">${renderIcon(left.icon, COLORS.gold, 16)} <span style="vertical-align:middle;">${escapeHtml(left.label)}</span></p><p style="margin:0;color:${left.emphasis ? COLORS.text : COLORS.body};font-size:${left.emphasis ? "18px" : "13px"};font-weight:${left.emphasis ? "700" : "400"};line-height:1.5;word-break:break-word;">${leftValue}</p></td>${right ? `<td class="sn-stack-cell" width="50%" valign="top" style="padding:14px 16px 14px 14px;"><p style="margin:0 0 5px;color:${COLORS.muted};font-size:10px;line-height:1.4;">${renderIcon(right.icon, COLORS.gold, 16)} <span style="vertical-align:middle;">${escapeHtml(right.label)}</span></p><p style="margin:0;color:${right.emphasis ? COLORS.text : COLORS.body};font-size:${right.emphasis ? "18px" : "13px"};font-weight:${right.emphasis ? "700" : "400"};line-height:1.5;word-break:break-word;">${rightValue}</p></td>` : ""}</tr>`);
+        rows.push(`<tr${index + 2 < cells.length ? ` style="border-bottom:1px solid ${COLORS.border};"` : ""}><td class="sn-stack-cell" width="50%" valign="top" style="padding:16px;${right ? `border-right:1px solid ${COLORS.border};` : ""}"><p style="margin:0 0 6px;color:${COLORS.muted};font-size:12px;font-weight:500;line-height:1.4;">${renderIcon(left.icon, COLORS.gold, 16)}<span style="vertical-align:middle;">${escapeHtml(left.label)}</span></p><p style="margin:0;color:${left.emphasis ? COLORS.text : COLORS.body};font-size:${left.emphasis ? "20px" : "14px"};font-weight:${left.emphasis ? "700" : "600"};line-height:1.5;word-break:break-word;">${leftValue}</p></td>${right ? `<td class="sn-stack-cell" width="50%" valign="top" style="padding:16px;"><p style="margin:0 0 6px;color:${COLORS.muted};font-size:12px;font-weight:500;line-height:1.4;">${renderIcon(right.icon, COLORS.gold, 16)}<span style="vertical-align:middle;">${escapeHtml(right.label)}</span></p><p style="margin:0;color:${right.emphasis ? COLORS.text : COLORS.body};font-size:${right.emphasis ? "20px" : "14px"};font-weight:${right.emphasis ? "700" : "600"};line-height:1.5;word-break:break-word;">${rightValue}</p></td>` : ""}</tr>`);
     }
 
     return {
-        cardHtml: cells.length ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background:${COLORS.warm};border:1px solid ${COLORS.border};border-radius:6px;overflow:hidden;margin:24px 0;">${rows.join("")}</table>` : "",
+        cardHtml: cells.length ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background:${COLORS.warm};border:1px solid ${COLORS.border};border-radius:8px;overflow:hidden;margin:24px 0;">${rows.join("")}</table>` : "",
         cardLines: cells.map((cell) => `${cell.label}: ${cell.textValue || displayValue(cell.value)}`),
     };
 };
 
-const renderEmail = ({ preheader, category, icon = "dot", heading, greeting, paragraphs = [], rows = [], booking, payment, notice, code, cta, accent = COLORS.gold, footer = "SalonNow" }) => {
+const renderEmail = ({ preheader, category, icon = "dot", heading, greeting, paragraphs = [], rows = [], booking, payment, notice, code, cta, accent = COLORS.gold }) => {
     const safeHeading = displayValue(heading, "SalonNow");
     const safePreheader = displayValue(preheader, safeHeading);
     const safeCategory = displayValue(category, "SalonNow");
     const categoryKey = safeCategory.toLowerCase();
-    const iconName = ICON_GLYPHS[icon] ? icon : CATEGORY_ICONS[categoryKey] || "dot";
+    const iconName = ICON_PATHS[icon] ? icon : CATEGORY_ICONS[categoryKey] || "dot";
     const safeGreeting = hasValue(greeting) ? displayValue(greeting) : "";
     const safeParagraphs = paragraphs.map((paragraph) => displayValue(paragraph, "")).filter(Boolean);
     const safeNotice = notice && hasValue(notice.text) ? { label: displayValue(notice.label, "Update"), text: displayValue(notice.text), color: notice.color || accent } : null;
@@ -359,129 +396,392 @@ const renderEmail = ({ preheader, category, icon = "dot", heading, greeting, par
     const safeCta = cta ? { label: displayValue(cta.label, "Open SalonNow"), href: safeHref(cta.href) } : null;
     const detailCard = renderDetailCard(rows);
     const support = renderSupportLine();
-    const noticeHtml = safeNotice ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:24px 0;"><tr><td style="border-left:4px solid ${safeNotice.color};background:${COLORS.warm};padding:14px 15px;"><p style="margin:0 0 5px;color:${safeNotice.color};font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">${escapeHtml(safeNotice.label)}</p><p style="margin:0;color:${COLORS.body};font-size:13px;line-height:1.6;">${escapeHtml(safeNotice.text)}</p></td></tr></table>` : "";
-    const codeHtml = safeCode ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:24px 0;"><tr><td align="center" style="background:${COLORS.warm};border:1px dashed ${accent};padding:19px 12px;"><p style="margin:0 0 8px;color:${COLORS.muted};font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Your verification code</p><p style="margin:0;color:${COLORS.text};font-size:30px;font-weight:700;letter-spacing:8px;line-height:1.2;">${escapeHtml(safeCode)}</p></td></tr></table>` : "";
-    const ctaHtml = safeCta ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:26px 0 8px;"><tr><td align="center" bgcolor="${COLORS.header}" style="background:${COLORS.header};border-radius:4px;"><a href="${escapeHtml(safeCta.href)}" style="display:block;padding:14px 18px;color:#ffffff;font-size:12px;font-weight:700;letter-spacing:.15px;text-decoration:none;">${escapeHtml(safeCta.label)} &nbsp;${ICON_GLYPHS.arrow}</a></td></tr></table>` : "";
-    const socialHtml = SOCIAL_LINKS.map((link) => `<a href="${escapeHtml(link.href)}" title="${escapeHtml(link.title)}" style="display:inline-block;margin-left:10px;color:${COLORS.text};font-size:11px;font-weight:700;text-decoration:none;">${escapeHtml(link.label)}</a>`).join("");
-    const footerHtml = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${COLORS.warm}" style="border-collapse:collapse;background:${COLORS.warm};"><tr><td style="padding:22px 28px 18px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr><td valign="top"><p style="margin:0;color:${COLORS.text};font-size:22px;font-weight:700;letter-spacing:-.5px;">salon<span style="color:${COLORS.gold};">now</span></p><p style="margin:4px 0 0;color:${COLORS.muted};font-size:10px;line-height:1.4;">Look good. Feel better.</p></td><td align="right" valign="middle">${socialHtml}</td></tr></table><p style="margin:19px 0 0;padding-top:11px;border-top:1px solid ${COLORS.border};color:#9A9A95;font-size:9px;line-height:1.6;text-align:center;">This email was sent to you because of an action on your SalonNow account. &copy; ${new Date().getFullYear()} SalonNow. All rights reserved.</p></td></tr></table>`;
+    const noticeHtml = safeNotice ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:24px 0;"><tr><td style="border-left:4px solid ${safeNotice.color};background:${COLORS.warm};padding:14px 16px;border-radius:0 8px 8px 0;"><p style="margin:0 0 4px;color:${safeNotice.color};font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">${escapeHtml(safeNotice.label)}</p><p style="margin:0;color:${COLORS.body};font-size:14px;line-height:1.6;">${escapeHtml(safeNotice.text)}</p></td></tr></table>` : "";
+    const codeHtml = safeCode ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:24px 0;"><tr><td align="center" style="background:${COLORS.warm};border:1px dashed ${accent};border-radius:8px;padding:20px 12px;"><p style="margin:0 0 8px;color:${COLORS.muted};font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Your verification code</p><p style="margin:0;color:${COLORS.text};font-size:32px;font-weight:700;letter-spacing:8px;line-height:1.2;">${escapeHtml(safeCode)}</p></td></tr></table>` : "";
+    const ctaHtml = safeCta ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:28px 0 12px;"><tr><td align="center"><a href="${escapeHtml(safeCta.href)}" style="display:inline-block;padding:14px 28px;background:${accent};color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;border-radius:6px;box-shadow:0 2px 4px rgba(0,0,0,0.1);">${escapeHtml(safeCta.label)}</a></td></tr></table>` : "";
 
-    const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>@media only screen and (max-width:600px){.sn-shell{width:100%!important}.sn-content{padding:26px 18px 22px!important}.sn-header{padding:17px 18px!important}.sn-footer{padding-left:18px!important;padding-right:18px!important}.sn-stack-cell{display:block!important;width:100%!important;border-right:0!important;border-bottom:1px solid ${COLORS.border}!important;padding:12px 0!important}.sn-stack-cell:last-child{border-bottom:0!important}}</style></head><body style="margin:0;padding:0;background:${COLORS.page};color:${COLORS.text};font-family:Arial,Helvetica,sans-serif;"><div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">${escapeHtml(safePreheader)}</div><table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${COLORS.page}" style="border-collapse:collapse;width:100%;background:${COLORS.page};"><tr><td align="center" style="padding:20px 10px;"><table class="sn-shell" role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;width:100%;max-width:640px;background:#ffffff;"><tr><td class="sn-header" bgcolor="${COLORS.header}" style="padding:18px 22px;background:${COLORS.header};"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr><td valign="middle"><p style="margin:0;color:#ffffff;font-size:25px;font-weight:700;letter-spacing:-.7px;">salon<span style="color:${COLORS.gold};">now</span></p></td><td align="right" valign="middle"><p style="margin:0;color:#D7C79F;font-size:9px;font-weight:700;letter-spacing:1.25px;text-transform:uppercase;">Hair &nbsp;/&nbsp; Beauty &nbsp;/&nbsp; Wellness</p></td></tr></table></td></tr><tr><td class="sn-content" style="padding:34px 30px 26px;"><table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 12px;"><tr><td valign="middle">${renderIcon(iconName, accent, 28, true)}</td><td valign="middle" style="padding-left:11px;"><p style="margin:0;color:${COLORS.muted};font-size:10px;font-weight:700;letter-spacing:1.55px;text-transform:uppercase;">${escapeHtml(safeCategory)}</p></td></tr></table><h1 style="margin:0 0 14px;color:${COLORS.text};font-size:30px;line-height:1.18;font-weight:700;letter-spacing:-.55px;">${escapeHtml(safeHeading)}</h1>${safeGreeting ? `<p style="margin:0 0 9px;color:${COLORS.body};font-size:14px;line-height:1.6;">${escapeHtml(safeGreeting)}</p>` : ""}${safeParagraphs.map((paragraph) => `<p style="margin:0 0 11px;color:${COLORS.body};font-size:14px;line-height:1.65;">${escapeHtml(paragraph)}</p>`).join("")}${noticeHtml}${codeHtml}${booking?.html || ""}${payment?.cardHtml || ""}${detailCard.html}${payment?.detailsHtml || ""}${ctaHtml}${support.html}</td></tr><tr><td class="sn-footer">${footerHtml}</td></tr></table></td></tr></table></body></html>`;
-    const textLines = [safeCategory, safeHeading, ...(safeGreeting ? [safeGreeting] : []), ...safeParagraphs];
-    if (safeNotice) textLines.push(`${safeNotice.label}: ${safeNotice.text}`);
-    if (safeCode) textLines.push(`Verification code: ${safeCode}`);
-    if (booking?.lines) textLines.push(...booking.lines);
-    if (payment?.cardLines) textLines.push(...payment.cardLines);
-    textLines.push(...detailCard.lines);
-    if (payment?.detailsLines) textLines.push(...payment.detailsLines);
-    if (safeCta) textLines.push(`${safeCta.label}: ${safeCta.href}`);
-    textLines.push(support.text, footer);
-    return { html, text: textLines.join("\n\n") };
+    const bookingHtml = booking ? booking.html : "";
+    const paymentHtml = payment ? payment.cardHtml : "";
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${escapeHtml(safeHeading)}</title>
+<style>
+  body { margin:0; padding:0; background-color:${COLORS.page}; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:${COLORS.text}; -webkit-font-smoothing:antialiased; }
+  table { border-collapse:collapse; }
+  @media only screen and (max-width: 600px) {
+    .email-container { width:100% !important; padding:12px !important; }
+    .sn-stack-cell { display:block !important; width:100% !important; padding:12px 0 !important; border-right:none !important; border-bottom:1px solid ${COLORS.border} !important; }
+  }
+</style>
+</head>
+<body style="margin:0;padding:0;background-color:${COLORS.page};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<div style="display:none;font-size:1px;color:${COLORS.page};line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;mso-hide:all;">${escapeHtml(safePreheader)}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background-color:${COLORS.page};padding:24px 0;">
+<tr>
+<td align="center">
+<table role="presentation" class="email-container" width="600" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background-color:#ffffff;border:1px solid ${COLORS.border};border-radius:8px;overflow:hidden;margin:0 auto;box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+<!-- Header Bar -->
+<tr>
+<td style="background:${COLORS.header};padding:18px 24px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+<tr>
+<td><span style="font-size:20px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;">salon<span style="color:${COLORS.gold};">now</span></span></td>
+<td align="right"><span style="font-size:11px;font-weight:700;color:${COLORS.gold};letter-spacing:1px;text-transform:uppercase;">HAIR / BEAUTY / WELLNESS</span></td>
+</tr>
+</table>
+</td>
+</tr>
+<!-- Content Body -->
+<tr>
+<td style="padding:36px 28px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+<tr>
+<td>
+<table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:16px;">
+<tr>
+<td width="28" valign="middle">${renderIcon(iconName, accent, 20, true)}</td>
+<td style="padding-left:6px;font-size:11px;font-weight:700;color:${COLORS.muted};letter-spacing:1px;text-transform:uppercase;">${escapeHtml(safeCategory)}</td>
+</tr>
+</table>
+<h1 style="margin:0 0 16px;font-size:26px;font-weight:700;line-height:1.3;color:${COLORS.text};">${escapeHtml(safeHeading)}</h1>
+${safeGreeting ? `<p style="margin:0 0 16px;font-size:15px;line-height:1.5;color:${COLORS.body};">${escapeHtml(safeGreeting)},</p>` : ""}
+${safeParagraphs.map((p) => `<p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:${COLORS.body};">${escapeHtml(p)}</p>`).join("")}
+${noticeHtml}
+${codeHtml}
+${bookingHtml}
+${paymentHtml}
+${detailCard.html}
+${ctaHtml}
+${support.html}
+<p style="margin:28px 0 0;font-size:14px;line-height:1.6;color:${COLORS.body};">Best regards,<br><strong style="color:${COLORS.text};">The SalonNow Team</strong></p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<!-- Footer -->
+<tr>
+<td style="background:#F5F4F0;padding:24px;border-top:1px solid ${COLORS.border};text-align:center;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+<tr>
+<td align="center" style="padding-bottom:12px;">
+<span style="font-size:16px;font-weight:700;color:${COLORS.text};">salon<span style="color:${COLORS.gold};">now</span></span>
+<p style="margin:4px 0 0;font-size:12px;color:${COLORS.muted};font-style:italic;">Look good. Feel better.</p>
+</td>
+</tr>
+<tr>
+<td align="center" style="padding-bottom:16px;">
+${renderSocialIcon(SOCIAL_LINKS[0].type, SOCIAL_LINKS[0].href, SOCIAL_LINKS[0].title)}
+${renderSocialIcon(SOCIAL_LINKS[1].type, SOCIAL_LINKS[1].href, SOCIAL_LINKS[1].title)}
+${renderSocialIcon(SOCIAL_LINKS[2].type, SOCIAL_LINKS[2].href, SOCIAL_LINKS[2].title)}
+</td>
+</tr>
+<tr>
+<td align="center" style="padding-bottom:16px;">
+${renderAppBadge("apple")}
+${renderAppBadge("google")}
+</td>
+</tr>
+<tr>
+<td align="center">
+<p style="margin:0;font-size:11px;color:${COLORS.muted};line-height:1.5;">&copy; ${new Date().getFullYear()} SalonNow Technologies Inc. All rights reserved.<br>You are receiving this email because you have an account with SalonNow.</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+</body>
+</html>`;
 };
 
-export const testEmailConfiguration = async (targetEmail) => {
-    const rendered = renderEmail({
-        preheader: "SalonNow email configuration test",
-        category: "Email configuration test",
-        icon: "check",
-        heading: "Test email from SalonNow.",
-        greeting: "Hi there,",
-        paragraphs: ["This message confirms that the SalonNow transactional email service is configured to deliver messages."],
-        rows: [
-            { label: "Recipient", value: targetEmail },
-            { label: "Brevo API key", value: process.env.BREVO_API_KEY ? (process.env.BREVO_API_KEY.startsWith("xkeysib-") ? "Configured REST API key" : "Configured, but prefix should be xkeysib-") : "Missing" },
-            { label: "Sender email", value: process.env.SENDER_EMAIL || "noreply@salonnow.com (default)" },
+// ==========================================
+// 14 EXPORTED EMAIL TEMPLATES
+// ==========================================
+
+export const ownerPaidBooking = (email, ownerName, customerName, shopName, bookingTime, amount, paymentId) => {
+    const payment = renderPaymentCard({ shopName, bookingTime, amount, paymentId });
+    const html = renderEmail({
+        preheader: `Payment recorded of ₹${amount} for ${shopName}`,
+        category: "Owner Payment Notification",
+        icon: "receipt",
+        heading: "Payment recorded for a booking.",
+        greeting: `Hello ${ownerName}`,
+        paragraphs: [
+            `A payment has been successfully recorded for your salon ${shopName} from customer ${customerName}.`,
         ],
-        footer: "SalonNow configuration test",
+        payment,
+        cta: { label: "View Dashboard", href: `${FRONTEND_URL()}/dashboard` },
     });
-    return sendTemplateEmail(targetEmail, "SalonNow - Brevo REST API Configuration Test", rendered.html, rendered.text);
+    return sendTemplateEmail(email, `Payment Received: ₹${amount} - ${shopName}`, html);
 };
 
-export const sendWelcomeEmail = async (email, name) => {
-    const rendered = renderEmail({ preheader: "Welcome to SalonNow", category: "Welcome to SalonNow", icon: "check", heading: "Welcome to SalonNow.", greeting: `Hi ${displayValue(name, "there")},`, paragraphs: ["Your account is ready. Discover salons, choose a service, and book a time that works for you."], cta: { label: "Explore salons", href: frontendLink("/home") }, footer: "The SalonNow Team" });
-    return sendTemplateEmail(email, "Welcome to SalonNow!", rendered.html, rendered.text);
+export const bookingConfirmation = (email, customerName, salonName, bookingTime, bookingReference, services, amount) => {
+    const booking = renderBookingPanel({
+        bookingReference,
+        bookingTime,
+        salonName,
+        services,
+        price: amount,
+        customerName,
+        status: "Confirmed",
+        statusColor: COLORS.success,
+    });
+    const html = renderEmail({
+        preheader: `Your booking at ${salonName} is confirmed`,
+        category: "Booking Confirmation",
+        icon: "check",
+        heading: "Booking Confirmed!",
+        greeting: `Hi ${customerName}`,
+        paragraphs: [
+            `Your appointment at ${salonName} has been successfully confirmed. We look forward to seeing you.`,
+        ],
+        booking,
+        cta: { label: "View Booking Details", href: `${FRONTEND_URL()}/bookings/${bookingReference}` },
+    });
+    return sendTemplateEmail(email, `Booking Confirmed at ${salonName}`, html);
 };
 
-export const sendLoginEmail = async (email, name) => {
-    const rendered = renderEmail({ preheader: "A sign-in to your SalonNow account occurred", category: "Account notification", icon: "shield", heading: "A sign-in to your account occurred.", greeting: `Hi ${displayValue(name, "there")},`, paragraphs: ["This email confirms that your SalonNow account was accessed successfully."], notice: { label: "Sign-in notification", text: "Your account was accessed successfully.", color: COLORS.success }, cta: { label: "Go to account settings", href: frontendLink("/home") }, footer: "The SalonNow Account Team" });
-    return sendTemplateEmail(email, "Successfully Logged In to SalonNow", rendered.html, rendered.text);
+export const bookingPending = (email, customerName, salonName, bookingTime, bookingReference) => {
+    const booking = renderBookingPanel({
+        bookingReference,
+        bookingTime,
+        salonName,
+        customerName,
+        status: "Pending Approval",
+        statusColor: COLORS.pending,
+    });
+    const html = renderEmail({
+        preheader: `Your booking request at ${salonName} is pending`,
+        category: "Booking Pending",
+        icon: "clock",
+        heading: "Booking Request Pending",
+        greeting: `Hi ${customerName}`,
+        paragraphs: [
+            `We have received your booking request for ${salonName}. The salon will review and confirm your appointment shortly.`,
+        ],
+        booking,
+        cta: { label: "Check Status", href: `${FRONTEND_URL()}/bookings/${bookingReference}` },
+    });
+    return sendTemplateEmail(email, `Booking Pending at ${salonName}`, html);
 };
 
-export const sendLogoutEmail = async (email, name) => {
-    const rendered = renderEmail({ preheader: "You have signed out of SalonNow", category: "Account notification", icon: "close", heading: "You've signed out.", greeting: `Hi ${displayValue(name, "there")},`, paragraphs: ["You have successfully signed out of SalonNow. You can sign in again whenever you are ready."], cta: { label: "Sign in again", href: frontendLink("/home") }, footer: "The SalonNow Account Team" });
-    return sendTemplateEmail(email, "Logged Out of SalonNow", rendered.html, rendered.text);
+export const appointmentCancelled = (email, customerName, salonName, bookingTime, bookingReference, reason) => {
+    const booking = renderBookingPanel({
+        bookingReference,
+        bookingTime,
+        salonName,
+        customerName,
+        status: "Cancelled",
+        statusColor: COLORS.danger,
+    });
+    const html = renderEmail({
+        preheader: `Your appointment at ${salonName} was cancelled`,
+        category: "Appointment Cancelled",
+        icon: "close",
+        heading: "Appointment Cancelled",
+        greeting: `Hi ${customerName}`,
+        paragraphs: [
+            `Your appointment at ${salonName} scheduled for ${formatDateTime(bookingTime)} has been cancelled.`,
+            hasValue(reason) ? `Reason provided: ${reason}` : "",
+        ].filter(Boolean),
+        booking,
+        cta: { label: "Book Again", href: `${FRONTEND_URL()}/explore` },
+    });
+    return sendTemplateEmail(email, `Appointment Cancelled - ${salonName}`, html);
 };
 
-export const sendShopAddedEmail = async (email, name, shopName) => {
-    const safeShopName = displayValue(shopName, "Your salon");
-    const rendered = renderEmail({ preheader: `${safeShopName} is now live on SalonNow`, category: "Listing update", icon: "store", heading: "Your salon is now live.", greeting: `Hi ${displayValue(name, "there")},`, paragraphs: [`${safeShopName} is now live on SalonNow. Customers can discover your salon and book appointments through the platform.`], rows: [{ label: "Salon", value: safeShopName, emphasis: true }], cta: { label: "Manage salon listing", href: frontendLink("/home") }, footer: "The SalonNow Team" });
-    return sendTemplateEmail(email, `Your shop "${shopName}" is now live on SalonNow!`, rendered.html, rendered.text);
+export const paymentReceipt = (email, customerName, salonName, amount, paymentId, bookingReference) => {
+    const payment = renderPaymentCard({ shopName: salonName, amount, paymentId });
+    const html = renderEmail({
+        preheader: `Payment receipt for your visit to ${salonName}`,
+        category: "Payment Receipt",
+        icon: "receipt",
+        heading: "Payment Receipt",
+        greeting: `Hi ${customerName}`,
+        paragraphs: [
+            `Thank you for your payment. Here is the receipt for your transaction at ${salonName}.`,
+        ],
+        payment,
+        rows: [
+            { label: "Booking reference", value: bookingReference },
+        ],
+        cta: { label: "View Booking", href: `${FRONTEND_URL()}/bookings/${bookingReference}` },
+    });
+    return sendTemplateEmail(email, `Payment Receipt - ${salonName}`, html);
 };
 
-export const sendBookingConfirmationEmail = async (email, name, shopName, bookingTime, price, stylist, services) => {
-    const safeShopName = displayValue(shopName, "Salon");
-    const booking = renderBookingPanel({ bookingTime, salonName: safeShopName, stylist, services, price, status: "Confirmed", statusColor: COLORS.success });
-    const rendered = renderEmail({ preheader: `Your appointment at ${safeShopName} is confirmed`, category: "Booking confirmation", icon: "check", heading: "Your appointment is confirmed!", greeting: `Hi ${displayValue(name, "there")},`, paragraphs: [`We're ready for you at ${safeShopName}. Here are the details you'll need for your visit.`], booking, cta: { label: "View booking details", href: frontendLink("/bookings") }, footer: "The SalonNow Team" });
-    return sendTemplateEmail(email, "Your SalonNow Booking is Confirmed!", rendered.html, rendered.text);
+export const newBookingRequest = (email, ownerName, customerName, salonName, bookingTime, services, bookingReference) => {
+    const booking = renderBookingPanel({
+        bookingReference,
+        bookingTime,
+        salonName,
+        services,
+        customerName,
+        status: "Action Required",
+        statusColor: COLORS.gold,
+    });
+    const html = renderEmail({
+        preheader: `New booking request from ${customerName} at ${salonName}`,
+        category: "New Booking Request",
+        icon: "calendar",
+        heading: "New Booking Request",
+        greeting: `Hello ${ownerName}`,
+        paragraphs: [
+            `You have received a new booking request from ${customerName} for ${salonName}. Please review and respond to this request.`,
+        ],
+        booking,
+        cta: { label: "Manage Booking", href: `${FRONTEND_URL()}/owner/bookings/${bookingReference}` },
+    });
+    return sendTemplateEmail(email, `New Booking Request - ${salonName}`, html);
 };
 
-export const sendPaymentReceiptEmail = async (email, name, shopName, bookingTime, amount, paymentId) => {
-    const safeShopName = displayValue(shopName, "Salon");
-    const payment = renderPaymentCard({ shopName: safeShopName, bookingTime, amount, paymentId });
-    const paymentDetails = renderPaymentDetails({ status: "Paid", reference: paymentId });
-    const rendered = renderEmail({ preheader: `Payment received for your appointment at ${safeShopName}`, category: "Payment receipt", icon: "receipt", heading: "Payment received.", greeting: `Hi ${displayValue(name, "there")},`, paragraphs: [`Your payment for the ${safeShopName} appointment was received successfully.`], payment: { ...payment, detailsHtml: paymentDetails.html, detailsLines: paymentDetails.lines }, footer: "The SalonNow Payments Team" });
-    return sendTemplateEmail(email, "Payment successful - SalonNow booking confirmed", rendered.html, rendered.text);
+export const accountNotification = (email, userName, actionDescription, timestamp) => {
+    const html = renderEmail({
+        preheader: `Security update regarding your SalonNow account`,
+        category: "Account Notification",
+        icon: "shield",
+        heading: "Account Security Update",
+        greeting: `Hello ${userName}`,
+        paragraphs: [
+            `We wanted to let you know about a recent activity on your SalonNow account:`,
+            actionDescription,
+        ],
+        rows: [
+            { label: "Timestamp", value: formatDateTime(timestamp) || "Just now" },
+        ],
+        cta: { label: "Review Account", href: `${FRONTEND_URL()}/account/security` },
+    });
+    return sendTemplateEmail(email, `SalonNow Account Notification`, html);
 };
 
-export const sendOwnerPaymentNotificationEmail = async (email, ownerName, customerName, shopName, bookingTime, amount, paymentId) => {
-    const safeShopName = displayValue(shopName, "your salon");
-    const payment = renderPaymentCard({ shopName: safeShopName, bookingTime, amount, paymentId });
-    const paymentDetails = renderPaymentDetails({ status: "Paid", reference: paymentId });
-    const rendered = renderEmail({ preheader: `Payment recorded for a booking at ${safeShopName}`, category: "Owner payment notification", icon: "receipt", heading: "Payment recorded for a booking.", greeting: `Hi ${displayValue(ownerName, "there")},`, paragraphs: [`${displayValue(customerName, "A customer")} paid for an appointment at ${safeShopName}.`], payment: { ...payment, detailsHtml: paymentDetails.html, detailsLines: paymentDetails.lines }, footer: "The SalonNow Dashboard Team" });
-    return sendTemplateEmail(email, "New paid booking - SalonNow", rendered.html, rendered.text);
+export const bookingUpdate = (email, customerName, salonName, oldBookingTime, newBookingTime, bookingReference) => {
+    const booking = renderBookingPanel({
+        bookingReference,
+        bookingTime: newBookingTime,
+        salonName,
+        customerName,
+        status: "Rescheduled",
+        statusColor: COLORS.gold,
+    });
+    const html = renderEmail({
+        preheader: `Your appointment at ${salonName} has been rescheduled`,
+        category: "Booking Update",
+        icon: "clock",
+        heading: "Appointment Rescheduled",
+        greeting: `Hi ${customerName}`,
+        paragraphs: [
+            `Your appointment at ${salonName} has been updated from ${formatDateTime(oldBookingTime)} to the new time below.`,
+        ],
+        booking,
+        cta: { label: "View Details", href: `${FRONTEND_URL()}/bookings/${bookingReference}` },
+    });
+    return sendTemplateEmail(email, `Appointment Updated - ${salonName}`, html);
 };
 
-export const sendBookingStatusEmail = async (email, name, shopName, date, time, status) => {
-    const safeStatus = displayValue(status, "updated");
-    const statusCopy = {
-        confirmed: { category: "Booking confirmation", icon: "check", heading: "Your appointment is confirmed!", color: COLORS.success, message: "Your appointment has been confirmed." },
-        completed: { category: "Booking update", icon: "check", heading: "Your appointment is complete.", color: COLORS.success, message: "Your appointment has been marked complete." },
-        cancelled: { category: "Appointment cancelled", icon: "close", heading: "Your appointment has been cancelled.", color: COLORS.danger, message: "Your appointment has been cancelled. Here are the details for your records." },
-        rejected: { category: "Booking update", icon: "close", heading: "Your appointment was not accepted.", color: COLORS.danger, message: "Your appointment request was not accepted by the salon." },
-        pending: { category: "Booking pending", icon: "clock", heading: "Your booking request is pending.", color: COLORS.pending, message: "The salon is reviewing your booking request." },
-    }[safeStatus.toLowerCase()] || { category: "Booking update", icon: "clock", heading: "An update to your appointment.", color: COLORS.gold, message: `The current booking status is ${safeStatus}.` };
-    const booking = renderBookingPanel({ bookingTime: `${displayValue(date)} at ${displayValue(time)}`, salonName: shopName, status: safeStatus, statusColor: statusCopy.color });
-    const rendered = renderEmail({ preheader: `Your appointment at ${displayValue(shopName, "the salon")} is ${safeStatus}`, category: statusCopy.category, icon: statusCopy.icon, heading: statusCopy.heading, greeting: `Hi ${displayValue(name, "there")},`, paragraphs: [statusCopy.message], booking, cta: { label: "View booking details", href: frontendLink("/bookings") }, accent: statusCopy.color, footer: "The SalonNow Team" });
-    return sendTemplateEmail(email, `Your booking at ${shopName} is ${status}`, rendered.html, rendered.text);
+export const listingUpdate = (email, ownerName, shopName, updateDetails) => {
+    const html = renderEmail({
+        preheader: `Listing update for ${shopName}`,
+        category: "Listing Update",
+        icon: "store",
+        heading: "Listing Updated Successfully",
+        greeting: `Hello ${ownerName}`,
+        paragraphs: [
+            `Your salon listing for ${shopName} has been successfully updated with the following details:`,
+            updateDetails,
+        ],
+        cta: { label: "View Listing", href: `${FRONTEND_URL()}/owner/listings` },
+    });
+    return sendTemplateEmail(email, `Listing Updated: ${shopName}`, html);
 };
 
-export const sendBookingPendingEmail = async (email, name, shopName, bookingTime, price, stylist, services) => {
-    const safeShopName = displayValue(shopName, "Salon");
-    const booking = renderBookingPanel({ bookingTime, salonName: safeShopName, stylist, services, price, status: "Pending", statusColor: COLORS.pending });
-    const rendered = renderEmail({ preheader: `Your booking request at ${safeShopName} is pending`, category: "Booking pending", icon: "clock", heading: "Your booking request has been sent.", greeting: `Hi ${displayValue(name, "there")},`, paragraphs: [`${safeShopName} has received your appointment request. We'll notify you once the booking status changes.`], booking, cta: { label: "View booking details", href: frontendLink("/bookings") }, accent: COLORS.pending, footer: "The SalonNow Team" });
-    return sendTemplateEmail(email, "Your SalonNow booking request is pending review", rendered.html, rendered.text);
+export const profileUpdate = (email, userName, updateType) => {
+    const html = renderEmail({
+        preheader: `Your SalonNow profile has been updated`,
+        category: "Profile Update",
+        icon: "person",
+        heading: "Profile Updated",
+        greeting: `Hello ${userName}`,
+        paragraphs: [
+            `Your profile details (${updateType}) were successfully updated on your SalonNow account.`,
+        ],
+        cta: { label: "View Profile", href: `${FRONTEND_URL()}/account/profile` },
+    });
+    return sendTemplateEmail(email, `Profile Updated - SalonNow`, html);
 };
 
-export const sendOwnerNewBookingEmail = async (email, ownerName, customerName, shopName, bookingDate, bookingTime, price, stylist, services) => {
-    const safeShopName = displayValue(shopName, "your salon");
-    const booking = renderBookingPanel({ bookingTime: `${displayValue(bookingDate)} at ${displayValue(bookingTime)}`, salonName: safeShopName, customerName, stylist, services, price, status: "Pending", statusColor: COLORS.pending });
-    const rendered = renderEmail({ preheader: `A new booking request has arrived at ${safeShopName}`, category: "New booking request", icon: "calendar", heading: "A new booking request has arrived.", greeting: `Hi ${displayValue(ownerName, "there")},`, paragraphs: [`${displayValue(customerName, "A customer")} has requested an appointment at ${safeShopName}. Review the details below and take the next action.`], booking, cta: { label: "Open owner dashboard", href: frontendLink("/owner/dashboard") }, accent: COLORS.pending, footer: "The SalonNow Dashboard Team" });
-    return sendTemplateEmail(email, `New Booking at ${shopName}: ${customerName} (${bookingDate} at ${bookingTime})`, rendered.html, rendered.text);
+export const managementUpdate = (email, ownerName, shopName, details) => {
+    const html = renderEmail({
+        preheader: `Management update for ${shopName}`,
+        category: "Management Update",
+        icon: "settings",
+        heading: "Salon Management Update",
+        greeting: `Hello ${ownerName}`,
+        paragraphs: [
+            `An administrative update has been applied to your salon ${shopName}:`,
+            details,
+        ],
+        cta: { label: "Open Management Panel", href: `${FRONTEND_URL()}/owner/management` },
+    });
+    return sendTemplateEmail(email, `Management Update - ${shopName}`, html);
 };
 
-export const sendProfileUpdateEmail = async (email, name, salonName) => {
-    const safeSalonName = displayValue(salonName, "your salon");
-    const rendered = renderEmail({ preheader: `Your profile for ${safeSalonName} has been updated`, category: "Profile update", icon: "person", heading: "Your profile has been updated.", greeting: `Hi ${displayValue(name, "there")},`, paragraphs: [`The profile information for ${safeSalonName} has been updated.`], rows: [{ label: "Updated profile", value: safeSalonName, emphasis: true }], cta: { label: "View profile", href: frontendLink("/salon/manage") }, footer: "The SalonNow Security Team" });
-    return sendTemplateEmail(email, `Profile Updated: ${salonName}`, rendered.html, rendered.text);
+export const emailVerification = (email, userName, verificationCode) => {
+    const html = renderEmail({
+        preheader: `Your SalonNow verification code is ${verificationCode}`,
+        category: "Email Verification",
+        icon: "shield",
+        heading: "Verify Your Email Address",
+        greeting: `Hello ${userName}`,
+        paragraphs: [
+            `Please use the verification code below to complete your registration or sign-in on SalonNow. This code is valid for 10 minutes.`,
+        ],
+        code: verificationCode,
+        cta: { label: "Verify Email", href: `${FRONTEND_URL()}/verify` },
+    });
+    return sendTemplateEmail(email, `Your SalonNow Verification Code`, html);
 };
 
-export const sendManagementUpdateEmail = async (email, name, action, itemName, category) => {
-    const safeCategory = displayValue(category, "Salon");
-    const rendered = renderEmail({ preheader: `${safeCategory} management update`, category: "Management update", icon: "settings", heading: "An update to your salon management.", greeting: `Hi ${displayValue(name, "there")},`, paragraphs: ["A change was recorded on your salon dashboard."], rows: [{ label: "Action", value: action, emphasis: true }, { label: "Item", value: itemName }, { label: "Category", value: safeCategory }], footer: "The SalonNow Dashboard Team" });
-    return sendTemplateEmail(email, `${category} Alert: ${action}`, rendered.html, rendered.text);
+export const emailConfigurationTest = (email, testRecipient) => {
+    const html = renderEmail({
+        preheader: `Email delivery configuration test successful`,
+        category: "Email Configuration Test",
+        icon: "check",
+        heading: "Email Configuration Test",
+        greeting: `Hello`,
+        paragraphs: [
+            `This is a test email dispatched to verify that your Brevo transactional mailer is correctly configured for SalonNow.`,
+        ],
+        rows: [
+            { label: "Recipient", value: testRecipient },
+            { label: "Timestamp", value: formatDateTime(new Date()) },
+        ],
+        cta: { label: "Go to Dashboard", href: `${FRONTEND_URL()}/dashboard` },
+    });
+    return sendTemplateEmail(email, `SalonNow Email Test Successful`, html);
 };
 
-export const sendVerificationEmail = async (email, name, code) => {
-    logger.info({ email, code }, "[AUTH] Verification OTP generated");
-    const rendered = renderEmail({ preheader: "Your SalonNow verification code expires in 5 minutes", category: "Email verification", icon: "shield", heading: "Verify your email address.", greeting: `Hi ${displayValue(name, "there")},`, paragraphs: ["Use the code below to verify your email address and complete your SalonNow signup. It expires in 5 minutes."], code, rows: [{ label: "Security note", value: "If you did not request this code, you can ignore this email." }], footer: "The SalonNow Security Team" });
-    return sendTemplateEmail(email, "Verify your email - SalonNow", rendered.html, rendered.text);
+export const welcomeToSalonNow = (email, name, role = "Customer") => {
+    const isOwner = String(role).toLowerCase().includes("owner");
+    const html = renderEmail({
+        preheader: `Welcome to SalonNow, ${name}!`,
+        category: "Welcome to SalonNow",
+        icon: "check",
+        heading: `Welcome to SalonNow, ${name}!`,
+        greeting: `Hi ${name}`,
+        paragraphs: [
+            isOwner
+                ? `Thank you for registering your salon on SalonNow. You can now list your services, manage bookings, and grow your business.`
+                : `Thank you for joining SalonNow. Discover and book appointments at the best hair, beauty, and wellness salons near you.`,
+        ],
+        cta: { label: isOwner ? "Go to Owner Dashboard" : "Explore Salons", href: `${FRONTEND_URL()}/${isOwner ? "owner/dashboard" : "explore"}` },
+    });
+    return sendTemplateEmail(email, `Welcome to SalonNow`, html);
 };
