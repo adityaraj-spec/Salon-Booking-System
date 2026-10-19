@@ -9,7 +9,7 @@ import { sendBookingConfirmationEmail, sendBookingStatusEmail, sendOwnerNewBooki
 import logger from "../lib/logger.js";
 import { emitToUser } from "../socket.js";
 import { createHold, cancelHold } from "../services/hold.service.js";
-import { initiateBookingFromHold, cancelPendingBooking } from "../services/booking.service.js";
+import { initiateBookingFromHold, cancelPendingBooking, cancelBooking } from "../services/booking.service.js";
 import { createWalkInBooking } from "../services/walkin.service.js";
 import { rescheduleBooking } from "../services/reschedule.service.js";
 import { getAvailableSlots } from "../services/availability.service.js";
@@ -280,6 +280,17 @@ const cancelPendingBookingHandler = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, cancelledBooking, "Pending booking cancelled successfully"));
 });
 
+const cancelBookingHandler = asyncHandler(async (req, res) => {
+    const { bookingId } = req.params;
+    const { reason } = req.body || {};
+    const cancelledBooking = await cancelBooking({
+        bookingId,
+        customerId: req.user._id,
+        reason,
+    });
+    return res.status(200).json(new ApiResponse(200, cancelledBooking, "Booking cancelled successfully"));
+});
+
 // ─── Walk-In & Reschedule ─────────────────────────────────────────────────────
 
 const createWalkInBookingHandler = asyncHandler(async (req, res) => {
@@ -322,6 +333,7 @@ export {
     createHoldHandler,
     initiateBookingHandler,
     cancelPendingBookingHandler,
+    cancelBookingHandler,
     createWalkInBookingHandler,
     rescheduleBookingHandler,
 };

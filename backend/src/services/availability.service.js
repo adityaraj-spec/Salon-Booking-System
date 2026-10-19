@@ -37,7 +37,13 @@ export const countOverlappingOccupancy = async ({
 
   const bookingFilter = {
     salon: salonId,
-    status: { $in: ACTIVE_BOOKING_STATUSES },
+    $or: [
+      { status: { $in: ["pending", "confirmed"] } },
+      {
+        status: "pending_payment",
+        $or: [{ holdExpiresAt: { $exists: false } }, { holdExpiresAt: { $gt: now } }],
+      },
+    ],
     startTime: { $lt: endTime },
     endTime: { $gt: startTime },
   };
@@ -79,7 +85,13 @@ export const verifyStaffTimeRangeAvailability = async ({
 
   const bookingFilter = {
     staff: staffId,
-    status: { $in: ACTIVE_BOOKING_STATUSES },
+    $or: [
+      { status: { $in: ["pending", "confirmed"] } },
+      {
+        status: "pending_payment",
+        $or: [{ holdExpiresAt: { $exists: false } }, { holdExpiresAt: { $gt: now } }],
+      },
+    ],
     startTime: { $lt: endTime },
     endTime: { $gt: startTime },
   };
@@ -314,7 +326,13 @@ export const getAvailableSlots = async ({
 
   const bookingFilter = {
     salon: salonId,
-    status: { $in: ACTIVE_BOOKING_STATUSES },
+    $or: [
+      { status: { $in: ["pending", "confirmed"] } },
+      {
+        status: "pending_payment",
+        $or: [{ holdExpiresAt: { $exists: false } }, { holdExpiresAt: { $gt: now } }],
+      },
+    ],
     startTime: { $lt: dayEnd },
     endTime: { $gt: dayStart },
   };

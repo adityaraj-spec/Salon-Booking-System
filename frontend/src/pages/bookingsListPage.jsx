@@ -1,28 +1,61 @@
 import { useState, useEffect } from "react";
 import axiosInstance from "../api/axiosConfig";
-import { Calendar, Clock, MapPin, Scissors, CheckCircle2, Phone, User } from "lucide-react";
+import { Calendar, Clock, MapPin, Scissors, CheckCircle2, Phone, User, AlertCircle, X, Loader2 } from "lucide-react";
 import { BookingCardSkeleton } from "../components/skeletons/index.jsx";
 
 
 export function MyBookingsPage() {
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [cancelModalBooking, setCancelModalBooking] = useState(null);
+    const [cancelReason, setCancelReason] = useState("");
+    const [cancelling, setCancelling] = useState(false);
+    const [cancelError, setCancelError] = useState("");
+    const [cancelSuccess, setCancelSuccess] = useState("");
+
+    const fetchBookings = async () => {
+        try {
+            const response = await axiosInstance.get("/bookings/my-bookings");
+            if (response.data.success) {
+                setBookings(response.data.data?.bookings || []);
+            }
+        } catch {
+            // silently fail - empty state is shown
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchBookings = async () => {
-            try {
-                const response = await axiosInstance.get("/bookings/my-bookings");
-                if (response.data.success) {
-                    setBookings(response.data.data?.bookings || []);
-                }
-            } catch (err) {
-                // silently fail - empty state is shown
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchBookings();
     }, []);
+
+    const handleConfirmCancel = async () => {
+        if (!cancelModalBooking) return;
+        setCancelling(true);
+        setCancelError("");
+        try {
+            const res = await axiosInstance.post(`/bookings/${cancelModalBooking._id}/cancel`, {
+                reason: cancelReason || undefined,
+            });
+            if (res.data?.success) {
+                setCancelSuccess("Booking cancelled successfully.");
+                setCancelModalBooking(null);
+                setBookings((prev) =>
+                    prev.map((b) =>
+                        b._id === cancelModalBooking._id
+                            ? { ...b, status: "cancelled", paymentStatus: "refunded" }
+                            : b
+                    )
+                );
+                setTimeout(() => setCancelSuccess(""), 4000);
+            }
+        } catch (err) {
+            setCancelError(err.response?.data?.message || "Failed to cancel booking. Please try again.");
+        } finally {
+            setCancelling(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -48,6 +81,13 @@ export function MyBookingsPage() {
                     <h1 className="text-3xl md:text-4xl font-serif font-bold text-[#1a1a1a]">My Bookings</h1>
                     <p className="text-gray-400 mt-2 font-medium text-sm md:text-base">Manage your upcoming and past appointments</p>
                 </div>
+
+                {cancelSuccess && (
+                    <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl flex items-center gap-3">
+                        <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
+                        <span className="text-sm font-medium">{cancelSuccess}</span>
+                    </div>
+                )}
 
                 {bookings.length === 0 ? (
                     <div className="bg-white rounded-3xl p-20 text-center border border-gray-100 shadow-sm">
@@ -183,12 +223,101 @@ export function MyBookingsPage() {
                                             </div>
                                         </div>
                                     </div>
+
+                                    {/* Cancellation Action */}
+                                    {["pending", "pending_payment", "confirmed"].includes(booking.status) && (
+                                        <div className="pt-4 border-t border-gray-200/50 flex justify-end">
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setCancelModalBooking(booking);
+                                                    setCancelError("");
+                                                    setCancelReason("");
+                                                }}
+                                                className="text-xs font-semibold px-4 py-2 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors cursor-pointer"
+                                            >
+                                                Cancel Appointment
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ))}
                     </div>
                 )}
             </div>
+
+            {/* Cancellation Modal */}
+            {cancelModalBooking && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-3xl max-w-md w-full p-6 md:p-8 shadow-2xl border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="flex justify-between items-start mb-4">
+                            <h3 className="text-xl font-serif font-bold text-gray-900">Cancel Appointment</h3>
+                            <button
+                                onClick={() => setCancelModalBooking(null)}
+                                className="p-1 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="mb-4 p-3.5 bg-amber-50/70 border border-amber-200/60 rounded-2xl flex items-start gap-2.5">
+                            <AlertCircle size={18} className="text-amber-600 mt-0.5 shrink-0" />
+                            <div className="text-xs text-amber-900 leading-relaxed">
+                                <p className="font-semibold mb-1">Cancellation Policy</p>
+                                <p>{cancelModalBooking.cancellationPolicySnapshot || cancelModalBooking.salon?.cancellationPolicy || "Free cancellation up to 24 hours before your appointment. A 20% fee applies thereafter."}</p>
+                            </div>
+                        </div>
+
+                        <p className="text-sm text-gray-600 mb-4">
+                            Are you sure you want to cancel your appointment at <strong>{cancelModalBooking.salon?.name}</strong> on <strong>{cancelModalBooking.date}</strong> at <strong>{cancelModalBooking.time}</strong>?
+                        </p>
+
+                        <div className="mb-6">
+                            <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                                Reason for cancellation (optional)
+                            </label>
+                            <input
+                                type="text"
+                                value={cancelReason}
+                                onChange={(e) => setCancelReason(e.target.value)}
+                                placeholder="e.g. Schedule conflict, feeling unwell..."
+                                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#D4AF37]"
+                            />
+                        </div>
+
+                        {cancelError && (
+                            <p className="text-xs text-red-500 mb-4">{cancelError}</p>
+                        )}
+
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                type="button"
+                                disabled={cancelling}
+                                onClick={() => setCancelModalBooking(null)}
+                                className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer"
+                            >
+                                Keep Appointment
+                            </button>
+                            <button
+                                type="button"
+                                disabled={cancelling}
+                                onClick={handleConfirmCancel}
+                                className="px-5 py-2.5 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                            >
+                                {cancelling ? (
+                                    <>
+                                        <Loader2 size={16} className="animate-spin" />
+                                        Cancelling...
+                                    </>
+                                ) : (
+                                    "Confirm Cancellation"
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </main>
     );
 }

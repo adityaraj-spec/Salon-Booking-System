@@ -8,6 +8,7 @@ import {
   createHoldHandler,
   initiateBookingHandler,
   cancelPendingBookingHandler,
+  cancelBookingHandler,
   createWalkInBookingHandler,
   rescheduleBookingHandler,
 } from "../controllers/booking.controller.js";
@@ -52,6 +53,14 @@ router.route("/:bookingId/cancel-pending").post(
   requireOwnership(Booking, "bookingId", "customer"),
   validate(cancelBookingSchema),
   cancelPendingBookingHandler
+);
+
+// Cancel booking (pending or confirmed - requires ABAC ownership check)
+router.route("/:bookingId/cancel").post(
+  verifyJWT,
+  requireOwnership(Booking, "bookingId", "customer"),
+  validate(cancelBookingSchema),
+  cancelBookingHandler
 );
 
 // General bookings

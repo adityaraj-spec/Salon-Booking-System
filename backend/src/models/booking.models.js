@@ -109,14 +109,15 @@ bookingSchema.index({ staff: 1, date: 1, time: 1 });
 bookingSchema.index({ salon: 1, startTime: 1, endTime: 1, status: 1 });
 bookingSchema.index({ staff: 1, startTime: 1, endTime: 1, status: 1 });
 
-// Slot-level uniqueness: ensures no two active bookings share the same slotKey
+// Slot-level index: optimizes queries for slot overlap and capacity lookups
 bookingSchema.index(
   { slotKeys: 1 },
   {
     partialFilterExpression: {
       status: { $in: ["pending_payment", "confirmed"] },
+      "slotKeys.0": { $exists: true },
     },
-    name: "slotKeys_active_unique",
+    name: "slotKeys_active",
   }
 );
 

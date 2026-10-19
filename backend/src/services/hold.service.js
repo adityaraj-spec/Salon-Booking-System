@@ -117,6 +117,13 @@ export const createHold = async ({
             session,
           });
 
+          const snapshotServices = (serviceDocs || []).map((s) => ({
+            serviceId: s._id,
+            name: s.name,
+            price: s.price || 0,
+            durationMin: s.durationMin || s.duration || 30,
+          }));
+
           // Create the hold
           const [createdHold] = await BookingHold.create(
             [
@@ -128,6 +135,8 @@ export const createHold = async ({
                 staffName,
                 services,
                 serviceNames: finalServiceNames,
+                snapshotServices,
+                slotKeys: lockKeys,
                 date: formattedDate,
                 time: formattedTime,
                 startTime,
@@ -213,7 +222,29 @@ export const cancelHold = async (holdId, customerId) => {
 export const expireHold = async (holdId) => {
   return await withTransactionRetry(async (session) => {
     const hold = await BookingHold.findById(holdId).session(session);
-    if (!hold || hold.status !== "active") {
+    if (!hold) return null;
+
+    if (hold.status === "converted") {
+      const { Booking } = await import("../models/booking.models.js");
+      const pendingBooking = await Booking.findOne({ holdId: hold._id, status: "pending_payment" }).session(session);
+      if (pendingBooking) {
+        pendingBooking.status = "expired";
+        pendingBooking.paymentStatus = "failed";
+        await pendingBooking.save({ session });
+
+        await writeOutboxEvent(session, "booking.cancelled", {
+          bookingId: pendingBooking._id.toString(),
+          salonId: pendingBooking.salon.toString(),
+          staffId: pendingBooking.staff ? pendingBooking.staff.toString() : null,
+          customerId: pendingBooking.customer ? pendingBooking.customer.toString() : null,
+          date: pendingBooking.date,
+          reason: "hold_expired",
+        });
+      }
+      return hold;
+    }
+
+    if (hold.status !== "active") {
       return null; // Idempotent — already expired/cancelled is not an error
     }
 

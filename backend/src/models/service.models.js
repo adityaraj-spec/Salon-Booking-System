@@ -12,7 +12,9 @@ const serviceSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    enum: ['haircut', 'colour', 'spa', 'nails', 'facial', 'bridal'],
+    lowercase: true,
+    trim: true,
+    enum: ['haircut', 'hair', 'colour', 'color', 'spa', 'nails', 'facial', 'bridal', 'shave', 'massage', 'other'],
     default: 'haircut',
   },
   price: Number,

@@ -44,6 +44,31 @@ export const initiateBookingFromHold = async ({
         hold.status = "converted";
         await hold.save({ session });
 
+        const salon = await Salon.findById(hold.salon).session(session);
+        const slotKeys =
+          hold.slotKeys && hold.slotKeys.length > 0
+            ? hold.slotKeys
+            : buildSlotLockKeys(
+                hold.salon.toString(),
+                hold.staff ? hold.staff.toString() : null,
+                hold.startTime,
+                hold.endTime
+              );
+
+        const snapshotServices =
+          hold.snapshotServices && hold.snapshotServices.length > 0
+            ? hold.snapshotServices
+            : (hold.services || []).map((s, idx) => ({
+                serviceId: s,
+                name: hold.serviceNames?.[idx] || "Service",
+                price: 0,
+                durationMin: 30,
+              }));
+
+        const cancellationPolicySnapshot =
+          salon?.cancellationPolicy ||
+          "Free cancellation up to 24 hours before your appointment. A 20% fee applies thereafter.";
+
         const [createdBooking] = await Booking.create(
           [
             {
@@ -53,7 +78,17 @@ export const initiateBookingFromHold = async ({
               staffName: hold.staffName,
               services: hold.services,
               serviceNames: hold.serviceNames,
+              snapshotServices,
               totalAmount: hold.totalAmount,
+              amounts: {
+                subtotal: hold.totalAmount || 0,
+                convenienceFee: 0,
+                pointsDiscount: 0,
+                total: hold.totalAmount || 0,
+              },
+              cancellationPolicySnapshot,
+              holdExpiresAt: hold.expiresAt,
+              slotKeys,
               date: hold.date,
               time: hold.time,
               startTime: hold.startTime,
@@ -347,6 +382,57 @@ export const cancelPendingBooking = async (bookingId, customerId) => {
       staffId: booking.staff ? booking.staff.toString() : null,
       customerId: customerId.toString(),
       date: booking.date,
+    });
+
+    return booking;
+  });
+};
+
+/**
+ * Universal cancellation for customer bookings (pending_payment or confirmed).
+ * Handles policy-compliant refund execution for confirmed bookings.
+ */
+export const cancelBooking = async ({ bookingId, customerId, reason }) => {
+  const existing = await Booking.findOne({ _id: bookingId, customer: customerId });
+  if (!existing) {
+    throw new ApiError(404, "Booking not found or unauthorized");
+  }
+
+  if (["cancelled", "completed", "rejected"].includes(existing.status)) {
+    throw new ApiError(400, `Cannot cancel booking with status '${existing.status}'`);
+  }
+
+  if (existing.status === "pending_payment") {
+    return await cancelPendingBooking(bookingId, customerId);
+  }
+
+  // Confirmed booking: execute policy-compliant refund via initiateRefund
+  const { initiateRefund } = await import("./payment.service.js");
+  const refundResult = await initiateRefund({ bookingId, customerId, reason });
+  return refundResult.booking;
+};
+
+/**
+ * Expires an abandoned pending_payment booking whose hold timer ran out.
+ */
+export const expirePendingBooking = async (bookingId) => {
+  return await withTransactionRetry(async (session) => {
+    const booking = await Booking.findById(bookingId).session(session);
+    if (!booking || booking.status !== "pending_payment") {
+      return null;
+    }
+
+    booking.status = "expired";
+    booking.paymentStatus = "failed";
+    await booking.save({ session });
+
+    await writeOutboxEvent(session, "booking.cancelled", {
+      bookingId: booking._id.toString(),
+      salonId: booking.salon.toString(),
+      staffId: booking.staff ? booking.staff.toString() : null,
+      customerId: booking.customer ? booking.customer.toString() : null,
+      date: booking.date,
+      reason: "hold_expired",
     });
 
     return booking;

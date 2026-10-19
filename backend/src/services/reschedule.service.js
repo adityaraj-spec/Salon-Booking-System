@@ -3,6 +3,7 @@ import { checkTimeRangeAvailability } from "./availability.service.js";
 import { calculateServicesDurationAndPrice } from "./duration.service.js";
 import { validateOperatingHours } from "../utils/timeRange.js";
 import { withTransactionRetry } from "../utils/transaction.js";
+import { buildSlotLockKeys } from "../lib/redisLock.js";
 import ApiError from "../utils/apiError.js";
 
 /**
@@ -65,6 +66,12 @@ export const rescheduleBooking = async ({ bookingId, customerId, newStartTime })
     booking.endTime = end;
     booking.date = start.toISOString().split("T")[0];
     booking.time = start.toISOString().split("T")[1].substring(0, 5);
+    booking.slotKeys = buildSlotLockKeys(
+      booking.salon.toString(),
+      booking.staff ? booking.staff.toString() : null,
+      start,
+      end
+    );
 
     await booking.save({ session });
 

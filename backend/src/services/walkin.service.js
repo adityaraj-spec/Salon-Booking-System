@@ -4,6 +4,7 @@ import { calculateServicesDurationAndPrice } from "./duration.service.js";
 import { checkTimeRangeAvailability } from "./availability.service.js";
 import { validateOperatingHours } from "../utils/timeRange.js";
 import { withTransactionRetry } from "../utils/transaction.js";
+import { buildSlotLockKeys } from "../lib/redisLock.js";
 import ApiError from "../utils/apiError.js";
 
 /**
@@ -71,6 +72,19 @@ export const createWalkInBooking = async ({
             session,
         });
 
+        const snapshotServices = (services || []).map((s) => ({
+            serviceId: s._id,
+            name: s.name,
+            price: s.price || 0,
+            durationMin: s.durationMin || s.duration || 30,
+        }));
+        const slotKeys = buildSlotLockKeys(
+            salonId.toString(),
+            staffId ? staffId.toString() : null,
+            start,
+            end
+        );
+
         // 5. Create confirmed booking record with guest fields (no dummy User document)
         const [booking] = await Booking.create(
             [
@@ -83,7 +97,16 @@ export const createWalkInBooking = async ({
                     staffName: staffName || "Walk-in Specialist",
                     services: serviceIds,
                     serviceNames,
+                    snapshotServices,
                     totalAmount,
+                    amounts: {
+                        subtotal: totalAmount || 0,
+                        convenienceFee: 0,
+                        pointsDiscount: 0,
+                        total: totalAmount || 0,
+                    },
+                    cancellationPolicySnapshot: salon.cancellationPolicy || "Free cancellation up to 24 hours before your appointment. A 20% fee applies thereafter.",
+                    slotKeys,
                     date: start.toISOString().split("T")[0],
                     time: start.toISOString().split("T")[1].substring(0, 5),
                     startTime: start,
