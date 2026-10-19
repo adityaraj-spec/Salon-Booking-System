@@ -48,10 +48,17 @@ app.use(
 );
 
 // Item 1: Strict CORS Whitelist with fail-closed behavior (No wildcard origin reflection)
-const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173,http://localhost:3000")
-    .split(",")
+const defaultOrigins = [
+    "https://salon-booking-system-gaqg.onrender.com",
+    "http://localhost:5173",
+    "http://localhost:3000",
+];
+const envOrigins = [process.env.CLIENT_URL, process.env.CORS_ORIGIN]
+    .filter(Boolean)
+    .flatMap((v) => v.split(","))
     .map((o) => o.trim())
     .filter(Boolean);
+const allowedOrigins = [...new Set([...defaultOrigins, ...envOrigins])];
 
 const isAllowedOrigin = (origin) => {
     if (!origin) return true;
