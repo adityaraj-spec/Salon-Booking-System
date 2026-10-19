@@ -26,7 +26,21 @@ const bookingSchema = new mongoose.Schema(
       }
     ],
     serviceNames: [String],
+    snapshotServices: [
+      {
+        serviceId: { type: mongoose.Schema.Types.ObjectId, ref: "Service" },
+        name: String,
+        price: Number,
+        durationMin: Number,
+      },
+    ],
     totalAmount: Number,
+    amounts: {
+      subtotal: { type: Number, default: 0 },
+      convenienceFee: { type: Number, default: 0 },
+      pointsDiscount: { type: Number, default: 0 },
+      total: { type: Number, default: 0 },
+    },
     date: String,
     time: String,
     startTime: {
@@ -49,6 +63,16 @@ const bookingSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "BookingHold"
     },
+    cancellationPolicySnapshot: {
+      type: String,
+    },
+    holdExpiresAt: {
+      type: Date,
+    },
+    slotKeys: {
+      type: [String],
+      default: [],
+    },
     paymentStatus: {
       type: String,
       enum: ["unpaid", "pending", "paid", "refunded", "failed"],
@@ -68,7 +92,7 @@ const bookingSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "pending_payment", "confirmed", "completed", "cancelled", "rejected", "no_show"],
+      enum: ["pending", "pending_payment", "confirmed", "completed", "cancelled", "rejected", "no_show", "expired"],
       default: "pending"
     }
   },
@@ -85,6 +109,15 @@ bookingSchema.index({ staff: 1, date: 1, time: 1 });
 bookingSchema.index({ salon: 1, startTime: 1, endTime: 1, status: 1 });
 bookingSchema.index({ staff: 1, startTime: 1, endTime: 1, status: 1 });
 
+// Slot-level uniqueness: ensures no two active bookings share the same slotKey
+bookingSchema.index(
+  { slotKeys: 1 },
+  {
+    partialFilterExpression: {
+      status: { $in: ["pending_payment", "confirmed"] },
+    },
+    name: "slotKeys_active_unique",
+  }
+);
+
 export const Booking = mongoose.model("Booking", bookingSchema);
-
-

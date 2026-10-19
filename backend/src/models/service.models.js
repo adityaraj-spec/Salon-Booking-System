@@ -10,9 +10,17 @@ const serviceSchema = new mongoose.Schema({
     required: true 
     
   },
-  category: String,
+  category: {
+    type: String,
+    enum: ['haircut', 'colour', 'spa', 'nails', 'facial', 'bridal'],
+    default: 'haircut',
+  },
   price: Number,
   duration: Number,
+  durationMin: {
+    type: Number,
+    default: 30,
+  },
   description: String
 }, { timestamps: true });
 

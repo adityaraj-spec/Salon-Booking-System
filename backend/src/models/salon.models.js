@@ -60,6 +60,18 @@ const salonSchema = new mongoose.Schema({
     type: Number,
     default: 15,
   },
+  slotIntervalMin: {
+    type: Number,
+    default: 30,
+  },
+  bufferMin: {
+    type: Number,
+    default: 0,
+  },
+  cancellationPolicy: {
+    type: String,
+    default: "Free cancellation up to 24 hours before your appointment. A 20% fee applies thereafter.",
+  },
   rating: {
     type: Number,
     default: 0

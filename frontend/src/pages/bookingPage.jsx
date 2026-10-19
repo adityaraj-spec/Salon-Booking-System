@@ -623,6 +623,20 @@ export function BookingPage() {
                                 {bookingError && (
                                     <p className="text-red-500 text-sm mb-3 text-center">{bookingError}</p>
                                 )}
+
+                                {/* Cancellation Policy & Refund Terms */}
+                                <div className="mb-4 p-3.5 bg-emerald-50/70 border border-emerald-100 rounded-xl flex items-start gap-2.5">
+                                    <span className="text-emerald-600 mt-0.5 shrink-0 text-base leading-none">✅</span>
+                                    <div>
+                                        <p className="text-xs text-emerald-800 font-semibold leading-relaxed">
+                                            {salon?.cancellationPolicy || "Free cancellation up to 24 hours before your appointment. A 20% fee applies thereafter."}
+                                        </p>
+                                        <p className="text-[11px] text-emerald-600/80 mt-1 leading-snug">
+                                            Full refund if cancelled within the free cancellation window. Partial refund thereafter per salon policy.
+                                        </p>
+                                    </div>
+                                </div>
+
                                 <button
                                     onClick={handleConfirm}
                                     className="w-full bg-[#1a1a1a] text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-black transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"

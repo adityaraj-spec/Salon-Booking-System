@@ -83,6 +83,7 @@ export const SERVICE_UPDATABLE_FIELDS = [
   "category",
   "price",
   "duration",
+  "durationMin",
   "description",
 ];
 
@@ -98,6 +99,9 @@ export const SALON_UPDATABLE_FIELDS = [
   "closingHours",
   "operatingHours",
   "defaultBufferMinutes",
+  "slotIntervalMin",
+  "bufferMin",
+  "cancellationPolicy",
   "totalSeats",
   "isOpen",
   "timezone",
