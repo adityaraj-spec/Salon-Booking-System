@@ -785,3 +785,11 @@ export const welcomeToSalonNow = (email, name, role = "Customer") => {
     });
     return sendTemplateEmail(email, `Welcome to SalonNow`, html);
 };
+
+// ==========================================
+// COMPATIBILITY EXPORT ALIASES (FOR CONTROLLERS)
+// ==========================================
+export const sendWelcomeEmail = (email, name, role) => welcomeToSalonNow(email, name, role);
+export const sendVerificationEmail = (email, userName, code) => emailVerification(email, userName, code);
+export const sendLoginEmail = (email, userName, details) => accountNotification(email, userName, details || "New login detected on your account", new Date());
+export const sendLogoutEmail = (email, userName, details) => accountNotification(email, userName, details || "Account session ended", new Date());
