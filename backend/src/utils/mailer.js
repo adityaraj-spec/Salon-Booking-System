@@ -793,3 +793,4 @@ export const sendWelcomeEmail = (email, name, role) => welcomeToSalonNow(email, 
 export const sendVerificationEmail = (email, userName, code) => emailVerification(email, userName, code);
 export const sendLoginEmail = (email, userName, details) => accountNotification(email, userName, details || "New login detected on your account", new Date());
 export const sendLogoutEmail = (email, userName, details) => accountNotification(email, userName, details || "Account session ended", new Date());
+export const sendShopAddedEmail = (email, ownerName, shopName) => listingUpdate(email, ownerName, shopName, "Your salon has been successfully added to SalonNow.");
