@@ -35,7 +35,7 @@ const getBrevoClient = () => {
 const getSender = () => {
     return {
         name: process.env.SENDER_NAME?.trim() || "SalonNow",
-        email: process.env.SENDER_EMAIL?.trim() || "aadityajandaha07@gmail.com",
+        email: process.env.SENDER_EMAIL?.trim() || "noreply@salonnow.com",
     };
 };
 
@@ -185,7 +185,7 @@ export const testEmailConfiguration = async (targetEmail) => {
         <ul>
             <li><strong>BREVO_API_KEY:</strong> ${process.env.BREVO_API_KEY ? (process.env.BREVO_API_KEY.startsWith('xkeysib-') ? 'Valid REST API Key (Active)' : 'WARNING: Key does not start with xkeysib-') : 'MISSING'}</li>
             <li><strong>SENDER_NAME:</strong> ${process.env.SENDER_NAME || 'SalonNow (default)'}</li>
-            <li><strong>SENDER_EMAIL:</strong> ${process.env.SENDER_EMAIL || 'aadityajandaha07@gmail.com (default)'}</li>
+            <li><strong>SENDER_EMAIL:</strong> ${process.env.SENDER_EMAIL || 'noreply@salonnow.com (default)'}</li>
             <li><strong>FRONTEND_URL:</strong> ${process.env.FRONTEND_URL || 'NOT SET'}</li>
         </ul>
     </div>`;

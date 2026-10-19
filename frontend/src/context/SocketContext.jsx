@@ -14,7 +14,8 @@ export const SocketProvider = ({ children }) => {
         if (user) {
             const token = localStorage.getItem("authToken");
             const userId = user._id || user.id || "";
-            const newSocket = io(import.meta.env.VITE_BACKEND_URL || "http://localhost:8000", {
+            const backendUrl = import.meta.env.VITE_BACKEND_URL || (typeof window !== "undefined" && window.location.hostname === "localhost" ? "http://localhost:8000" : window.location.origin);
+            const newSocket = io(backendUrl, {
                 auth: { token },
                 query: { token, userId },
                 transports: ["polling", "websocket"],
