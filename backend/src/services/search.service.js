@@ -1,4 +1,5 @@
 import { Salon } from "../models/salon.models.js";
+import { Service } from "../models/service.models.js";
 import { formatPaginatedResponse } from "../utils/pagination.js";
 import { cacheGet, cacheSet, registerSearchCacheKey, cacheSetSalonDetail } from "../lib/cacheManager.js";
 import { transformImageUrl } from "../utils/imageTransform.js";
@@ -14,6 +15,7 @@ export const searchSalonsNearby = async ({
   latitude,
   maxDistanceMeters = 10000,
   city,
+  category,
   rating,
   query: searchQuery,
   page = 1,
@@ -25,7 +27,7 @@ export const searchSalonsNearby = async ({
   const skip = (parsedPage - 1) * parsedLimit;
 
   // 1. Redis cache lookup
-  const cacheKeyParams = `${longitude}_${latitude}_${maxDistanceMeters}_${city}_${rating}_${searchQuery}_${parsedPage}_${parsedLimit}`;
+  const cacheKeyParams = `${longitude}_${latitude}_${maxDistanceMeters}_${city}_${category}_${rating}_${searchQuery}_${parsedPage}_${parsedLimit}`;
   const cacheHash = crypto.createHash("md5").update(cacheKeyParams).digest("hex");
   const cacheKey = `salons:search:${cacheHash}`;
 
@@ -60,6 +62,22 @@ export const searchSalonsNearby = async ({
   const matchFilter = {};
   if (city) {
     matchFilter.city = new RegExp(`^${city.trim()}$`, "i"); // Exact city match anchored for index efficiency
+  }
+  if (category && category.trim()) {
+    const cat = category.trim().toLowerCase();
+    let catFilter;
+    if (cat === "colour" || cat === "color") {
+      catFilter = { $in: [/^colour$/i, /^color$/i] };
+    } else {
+      catFilter = new RegExp(`^${cat}$`, "i");
+    }
+    const matchingSalonIds = await Service.find({
+      $or: [
+        { category: catFilter },
+        { name: new RegExp(cat, "i") },
+      ],
+    }).distinct("salon");
+    matchFilter._id = { $in: matchingSalonIds };
   }
   if (rating) {
     matchFilter.rating = { $gte: parseFloat(rating) };

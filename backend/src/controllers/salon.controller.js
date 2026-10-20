@@ -73,13 +73,14 @@ const registerSalon = asyncHandler(async (req, res) => {
 import { searchSalonsNearby } from "../services/search.service.js";
 
 const getSalons = asyncHandler(async (req, res) => {
-    const { search, query, city, page = 1, limit = 8, longitude, latitude, maxDistanceMeters, rating } = req.query;
+    const { search, query, city, category, page = 1, limit = 8, longitude, latitude, maxDistanceMeters, rating } = req.query;
 
     const result = await searchSalonsNearby({
         longitude,
         latitude,
         maxDistanceMeters,
         city,
+        category,
         rating,
         query: search || query,
         page,
@@ -266,4 +267,33 @@ const getCheapestSalons = asyncHandler(async (req, res) => {
     );
 });
 
-export { registerSalon, getSalons, getSalonById, getOwnerSalon, updateSalonDetails, getCheapestSalons }
+const getSalonCities = asyncHandler(async (req, res) => {
+    const cities = await Salon.aggregate([
+        { $match: { city: { $exists: true, $ne: "" } } },
+        { 
+            $group: { 
+                _id: { $toLower: "$city" }, 
+                name: { $first: "$city" }, 
+                salonCount: { $sum: 1 },
+                coordinates: { $first: "$location.coordinates" },
+            } 
+        },
+        {
+            $project: {
+                _id: 1,
+                name: 1,
+                salonCount: 1,
+                coordinates: 1,
+                lng: { $cond: [{ $isArray: "$coordinates" }, { $arrayElemAt: ["$coordinates", 0] }, null] },
+                lat: { $cond: [{ $isArray: "$coordinates" }, { $arrayElemAt: ["$coordinates", 1] }, null] }
+            }
+        },
+        { $sort: { salonCount: -1 } }
+    ]);
+
+    return res.status(200).json(
+        new ApiResponse(200, cities, "Cities fetched successfully")
+    );
+});
+
+export { registerSalon, getSalons, getSalonById, getOwnerSalon, updateSalonDetails, getCheapestSalons, getSalonCities }

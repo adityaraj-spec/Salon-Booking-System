@@ -1,12 +1,23 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, Star, MapPin, Phone, Heart, ArrowUpDown, ChevronLeft, ChevronRight, SlidersHorizontal, X, Map, Loader2 } from 'lucide-react';
+import { Search, Star, MapPin, Phone, Heart, ArrowUpDown, ChevronLeft, ChevronRight, SlidersHorizontal, X, Map, Loader2, Navigation } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { State, City } from 'country-state-city';
 import axiosInstance from '../api/axiosConfig';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
+import { useCityResolution } from '../hooks/useCityResolution';
 import { SalonCardSkeleton } from '../components/skeletons/index.jsx';
+
+const SERVICE_CATEGORIES = [
+    { id: "all", label: "All Services", icon: "✨" },
+    { id: "haircut", label: "Haircut", icon: "✂️" },
+    { id: "colour", label: "Colour", icon: "🎨" },
+    { id: "spa", label: "Spa", icon: "💆" },
+    { id: "nails", label: "Nails", icon: "💅" },
+    { id: "facial", label: "Facial", icon: "🧖" },
+    { id: "bridal", label: "Bridal", icon: "💒" },
+];
 
 
 export function Shops() {
@@ -16,14 +27,25 @@ export function Shops() {
     const [searchParams, setSearchParams] = useSearchParams();
     const cityParam = searchParams.get("city") || "";
     const stateParam = searchParams.get("state") || "";
+    const categoryParam = searchParams.get("category") || "";
     const topRatedParam = searchParams.get("topRated") === "true";
     const sortByParam = searchParams.get("sortBy") || "rating";
 
+    const {
+        resolvedCity,
+        selectCity,
+        detectLocation,
+        detectingLocation,
+    } = useCityResolution();
+
     const [salons, setSalons] = useState([]);
     const [userFavorites, setUserFavorites] = useState([]);
-    const [cityQuery, setCityQuery] = useState(cityParam);
+    const [cityQuery, setCityQuery] = useState(cityParam || resolvedCity || "");
+    const [selectedCategory, setSelectedCategory] = useState(categoryParam);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+
+    const categoryBarRef = useRef(null);
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -71,7 +93,12 @@ export function Shops() {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const fetchSalons = async (targetCity = cityQuery, targetState = selectedState, targetPage = currentPage) => {
+    const fetchSalons = async (
+        targetCity = cityQuery,
+        targetCategory = selectedCategory,
+        targetState = selectedState,
+        targetPage = currentPage
+    ) => {
         setLoading(true);
         setError("");
         try {
@@ -79,6 +106,7 @@ export function Shops() {
                 limit: 12,
                 page: targetPage,
                 city: targetCity,
+                category: targetCategory || undefined,
                 search: targetState || stateParam,
                 sortBy: sortBy,
                 sortOrder: sortOrder,
@@ -148,30 +176,71 @@ export function Shops() {
         setCityQuery(cityParam || "");
         setStateSearch(stateParam || "");
         setCitySearch(cityParam || "");
+        setSelectedCategory(categoryParam || "");
         // Only reset preferences if no params exist (indicates a fresh discovery click)
-        if (!cityParam && !stateParam) {
+        if (!cityParam && !stateParam && !categoryParam) {
             setPreferTopRated(false);
             setSortBy("rating");
         }
-    }, [cityParam, stateParam]);
+    }, [cityParam, stateParam, categoryParam]);
 
     // Reset to first page when search filters change
     useEffect(() => {
         setCurrentPage(1);
-    }, [cityParam, stateParam, sortBy, sortOrder, preferTopRated]);
+    }, [cityParam, stateParam, categoryParam, sortBy, sortOrder, preferTopRated]);
 
-    // Fetch salons when search, state, sorting, or page changes
+    // Fetch salons when search, state, category, sorting, or page changes
     useEffect(() => {
-        fetchSalons(cityParam, stateParam, currentPage);
-    }, [cityParam, stateParam, sortBy, sortOrder, currentPage, preferTopRated]);
+        fetchSalons(cityParam, categoryParam, stateParam, currentPage);
+    }, [cityParam, stateParam, categoryParam, sortBy, sortOrder, currentPage, preferTopRated]);
+
+    const handleCategoryToggle = (categoryId) => {
+        const nextCategory = (selectedCategory === categoryId || categoryId === "all") ? "" : categoryId;
+        setSelectedCategory(nextCategory);
+        setSearchParams((prev) => {
+            const nextParams = new URLSearchParams(prev);
+            if (nextCategory) {
+                nextParams.set("category", nextCategory);
+            } else {
+                nextParams.delete("category");
+            }
+            nextParams.set("page", "1");
+            return nextParams;
+        });
+    };
 
     const handleSearch = (e) => {
         e.preventDefault();
+        if (cityQuery) selectCity(cityQuery);
         setSearchParams(prev => {
-            const newParams = new URLSearchParams(); // Fresh params to avoid mixing
-            if (cityQuery) newParams.set("city", cityQuery);
+            const newParams = new URLSearchParams(prev);
+            if (cityQuery) {
+                newParams.set("city", cityQuery);
+            } else {
+                newParams.delete("city");
+            }
+            if (selectedCategory) {
+                newParams.set("category", selectedCategory);
+            }
+            newParams.set("page", "1");
             return newParams;
         });
+    };
+
+    const handleUseMyLocation = async () => {
+        const res = await detectLocation();
+        if (res?.success) {
+            setCityQuery(res.city);
+            setSearchParams((prev) => {
+                const nextParams = new URLSearchParams(prev);
+                nextParams.set("city", res.city);
+                nextParams.set("page", "1");
+                return nextParams;
+            });
+            showNotification(`Showing salons near ${res.city}`, "success");
+        } else {
+            showNotification("Could not detect location.", "error");
+        }
     };
 
     return (
@@ -198,7 +267,40 @@ export function Shops() {
                                     onChange={(e) => setCityQuery(e.target.value)}
                                     className="w-full outline-none text-gray-700 placeholder-gray-400 text-xs md:text-sm font-medium py-1.5 bg-transparent"
                                 />
+                                {cityQuery && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setCityQuery("");
+                                            setSearchParams((prev) => {
+                                                const p = new URLSearchParams(prev);
+                                                p.delete("city");
+                                                return p;
+                                            });
+                                        }}
+                                        className="text-gray-400 hover:text-gray-600 p-1"
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                )}
                             </div>
+
+                            {/* Location Trigger */}
+                            <button
+                                type="button"
+                                onClick={handleUseMyLocation}
+                                disabled={detectingLocation}
+                                title="Use my current location"
+                                className="p-2 md:px-3 text-xs text-gray-500 hover:text-[#D4AF37] hover:bg-gray-50 rounded-full flex items-center gap-1 transition-colors"
+                            >
+                                {detectingLocation ? (
+                                    <Loader2 size={14} className="animate-spin text-[#D4AF37]" />
+                                ) : (
+                                    <Navigation size={14} />
+                                )}
+                                <span className="hidden sm:inline">Near me</span>
+                            </button>
+
                             <button
                                 type="submit"
                                 disabled={loading}
@@ -236,12 +338,83 @@ export function Shops() {
                     </div>
                 </div>
 
+                {/* Sprint 2.1 (M1): Airbnb-style Horizontally Scrollable Visual Category Bar */}
+                <div className="sticky top-16 md:top-20 z-20 bg-white/95 backdrop-blur-md pt-3 pb-3 border-y border-gray-100 shadow-xs mb-8">
+                    <div className="relative flex items-center max-w-full">
+                        {/* Scroll Left */}
+                        <button
+                            type="button"
+                            aria-label="Scroll left categories"
+                            onClick={() => categoryBarRef.current?.scrollBy({ left: -220, behavior: 'smooth' })}
+                            className="hidden md:flex absolute -left-2 z-10 w-8 h-8 rounded-full bg-white shadow-md border border-gray-200 items-center justify-center hover:bg-gray-50 text-gray-700 active:scale-95 transition-all"
+                        >
+                            <ChevronLeft size={16} />
+                        </button>
+
+                        {/* Chips container */}
+                        <div 
+                            ref={categoryBarRef}
+                            className="flex items-center gap-2.5 overflow-x-auto scroll-smooth py-1 px-2 no-scrollbar w-full"
+                            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                        >
+                            {SERVICE_CATEGORIES.map((cat) => {
+                                const isActive = (cat.id === "all" && !selectedCategory) || (selectedCategory === cat.id);
+                                return (
+                                    <button
+                                        key={cat.id}
+                                        type="button"
+                                        onClick={() => handleCategoryToggle(cat.id)}
+                                        className={`group shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs md:text-sm font-semibold transition-all active:scale-95 border ${
+                                            isActive
+                                                ? 'bg-[#1a1a1a] text-white border-[#1a1a1a] shadow-md ring-2 ring-[#D4AF37]/40'
+                                                : 'bg-gray-50/80 hover:bg-gray-100 border-gray-200/70 text-gray-700 hover:text-black'
+                                        }`}
+                                    >
+                                        <span className="text-base leading-none">{cat.icon}</span>
+                                        <span>{cat.label}</span>
+                                        {isActive && cat.id !== "all" && (
+                                            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] ml-0.5 animate-pulse" />
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        {/* Scroll Right */}
+                        <button
+                            type="button"
+                            aria-label="Scroll right categories"
+                            onClick={() => categoryBarRef.current?.scrollBy({ left: 220, behavior: 'smooth' })}
+                            className="hidden md:flex absolute -right-2 z-10 w-8 h-8 rounded-full bg-white shadow-md border border-gray-200 items-center justify-center hover:bg-gray-50 text-gray-700 active:scale-95 transition-all"
+                        >
+                            <ChevronRight size={16} />
+                        </button>
+                    </div>
+                </div>
+
                 {/* Grid Heading */}
-                <div className="mt-12 mb-4">
-                    <h2 className="text-2xl md:text-3xl font-serif font-bold text-gray-900">
-                        Discover salons in <span className="text-[#D4AF37] capitalize">{cityParam || "your city"}</span>
-                    </h2>
-                    <p className="text-gray-500 text-sm mt-1">Based on your preferences and location</p>
+                <div className="mt-6 mb-4 flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
+                    <div>
+                        <h2 className="text-2xl md:text-3xl font-serif font-bold text-gray-900">
+                            Discover salons in <span className="text-[#D4AF37] capitalize">{cityParam || "your city"}</span>
+                            {selectedCategory && (
+                                <span className="text-gray-500 font-sans font-normal text-base md:text-lg ml-2">
+                                    · {SERVICE_CATEGORIES.find(c => c.id === selectedCategory)?.label || selectedCategory}
+                                </span>
+                            )}
+                        </h2>
+                        <p className="text-gray-500 text-sm mt-1">Based on your preferences and location</p>
+                    </div>
+                    {selectedCategory && (
+                        <button
+                            type="button"
+                            onClick={() => handleCategoryToggle("all")}
+                            className="text-xs text-[#D4AF37] hover:text-[#b89528] font-bold self-start sm:self-auto hover:underline flex items-center gap-1"
+                        >
+                            <span>Clear category filter</span>
+                            <X size={12} />
+                        </button>
+                    )}
                 </div>
 
                 {/* Discovery Settings Modal */}

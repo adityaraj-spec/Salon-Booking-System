@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { ArrowRight, ShieldCheck, Tag, Clock, MapPin, Star, ChevronLeft, ChevronRight, Heart, Sparkles } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Tag, Clock, MapPin, Star, ChevronLeft, ChevronRight, Heart, Sparkles, ChevronDown, Navigation, Loader2, Search, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUI } from "../context/UIContext";
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
+import { useCityResolution } from '../hooks/useCityResolution';
 import axiosInstance from '../api/axiosConfig';
 import { MiniSalonCardSkeleton, DestinationCardSkeleton } from '../components/skeletons/index.jsx';
 
@@ -63,6 +64,26 @@ export function LandingPage() {
     const [cheapestServices, setCheapestServices] = useState([]);
     const [userFavorites, setUserFavorites] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // City Resolution & Modal State (H1)
+    const {
+        resolvedCity,
+        selectCity,
+        detectLocation,
+        detectingLocation,
+        availableCities,
+    } = useCityResolution();
+    const [isCityModalOpen, setIsCityModalOpen] = useState(false);
+    const [cityFilterText, setCityFilterText] = useState("");
+
+    const handleUseLocation = async () => {
+        const res = await detectLocation();
+        if (res?.success) {
+            showNotification(`Location detected: ${res.city}`, "success");
+        } else {
+            showNotification("Could not detect location. Please choose a city manually.", "info");
+        }
+    };
 
     const featuredSliderRef = useRef(null);
     const cheapSliderRef = useRef(null);
@@ -151,26 +172,197 @@ export function LandingPage() {
                 </AnimatePresence>
 
                 <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="relative z-10 px-6 max-w-4xl mx-auto flex flex-col items-center pt-8">
-                    <motion.h1 variants={fadeUpVariants} className={`text-5xl md:text-7xl font-bold mb-6 leading-tight drop-shadow-md ${isDark ? 'text-white' : 'text-white'}`}>
-                        Your Beauty,<br /><span className="text-[#ffd166] drop-shadow-[0_4px_20px_rgba(0,0,0,0.95)]">Our Priority</span>
+                    {/* Dynamic H1 Headline */}
+                    <motion.h1 variants={fadeUpVariants} className="text-4xl sm:text-6xl md:text-7xl font-bold mb-6 leading-tight drop-shadow-md text-white">
+                        Book top salons in{" "}
+                        <button
+                            type="button"
+                            onClick={() => setIsCityModalOpen(true)}
+                            className="inline-flex items-center gap-1.5 text-[#ffd166] hover:text-[#ffe49e] border-b-2 border-dashed border-[#ffd166]/70 hover:border-[#ffd166] transition-all cursor-pointer px-2.5 py-0.5 rounded-xl hover:bg-white/10 active:scale-95"
+                            title="Change City"
+                        >
+                            <span>{resolvedCity}</span>
+                            <ChevronDown size={30} className="text-[#ffd166] stroke-[2.5] inline-block -mb-1" />
+                        </button>{" "}
+                        in 60 seconds
                     </motion.h1>
-                    <motion.p variants={fadeUpVariants} className="text-lg md:text-xl mb-6 max-w-2xl font-light text-gray-100 drop-shadow-sm">
-                        Discover and book appointments with top-rated salons in your city.<br className="hidden md:block" /> Professional beauty services at your fingertips.
+
+                    <motion.p variants={fadeUpVariants} className="text-base sm:text-lg md:text-xl mb-8 max-w-2xl font-light text-gray-100 drop-shadow-sm">
+                        Discover and book appointments with verified salons in {resolvedCity}. Guaranteed seat locking, zero wait time, and instant confirmations.
                     </motion.p>
-                    <motion.div variants={fadeUpVariants} className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 w-full sm:w-auto">
-                        <NavLink to="/home" className="w-full sm:w-auto px-8 py-4 rounded-full font-bold flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 bg-white text-black hover:bg-gray-100">
-                            Browse Salons <ArrowRight size={18} />
+
+                    {/* CTAs: Primary & Secondary (Use my location) */}
+                    <motion.div variants={fadeUpVariants} className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-4 w-full sm:w-auto">
+                        <NavLink 
+                            to={`/home?city=${encodeURIComponent(resolvedCity)}`} 
+                            className="w-full sm:w-auto px-8 py-4 rounded-full font-bold flex items-center justify-center gap-2 transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1 duration-300 bg-[#ffd166] text-[#1a1a1a] hover:bg-[#ffc633]"
+                        >
+                            <span>Find Salons in {resolvedCity}</span>
+                            <ArrowRight size={18} />
                         </NavLink>
+
+                        <button 
+                            type="button"
+                            onClick={handleUseLocation}
+                            disabled={detectingLocation}
+                            className="w-full sm:w-auto px-7 py-4 rounded-full font-semibold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 border border-white/80 text-white hover:bg-white/15 backdrop-blur-sm flex items-center justify-center gap-2 disabled:opacity-75"
+                        >
+                            {detectingLocation ? (
+                                <>
+                                    <Loader2 size={18} className="animate-spin text-[#ffd166]" />
+                                    <span>Locating...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Navigation size={18} className="text-[#ffd166]" />
+                                    <span>Use my location</span>
+                                </>
+                            )}
+                        </button>
+
                         {!user && (
-                            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                                <NavLink to="/signup" className="w-full sm:w-auto px-8 py-4 rounded-full font-bold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 border text-center border-white/80 text-white hover:bg-white/10">
-                                    Sign Up Now
-                                </NavLink>
-                            </div>
+                            <NavLink to="/signup" className="w-full sm:w-auto px-6 py-4 rounded-full font-medium transition-all shadow-md hover:shadow-lg transform hover:-translate-y-1 duration-300 text-center text-white/90 hover:text-white hover:underline text-sm">
+                                Create Account
+                            </NavLink>
                         )}
                     </motion.div>
                 </motion.div>
             </section>
+
+            {/* City Selector Modal */}
+            <AnimatePresence>
+                {isCityModalOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md"
+                        onClick={() => setIsCityModalOpen(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95, y: 15 }}
+                            animate={{ scale: 1, y: 0 }}
+                            exit={{ scale: 0.95, y: 15 }}
+                            className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-gray-100 max-h-[85vh] flex flex-col"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+                                <div>
+                                    <h3 className="font-serif font-bold text-xl text-[#1a1a1a]">Select Your City</h3>
+                                    <p className="text-xs text-gray-500 mt-0.5">Explore premier salons in your area</p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsCityModalOpen(false)}
+                                    className="p-2 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors"
+                                >
+                                    <X size={18} />
+                                </button>
+                            </div>
+
+                            {/* Search and GPS shortcut */}
+                            <div className="py-4 space-y-3">
+                                <div className="relative">
+                                    <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search city by name..."
+                                        value={cityFilterText}
+                                        onChange={(e) => setCityFilterText(e.target.value)}
+                                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20"
+                                        autoFocus
+                                    />
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={async () => {
+                                        await handleUseLocation();
+                                        setIsCityModalOpen(false);
+                                    }}
+                                    className="w-full py-2.5 px-3.5 rounded-xl bg-amber-50 hover:bg-amber-100/80 text-amber-900 border border-amber-200/60 font-semibold text-xs flex items-center justify-center gap-2 transition-colors"
+                                >
+                                    <Navigation size={14} className="text-[#D4AF37]" />
+                                    <span>Detect current city using GPS</span>
+                                </button>
+                            </div>
+
+                            {/* Cities List */}
+                            <div className="overflow-y-auto flex-1 pr-1 space-y-4 max-h-[50vh]">
+                                {/* Active Cities with Salons */}
+                                {availableCities.length > 0 && (
+                                    <div>
+                                        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">
+                                            Active Hubs (Salons Live)
+                                        </p>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {availableCities
+                                                .filter((c) =>
+                                                    c.name.toLowerCase().includes(cityFilterText.toLowerCase())
+                                                )
+                                                .map((city) => (
+                                                    <button
+                                                        key={city.id || city.name}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            selectCity(city.name);
+                                                            setIsCityModalOpen(false);
+                                                        }}
+                                                        className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all ${
+                                                            resolvedCity.toLowerCase() === city.name.toLowerCase()
+                                                                ? "bg-[#1a1a1a] text-white border-[#1a1a1a]"
+                                                                : "bg-white hover:bg-gray-50 border-gray-100 text-[#1a1a1a]"
+                                                        }`}
+                                                    >
+                                                        <span className="font-bold text-sm truncate">{city.name}</span>
+                                                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                                                            resolvedCity.toLowerCase() === city.name.toLowerCase()
+                                                                ? "bg-[#D4AF37] text-white"
+                                                                : "bg-gray-100 text-gray-600"
+                                                        }`}>
+                                                            {city.salonCount} {city.salonCount === 1 ? 'salon' : 'salons'}
+                                                        </span>
+                                                    </button>
+                                                ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Major Destinations */}
+                                <div>
+                                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">
+                                        Popular Metro Cities
+                                    </p>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                        {POPULAR_DESTINATIONS
+                                            .filter((d) =>
+                                                d.city.toLowerCase().includes(cityFilterText.toLowerCase())
+                                            )
+                                            .map((dest) => (
+                                                <button
+                                                    key={dest.city}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        selectCity(dest.city);
+                                                        setIsCityModalOpen(false);
+                                                    }}
+                                                    className={`p-2.5 rounded-xl border text-left transition-all ${
+                                                        resolvedCity.toLowerCase() === dest.city.toLowerCase()
+                                                            ? "bg-[#1a1a1a] text-white border-[#1a1a1a]"
+                                                            : "bg-white hover:bg-gray-50 border-gray-100 text-gray-800"
+                                                    }`}
+                                                >
+                                                    <p className="font-semibold text-xs truncate">{dest.city}</p>
+                                                    <p className="text-[10px] text-gray-400 truncate">{dest.state}</p>
+                                                </button>
+                                            ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
 
 

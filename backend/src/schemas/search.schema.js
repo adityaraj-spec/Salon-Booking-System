@@ -6,9 +6,10 @@ export const searchSalonsSchema = {
     latitude: z.string().optional(),
     maxDistanceMeters: z.string().optional(),
     city: z.string().optional(),
+    category: z.string().optional(),
     rating: z.string().optional(),
     query: z.string().optional(),
     page: z.string().optional(),
     limit: z.string().optional(),
-  }),
+  }).passthrough(),
 };

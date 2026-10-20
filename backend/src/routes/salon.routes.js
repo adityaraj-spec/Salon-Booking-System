@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { registerSalon, getSalons, getSalonById, getOwnerSalon, updateSalonDetails, getCheapestSalons } from "../controllers/salon.controller.js";
+import { registerSalon, getSalons, getSalonById, getOwnerSalon, updateSalonDetails, getCheapestSalons, getSalonCities } from "../controllers/salon.controller.js";
 import { verifyJWT } from "../middleware/auth.middleware.js";
 import { upload } from "../middleware/multer.middleware.js";
 import { validate } from "../middleware/validate.js";
@@ -13,6 +13,7 @@ router.route("/").get(validate(searchSalonsSchema), getSalons);
 router.route("/search").get(validate(searchSalonsSchema), getSalons);
 router.route("/owner/my-salon").get(verifyJWT, getOwnerSalon);
 router.route("/cheapest").get(getCheapestSalons);
+router.route("/cities").get(getSalonCities);
 router.route("/:id/availability").get(getAvailability);
 router.route("/:id")
     .get(getSalonById)
