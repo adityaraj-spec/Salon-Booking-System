@@ -696,7 +696,7 @@ export function Shops() {
                                                 <span className="text-sm text-[#0071c2] flex items-center gap-1"><MapPin size={13} className="shrink-0" />{salon.city ? `${salon.city}, India` : "Location not set"}</span>
                                                 <span className="text-sm text-gray-500 flex items-center gap-1"><Phone size={13} className="shrink-0" />{salon.contactNumber || salon.owner?.phonenumber || "+91 Unavailable"}</span>
                                             </div>
-                                            <div className="mt-auto flex items-end justify-between">
+                                            <div className="mt-auto flex items-end justify-between gap-2">
                                                 <div className="flex items-center gap-2">
                                                     <div className="bg-[#003b95] text-white px-2 py-2 font-bold flex items-center justify-center rounded-t-md rounded-br-md rounded-bl-sm min-w-[32px] text-sm">{salon.rating || "New"}</div>
                                                     <div className="flex flex-col">
@@ -705,10 +705,20 @@ export function Shops() {
                                                     </div>
                                                 </div>
                                                 <div className="text-right flex flex-col items-end">
-                                                    <div className="text-[11px] text-gray-500 mb-1">Timing <span className="font-bold text-gray-800">{salon.openingHours || "09:00"} - {salon.closingHours || "21:00"}</span></div>
+                                                    {salon.startingPrice != null ? (
+                                                        <div className="text-[11px] text-gray-500 mb-1">
+                                                            Services from{" "}
+                                                            <span className="font-bold text-[#1a1a1a] text-sm">₹{salon.startingPrice}</span>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-[11px] text-gray-500 mb-1">
+                                                            Timing <span className="font-bold text-gray-800">{salon.openingHours || "09:00"} - {salon.closingHours || "21:00"}</span>
+                                                        </div>
+                                                    )}
                                                     <div className="text-xs text-gray-500">Available Seats <span className="text-lg font-bold text-[#1a1a1a] ml-1">{salon.availableSeats || 0}</span></div>
                                                 </div>
                                             </div>
+
                                         </div>
                                     </div>
                                 ))}

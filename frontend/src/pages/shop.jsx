@@ -325,7 +325,10 @@ export function Shop() {
         ? salon.images
         : ["https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&q=80"];
 
-    // Fill the gallery array to exactly 8 for the Booking-style layout
+    // Build a 5-slot mosaic array (fills from available images, no random seed needed)
+    const mosaicImages = Array.from({ length: 5 }, (_, i) => displayImages[i % displayImages.length]);
+
+    // Fill the gallery array to exactly 8 for mobile carousel
     const galleryImages = [...displayImages];
     while (galleryImages.length < 8) {
         galleryImages.push(displayImages[Math.floor(Math.random() * displayImages.length)]);
@@ -422,138 +425,175 @@ export function Shop() {
                 </div>
             </div>
 
-            {/* Booking.com Style Gallery & Sidebar */}
+            {/* Sprint 2.2: Airbnb-Style 5-Photo Mosaic Gallery + Sidebar */}
             <div className="hidden md:flex flex-col lg:flex-row gap-4 mb-10">
-                
-                {/* LEFT: Photo Gallery Section (1 Large + 2 Stacked + 5 Thumbnails) */}
-                <div className="lg:w-[72%] xl:w-[75%] space-y-2">
-                    {/* Top: 1 Large + 2 Stacked Grid */}
-                    <div className="grid grid-cols-12 gap-2 h-[440px]">
-                        <div className="col-span-8 overflow-hidden rounded-l-md shadow-sm">
-                            <img src={galleryImages[0]} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Salon Main" />
+
+                {/* LEFT: Airbnb Mosaic (1 large hero + 2×2 thumbnails) */}
+                <div className="lg:w-[72%] xl:w-[75%]">
+                    <div className="relative rounded-2xl overflow-hidden h-[460px] grid grid-cols-[60%_40%] grid-rows-2 gap-1.5">
+
+                        {/* Hero image — spans 2 rows on left */}
+                        <div
+                            className="row-span-2 overflow-hidden relative group cursor-pointer"
+                            onClick={() => { setLightboxIndex(0); setLightboxOpen(true); }}
+                        >
+                            <img
+                                src={mosaicImages[0]}
+                                alt="Salon hero photo"
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                            />
                         </div>
-                        <div className="col-span-4 flex flex-col gap-2">
-                            <div className="h-[216px] overflow-hidden shadow-sm">
-                                <img src={galleryImages[1]} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700 border-none" alt="Salon 2" />
-                            </div>
-                            {/* Last image with See all photos overlay */}
+
+                        {/* Top-right thumb */}
+                        <div
+                            className="overflow-hidden relative group cursor-pointer"
+                            onClick={() => { setLightboxIndex(1); setLightboxOpen(true); }}
+                        >
+                            <img
+                                src={mosaicImages[1]}
+                                alt="Salon photo 2"
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                            />
+                        </div>
+
+                        {/* Bottom-right area: 2 side-by-side thumbs */}
+                        <div className="grid grid-cols-2 gap-1.5 overflow-hidden">
                             <div
-                                className="h-[216px] overflow-hidden shadow-sm rounded-br-md relative group cursor-pointer"
-                                onClick={() => { setLightboxIndex(0); setLightboxOpen(true); }}
+                                className="overflow-hidden relative group cursor-pointer"
+                                onClick={() => { setLightboxIndex(2); setLightboxOpen(true); }}
                             >
-                                <img src={galleryImages[2]} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 border-none" alt="Salon 3" />
-                                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/55 transition-colors flex flex-col items-center justify-center gap-2">
-                                    <Images size={24} className="text-white" />
-                                    <span className="text-white font-bold text-sm text-center leading-tight">
-                                        See all {displayImages.length} photo{displayImages.length !== 1 ? 's' : ''}
-                                    </span>
-                                </div>
+                                <img
+                                    src={mosaicImages[2]}
+                                    alt="Salon photo 3"
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                />
+                            </div>
+                            <div
+                                className="overflow-hidden relative group cursor-pointer"
+                                onClick={() => { setLightboxIndex(3); setLightboxOpen(true); }}
+                            >
+                                <img
+                                    src={mosaicImages[3]}
+                                    alt="Salon photo 4"
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                />
                             </div>
                         </div>
-                    </div>
-</div>
 
-            {/* Lightbox Modal */}
-            {lightboxOpen && (
-                <div
-                    className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center"
-                    onClick={() => setLightboxOpen(false)}
-                    onKeyDown={(e) => {
-                        if (e.key === 'ArrowRight') setLightboxIndex(i => (i + 1) % displayImages.length);
-                        if (e.key === 'ArrowLeft') setLightboxIndex(i => (i - 1 + displayImages.length) % displayImages.length);
-                        if (e.key === 'Escape') setLightboxOpen(false);
-                    }}
-                    tabIndex={0}
-                    autoFocus
-                >
-                    {/* Close Button */}
-                    <button
-                        aria-label="Close photo viewer"
-                        className="absolute top-5 right-5 z-10 bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition-colors"
-                        onClick={(e) => { e.stopPropagation(); setLightboxOpen(false); }}
-                    >
-                        <X size={24} />
-                    </button>
-
-                    {/* Counter */}
-                    <div className="absolute top-5 left-1/2 -translate-x-1/2 text-white/70 text-sm font-medium">
-                        {lightboxIndex + 1} / {displayImages.length}
-                    </div>
-
-                    {/* Prev Button */}
-                    {displayImages.length > 1 && (
+                        {/* "Show all X photos" floating button — bottom right corner */}
                         <button
-                            aria-label="Previous salon photo"
-                            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full transition-colors z-10"
-                            onClick={(e) => { e.stopPropagation(); setLightboxIndex(i => (i - 1 + displayImages.length) % displayImages.length); }}
+                            type="button"
+                            aria-label="Show all salon photos"
+                            onClick={() => { setLightboxIndex(0); setLightboxOpen(true); }}
+                            className="absolute bottom-4 right-4 z-10 inline-flex items-center gap-2 bg-white/95 hover:bg-white backdrop-blur-sm text-[#1a1a1a] font-bold text-xs px-4 py-2.5 rounded-full shadow-lg border border-gray-200 hover:border-gray-300 transition-all active:scale-95 hover:shadow-xl"
                         >
-                            <ChevronLeft size={28} />
+                            <Images size={14} className="text-[#D4AF37]" />
+                            Show all {displayImages.length} photo{displayImages.length !== 1 ? 's' : ''}
                         </button>
-                    )}
-
-                    {/* Main Image */}
-                    <div className="max-w-5xl max-h-[85vh] w-full px-20" onClick={(e) => e.stopPropagation()}>
-                        <img
-                            src={displayImages[lightboxIndex]}
-                            alt={`Photo ${lightboxIndex + 1}`}
-                            className="w-full h-full max-h-[85vh] object-contain rounded-lg select-none"
-                        />
                     </div>
-
-                    {/* Next Button */}
-                    {displayImages.length > 1 && (
-                        <button
-                            aria-label="Next salon photo"
-                            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full transition-colors z-10"
-                            onClick={(e) => { e.stopPropagation(); setLightboxIndex(i => (i + 1) % displayImages.length); }}
-                        >
-                            <ChevronRight size={28} />
-                        </button>
-                    )}
-
-                    {/* Thumbnail Strip */}
-                    {displayImages.length > 1 && (
-                        <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-2 px-4 overflow-x-auto max-w-full" onClick={(e) => e.stopPropagation()}>
-                            {displayImages.map((img, idx) => (
-                                <button
-                                    key={idx}
-                                    aria-label={`Show salon photo ${idx + 1}`}
-                                    aria-pressed={idx === lightboxIndex}
-                                    onClick={() => setLightboxIndex(idx)}
-                                    className={`w-12 h-12 rounded-md overflow-hidden shrink-0 border-2 transition-all ${
-                                        idx === lightboxIndex ? 'border-white opacity-100' : 'border-transparent opacity-50 hover:opacity-75'
-                                    }`}
-                                >
-                                    <img src={img} alt={`thumb ${idx}`} className="w-full h-full object-cover" />
-                                </button>
-                            ))}
-                        </div>
-                    )}
                 </div>
-            )}
 
-                {/* RIGHT: Booking Sidebar (Rating + Location + Map) */}
-                <div className="lg:w-[28%] xl:w-[25%] flex flex-col gap-3 h-[440px]">
+                {/* Lightbox Modal */}
+                {lightboxOpen && (
+                    <div
+                        className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center"
+                        onClick={() => setLightboxOpen(false)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'ArrowRight') setLightboxIndex(i => (i + 1) % displayImages.length);
+                            if (e.key === 'ArrowLeft') setLightboxIndex(i => (i - 1 + displayImages.length) % displayImages.length);
+                            if (e.key === 'Escape') setLightboxOpen(false);
+                        }}
+                        tabIndex={0}
+                        autoFocus
+                    >
+                        {/* Close Button */}
+                        <button
+                            aria-label="Close photo viewer"
+                            className="absolute top-5 right-5 z-10 bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition-colors"
+                            onClick={(e) => { e.stopPropagation(); setLightboxOpen(false); }}
+                        >
+                            <X size={24} />
+                        </button>
+
+                        {/* Counter */}
+                        <div className="absolute top-5 left-1/2 -translate-x-1/2 text-white/70 text-sm font-medium">
+                            {lightboxIndex + 1} / {displayImages.length}
+                        </div>
+
+                        {/* Prev Button */}
+                        {displayImages.length > 1 && (
+                            <button
+                                aria-label="Previous salon photo"
+                                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full transition-colors z-10"
+                                onClick={(e) => { e.stopPropagation(); setLightboxIndex(i => (i - 1 + displayImages.length) % displayImages.length); }}
+                            >
+                                <ChevronLeft size={28} />
+                            </button>
+                        )}
+
+                        {/* Main Image */}
+                        <div className="max-w-5xl max-h-[85vh] w-full px-20" onClick={(e) => e.stopPropagation()}>
+                            <img
+                                src={displayImages[lightboxIndex]}
+                                alt={`Photo ${lightboxIndex + 1}`}
+                                className="w-full h-full max-h-[85vh] object-contain rounded-lg select-none"
+                            />
+                        </div>
+
+                        {/* Next Button */}
+                        {displayImages.length > 1 && (
+                            <button
+                                aria-label="Next salon photo"
+                                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full transition-colors z-10"
+                                onClick={(e) => { e.stopPropagation(); setLightboxIndex(i => (i + 1) % displayImages.length); }}
+                            >
+                                <ChevronRight size={28} />
+                            </button>
+                        )}
+
+                        {/* Thumbnail Strip */}
+                        {displayImages.length > 1 && (
+                            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-2 px-4 overflow-x-auto max-w-full" onClick={(e) => e.stopPropagation()}>
+                                {displayImages.map((img, idx) => (
+                                    <button
+                                        key={idx}
+                                        aria-label={`Show salon photo ${idx + 1}`}
+                                        aria-pressed={idx === lightboxIndex}
+                                        onClick={() => setLightboxIndex(idx)}
+                                        className={`w-12 h-12 rounded-md overflow-hidden shrink-0 border-2 transition-all ${
+                                            idx === lightboxIndex ? 'border-white opacity-100' : 'border-transparent opacity-50 hover:opacity-75'
+                                        }`}
+                                    >
+                                        <img src={img} alt={`thumb ${idx}`} className="w-full h-full object-cover" />
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* RIGHT: Sidebar (Rating + Map) */}
+                <div className="lg:w-[28%] xl:w-[25%] flex flex-col gap-3 h-[460px]">
                     {/* Rating Card */}
-                    <div className="bg-white border border-gray-200 rounded-md p-3 flex justify-between items-start shadow-sm h-fit">
+                    <div className="bg-white border border-gray-200 rounded-2xl p-4 flex justify-between items-start shadow-sm h-fit">
                         <div className="flex flex-col">
                             <span className="font-bold text-[#1a1a1a] text-base leading-tight">
                                 {salon.rating >= 4.5 ? "Excellent" : salon.rating >= 4 ? "Very Good" : salon.rating > 0 ? "Good" : "New"}
                             </span>
                             <span className="text-xs text-gray-500">{reviews.length || 0} reviews</span>
                         </div>
-                        <div className="bg-[#003b95] text-white w-8 h-8 rounded-t-md rounded-br-md flex items-center justify-center font-bold text-sm">
+                        <div className="bg-[#003b95] text-white w-9 h-9 rounded-t-lg rounded-br-lg flex items-center justify-center font-bold text-sm">
                             {salon.rating > 0 ? salon.rating.toFixed(1) : "New"}
                         </div>
                     </div>
 
-                    {/* Location Preview Card (Anchoring smoothly to main map below) */}
-                    <div 
-                        className="flex-1 overflow-hidden rounded-xl border border-gray-200 shadow-sm relative group bg-gradient-to-br from-amber-50/50 via-white to-gray-50 p-4 flex flex-col justify-between cursor-pointer hover:border-[#D4AF37]/50 hover:shadow-md transition-all"
+                    {/* Location Preview Card */}
+                    <div
+                        className="flex-1 overflow-hidden rounded-2xl border border-gray-200 shadow-sm relative group bg-gradient-to-br from-amber-50/50 via-white to-gray-50 p-4 flex flex-col justify-between cursor-pointer hover:border-[#D4AF37]/50 hover:shadow-md transition-all"
                         onClick={() => document.getElementById('salon-location-section')?.scrollIntoView({ behavior: 'smooth' })}
                     >
                         <div className="flex-1 min-h-[280px] pointer-events-none">
-                            <div className="h-full min-h-[280px] rounded-lg overflow-hidden">
+                            <div className="h-full min-h-[280px] rounded-xl overflow-hidden">
                                 <SalonMap salons={[salon]} zoom={14} />
                             </div>
                         </div>

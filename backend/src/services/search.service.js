@@ -98,7 +98,33 @@ export const searchSalonsNearby = async ({
     pipeline.push({ $sort: { rating: -1, createdAt: -1 } });
   }
 
+
   // Field projection to keep payload light
+  pipeline.push({
+    $lookup: {
+      from: "services",
+      localField: "_id",
+      foreignField: "salon",
+      as: "_services",
+      pipeline: [
+        { $match: { price: { $gt: 0 } } },
+        { $project: { price: 1, _id: 0 } },
+      ],
+    },
+  });
+
+  pipeline.push({
+    $addFields: {
+      startingPrice: {
+        $cond: {
+          if: { $gt: [{ $size: "$_services" }, 0] },
+          then: { $min: "$_services.price" },
+          else: null,
+        },
+      },
+    },
+  });
+
   pipeline.push({
     $project: {
       name: 1,
@@ -115,8 +141,10 @@ export const searchSalonsNearby = async ({
       contactNumber: 1,
       openingHours: 1,
       closingHours: 1,
+      startingPrice: 1,
     },
   });
+
 
   // Faceted aggregation for count and pagination
   pipeline.push({
