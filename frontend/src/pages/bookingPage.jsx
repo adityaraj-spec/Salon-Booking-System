@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, NavLink, useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosConfig";
 import { useAuth } from "../context/AuthContext";
+import { useBookingCart } from "../context/BookingCartContext";
 import {
     Calendar as CalendarIcon,
     Clock,
@@ -153,6 +154,21 @@ export function BookingPage() {
     const [services, setServices] = useState([]);
     const [staffMembers, setStaffMembers] = useState([]);
 
+    // Cart Context Integration
+    const {
+        items: cartItems,
+        salonId: cartSalonId,
+        setCartServices,
+        clearCart,
+    } = useBookingCart();
+
+    // Initialize selected services from cart if matching this salon
+    useEffect(() => {
+        if (cartSalonId === id && cartItems.length > 0) {
+            setSelectedServices(cartItems);
+        }
+    }, [id, cartSalonId]);
+
     useEffect(() => {
         if (!authLoading && !user) {
             navigate("/login");
@@ -186,15 +202,29 @@ export function BookingPage() {
         }
     }, [id]);
 
+    const combinedDurationMin = useMemo(() => {
+        const total = selectedServices.reduce(
+            (sum, s) => sum + (Number(s.durationMin || s.duration) || 30),
+            0
+        );
+        return total > 0 ? total : 30;
+    }, [selectedServices]);
+
     useEffect(() => {
         const fetchAvailability = async () => {
             if (!id || !date) return;
             setAvailabilityLoading(true);
             try {
-                const response = await axiosInstance.get(`/bookings/availability/${id}`, {
-                    params: { date, staffId: selectedStaff?._id }
-                });
-                if (response.data.success) {
+                const params = {
+                    date,
+                    staffId: selectedStaff?._id,
+                    durationMin: combinedDurationMin,
+                    durationMinutes: combinedDurationMin,
+                };
+                const response = await axiosInstance.get(`/salons/${id}/availability`, { params })
+                    .catch(() => axiosInstance.get(`/bookings/availability/${id}`, { params }));
+
+                if (response?.data?.success) {
                     const slots = response.data.data?.slots || [];
                     const slotAvailability = Object.fromEntries(slots.map((slot) => [
                         new Date(slot.startTime).toLocaleTimeString("en-US", {
@@ -215,36 +245,45 @@ export function BookingPage() {
         };
 
         fetchAvailability();
-    }, [id, date, selectedStaff]);
+    }, [id, date, selectedStaff, combinedDurationMin]);
 
     useEffect(() => {
         if (!id || !date) return undefined;
+        const params = {
+            date,
+            staffId: selectedStaff?._id,
+            durationMin: combinedDurationMin,
+            durationMinutes: combinedDurationMin,
+        };
         const refreshTimer = window.setInterval(() => {
-            axiosInstance.get(`/bookings/availability/${id}`, {
-                params: { date, staffId: selectedStaff?._id },
-            }).then((response) => {
-                const slots = response.data.data?.slots || [];
-                setAvailability(Object.fromEntries(slots.map((slot) => [
-                    new Date(slot.startTime).toLocaleTimeString("en-US", {
-                        hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "UTC",
-                    }),
-                    slot.availableSeats,
-                ])));
-            }).catch(() => {});
+            axiosInstance.get(`/salons/${id}/availability`, { params })
+                .catch(() => axiosInstance.get(`/bookings/availability/${id}`, { params }))
+                .then((response) => {
+                    const slots = response?.data?.data?.slots || [];
+                    setAvailability(Object.fromEntries(slots.map((slot) => [
+                        new Date(slot.startTime).toLocaleTimeString("en-US", {
+                            hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "UTC",
+                        }),
+                        slot.availableSeats,
+                    ])));
+                }).catch(() => {});
         }, 5000);
         return () => window.clearInterval(refreshTimer);
-    }, [id, date, selectedStaff]);
+    }, [id, date, selectedStaff, combinedDurationMin]);
 
     const toggleService = (service) => {
-        setSelectedServices(prev =>
-            prev.find(s => s._id === service._id)
-                ? prev.filter(s => s._id !== service._id)
-                : [...prev, service]
-        );
+        setSelectedServices((prev) => {
+            const exists = prev.find((s) => (s._id || s.serviceId) === (service._id || service.serviceId));
+            const next = exists
+                ? prev.filter((s) => (s._id || s.serviceId) !== (service._id || service.serviceId))
+                : [...prev, service];
+            setCartServices(salon || id, next);
+            return next;
+        });
     };
 
     const totalAmount = useMemo(() =>
-        selectedServices.reduce((sum, s) => sum + s.price, 0),
+        selectedServices.reduce((sum, s) => sum + (Number(s.price) || 0), 0),
         [selectedServices]);
 
     const handleConfirm = async () => {
@@ -261,15 +300,24 @@ export function BookingPage() {
         const idempotencyKey = crypto.randomUUID();
 
         try {
-            // Step 1: Create 10-minute slot hold
+            // Format snapshotServices array with serviceId, name, price, durationMin
+            const snapshotServices = selectedServices.map((s) => ({
+                serviceId: s._id || s.serviceId,
+                name: s.name,
+                price: Number(s.price) || 0,
+                durationMin: Number(s.durationMin || s.duration) || 30,
+            }));
+
+            // Step 1: Create 10-minute slot hold with snapshotServices
             const holdResponse = await axiosInstance.post(
                 "/bookings/hold",
                 {
                     salonId: id,
-                    services: selectedServices.map(s => s._id),
+                    services: selectedServices.map(s => s._id || s.serviceId),
                     staff: selectedStaff?._id || null,
                     serviceNames: selectedServices.map(s => s.name),
                     staffName: selectedStaff?.name || "Any Available",
+                    snapshotServices,
                     date,
                     time,
                     totalAmount,
@@ -346,6 +394,8 @@ export function BookingPage() {
                 checkout.open();
             });
 
+            // Clear booking cart on successful confirmation
+            clearCart();
             setBookingSuccess(true);
         } catch (err) {
             console.error("Booking error:", err);
@@ -435,18 +485,22 @@ export function BookingPage() {
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <h3 className="font-bold text-gray-900">{service.name}</h3>
                                                 </div>
-                                                <p className="ui-subtext line-clamp-1">{service.description}</p>
+                                                <p className="ui-subtext line-clamp-1 mb-1">{service.description}</p>
+                                                <span className="inline-flex items-center gap-1 text-xs text-gray-500 font-medium">
+                                                    <Clock size={11} className="text-[#D4AF37]" />
+                                                    {service.durationMin || service.duration || 30} min
+                                                </span>
                                             </div>
                                             <div className="text-right ml-4">
-                                                <p className={`font-bold transition-colors ${selectedServices.find(s => s._id === service._id) ? "text-[#D4AF37]" : "text-gray-900"
+                                                <p className={`font-bold transition-colors ${selectedServices.find(s => (s._id || s.serviceId) === service._id) ? "text-[#D4AF37]" : "text-gray-900"
                                                     }`}>
                                                     ₹{service.price}
                                                 </p>
-                                                <div className={`mt-2 w-5 h-5 rounded-full border flex items-center justify-center transition-all ${selectedServices.find(s => s._id === service._id)
+                                                <div className={`mt-2 w-5 h-5 rounded-full border flex items-center justify-center transition-all ${selectedServices.find(s => (s._id || s.serviceId) === service._id)
                                                     ? "bg-[#D4AF37] border-[#D4AF37]"
                                                     : "border-gray-200"
                                                     }`}>
-                                                    {selectedServices.find(s => s._id === service._id) && <Check size={12} className="text-white" />}
+                                                    {selectedServices.find(s => (s._id || s.serviceId) === service._id) && <Check size={12} className="text-white" />}
                                                 </div>
                                             </div>
                                         </button>
@@ -573,14 +627,26 @@ export function BookingPage() {
                         <div className="bg-white border border-gray-100 rounded-3xl p-6 md:p-8 lg:sticky lg:top-28 shadow-sm">
                             <h2 className="text-lg font-serif font-bold text-[#1a1a1a] mb-6 border-b border-gray-50 pb-4">Booking Summary</h2>
 
-                            <div className="space-y-4 mb-8">
+                            <div className="space-y-4 mb-6">
                                 {selectedServices.length > 0 ? (
-                                    selectedServices.map(s => (
-                                        <div key={s._id} className="flex justify-between items-start text-sm">
-                                            <span className="text-gray-600">{s.name}</span>
-                                            <span className="font-bold text-gray-900">₹{s.price}</span>
+                                    <>
+                                        {selectedServices.map(s => (
+                                            <div key={s._id || s.serviceId} className="flex justify-between items-start text-sm">
+                                                <div>
+                                                    <span className="text-gray-700 font-medium block">{s.name}</span>
+                                                    <span className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
+                                                        <Clock size={10} className="text-[#D4AF37]" />
+                                                        {s.durationMin || s.duration || 30} min
+                                                    </span>
+                                                </div>
+                                                <span className="font-bold text-gray-900">₹{s.price}</span>
+                                            </div>
+                                        ))}
+                                        <div className="flex justify-between items-center text-xs text-gray-500 pt-3 border-t border-gray-100">
+                                            <span>Combined Est. Duration</span>
+                                            <span className="font-semibold text-gray-800">{combinedDurationMin} min</span>
                                         </div>
-                                    ))
+                                    </>
                                 ) : (
                                     <p className="text-sm text-gray-400 italic">No services selected yet</p>
                                 )}

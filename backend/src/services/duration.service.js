@@ -37,7 +37,10 @@ export const calculateServicesDurationAndPrice = async (serviceIds = [], salonId
   }
 
   const totalAmount = services.reduce((sum, s) => sum + (s.price || 0), 0);
-  const totalDurationMinutes = services.reduce((sum, s) => sum + (s.duration || 30), 0);
+  const totalDurationMinutes = services.reduce(
+    (sum, s) => sum + ((typeof s.duration === "number" && s.duration > 0) ? s.duration : (s.durationMin || 30)),
+    0
+  );
 
   return {
     services,

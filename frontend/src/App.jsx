@@ -4,6 +4,7 @@ import MainLayout from "./layouts/MainLayout.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { SocketProvider } from "./context/SocketContext.jsx";
 import { NotificationProvider } from "./context/NotificationContext.jsx";
+import { BookingCartProvider } from "./context/BookingCartContext.jsx";
 import { UIProvider } from "./context/UIContext.jsx";
 import { Notification } from "./components/Notification.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
@@ -43,8 +44,9 @@ function App() {
       <NotificationProvider>
         <AuthProvider>
           <SocketProvider>
-            <Notification />
-            <BrowserRouter>
+            <BookingCartProvider>
+              <Notification />
+              <BrowserRouter>
               <ScrollToTop />
               <Suspense fallback={<PageLoader />}>
                 <ErrorBoundary>
@@ -91,6 +93,7 @@ function App() {
                 </ErrorBoundary>
               </Suspense>
             </BrowserRouter>
+            </BookingCartProvider>
           </SocketProvider>
         </AuthProvider>
       </NotificationProvider>

@@ -30,6 +30,7 @@ export const createHold = async ({
   staffName,
   services,
   serviceNames,
+  snapshotServices: inputSnapshotServices,
   date,
   time,
   startTime: inputStartTime,
@@ -37,6 +38,10 @@ export const createHold = async ({
   idempotencyKey: clientIdempotencyKey,
 }) => {
   // ── 1. Resolve startTime/endTime ──────────────────────────────────────────
+  const effectiveServices = (services && services.length > 0)
+    ? services
+    : (inputSnapshotServices || []).map((s) => s.serviceId || s._id).filter(Boolean);
+
   const {
     services: serviceDocs,
     serviceNames: fetchedServiceNames,
@@ -45,7 +50,7 @@ export const createHold = async ({
     bufferMinutes,
     totalDurationWithBuffer,
     salon,
-  } = await calculateServicesDurationAndPrice(services, salonId);
+  } = await calculateServicesDurationAndPrice(effectiveServices, salonId);
 
   let startTime;
   if (inputStartTime) {
@@ -117,12 +122,19 @@ export const createHold = async ({
             session,
           });
 
-          const snapshotServices = (serviceDocs || []).map((s) => ({
-            serviceId: s._id,
-            name: s.name,
-            price: s.price || 0,
-            durationMin: s.durationMin || s.duration || 30,
-          }));
+          const snapshotServices = (inputSnapshotServices && inputSnapshotServices.length > 0)
+            ? inputSnapshotServices.map((s) => ({
+                serviceId: s.serviceId || s._id,
+                name: s.name,
+                price: typeof s.price === "number" ? s.price : 0,
+                durationMin: typeof s.durationMin === "number" ? s.durationMin : (s.duration || 30),
+              }))
+            : (serviceDocs || []).map((s) => ({
+                serviceId: s._id,
+                name: s.name,
+                price: s.price || 0,
+                durationMin: s.durationMin || s.duration || 30,
+              }));
 
           // Create the hold
           const [createdHold] = await BookingHold.create(
@@ -133,7 +145,7 @@ export const createHold = async ({
                 customer: customerId,
                 staff: staffId || undefined,
                 staffName,
-                services,
+                services: effectiveServices,
                 serviceNames: finalServiceNames,
                 snapshotServices,
                 slotKeys: lockKeys,

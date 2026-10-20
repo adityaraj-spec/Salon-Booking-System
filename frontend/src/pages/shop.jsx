@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, NavLink, useNavigate } from "react-router-dom";
-import { Star, MapPin, Users, Clock, ShieldCheck, Sparkles, ArrowLeft, MessageSquare, Send, Trash2, Heart, Phone, Scissors, Award, ChevronLeft, ChevronRight, X, Images, Settings, Share2, Check } from "lucide-react";
+import { Star, MapPin, Users, Clock, ShieldCheck, Sparkles, ArrowLeft, MessageSquare, Send, Trash2, Heart, Phone, Scissors, Award, ChevronLeft, ChevronRight, X, Images, Settings, Share2, Check, Plus, ShoppingBag, ChevronUp, ChevronDown } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
+import { useBookingCart } from "../context/BookingCartContext";
 import axiosInstance from "../api/axiosConfig";
 import { SalonMap } from "../components/SalonMap";
 import { ShopDetailSkeleton } from "../components/skeletons/index.jsx";
@@ -38,6 +39,30 @@ export function Shop() {
     // Save and Share state
     const [isFavorite, setIsFavorite] = useState(false);
     const [copied, setCopied] = useState(false);
+
+    // Multi-Service Selection Cart state
+    const {
+        items: cartItems,
+        totalCount,
+        totalDurationMin,
+        totalPrice,
+        toggleService,
+        isServiceInCart,
+        removeService,
+        clearCart,
+        setSalonConflictModal,
+        salonId: cartSalonId,
+    } = useBookingCart();
+
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+    const handleToggleService = (service) => {
+        if (!salon) return;
+        const res = toggleService(salon, service);
+        if (res?.conflict) {
+            setSalonConflictModal(res);
+        }
+    };
 
     const handleShare = async () => {
         if (navigator.share) {
@@ -639,23 +664,58 @@ export function Shop() {
                                 </span>
                             </div>
                             <div className="grid sm:grid-cols-2 gap-4">
-                                {services.map((service) => (
-                                    <div key={service._id} className="p-5 bg-white border border-gray-100 rounded-2xl hover:border-[#D4AF37]/40 transition-all group flex justify-between items-center shadow-sm">
-                                        <div className="min-w-0 flex-1 pr-3">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <Scissors size={15} className="text-[#D4AF37] shrink-0" />
-                                                <h4 className="font-bold text-[#1a1a1a] text-sm truncate">{formatServiceName(service.name)}</h4>
+                                {services.map((service) => {
+                                    const inCart = cartSalonId === salon?._id && isServiceInCart(service._id);
+                                    const duration = service.durationMin || service.duration || 30;
+                                    return (
+                                        <div 
+                                            key={service._id} 
+                                            className={`p-5 bg-white border rounded-2xl transition-all group flex justify-between items-center shadow-sm ${
+                                                inCart 
+                                                    ? 'border-[#D4AF37] ring-1 ring-[#D4AF37]/30 bg-amber-50/10' 
+                                                    : 'border-gray-100 hover:border-[#D4AF37]/40'
+                                            }`}
+                                        >
+                                            <div className="min-w-0 flex-1 pr-3">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <Scissors size={15} className="text-[#D4AF37] shrink-0" />
+                                                    <h4 className="font-bold text-[#1a1a1a] text-sm truncate">{formatServiceName(service.name)}</h4>
+                                                </div>
+                                                <p className="ui-subtext line-clamp-1 mb-2">{service.description || "Professional salon service"}</p>
+                                                <div className="flex items-center gap-2 text-xs text-gray-500">
+                                                    <span className="inline-flex items-center gap-1 font-medium bg-gray-50 border border-gray-100 px-2 py-0.5 rounded-md text-gray-600">
+                                                        <Clock size={11} className="text-[#D4AF37]" />
+                                                        {duration} min
+                                                    </span>
+                                                </div>
                                             </div>
-                                            <p className="ui-subtext line-clamp-1">{service.description || "Professional salon service"}</p>
+                                            <div className="text-right shrink-0 flex flex-col justify-center items-end min-h-[50px]">
+                                                <p className="text-base font-serif font-bold text-[#1a1a1a] leading-none mb-2">₹{service.price}</p>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleToggleService(service)}
+                                                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 shadow-xs ${
+                                                        inCart
+                                                            ? 'bg-[#D4AF37] text-white hover:bg-[#c59e2a]'
+                                                            : 'bg-gray-100 text-gray-800 hover:bg-[#1a1a1a] hover:text-white'
+                                                    }`}
+                                                >
+                                                    {inCart ? (
+                                                        <>
+                                                            <Check size={13} className="stroke-[3]" />
+                                                            <span>Added</span>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Plus size={13} className="stroke-[2.5]" />
+                                                            <span>Add to Cart</span>
+                                                        </>
+                                                    )}
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div className="text-right shrink-0 flex flex-col justify-center items-end min-h-[44px]">
-                                            <p className="text-base font-serif font-bold text-[#1a1a1a] leading-none mb-1.5">₹{service.price}</p>
-                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-[#D4AF37] border border-amber-200/60 leading-none">
-                                                Premium
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
                     )}
@@ -960,6 +1020,153 @@ export function Shop() {
                     <SalonMap salons={[salon]} zoom={15} />
                 </div>
             </div>
+
+            {/* STICKY BOTTOM CART BAR & EXPANDABLE DRAWER */}
+            {cartSalonId === salon?._id && totalCount > 0 && (
+                <>
+                    {/* Backdrop */}
+                    {isDrawerOpen && (
+                        <div 
+                            className="fixed inset-0 bg-black/40 backdrop-blur-xs z-40 transition-opacity animate-fade-in"
+                            onClick={() => setIsDrawerOpen(false)}
+                        />
+                    )}
+
+                    {/* Expandable Drawer */}
+                    {isDrawerOpen && (
+                        <div className="fixed bottom-24 left-4 right-4 max-w-xl mx-auto z-50 bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col animate-slide-up max-h-[70vh]">
+                            <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/80">
+                                <div className="flex items-center gap-2.5">
+                                    <div className="w-8 h-8 rounded-lg bg-[#D4AF37]/20 text-[#D4AF37] flex items-center justify-center font-bold">
+                                        <ShoppingBag size={16} />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-serif font-bold text-base text-[#1a1a1a] leading-tight">Selected Services</h4>
+                                        <p className="text-xs text-gray-500">{totalCount} {totalCount === 1 ? 'service' : 'services'} in booking cart</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={clearCart}
+                                        className="text-xs text-rose-500 hover:text-rose-700 font-semibold flex items-center gap-1 px-2.5 py-1.5 rounded-lg hover:bg-rose-50 transition-colors"
+                                    >
+                                        <Trash2 size={13} />
+                                        <span>Clear</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsDrawerOpen(false)}
+                                        className="p-1.5 rounded-full hover:bg-gray-200 text-gray-500 transition-colors"
+                                    >
+                                        <X size={16} />
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Service Items List */}
+                            <div className="p-5 overflow-y-auto space-y-3 divide-y divide-gray-100 max-h-[42vh]">
+                                {cartItems.map((item) => (
+                                    <div key={item._id} className="pt-3 first:pt-0 flex items-center justify-between gap-3">
+                                        <div className="min-w-0 flex-1">
+                                            <h5 className="font-bold text-sm text-[#1a1a1a] truncate">{formatServiceName(item.name)}</h5>
+                                            <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
+                                                <span className="flex items-center gap-1 text-gray-600">
+                                                    <Clock size={11} className="text-[#D4AF37]" />
+                                                    {item.durationMin} min
+                                                </span>
+                                                <span>·</span>
+                                                <span className="font-semibold text-[#1a1a1a]">₹{item.price}</span>
+                                            </div>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => removeService(item._id)}
+                                            className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-colors"
+                                            title="Remove service"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Drawer Summary & Action */}
+                            <div className="p-5 border-t border-gray-100 bg-gray-50/70 flex items-center justify-between gap-4">
+                                <div>
+                                    <span className="text-xs text-gray-500 block leading-none mb-1">Total Estimated</span>
+                                    <div className="flex items-baseline gap-2">
+                                        <span className="font-serif font-bold text-2xl text-[#1a1a1a]">₹{totalPrice}</span>
+                                        <span className="text-xs text-gray-500 font-medium">({totalDurationMin} min)</span>
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setIsDrawerOpen(false);
+                                        if (!user) {
+                                            navigate("/login");
+                                        } else {
+                                            navigate(`/booking/${salon._id}`);
+                                        }
+                                    }}
+                                    className="bg-[#1a1a1a] hover:bg-black text-white font-bold px-6 py-3 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center gap-2"
+                                >
+                                    <span>Continue</span>
+                                    <ChevronRight size={16} />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Sticky Bottom Summary Bar */}
+                    <div className="fixed bottom-4 left-4 right-4 max-w-3xl mx-auto z-40 bg-[#1a1a1a]/95 backdrop-blur-md text-white rounded-2xl shadow-2xl border border-white/10 px-5 py-3.5 flex items-center justify-between gap-3 animate-fade-in">
+                        <button
+                            type="button"
+                            onClick={() => setIsDrawerOpen((prev) => !prev)}
+                            className="flex items-center gap-3 text-left group hover:opacity-95 transition-opacity min-w-0"
+                        >
+                            <div className="w-10 h-10 rounded-xl bg-[#D4AF37]/20 text-[#D4AF37] flex items-center justify-center shrink-0">
+                                <ShoppingBag size={20} />
+                            </div>
+                            <div className="min-w-0">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className="font-bold text-sm sm:text-base text-white">
+                                        {totalCount} {totalCount === 1 ? 'service' : 'services'}
+                                    </span>
+                                    <span className="text-gray-400">·</span>
+                                    <span className="text-gray-300 text-xs sm:text-sm font-medium">
+                                        {totalDurationMin} min
+                                    </span>
+                                    <span className="text-gray-400">·</span>
+                                    <span className="text-[#D4AF37] font-bold text-sm sm:text-base">
+                                        ₹{totalPrice}
+                                    </span>
+                                </div>
+                                <p className="text-[11px] text-gray-400 group-hover:text-white transition-colors flex items-center gap-1 mt-0.5">
+                                    <span>{isDrawerOpen ? "Hide services" : "View selection & adjust"}</span>
+                                    {isDrawerOpen ? <ChevronDown size={12} /> : <ChevronUp size={12} />}
+                                </p>
+                            </div>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (!user) {
+                                    navigate("/login");
+                                } else {
+                                    navigate(`/booking/${salon._id}`);
+                                }
+                            }}
+                            className="bg-[#D4AF37] hover:bg-[#c59e2a] text-[#1a1a1a] font-bold px-5 sm:px-6 py-2.5 rounded-xl text-sm sm:text-base transition-all shadow-md active:scale-95 flex items-center gap-2 shrink-0"
+                        >
+                            <span>Continue</span>
+                            <Scissors size={15} />
+                        </button>
+                    </div>
+                </>
+            )}
         </div>
     );
 }

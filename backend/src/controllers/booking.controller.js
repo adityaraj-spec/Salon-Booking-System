@@ -24,7 +24,7 @@ import { getAvailableSlots } from "../services/availability.service.js";
 // ─── Legacy booking (hold + initiate in one call — kept for backward compat) ──
 
 const createBooking = asyncHandler(async (req, res) => {
-    const { salonId, services, staff, date, time, totalAmount, serviceNames, staffName } = req.body;
+    const { salonId, services, staff, date, time, totalAmount, serviceNames, staffName, snapshotServices } = req.body;
     const idempotencyKey = req.headers["idempotency-key"] || req.body.idempotencyKey || `legacy-${req.user._id}-${Date.now()}`;
 
     if (!salonId || !date || !time) {
@@ -38,6 +38,7 @@ const createBooking = asyncHandler(async (req, res) => {
         staffName: staffName || "Any Available",
         services: services || [],
         serviceNames: serviceNames || [],
+        snapshotServices: snapshotServices || [],
         date,
         time,
         totalAmount: totalAmount || 0,
@@ -228,18 +229,20 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
 // ─── Availability (Gap 2.3: Time-Range Slot Generator) ───────────────────────
 
 const getAvailability = asyncHandler(async (req, res) => {
-    const { salonId } = req.params;
-    const { date, staffId, durationMinutes, slotInterval } = req.query;
+    const salonId = req.params.salonId || req.params.id;
+    const { date, staffId, durationMinutes, durationMin, slotInterval } = req.query;
 
     if (!salonId || !date) {
         throw new ApiError(400, "Salon ID and date are required");
     }
 
+    const duration = parseInt(durationMin || durationMinutes, 10) || 30;
+
     const result = await getAvailableSlots({
         salonId,
         date,
         staffId: staffId || null,
-        durationMinutes: parseInt(durationMinutes, 10) || 30,
+        durationMinutes: duration,
         slotIntervalMinutes: parseInt(slotInterval, 10) || 30,
     });
 
@@ -251,7 +254,7 @@ const getAvailability = asyncHandler(async (req, res) => {
 // ─── Hold Management ──────────────────────────────────────────────────────────
 
 const createHoldHandler = asyncHandler(async (req, res) => {
-    const { salonId, services, staff, staffName, date, time, startTime, totalAmount, serviceNames } = req.body;
+    const { salonId, services, staff, staffName, date, time, startTime, totalAmount, serviceNames, snapshotServices } = req.body;
     const idempotencyKey = req.headers["idempotency-key"] || req.body.idempotencyKey;
 
     if (!salonId || (!startTime && (!date || !time))) {
@@ -265,6 +268,7 @@ const createHoldHandler = asyncHandler(async (req, res) => {
         staffName: staffName || "Any Available",
         services: services || [],
         serviceNames: serviceNames || [],
+        snapshotServices: snapshotServices || [],
         date,
         time,
         startTime,
