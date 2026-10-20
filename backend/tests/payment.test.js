@@ -1,3 +1,7 @@
+process.env.NODE_ENV = process.env.NODE_ENV || "test";
+process.env.RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || "rzp_test_mockkey";
+process.env.RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || "mock_secret";
+
 import mongoose from "mongoose";
 import { MongoMemoryReplSet } from "mongodb-memory-server";
 import { User } from "../src/models/user.models.js";

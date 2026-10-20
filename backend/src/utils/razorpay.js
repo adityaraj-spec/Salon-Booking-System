@@ -9,10 +9,11 @@ export const razorpayClient = razorpayKeyId && razorpayKeySecret
   : null;
 
 export const getRazorpayKeyId = () => {
-  if (!razorpayKeyId) {
+  const configuredKeyId = process.env.RAZORPAY_KEY_ID?.trim();
+  if (!configuredKeyId) {
     throw new Error("RAZORPAY_KEY_ID is not configured");
   }
-  return razorpayKeyId;
+  return configuredKeyId;
 };
 
 /**
@@ -28,9 +29,10 @@ export const verifyRazorpaySignature = ({ orderId, paymentId, signature }) => {
 
   const secret = process.env.RAZORPAY_KEY_SECRET?.trim();
   if (!secret) return false;
+  const signaturePayload = `${orderId}|${paymentId}`;
   const generatedSignature = crypto
     .createHmac("sha256", secret)
-    .update(`${orderId}|${paymentId}`)
+    .update(signaturePayload)
     .digest("hex");
 
   const bufferA = Buffer.from(generatedSignature, "utf8");
