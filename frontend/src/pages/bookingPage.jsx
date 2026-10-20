@@ -668,6 +668,7 @@ export function BookingPage() {
                                         const seatsLeft = getSlotSeatsLeft(slot);
                                         const slotAvailable = isSlotAvailable(slot);
                                         const maxCapacity = Number(slot.maxCapacity) || null;
+                                        const capacityLabel = maxCapacity ? `${seatsLeft}/${maxCapacity}` : `${seatsLeft}`;
 
                                         return (
                                             <button
@@ -687,17 +688,12 @@ export function BookingPage() {
                                                 <span>{slotTime}</span>
                                                 {date && slotAvailable && (
                                                     <span className={`text-sm font-normal ${time === slotTime ? "text-[#D4AF37]" : "text-green-500"}`}>
-                                                        {seatsLeft} {seatsLeft === 1 ? "seat" : "seats"} left
+                                                        {capacityLabel}
                                                     </span>
                                                 )}
                                                 {date && !slotAvailable && (
                                                     <span className="text-sm font-normal text-red-500">
-                                                        0 seats available
-                                                    </span>
-                                                )}
-                                                {maxCapacity && slotAvailable && (
-                                                    <span className="text-[10px] font-normal text-gray-400">
-                                                        of {maxCapacity}
+                                                        {capacityLabel}
                                                     </span>
                                                 )}
                                                 {!date && (

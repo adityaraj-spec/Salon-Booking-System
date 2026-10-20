@@ -12,11 +12,13 @@ import {
     sendManagementUpdateEmail,
     sendBookingConfirmationEmail,
     sendAppointmentCancelledEmail,
+    sendServiceCompletedEmail,
 } from "../utils/mailer.js";
 import { emitToUser } from "../socket.js";
 import { pickAllowedFields, STAFF_UPDATABLE_FIELDS } from "../utils/dto.js";
 import logger from "../lib/logger.js";
 import { awardBookingCompletionPoints, reversePointsForBooking } from "../services/loyalty.service.js";
+import { invalidateAvailability } from "../services/availability.service.js";
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
@@ -220,6 +222,12 @@ const updateOwnerBookingStatus = asyncHandler(async (req, res) => {
     booking.status = status;
     await booking.save();
 
+    const statusChanged = previousStatus !== status;
+    const bookingDate = booking.date || booking.startTime?.toISOString().split("T")[0];
+    if (statusChanged && bookingDate && ["completed", "cancelled", "rejected"].includes(status)) {
+        await invalidateAvailability({ salonId: salon._id, staffId: booking.staff, dates: [bookingDate] });
+    }
+
     if (status === "completed") {
         awardBookingCompletionPoints(booking._id).catch(err => logger.warn({ err: err?.message }, "[Owner] Failed to award loyalty points on completion"));
     } else if (status === "cancelled" || status === "rejected") {
@@ -235,18 +243,26 @@ const updateOwnerBookingStatus = asyncHandler(async (req, res) => {
         const customerEmail = booking.customer.email;
         const customerName = booking.customer.fullName;
 
-        if (status === "cancelled" || status === "rejected") {
+        if (statusChanged && (status === "cancelled" || status === "rejected")) {
             sendAppointmentCancelledEmail(
                 customerEmail, customerName, salon.name, bookingTime, bookingRef,
                 `Your appointment has been ${status} by the salon`
             ).catch(err => logger.warn({ err: err.message }, "[Owner] Failed to send cancellation email"));
-        } else if (status === "confirmed" && previousStatus !== "confirmed") {
+        } else if (statusChanged && status === "confirmed") {
             sendBookingConfirmationEmail(
                 customerEmail, customerName, salon.name, bookingTime, bookingRef,
                 booking.serviceNames || [], booking.totalAmount
             ).catch(err => logger.warn({ err: err.message }, "[Owner] Failed to send confirmation email"));
+        } else if (statusChanged && status === "completed") {
+            const completedServices = booking.snapshotServices?.length
+                ? booking.snapshotServices.map((service) => service.name || service.serviceName).filter(Boolean)
+                : booking.serviceNames || [];
+            const completedAmount = booking.amounts?.total > 0 ? booking.amounts.total : booking.totalAmount;
+            sendServiceCompletedEmail(
+                customerEmail, customerName, salon.name, bookingTime, bookingRef,
+                completedServices, completedAmount, new Date()
+            ).catch(err => logger.warn({ err: err?.message }, "[Owner] Failed to send completion email"));
         }
-        // "completed" and "pending" — no outbound email
     }
 
     // Create notification for customer
@@ -256,17 +272,19 @@ const updateOwnerBookingStatus = asyncHandler(async (req, res) => {
     else if (status === "rejected") { title = "Booking Declined"; type = "booking_rejected"; }
     else if (status === "completed") { title = "Appointment Completed"; type = "booking_completed"; }
 
-    const notification = await Notification.create({
-        recipient: booking.customer._id,
-        sender: req.user._id,
-        title,
-        message: `Your booking at ${salon.name} for ${booking.date} has been ${status}.`,
-        type,
-        bookingId: booking._id
-    });
+    const notification = statusChanged
+        ? await Notification.create({
+            recipient: booking.customer._id,
+            sender: req.user._id,
+            title,
+            message: `Your booking at ${salon.name} for ${booking.date} has been ${status}.`,
+            type,
+            bookingId: booking._id
+        })
+        : null;
 
     // Socket.io emit to customer
-    emitToUser(booking.customer._id, "newNotification", notification);
+    if (notification) emitToUser(booking.customer._id, "newNotification", notification);
     emitToUser(booking.customer._id, "bookingUpdate", { booking, type: "STATUS_CHANGE" });
 
     return res.status(200).json(new ApiResponse(200, booking, "Status updated"));

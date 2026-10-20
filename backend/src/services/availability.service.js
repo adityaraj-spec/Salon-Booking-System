@@ -12,6 +12,34 @@ const AVAILABILITY_CACHE_TTL_SECONDS = 5;
 const DEFAULT_OPEN_MINUTES = 9 * 60;
 const DEFAULT_CLOSE_MINUTES = 21 * 60;
 const DEFAULT_CAPACITY = 5;
+const DAY_NAME_TO_INDEX = {
+  sunday: 0,
+  monday: 1,
+  tuesday: 2,
+  wednesday: 3,
+  thursday: 4,
+  friday: 5,
+  saturday: 6,
+};
+
+const normalizeDayOfWeek = (value) => {
+  if (typeof value === "number" && Number.isInteger(value) && value >= 0 && value <= 6) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (/^[0-6]$/.test(normalized)) return Number(normalized);
+    return DAY_NAME_TO_INDEX[normalized];
+  }
+
+  return undefined;
+};
+
+const findScheduleForDay = (schedule, dayOfWeek) => {
+  if (!Array.isArray(schedule)) return null;
+  return schedule.find((entry) => normalizeDayOfWeek(entry?.dayOfWeek) === dayOfWeek) || null;
+};
 
 // ─── Helper: parse "HH:MM" to total minutes from midnight ────────────────────
 const timeToMinutes = (str) => {
@@ -64,7 +92,7 @@ const getSalonOperatingWindow = (salon, dayOfWeek) => {
   let isClosed = false;
 
   if (Array.isArray(salon?.operatingHours) && salon.operatingHours.length > 0) {
-    const dayConfig = salon.operatingHours.find((hours) => hours.dayOfWeek === dayOfWeek);
+    const dayConfig = findScheduleForDay(salon.operatingHours, dayOfWeek);
     if (dayConfig) {
       isClosed = Boolean(dayConfig.isClosed);
       const configuredDayOpen = timeToMinutes(dayConfig.openTime);
@@ -192,14 +220,11 @@ export const validateStaffScheduleForTimeRange = async (staffId, startTime, endT
   if (!staff) throw new ApiError(404, "Staff member not found.");
   if (!staff.isActive) throw new ApiError(409, "Staff member is not currently active.");
 
-  // No schedule configured — treat as always available
-  if (!staff.schedule || staff.schedule.length === 0) return;
-
   const dateStr = new Date(startTime).toISOString().split("T")[0];
   const dayOfWeek = new Date(startTime).getUTCDay();
 
   // 1. Check exceptions (days off, holidays)
-  const exception = staff.exceptions.find((ex) => ex.date === dateStr);
+  const exception = (staff.exceptions || []).find((ex) => ex.date === dateStr);
   if (exception) {
     throw new ApiError(
       409,
@@ -208,8 +233,11 @@ export const validateStaffScheduleForTimeRange = async (staffId, startTime, endT
   }
 
   // 2. Check day schedule
-  const daySchedule = staff.schedule.find((s) => s.dayOfWeek === dayOfWeek);
-  if (!daySchedule || !daySchedule.isWorking) {
+  const daySchedule = findScheduleForDay(staff.schedule, dayOfWeek);
+  // A schedule entry is day-specific. Missing entries mean the stylist has
+  // no custom shift for that day and inherits the salon's operating window.
+  if (!daySchedule) return;
+  if (!daySchedule.isWorking) {
     throw new ApiError(409, "Staff member does not work on the selected day.");
   }
 
@@ -339,30 +367,29 @@ export const getAvailableSlots = async ({
 
   // 2. Keep the salon schedule visible even when a selected staff member is unavailable.
   let staffAvailability = null;
+  let staff = null;
+  let daySchedule = null;
   if (staffId) {
-    const staff = await Staff.findById(staffId).select("schedule isActive exceptions").lean();
+    staff = await Staff.findById(staffId).select("schedule isActive exceptions").lean();
     if (!staff || !staff.isActive) {
       staffAvailability = { available: false, reason: "Staff member is not available." };
     } else {
       const exception = (staff.exceptions || []).find((ex) => ex.date === date);
-      const hasCustomSchedule = Array.isArray(staff.schedule) && staff.schedule.length > 0;
-      const daySchedule = hasCustomSchedule
-        ? staff.schedule.find((schedule) => schedule.dayOfWeek === dayOfWeek)
-        : null;
+      daySchedule = findScheduleForDay(staff.schedule, dayOfWeek);
 
       if (exception) {
         staffAvailability = {
           available: false,
           reason: `Staff unavailable: ${exception.reason || exception.type}`,
         };
-      } else if (!hasCustomSchedule) {
+      } else if (!daySchedule) {
         staffAvailability = {
           available: true,
           start: openMinutes,
           end: closeMinutes,
           breaks: [],
         };
-      } else if (!daySchedule || !daySchedule.isWorking) {
+      } else if (!daySchedule.isWorking) {
         staffAvailability = { available: false, reason: "Staff does not work on this day." };
       } else {
         staffAvailability = {
@@ -378,6 +405,16 @@ export const getAvailableSlots = async ({
         };
       }
     }
+
+    logger.debug({
+      salonId,
+      staffId: staffId.toString(),
+      date,
+      dayOfWeek,
+      scheduleEntries: Array.isArray(staff?.schedule) ? staff.schedule.length : 0,
+      matchedScheduleDay: daySchedule?.dayOfWeek ?? null,
+      staffAvailability,
+    }, "[Availability] Selected staff schedule resolved");
   }
 
   // 3. Fetch ALL active bookings and holds for the day in TWO queries (not per-slot)
@@ -418,6 +455,16 @@ export const getAvailableSlots = async ({
   // 4. Generate candidate slots and compute availability in memory
   const slots = [];
   const maxCapacity = getSalonCapacity(salon, staffId);
+  logger.debug({
+    salonId,
+    staffId: staffId ? staffId.toString() : null,
+    date,
+    activeBookingCount: activeBookings.length,
+    activeHoldCount: activeHolds.length,
+    maxCapacity,
+    bookingFilterStaff: bookingFilter.staff || null,
+    holdFilterStaff: holdFilter.staff || null,
+  }, "[Availability] Selected staff occupancy resolved");
   const intervalMinutes = Number.isFinite(Number(slotIntervalMinutes)) && Number(slotIntervalMinutes) > 0
     ? Math.floor(Number(slotIntervalMinutes))
     : 30;

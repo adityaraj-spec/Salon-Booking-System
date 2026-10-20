@@ -50,7 +50,7 @@ const WHY_CHOOSE = [
     { icon: <Tag size={22} className="text-[#ff9f43]" />, title: "Best deals & prices", desc: "Discover the most competitive pricing across top-rated salons in your city.", bg: "bg-orange-50" },
     { icon: <Clock size={22} className="text-purple-500" />, title: "24x7 customer support", desc: "Our support team is available round the clock to assist you anytime.", bg: "bg-purple-50" },
     { icon: <MapPin size={22} className="text-green-500" />, title: "Largest selection of salons", desc: "Browse the widest range of salons — from local gems to premium chains.", bg: "bg-green-50" },
-    { icon: <ShieldCheck size={22} className="text-blue-500" />, title: "Verified salons", desc: "All salons are verified and approved to ensure guaranteed quality service.", bg: "bg-blue-50" },
+    { icon: <ShieldCheck size={22} className="text-[#D4AF37]" />, title: "Verified salons", desc: "All salons are verified and approved to ensure guaranteed quality service.", bg: "bg-amber-50" },
     { icon: <Heart size={22} className="text-red-500" />, title: "Save favourites", desc: "Save your favourite salons and plan your next visit with ease.", bg: "bg-red-50" },
 ];
 
@@ -408,11 +408,11 @@ export function LandingPage() {
                                                         <span className="text-[10px] text-gray-500">Salon</span>
                                                         <div className="flex gap-0.5">{[...Array(5)].map((_, i) => <Star key={i} size={10} className="fill-[#febb02] text-[#febb02]" />)}</div>
                                                     </div>
-                                                    <h3 className="text-sm font-bold text-[#1a1a1a] mb-1 line-clamp-1 hover:text-[#0071C2] transition-colors">{salon.name}</h3>
-                                                    <span className="text-xs text-[#0071c2] flex items-center gap-1 mb-2"><MapPin size={11} className="shrink-0" />{salon.city ? `${salon.city}, India` : "Location not set"}</span>
+                                                    <h3 className="text-sm font-bold text-[#1a1a1a] mb-1 line-clamp-1 hover:text-[#8a6500] transition-colors">{salon.name}</h3>
+                                                    <span className="text-xs text-[#8a6500] flex items-center gap-1 mb-2"><MapPin size={11} className="shrink-0" />{salon.city ? `${salon.city}, India` : "Location not set"}</span>
                                                     <div className="mt-auto flex items-center justify-between">
                                                         <div className="flex items-center gap-1.5">
-                                                            <div className="bg-[#003b95] text-white px-1.5 py-1 font-bold rounded-t-md rounded-br-md rounded-bl-sm min-w-[28px] text-xs text-center">{salon.rating || "New"}</div>
+                                                            <div className="bg-[#1a1a1a] text-[#D4AF37] px-1.5 py-1 font-bold rounded-t-md rounded-br-md rounded-bl-sm min-w-[28px] text-xs text-center">{salon.rating || "New"}</div>
                                                             <span className="text-[10px] font-bold text-[#1a1a1a]">{salon.rating > 4 ? "Excellent" : salon.rating > 3 ? "Very Good" : "Good"}</span>
                                                         </div>
                                                         <span className="text-[10px] text-gray-400">{salon.reviews?.length || 0} reviews</span>
@@ -498,7 +498,7 @@ export function LandingPage() {
                                                 </div>
                                                 <div className="p-3.5 flex flex-col gap-1.5 flex-1">
                                                     <h3 className="text-xs font-semibold text-gray-700 line-clamp-1">{service.salon?.name || "Salon"}</h3>
-                                                    <span className="text-xs text-gray-400 flex items-center gap-1"><MapPin size={12} className="shrink-0 text-[#0071c2]" />{service.salon?.city || "Unknown"}</span>
+                                                    <span className="text-xs text-gray-400 flex items-center gap-1"><MapPin size={12} className="shrink-0 text-[#8a6500]" />{service.salon?.city || "Unknown"}</span>
                                                     <div className="flex items-center justify-between mt-auto pt-2">
                                                         <span className="text-xs text-gray-500">₹<span className="text-base font-bold text-[#1a1a1a]">{service.price}</span></span>
                                                         <button 
@@ -603,7 +603,7 @@ export function LandingPage() {
                         {/* Right: How to book steps */}
                         <div className="bg-[#fafafa] p-6 md:p-8 rounded-3xl border border-gray-100 h-fit">
                             <h3 className="text-xl font-bold text-[#1a1a1a] mb-4 font-serif flex items-center gap-2">
-                                <Clock size={20} className="text-[#0071c2]" /> 4 Simple Steps to Book
+                                <Clock size={20} className="text-[#D4AF37]" /> 4 Simple Steps to Book
                             </h3>
                             <div className="space-y-4">
                                 {[
@@ -625,7 +625,7 @@ export function LandingPage() {
                             </div>
                             <div className="mt-6 pt-5 border-t border-gray-200 flex items-center justify-between">
                                 <span className="text-xs text-gray-500">Need immediate booking?</span>
-                                <NavLink to="/home" className="text-xs font-bold text-[#0071c2] hover:underline flex items-center gap-1">
+                                <NavLink to="/home" className="text-xs font-bold text-[#8a6500] hover:underline flex items-center gap-1">
                                     Find Salons Now <ChevronRight size={14} />
                                 </NavLink>
                             </div>

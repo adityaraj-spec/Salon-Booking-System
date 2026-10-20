@@ -10,7 +10,7 @@ import { Staff } from "../src/models/staff.models.js";
 import { User } from "../src/models/user.models.js";
 import { createHold, expireHold } from "../src/services/hold.service.js";
 import { initiateBookingFromHold } from "../src/services/booking.service.js";
-import { getAvailableSlots, getSalonCapacity } from "../src/services/availability.service.js";
+import { countOverlappingOccupancy, getAvailableSlots, getSalonCapacity } from "../src/services/availability.service.js";
 
 let replSet;
 
@@ -94,6 +94,59 @@ describe("Booking Engine Unit Tests (Overlap-Query Capacity)", () => {
 
     expect(availability.slots.length).toBeGreaterThan(0);
     expect(availability.slots.every((slot) => slot.available && slot.seatsLeft === 1)).toBe(true);
+  });
+
+  test("falls back to salon hours when a stylist has no entry for the selected day", async () => {
+    const staff = await Staff.create({
+      salon: salon._id,
+      name: "Partially Scheduled Stylist",
+      schedule: [{ dayOfWeek: 1, startTime: "10:00", endTime: "18:00", isWorking: true }],
+    });
+
+    const availability = await getAvailableSlots({
+      salonId: salon._id.toString(),
+      date: "2026-08-01",
+      staffId: staff._id.toString(),
+      durationMinutes: 30,
+    });
+
+    expect(availability.slots.length).toBeGreaterThan(0);
+    expect(availability.reason).toBeUndefined();
+    expect(availability.slots.every((slot) => slot.available && slot.seatsLeft === 1)).toBe(true);
+
+    const hold = await createHold({
+      salonId: salon._id,
+      customerId: owner._id,
+      staffId: staff._id,
+      staffName: staff.name,
+      services: [service._id],
+      date: "2026-08-01",
+      time: "14:00",
+      idempotencyKey: `partial-schedule-${Date.now()}`,
+    });
+
+    expect(hold.status).toBe("active");
+  });
+
+  test("does not count completed bookings against future capacity", async () => {
+    const startTime = new Date(Date.UTC(2026, 7, 1, 14, 0));
+    const endTime = new Date(Date.UTC(2026, 7, 1, 14, 30));
+
+    const booking = await Booking.create({
+      customer: owner._id,
+      salon: salon._id,
+      startTime,
+      endTime,
+      status: "completed",
+      totalAmount: 500,
+    });
+
+    await expect(countOverlappingOccupancy({ salonId: salon._id, startTime, endTime })).resolves.toBe(0);
+
+    booking.status = "confirmed";
+    await booking.save();
+
+    await expect(countOverlappingOccupancy({ salonId: salon._id, startTime, endTime })).resolves.toBe(1);
   });
 
   test("Should create a 10-minute hold and record it as an active BookingHold", async () => {

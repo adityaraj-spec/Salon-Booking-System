@@ -464,7 +464,7 @@ export function SalonManagementPage() {
 
                             {/* Performance Stat */}
                             <div className="bg-white p-4 lg:p-5 rounded-3xl shadow-sm border border-gray-50 flex items-center gap-4 hover:shadow-md transition-shadow">
-                                <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 shadow-sm border border-blue-100/50 shrink-0">
+                                <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-[#D4AF37] shadow-sm border border-amber-100/50 shrink-0">
                                     <TrendingUp size={24} />
                                 </div>
                                 <div>

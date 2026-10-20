@@ -303,7 +303,7 @@ export function ProfilePage() {
                                                         <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
                                                             isEarn ? "bg-emerald-50 text-emerald-600" :
                                                             isRedeem ? "bg-amber-50 text-amber-600" :
-                                                            "bg-blue-50 text-blue-600"
+                                                            "bg-amber-50 text-[#D4AF37]"
                                                         }`}>
                                                             {isEarn ? <ArrowDownLeft size={16} /> : <ArrowUpRight size={16} />}
                                                         </div>

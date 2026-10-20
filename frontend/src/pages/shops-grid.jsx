@@ -771,18 +771,18 @@ export function Shops() {
                                                 <div className="flex gap-0.5">
                                                     {[...Array(5)].map((_, i) => <Star key={i} size={11} className="fill-[#febb02] text-[#febb02]" />)}
                                                 </div>
-                                                {salon.rating >= 4.5 && <span className="ml-1 bg-[#0071c2] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wide">Top Rated</span>}
+                                                {salon.rating >= 4.5 && <span className="ml-1 bg-[#D4AF37] text-[#1a1a1a] text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wide">Top Rated</span>}
                                             </div>
-                                            <h3 className="text-[1.1rem] font-bold text-[#1a1a1a] leading-tight mb-1 cursor-pointer hover:text-[#0071C2] transition-colors" onClick={() => navigate(`/shop/${salon._id}`)}>
+                                            <h3 className="text-[1.1rem] font-bold text-[#1a1a1a] leading-tight mb-1 cursor-pointer hover:text-[#8a6500] transition-colors" onClick={() => navigate(`/shop/${salon._id}`)}>
                                                 {salon.name}
                                             </h3>
                                             <div className="mb-4 flex flex-col gap-1">
-                                                <span className="text-sm text-[#0071c2] flex items-center gap-1"><MapPin size={13} className="shrink-0" />{salon.city ? `${salon.city}, India` : "Location not set"}</span>
+                                                <span className="text-sm text-[#8a6500] flex items-center gap-1"><MapPin size={13} className="shrink-0" />{salon.city ? `${salon.city}, India` : "Location not set"}</span>
                                                 <span className="text-sm text-gray-500 flex items-center gap-1"><Phone size={13} className="shrink-0" />{salon.contactNumber || salon.owner?.phonenumber || "+91 Unavailable"}</span>
                                             </div>
                                             <div className="mt-auto flex items-end justify-between gap-2">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="bg-[#003b95] text-white px-2 py-2 font-bold flex items-center justify-center rounded-t-md rounded-br-md rounded-bl-sm min-w-[32px] text-sm">{salon.rating || "New"}</div>
+                                                    <div className="bg-[#1a1a1a] text-[#D4AF37] px-2 py-2 font-bold flex items-center justify-center rounded-t-md rounded-br-md rounded-bl-sm min-w-[32px] text-sm">{salon.rating || "New"}</div>
                                                     <div className="flex flex-col">
                                                         <span className="text-xs font-bold text-[#1a1a1a] leading-none mb-1">{salon.rating > 4 ? "Excellent" : (salon.rating > 3 ? "Very Good" : "Good")}</span>
                                                         <span className="text-[11px] text-gray-500 leading-none">{salon.reviews?.length || "0"} reviews</span>
@@ -799,7 +799,11 @@ export function Shops() {
                                                             Timing <span className="font-bold text-gray-800">{salon.openingHours || "09:00"} - {salon.closingHours || "21:00"}</span>
                                                         </div>
                                                     )}
-                                                    <div className="text-xs text-gray-500">Available Seats <span className="text-lg font-bold text-[#1a1a1a] ml-1">{salon.availableSeats || 0}</span></div>
+                                                    <div className="text-xs text-gray-500">
+                                                        <span className="text-lg font-bold text-[#1a1a1a]">
+                                                            {Math.max(0, Number(salon.availableSeats) || 0)}/{Math.max(1, Number(salon.maxConcurrentStaff) || Number(salon.totalSeats) || 5)}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
 

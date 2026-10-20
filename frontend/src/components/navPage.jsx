@@ -270,7 +270,7 @@ export function NavBar() {
                                                             >
                                                                 <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${notif.type.includes('confirmed') ? 'bg-emerald-50 text-emerald-600' :
                                                                         notif.type.includes('rejected') ? 'bg-red-50 text-red-600' :
-                                                                            'bg-blue-50 text-blue-600'
+                                                                            'bg-amber-50 text-[#D4AF37]'
                                                                     }`}>
                                                                     <Clock size={18} />
                                                                 </div>

@@ -81,6 +81,7 @@ const handleBookingNotification = async (event) => {
   if (
     event.type === "booking.confirmed" ||
     event.type === "booking.cancelled" ||
+    event.type === "booking.completed" ||
     event.type === "booking.rejected"
   ) {
     emitToAll("salonBookingUpdate", { salonId, bookingId, eventType: event.type });

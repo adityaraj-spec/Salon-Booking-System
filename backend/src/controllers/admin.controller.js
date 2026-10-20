@@ -10,11 +10,12 @@ import { Review } from "../models/review.models.js";
 import { Notification } from "../models/notification.models.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ROLES } from "../constants.js";
-import { sendShopAddedEmail, testEmailConfiguration, sendWelcomeEmail } from "../utils/mailer.js";
+import { sendShopAddedEmail, testEmailConfiguration, sendWelcomeEmail, sendServiceCompletedEmail } from "../utils/mailer.js";
 import { emitToAll } from "../socket.js";
 import { geocodeAddress } from "../utils/geocoding.js";
 import logger from "../lib/logger.js";
 import { awardBookingCompletionPoints, reversePointsForBooking } from "../services/loyalty.service.js";
+import { invalidateAvailability } from "../services/availability.service.js";
 
 // Helper: escape special regex characters in user input to prevent ReDoS
 const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -234,13 +235,45 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
     const { status } = req.body;
     const validStatuses = ["pending", "confirmed", "completed", "cancelled", "rejected"];
     if (!validStatuses.includes(status)) throw new ApiError(400, "Invalid status");
-    const booking = await Booking.findByIdAndUpdate(id, { $set: { status } }, { new: true });
+    const booking = await Booking.findById(id)
+        .populate("customer", "fullName email")
+        .populate("salon", "name");
     if (!booking) throw new ApiError(404, "Booking not found");
+
+    const previousStatus = booking.status;
+    booking.status = status;
+    await booking.save();
+
+    const statusChanged = previousStatus !== status;
+    const bookingDate = booking.date || booking.startTime?.toISOString().split("T")[0];
+    if (statusChanged && bookingDate && ["completed", "cancelled", "rejected"].includes(status)) {
+        await invalidateAvailability({ salonId: booking.salon._id, staffId: booking.staff, dates: [bookingDate] });
+    }
 
     if (status === "completed") {
         awardBookingCompletionPoints(booking._id).catch(err => logger.warn({ err: err?.message }, "[Admin] Failed to award loyalty points on completion"));
     } else if (status === "cancelled" || status === "rejected") {
         reversePointsForBooking({ userId: booking.customer, bookingId: booking._id }).catch(err => logger.warn({ err: err?.message }, "[Admin] Failed to reverse loyalty points on cancellation"));
+    }
+
+    if (statusChanged && status === "completed" && booking.customer?.email) {
+        const completedServices = booking.snapshotServices?.length
+            ? booking.snapshotServices.map((service) => service.name || service.serviceName).filter(Boolean)
+            : booking.serviceNames || [];
+        const completedAmount = booking.amounts?.total > 0 ? booking.amounts.total : booking.totalAmount;
+        const bookingTime = booking.startTime
+            ? booking.startTime.toISOString()
+            : `${booking.date || ""} at ${booking.time || ""}`;
+        sendServiceCompletedEmail(
+            booking.customer.email,
+            booking.customer.fullName || "Customer",
+            booking.salon?.name || "the salon",
+            bookingTime,
+            booking._id.toString(),
+            completedServices,
+            completedAmount,
+            new Date()
+        ).catch(err => logger.warn({ err: err?.message }, "[Admin] Failed to send completion email"));
     }
 
     return res.status(200).json(new ApiResponse(200, booking, "Booking status updated"));

@@ -861,7 +861,7 @@ export function Shop() {
                     <button 
                         onClick={handleShare}
                         aria-label="Share salon"
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 hover:text-[#003b95] transition-all text-xs font-bold shadow-sm active:scale-95"
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 hover:text-[#8a6500] transition-all text-xs font-bold shadow-sm active:scale-95"
                     >
                         {copied ? <Check size={16} className="text-emerald-600" /> : <Share2 size={16} />}
                         <span>{copied ? "Link Copied!" : "Share"}</span>
@@ -1026,7 +1026,7 @@ export function Shop() {
                             </span>
                             <span className="text-xs text-gray-500">{reviews.length || 0} reviews</span>
                         </div>
-                        <div className="bg-[#003b95] text-white w-9 h-9 rounded-t-lg rounded-br-lg flex items-center justify-center font-bold text-sm">
+                        <div className="bg-[#1a1a1a] text-[#D4AF37] w-9 h-9 rounded-t-lg rounded-br-lg flex items-center justify-center font-bold text-sm">
                             {salon.rating > 0 ? salon.rating.toFixed(1) : "New"}
                         </div>
                     </div>
@@ -1042,7 +1042,7 @@ export function Shop() {
                             </div>
                         </div>
                         <div className="pt-3 border-t border-gray-100 flex items-center justify-between mt-auto">
-                            <span className="text-xs font-bold text-[#006ce4] group-hover:underline flex items-center gap-1">
+                            <span className="text-xs font-bold text-[#8a6500] group-hover:underline flex items-center gap-1">
                                 View full map below ↓
                             </span>
                             <span className="text-[11px] font-medium text-gray-400">Interactive Map</span>
@@ -1227,7 +1227,7 @@ export function Shop() {
                             </div>
                         </div>
                         <div className="flex gap-5">
-                            <div className="p-3 bg-blue-50 rounded-2xl text-blue-600 h-fit"><Users size={28} /></div>
+                            <div className="p-3 bg-amber-50 rounded-2xl text-[#D4AF37] h-fit"><Users size={28} /></div>
                             <div>
                                 <h3 className="font-bold text-[#1a1a1a] mb-1">Expert Stylists</h3>
                                 <p className="text-sm text-gray-500 leading-relaxed">Book with specialists having industry-leading expertise.</p>
@@ -1487,9 +1487,7 @@ export function Shop() {
                                             ? "Unavailable"
                                             : !liveAvailability.hasSlots
                                                 ? (liveAvailability.reason || "No slots")
-                                                : liveAvailability.seatsLeft > 0
-                                                    ? `${liveAvailability.seatsLeft} Seats Available`
-                                                    : "Full House"}
+                                                    : `${liveAvailability.seatsLeft}/${liveAvailability.maxCapacity || "?"}`}
                                 </span>
                             </div>
                         </div>

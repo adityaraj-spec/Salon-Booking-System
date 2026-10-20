@@ -628,6 +628,44 @@ export const bookingConfirmation = (email, customerName, salonName, bookingTime,
     return sendTemplateEmail(email, `Booking Confirmed at ${salonName}`, html);
 };
 
+export const serviceCompleted = (
+    email,
+    customerName,
+    salonName,
+    bookingTime,
+    bookingReference,
+    services,
+    amount,
+    completedAt
+) => {
+    const booking = renderBookingPanel({
+        bookingReference,
+        bookingTime,
+        salonName,
+        services,
+        price: amount,
+        customerName,
+        status: "Completed",
+        statusColor: COLORS.success,
+        actionTime: completedAt || new Date(),
+        actionLabel: "Completed on",
+    });
+    const html = renderEmail({
+        preheader: `Thank you for visiting ${salonName}`,
+        category: "Service Completed",
+        icon: "check",
+        heading: "Thank You for Visiting!",
+        greeting: `Hi ${customerName}`,
+        paragraphs: [
+            `Your appointment at ${salonName} has been completed successfully. We hope you enjoyed your experience.`,
+            "Your feedback helps other customers and helps the salon continue delivering excellent service. Please take a moment to leave a review.",
+        ],
+        booking,
+        cta: { label: "Leave a Review", href: `${FRONTEND_URL()}/bookings` },
+    });
+    return sendTemplateEmail(email, `Service Completed at ${salonName}`, html);
+};
+
 export const bookingPending = (email, customerName, salonName, bookingTime, bookingReference, requestedAt) => {
     const booking = renderBookingPanel({
         bookingReference,
@@ -971,6 +1009,7 @@ export const sendPaymentReceiptEmail = (email, customerName, salonName, bookingT
 export const sendOwnerPaymentNotificationEmail = (email, ownerName, customerName, shopName, bookingTime, amount, paymentId, paidAt) => ownerPaidBooking(email, ownerName, customerName, shopName, bookingTime, amount, paymentId, paidAt);
 export const sendOwnerConfirmedBookingEmail = (email, ownerName, customerName, shopName, bookingTime, services, bookingReference, amount, paymentId, confirmedAt) => ownerConfirmedBooking(email, ownerName, customerName, shopName, bookingTime, services, bookingReference, amount, paymentId, confirmedAt);
 export const sendBookingConfirmationEmail = (email, customerName, salonName, bookingTime, bookingReference, services, amount, confirmedAt) => bookingConfirmation(email, customerName, salonName, bookingTime, bookingReference, services, amount, confirmedAt);
+export const sendServiceCompletedEmail = (email, customerName, salonName, bookingTime, bookingReference, services, amount, completedAt) => serviceCompleted(email, customerName, salonName, bookingTime, bookingReference, services, amount, completedAt);
 export const sendBookingPendingEmail = (email, customerName, salonName, bookingTime, bookingReference, requestedAt) => bookingPending(email, customerName, salonName, bookingTime, bookingReference, requestedAt);
 export const sendAppointmentCancelledEmail = (email, customerName, salonName, bookingTime, bookingReference, reason, cancelledAt) => appointmentCancelled(email, customerName, salonName, bookingTime, bookingReference, reason, cancelledAt);
 export const sendBookingUpdateEmail = (email, customerName, salonName, oldBookingTime, newBookingTime, bookingReference, rescheduledAt) => bookingUpdate(email, customerName, salonName, oldBookingTime, newBookingTime, bookingReference, rescheduledAt);

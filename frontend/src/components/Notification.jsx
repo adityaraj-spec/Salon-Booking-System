@@ -9,11 +9,11 @@ export function Notification() {
     const { message, type } = notification;
 
     const bgColor = type === "success" ? "bg-green-50 border-green-200" : 
-                    type === "info" ? "bg-blue-50 border-blue-200" : "bg-red-50 border-red-200";
+                    type === "info" ? "bg-amber-50 border-amber-200" : "bg-red-50 border-red-200";
     const textColor = type === "success" ? "text-green-800" : 
-                      type === "info" ? "text-blue-800" : "text-red-800";
+                      type === "info" ? "text-amber-800" : "text-red-800";
     const iconColor = type === "success" ? "text-green-500" : 
-                      type === "info" ? "text-blue-500" : "text-red-500";
+                      type === "info" ? "text-[#D4AF37]" : "text-red-500";
 
     return (
         <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] animate-in fade-in slide-in-from-top-5 duration-300 px-4 w-full flex justify-center pointer-events-none">

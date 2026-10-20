@@ -9,6 +9,7 @@ import {
     sendBookingConfirmationEmail,
     sendBookingUpdateEmail,
     sendAppointmentCancelledEmail,
+    sendServiceCompletedEmail,
 } from "../utils/mailer.js";
 import logger from "../lib/logger.js";
 import { emitToUser } from "../socket.js";
@@ -16,7 +17,7 @@ import { createHold, cancelHold } from "../services/hold.service.js";
 import { initiateBookingFromHold, cancelPendingBooking, cancelBooking } from "../services/booking.service.js";
 import { createWalkInBooking } from "../services/walkin.service.js";
 import { rescheduleBooking } from "../services/reschedule.service.js";
-import { getAvailableSlots } from "../services/availability.service.js";
+import { getAvailableSlots, invalidateAvailability } from "../services/availability.service.js";
 import { awardBookingCompletionPoints, reversePointsForBooking } from "../services/loyalty.service.js";
 
 // ─── Legacy booking (hold + initiate in one call — kept for backward compat) ──
@@ -140,6 +141,12 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
     booking.status = status;
     await booking.save();
 
+    const statusChanged = previousStatus !== status;
+    const bookingDate = booking.date || booking.startTime?.toISOString().split("T")[0];
+    if (statusChanged && bookingDate && ["completed", "cancelled", "rejected"].includes(status)) {
+        await invalidateAvailability({ salonId: booking.salon._id, staffId: booking.staff, dates: [bookingDate] });
+    }
+
     if (status === "completed") {
         awardBookingCompletionPoints(booking._id).catch(err => logger.warn({ err: err?.message }, "[Loyalty] Failed to award completion points"));
     } else if (status === "cancelled" || status === "rejected") {
@@ -152,38 +159,48 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
     else if (status === "rejected") { title = "Booking Declined"; type = "booking_rejected"; }
     else if (status === "completed") { title = "Appointment Completed"; type = "booking_completed"; }
 
-    const notification = await Notification.create({
-        recipient: booking.customer,
-        sender: req.user._id,
-        title,
-        message: `Your booking at ${salon.name} for ${booking.date} has been ${status}.`,
-        type,
-        bookingId: booking._id
-    });
+    const notification = statusChanged
+        ? await Notification.create({
+            recipient: booking.customer,
+            sender: req.user._id,
+            title,
+            message: `Your booking at ${salon.name} for ${booking.date} has been ${status}.`,
+            type,
+            bookingId: booking._id
+        })
+        : null;
 
     // Route to the correct email template based on the new booking status
-    const customerEmail = booking.customer.email?.trim().toLowerCase();
-    const customerName = booking.customer.fullName;
+    const customerEmail = booking.customer?.email?.trim().toLowerCase();
+    const customerName = booking.customer?.fullName || "Customer";
     const salonDisplayName = booking.salon.name;
     const bookingTime = booking.startTime
         ? booking.startTime.toISOString()
         : `${booking.date || ""} at ${booking.time || ""}`;
     const bookingRef = booking._id.toString();
 
-    if (status === "cancelled" || status === "rejected") {
+    if (statusChanged && (status === "cancelled" || status === "rejected") && customerEmail) {
         sendAppointmentCancelledEmail(
             customerEmail, customerName, salonDisplayName, bookingTime, bookingRef,
             "Your appointment has been cancelled by the salon"
         ).catch(err => logger.warn({ err: err?.message }, "[Booking] Failed to send cancellation email"));
-    } else if (status === "confirmed" && previousStatus !== "confirmed") {
+    } else if (statusChanged && status === "confirmed" && customerEmail) {
         sendBookingConfirmationEmail(
             customerEmail, customerName, salonDisplayName, bookingTime, bookingRef,
             booking.serviceNames || [], booking.totalAmount
         ).catch(err => logger.warn({ err: err?.message }, "[Booking] Failed to send confirmation email"));
+    } else if (statusChanged && status === "completed" && customerEmail) {
+        const completedServices = booking.snapshotServices?.length
+            ? booking.snapshotServices.map((service) => service.name || service.serviceName).filter(Boolean)
+            : booking.serviceNames || [];
+        const completedAmount = booking.amounts?.total > 0 ? booking.amounts.total : booking.totalAmount;
+        sendServiceCompletedEmail(
+            customerEmail, customerName, salonDisplayName, bookingTime, bookingRef,
+            completedServices, completedAmount, new Date()
+        ).catch(err => logger.warn({ err: err?.message }, "[Booking] Failed to send completion email"));
     }
-    // "completed" — customer was physically present, no outbound email needed
 
-    emitToUser(booking.customer, "newNotification", notification);
+    if (notification) emitToUser(booking.customer, "newNotification", notification);
     emitToUser(booking.customer, "bookingUpdate", { booking, type: "STATUS_CHANGE" });
     emitToUser(req.user._id, "bookingUpdate", { booking, type: "STATUS_CHANGE" });
 
