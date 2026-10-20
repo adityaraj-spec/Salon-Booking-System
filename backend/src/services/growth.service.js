@@ -5,6 +5,7 @@ import { Booking } from "../models/booking.models.js";
 import { Salon } from "../models/salon.models.js";
 import { User } from "../models/user.models.js";
 import { LoyaltyTransaction } from "../models/loyaltyTransaction.models.js";
+import { LoyaltyLedger } from "../models/loyaltyLedger.model.js";
 import { invalidateSalonCache } from "../lib/cacheManager.js";
 import { withTransactionRetry } from "../utils/transaction.js";
 import ApiError from "../utils/apiError.js";
@@ -225,11 +226,21 @@ export const getUserLoyaltySummary = async (userId) => {
   const user = await User.findById(userId).select("loyaltyPoints referralCode").lean();
   if (!user) throw new ApiError(404, "User not found");
 
-  const transactions = await LoyaltyTransaction.find({ user: userId }).sort({ createdAt: -1 }).limit(20).lean();
+  const [ledgerEntries, legacyTx] = await Promise.all([
+    LoyaltyLedger.find({ user: userId }).sort({ createdAt: -1 }).limit(25).lean(),
+    LoyaltyTransaction.find({ user: userId }).sort({ createdAt: -1 }).limit(25).lean(),
+  ]);
+
+  const transactions = ledgerEntries.length > 0 ? ledgerEntries : legacyTx;
+  const balance = user.loyaltyPoints || 0;
 
   return {
-    loyaltyPoints: user.loyaltyPoints || 0,
+    loyaltyPoints: balance,
+    points: balance,
+    pointValueInr: 0.50,
+    currencyValue: parseFloat((balance * 0.50).toFixed(2)),
     referralCode: user.referralCode || (await generateUserReferralCode(userId)),
     transactions,
+    history: ledgerEntries,
   };
 };

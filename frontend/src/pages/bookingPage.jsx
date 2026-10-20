@@ -14,7 +14,8 @@ import {
     ArrowLeft,
     Loader2,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    Coins
 } from "lucide-react";
 
 const TIME_SLOTS = [
@@ -149,6 +150,8 @@ export function BookingPage() {
     const [time, setTime] = useState("");
     const [availability, setAvailability] = useState({});
     const [availabilityLoading, setAvailabilityLoading] = useState(false);
+    const [loyaltyPoints, setLoyaltyPoints] = useState(0);
+    const [useLoyaltyPoints, setUseLoyaltyPoints] = useState(false);
     
     // Real Data State
     const [services, setServices] = useState([]);
@@ -192,6 +195,27 @@ export function BookingPage() {
             navigate("/login");
         }
     }, [user, authLoading, navigate]);
+
+    // Fetch user's loyalty balance for checkout redemption
+    useEffect(() => {
+        const fetchLoyaltyBalance = async () => {
+            try {
+                const res = await axiosInstance.get("/loyalty/balance")
+                    .catch(() => axiosInstance.get("/growth/loyalty"));
+                if (res.data?.success) {
+                    const pts = res.data.data?.points ?? res.data.data?.loyaltyPoints ?? 0;
+                    setLoyaltyPoints(pts);
+                } else if (user?.loyaltyPoints) {
+                    setLoyaltyPoints(user.loyaltyPoints);
+                }
+            } catch {
+                if (user?.loyaltyPoints) setLoyaltyPoints(user.loyaltyPoints);
+            }
+        };
+        if (user) {
+            fetchLoyaltyBalance();
+        }
+    }, [user]);
 
     useEffect(() => {
         const fetchSalonData = async () => {
@@ -300,9 +324,25 @@ export function BookingPage() {
         });
     };
 
-    const totalAmount = useMemo(() =>
+    const subtotal = useMemo(() =>
         selectedServices.reduce((sum, s) => sum + (Number(s.price) || 0), 0),
         [selectedServices]);
+
+    // Loyalty redemption calculation: 1 pt = ₹0.50, capped at 20% of subtotal
+    const { maxRedeemablePoints, discountAmount, finalPayable } = useMemo(() => {
+        const maxDiscountInr = subtotal * 0.20;
+        const maxPoints = Math.min(loyaltyPoints, Math.floor(maxDiscountInr / 0.50));
+        const activePoints = useLoyaltyPoints ? maxPoints : 0;
+        const discount = parseFloat((activePoints * 0.50).toFixed(2));
+        const payable = Math.max(0, subtotal - discount);
+        return {
+            maxRedeemablePoints: maxPoints,
+            discountAmount: discount,
+            finalPayable: payable,
+        };
+    }, [subtotal, loyaltyPoints, useLoyaltyPoints]);
+
+    const totalAmount = finalPayable;
 
     const handleConfirm = async () => {
         if (selectedServices.length === 0 || !date || !time) {
@@ -353,10 +393,14 @@ export function BookingPage() {
                 throw new Error("Failed to reserve slot hold.");
             }
 
-            // Step 2: Convert the hold into a pending-payment booking
+            // Step 2: Convert the hold into a pending-payment booking with loyalty redemption
             const initiateResponse = await axiosInstance.post(
                 "/bookings/initiate",
-                { holdId },
+                {
+                    holdId,
+                    useLoyaltyPoints: Boolean(useLoyaltyPoints && maxRedeemablePoints > 0),
+                    pointsToRedeem: useLoyaltyPoints ? maxRedeemablePoints : 0,
+                },
                 {
                     headers: { "Idempotency-Key": idempotencyKey },
                     withCredentials: true,
@@ -710,9 +754,63 @@ export function BookingPage() {
                                         <span className="text-sm font-bold text-[#1a1a1a]">{combinedDurationMin} min</span>
                                     </div>
                                 )}
+                                {/* Subtotal */}
+                                {selectedServices.length > 0 && (
+                                    <div className="flex justify-between items-center text-sm text-gray-600 mb-2">
+                                        <span>Subtotal</span>
+                                        <span className="font-semibold text-gray-800">₹{subtotal}</span>
+                                    </div>
+                                )}
+
+                                {/* Loyalty Points Redemption Toggle — Sprint 3.4 */}
+                                {loyaltyPoints > 0 && subtotal > 0 && (
+                                    <div className="my-4 p-3.5 bg-gradient-to-r from-amber-50/90 to-orange-50/50 border border-amber-200/80 rounded-2xl">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Coins size={16} className="text-[#D4AF37]" />
+                                                <div>
+                                                    <p className="text-xs font-bold text-gray-900">
+                                                        Use Loyalty Points ({loyaltyPoints} available)
+                                                    </p>
+                                                    <p className="text-[11px] text-gray-500">
+                                                        Redeem {maxRedeemablePoints} pts for ₹{(maxRedeemablePoints * 0.50).toFixed(2)} off (max 20%)
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <label className="relative inline-flex items-center cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={useLoyaltyPoints}
+                                                    onChange={(e) => setUseLoyaltyPoints(e.target.checked)}
+                                                    className="sr-only peer"
+                                                />
+                                                <div className="w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#D4AF37]"></div>
+                                            </label>
+                                        </div>
+                                        {useLoyaltyPoints && maxRedeemablePoints > 0 && (
+                                            <div className="mt-2 pt-2 border-t border-amber-200/60 flex items-center justify-between text-xs font-bold text-emerald-700">
+                                                <span>Loyalty Discount applied:</span>
+                                                <span>-₹{discountAmount}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {useLoyaltyPoints && discountAmount > 0 && (
+                                    <div className="flex justify-between items-center text-sm text-emerald-600 font-semibold mb-2">
+                                        <span>Points Discount</span>
+                                        <span>-₹{discountAmount}</span>
+                                    </div>
+                                )}
+
                                 <div className="flex justify-between items-center mb-6">
                                     <span className="text-lg font-bold text-[#1a1a1a]">Total</span>
-                                    <span className="text-2xl font-serif font-bold text-[#e65c00]">₹{totalAmount}</span>
+                                    <div className="text-right">
+                                        {discountAmount > 0 && (
+                                            <span className="text-sm line-through text-gray-400 mr-2">₹{subtotal}</span>
+                                        )}
+                                        <span className="text-2xl font-serif font-bold text-[#e65c00]">₹{totalAmount}</span>
+                                    </div>
                                 </div>
                                 {bookingError && (
                                     <p className="text-red-500 text-sm mb-3 text-center">{bookingError}</p>

@@ -16,6 +16,7 @@ import {
 import { emitToUser } from "../socket.js";
 import { pickAllowedFields, STAFF_UPDATABLE_FIELDS } from "../utils/dto.js";
 import logger from "../lib/logger.js";
+import { awardBookingCompletionPoints, reversePointsForBooking } from "../services/loyalty.service.js";
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
@@ -217,6 +218,12 @@ const updateOwnerBookingStatus = asyncHandler(async (req, res) => {
 
     booking.status = status;
     await booking.save();
+
+    if (status === "completed") {
+        awardBookingCompletionPoints(booking._id).catch(err => logger.warn({ err: err?.message }, "[Owner] Failed to award loyalty points on completion"));
+    } else if (status === "cancelled" || status === "rejected") {
+        reversePointsForBooking({ userId: booking.customer?._id || booking.customer, bookingId: booking._id }).catch(err => logger.warn({ err: err?.message }, "[Owner] Failed to reverse loyalty points on cancellation"));
+    }
 
     // Route to the correct email template based on the new booking status
     if (booking.customer?.email) {

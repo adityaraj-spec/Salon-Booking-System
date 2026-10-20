@@ -20,6 +20,7 @@ import { initiateBookingFromHold, cancelPendingBooking, cancelBooking } from "..
 import { createWalkInBooking } from "../services/walkin.service.js";
 import { rescheduleBooking } from "../services/reschedule.service.js";
 import { getAvailableSlots } from "../services/availability.service.js";
+import { awardBookingCompletionPoints, reversePointsForBooking } from "../services/loyalty.service.js";
 
 // ─── Legacy booking (hold + initiate in one call — kept for backward compat) ──
 
@@ -49,6 +50,8 @@ const createBooking = asyncHandler(async (req, res) => {
         holdId: hold._id,
         customerId: req.user._id,
         idempotencyKey,
+        useLoyaltyPoints: Boolean(req.body.useLoyaltyPoints),
+        pointsToRedeem: req.body.pointsToRedeem !== undefined && req.body.pointsToRedeem !== null ? Number(req.body.pointsToRedeem) : null,
     });
 
     const salon = await Salon.findById(salonId).populate("owner", "fullName email");
@@ -180,6 +183,12 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
     booking.status = status;
     await booking.save();
 
+    if (status === "completed") {
+        awardBookingCompletionPoints(booking._id).catch(err => logger.warn({ err: err?.message }, "[Loyalty] Failed to award completion points"));
+    } else if (status === "cancelled" || status === "rejected") {
+        reversePointsForBooking({ userId: booking.customer?._id || booking.customer, bookingId: booking._id }).catch(err => logger.warn({ err: err?.message }, "[Loyalty] Failed to reverse points"));
+    }
+
     let title = "Booking Update";
     let type = "system";
     if (status === "confirmed") { title = "Booking Confirmed!"; type = "booking_confirmed"; }
@@ -280,7 +289,7 @@ const createHoldHandler = asyncHandler(async (req, res) => {
 });
 
 const initiateBookingHandler = asyncHandler(async (req, res) => {
-    const { holdId } = req.body;
+    const { holdId, useLoyaltyPoints, pointsToRedeem } = req.body;
     const idempotencyKey = req.headers["idempotency-key"] || req.body.idempotencyKey;
 
     if (!holdId) {
@@ -291,6 +300,8 @@ const initiateBookingHandler = asyncHandler(async (req, res) => {
         holdId,
         customerId: req.user._id,
         idempotencyKey,
+        useLoyaltyPoints: Boolean(useLoyaltyPoints),
+        pointsToRedeem: pointsToRedeem !== undefined && pointsToRedeem !== null ? Number(pointsToRedeem) : null,
     });
 
     // ── Fire-and-forget: notify customer + owner after the booking row is committed ──

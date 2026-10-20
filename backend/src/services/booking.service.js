@@ -1,6 +1,9 @@
 import { Booking } from "../models/booking.models.js";
 import { BookingHold } from "../models/bookingHold.model.js";
 import { Salon } from "../models/salon.models.js";
+import { User } from "../models/user.models.js";
+import { LoyaltyLedger } from "../models/loyaltyLedger.model.js";
+import { LoyaltyTransaction } from "../models/loyaltyTransaction.models.js";
 import { withTransactionRetry } from "../utils/transaction.js";
 import { writeOutboxEvent } from "./outbox.service.js";
 import { withIdempotency, buildFallbackKey } from "./idempotency.service.js";
@@ -8,6 +11,7 @@ import { confirmPaymentAndBooking } from "./payment.service.js";
 import { buildSlotLockKeys, acquireSlotLock, releaseSlotLock } from "../lib/redisLock.js";
 import { checkTimeRangeAvailability } from "./availability.service.js";
 import { calculateServicesDurationAndPrice } from "./duration.service.js";
+import { calculateLoyaltyDiscount, reversePointsForBooking } from "./loyalty.service.js";
 import ApiError from "../utils/apiError.js";
 
 /**
@@ -17,6 +21,8 @@ export const initiateBookingFromHold = async ({
   holdId,
   customerId,
   idempotencyKey: clientIdempotencyKey,
+  useLoyaltyPoints = false,
+  pointsToRedeem = null,
 }) => {
   const isFallback = !clientIdempotencyKey;
   const idempotencyKey = clientIdempotencyKey
@@ -26,7 +32,7 @@ export const initiateBookingFromHold = async ({
   const { body } = await withIdempotency(
     idempotencyKey,
     "booking",
-    { holdId, customerId: customerId.toString() },
+    { holdId, customerId: customerId.toString(), useLoyaltyPoints, pointsToRedeem },
     isFallback,
     async () => {
       const bookingDoc = await withTransactionRetry(async (session) => {
@@ -69,6 +75,30 @@ export const initiateBookingFromHold = async ({
           salon?.cancellationPolicy ||
           "Free cancellation up to 24 hours before your appointment. A 20% fee applies thereafter.";
 
+        const subtotal = hold.totalAmount || 0;
+        let pointsDiscount = 0;
+        let redeemedPoints = 0;
+        let finalPayable = subtotal;
+
+        if (useLoyaltyPoints || (pointsToRedeem !== null && pointsToRedeem > 0)) {
+          const user = await User.findById(customerId).session(session);
+          if (user && (user.loyaltyPoints || 0) > 0) {
+            const calculation = calculateLoyaltyDiscount(
+              user.loyaltyPoints,
+              subtotal,
+              pointsToRedeem
+            );
+            if (calculation.pointsToRedeem > 0) {
+              redeemedPoints = calculation.pointsToRedeem;
+              pointsDiscount = calculation.discountAmount;
+              finalPayable = calculation.finalTotal;
+
+              user.loyaltyPoints -= redeemedPoints;
+              await user.save({ session });
+            }
+          }
+        }
+
         const [createdBooking] = await Booking.create(
           [
             {
@@ -79,12 +109,12 @@ export const initiateBookingFromHold = async ({
               services: hold.services,
               serviceNames: hold.serviceNames,
               snapshotServices,
-              totalAmount: hold.totalAmount,
+              totalAmount: finalPayable,
               amounts: {
-                subtotal: hold.totalAmount || 0,
+                subtotal,
                 convenienceFee: 0,
-                pointsDiscount: 0,
-                total: hold.totalAmount || 0,
+                pointsDiscount,
+                total: finalPayable,
               },
               cancellationPolicySnapshot,
               holdExpiresAt: hold.expiresAt,
@@ -103,6 +133,24 @@ export const initiateBookingFromHold = async ({
           ],
           { session }
         );
+
+        if (redeemedPoints > 0) {
+          const userAfter = await User.findById(customerId).session(session);
+          const balanceAfter = userAfter?.loyaltyPoints || 0;
+          await LoyaltyLedger.create(
+            [
+              {
+                user: customerId,
+                bookingId: createdBooking._id,
+                type: "redeem",
+                points: redeemedPoints,
+                balanceAfter,
+                description: `Redeemed ${redeemedPoints} loyalty points (₹${pointsDiscount}) for booking #${createdBooking._id}`,
+              },
+            ],
+            { session }
+          );
+        }
 
         await writeOutboxEvent(session, "booking.initiated", {
           bookingId: createdBooking._id.toString(),
@@ -376,6 +424,8 @@ export const cancelPendingBooking = async (bookingId, customerId) => {
     booking.paymentStatus = "failed";
     await booking.save({ session });
 
+    await reversePointsForBooking({ userId: customerId, bookingId: booking._id, session });
+
     await writeOutboxEvent(session, "booking.cancelled", {
       bookingId: booking._id.toString(),
       salonId: booking.salon.toString(),
@@ -409,6 +459,7 @@ export const cancelBooking = async ({ bookingId, customerId, reason }) => {
   // Confirmed booking: execute policy-compliant refund via initiateRefund
   const { initiateRefund } = await import("./payment.service.js");
   const refundResult = await initiateRefund({ bookingId, customerId, reason });
+  await reversePointsForBooking({ userId: customerId, bookingId });
   return refundResult.booking;
 };
 
@@ -425,6 +476,8 @@ export const expirePendingBooking = async (bookingId) => {
     booking.status = "expired";
     booking.paymentStatus = "failed";
     await booking.save({ session });
+
+    await reversePointsForBooking({ userId: booking.customer, bookingId: booking._id, session });
 
     await writeOutboxEvent(session, "booking.cancelled", {
       bookingId: booking._id.toString(),

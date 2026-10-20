@@ -154,6 +154,209 @@ function StaffSection({ staff, salonId, navigate, user, formatLabel }) {
     );
 }
 
+// Sprint 3.3: Transformation Gallery / Before & After Section
+function BeforeAfterCard({ item }) {
+    const [sliderPos, setSliderPos] = useState(50);
+    const [isInteracting, setIsInteracting] = useState(false);
+    const containerRef = useRef(null);
+
+    const updateSlider = (clientX) => {
+        if (!containerRef.current) return;
+        const rect = containerRef.current.getBoundingClientRect();
+        const offsetX = clientX - rect.left;
+        const percentage = Math.max(5, Math.min(95, (offsetX / rect.width) * 100));
+        setSliderPos(percentage);
+    };
+
+    const handlePointerDown = (e) => {
+        setIsInteracting(true);
+        updateSlider(e.clientX);
+    };
+
+    const handlePointerMove = (e) => {
+        if (isInteracting) {
+            updateSlider(e.clientX);
+        }
+    };
+
+    const handlePointerUp = () => setIsInteracting(false);
+
+    return (
+        <div className="shrink-0 w-[290px] sm:w-[330px] bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col">
+            {/* Interactive Image Split Container */}
+            <div
+                ref={containerRef}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerLeave={handlePointerUp}
+                className="relative h-64 sm:h-72 w-full select-none cursor-ew-resize overflow-hidden bg-gray-100"
+            >
+                {/* AFTER image (Full background) */}
+                <img
+                    src={item.afterUrl}
+                    alt={`${item.serviceName || 'Transformation'} After`}
+                    className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                    loading="lazy"
+                />
+                <span className="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10 uppercase tracking-wider">
+                    After
+                </span>
+
+                {/* BEFORE image (Clipped to slider percentage) */}
+                <div
+                    className="absolute inset-0 overflow-hidden pointer-events-none"
+                    style={{ width: `${sliderPos}%` }}
+                >
+                    <img
+                        src={item.beforeUrl}
+                        alt={`${item.serviceName || 'Transformation'} Before`}
+                        className="absolute inset-0 h-full object-cover max-w-none pointer-events-none"
+                        style={{ width: containerRef.current ? `${containerRef.current.offsetWidth}px` : '330px' }}
+                        loading="lazy"
+                    />
+                    <span className="absolute top-3 left-3 bg-[#1a1a1a]/80 backdrop-blur-md text-[#D4AF37] text-[10px] font-bold px-2 py-0.5 rounded-full z-10 uppercase tracking-wider">
+                        Before
+                    </span>
+                </div>
+
+                {/* Slider divider line and draggable handle */}
+                <div
+                    className="absolute top-0 bottom-0 w-0.5 bg-white shadow-lg pointer-events-none"
+                    style={{ left: `${sliderPos}%` }}
+                >
+                    <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-white shadow-md border-2 border-[#D4AF37] flex items-center justify-center text-[#1a1a1a]">
+                        <div className="flex gap-0.5">
+                            <ChevronLeft size={12} strokeWidth={3} className="text-gray-600" />
+                            <ChevronRight size={12} strokeWidth={3} className="text-gray-600" />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Hidden range input for accessibility */}
+                <input
+                    type="range"
+                    min="5"
+                    max="95"
+                    value={sliderPos}
+                    onChange={(e) => setSliderPos(Number(e.target.value))}
+                    className="absolute inset-x-0 bottom-0 opacity-0 h-10 cursor-ew-resize z-20"
+                    aria-label={`Compare Before and After for ${item.serviceName || 'transformation'}`}
+                />
+            </div>
+
+            {/* Info footer */}
+            <div className="p-4 flex flex-col gap-1.5 flex-1 justify-between bg-white">
+                <div>
+                    <div className="flex items-center justify-between gap-2">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-[#D4AF37] bg-amber-50 px-2 py-0.5 rounded-md inline-block truncate max-w-[190px]">
+                            {item.serviceName || "Transformation"}
+                        </span>
+                        {item.stylistName && (
+                            <span className="text-[11px] font-medium text-gray-500 truncate max-w-[120px]">
+                                By {item.stylistName}
+                            </span>
+                        )}
+                    </div>
+                    {item.title && (
+                        <h4 className="text-sm font-bold text-gray-900 mt-1 line-clamp-1">
+                            {item.title}
+                        </h4>
+                    )}
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t border-gray-50 text-[11px] text-gray-400">
+                    <span>Slide to compare</span>
+                    <button
+                        type="button"
+                        onClick={() => setSliderPos(sliderPos > 50 ? 5 : 95)}
+                        className="text-[#1a1a1a] hover:text-[#D4AF37] font-semibold underline text-[11px]"
+                    >
+                        {sliderPos > 50 ? "Show Before" : "Show After"}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function TransformationGallerySection({ photos = [] }) {
+    const scrollRef = useRef(null);
+
+    const defaultItems = [
+        {
+            beforeUrl: "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&w=600&q=80",
+            afterUrl: "https://images.unsplash.com/photo-1560869713-7d0a29430803?auto=format&fit=crop&w=600&q=80",
+            serviceName: "Balayage & Gloss",
+            stylistName: "Senior Colorist",
+            title: "Sun-Kissed Blonde Transformation",
+        },
+        {
+            beforeUrl: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80",
+            afterUrl: "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=600&q=80",
+            serviceName: "Fade & Beard Sculpt",
+            stylistName: "Master Barber",
+            title: "Precision Taper & Beard Line-up",
+        },
+        {
+            beforeUrl: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80",
+            afterUrl: "https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&w=600&q=80",
+            serviceName: "Keratin Smoothening",
+            stylistName: "Texture Specialist",
+            title: "Intense Frizz-Free Glass Hair",
+        },
+    ];
+
+    const displayPhotos = photos && photos.length > 0 ? photos : defaultItems;
+
+    const scrollLeft = () => scrollRef.current?.scrollBy({ left: -320, behavior: 'smooth' });
+    const scrollRight = () => scrollRef.current?.scrollBy({ left: 320, behavior: 'smooth' });
+
+    return (
+        <div className="py-8 border-b border-gray-100">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+                <div>
+                    <div className="flex items-center gap-2">
+                        <Sparkles size={18} className="text-[#D4AF37]" />
+                        <h3 className="text-2xl font-serif font-bold text-[#1a1a1a]">Transformation Gallery</h3>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-1">Real before & after results crafted by our artists</p>
+                </div>
+                {/* Scroll arrows */}
+                <div className="hidden md:flex items-center gap-2">
+                    <button
+                        type="button"
+                        aria-label="Scroll transformations left"
+                        onClick={scrollLeft}
+                        className="w-9 h-9 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm hover:bg-gray-50 transition-all active:scale-95 text-gray-600"
+                    >
+                        <ChevronLeft size={18} />
+                    </button>
+                    <button
+                        type="button"
+                        aria-label="Scroll transformations right"
+                        onClick={scrollRight}
+                        className="w-9 h-9 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm hover:bg-gray-50 transition-all active:scale-95 text-gray-600"
+                    >
+                        <ChevronRight size={18} />
+                    </button>
+                </div>
+            </div>
+
+            {/* Scrollable track */}
+            <div
+                ref={scrollRef}
+                className="flex gap-5 overflow-x-auto pb-4 scroll-smooth no-scrollbar"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+                {displayPhotos.map((item, idx) => (
+                    <BeforeAfterCard key={item._id || idx} item={item} />
+                ))}
+            </div>
+        </div>
+    );
+}
+
 export function Shop() {
     const { user } = useAuth();
     const socket = useSocket();
@@ -917,6 +1120,9 @@ export function Shop() {
                         />
                     )}
 
+                    {/* TRANSFORMATION GALLERY (BEFORE & AFTER) — Sprint 3.3 */}
+                    <TransformationGallerySection photos={salon?.beforeAfterPhotos} />
+
                     <div className="grid sm:grid-cols-2 gap-8">
                         <div className="flex gap-5">
                             <div className="p-3 bg-orange-50 rounded-2xl text-[#e65c00] h-fit"><ShieldCheck size={28} /></div>
@@ -943,17 +1149,56 @@ export function Shop() {
 
                     {/* REVIEWS SECTION */}
                     <div className="pt-12 border-t border-gray-100 pb-16">
-                        <div className="flex items-center justify-between mb-8">
-                            <div>
-                                <h3 className="text-2xl md:text-3xl font-serif font-bold text-[#1a1a1a]">Customer Reviews</h3>
-                                <div className="flex items-center gap-2 mt-1">
-                                    <div className="flex items-center gap-0.5">
+                        {/* Reviews Header: Score + Breakdown Bars (Sprint 3.2) */}
+                        <div className="mb-10">
+                            <h3 className="text-2xl md:text-3xl font-serif font-bold text-[#1a1a1a] mb-6">Customer Reviews</h3>
+                            <div className="flex flex-col sm:flex-row gap-6 sm:gap-10 bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
+
+                                {/* Left: Overall Score */}
+                                <div className="flex flex-col items-center justify-center text-center sm:border-r sm:border-gray-100 sm:pr-10 shrink-0">
+                                    <span className="text-6xl font-serif font-black text-[#1a1a1a] leading-none">
+                                        {salon.rating > 0 ? salon.rating.toFixed(1) : "—"}
+                                    </span>
+                                    <div className="flex items-center gap-0.5 mt-2">
                                         {[...Array(5)].map((_, i) => (
-                                            <Star key={i} size={14} className={i < Math.floor(salon.rating || 0) ? "fill-yellow-400 text-yellow-400" : "text-gray-200"} />
+                                            <Star key={i} size={16} className={i < Math.floor(salon.rating || 0) ? "fill-yellow-400 text-yellow-400" : "text-gray-200"} />
                                         ))}
                                     </div>
-                                    <span className="text-sm font-bold text-gray-900">{salon.rating || "NEW"}</span>
-                                    <span className="text-sm text-gray-400">({reviews.length} Verified Reviews)</span>
+                                    <p className="text-xs text-gray-400 font-medium mt-2">
+                                        {reviews.length} {reviews.length === 1 ? "review" : "reviews"}
+                                    </p>
+                                </div>
+
+                                {/* Right: Per-Star Breakdown Bars */}
+                                <div className="flex-1 flex flex-col justify-center gap-2">
+                                    {[5, 4, 3, 2, 1].map((star) => {
+                                        const count = reviews.filter(r => r.rating === star).length;
+                                        const pct = reviews.length > 0 ? Math.round((count / reviews.length) * 100) : 0;
+                                        return (
+                                            <div key={star} className="flex items-center gap-3">
+                                                {/* Star label */}
+                                                <div className="flex items-center gap-1 w-10 shrink-0 justify-end">
+                                                    <span className="text-xs font-bold text-gray-700 tabular-nums">{star}</span>
+                                                    <Star size={11} className="fill-yellow-400 text-yellow-400 shrink-0" />
+                                                </div>
+                                                {/* Bar track */}
+                                                <div className="flex-1 h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                                                    <div
+                                                        className="h-full rounded-full transition-all duration-700"
+                                                        style={{
+                                                            width: `${pct}%`,
+                                                            backgroundColor: star >= 4 ? '#22c55e' : star === 3 ? '#D4AF37' : star === 2 ? '#f97316' : '#ef4444',
+                                                        }}
+                                                    />
+                                                </div>
+                                                {/* Percentage + count */}
+                                                <div className="flex items-center gap-1.5 w-16 shrink-0">
+                                                    <span className="text-xs font-bold text-gray-700 tabular-nums">{pct}%</span>
+                                                    <span className="text-[11px] text-gray-400">({count})</span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>

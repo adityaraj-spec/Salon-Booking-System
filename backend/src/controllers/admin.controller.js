@@ -14,6 +14,7 @@ import { sendShopAddedEmail, testEmailConfiguration, sendWelcomeEmail } from "..
 import { emitToAll } from "../socket.js";
 import { geocodeAddress } from "../utils/geocoding.js";
 import logger from "../lib/logger.js";
+import { awardBookingCompletionPoints, reversePointsForBooking } from "../services/loyalty.service.js";
 
 // Helper: escape special regex characters in user input to prevent ReDoS
 const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -235,6 +236,13 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
     if (!validStatuses.includes(status)) throw new ApiError(400, "Invalid status");
     const booking = await Booking.findByIdAndUpdate(id, { $set: { status } }, { new: true });
     if (!booking) throw new ApiError(404, "Booking not found");
+
+    if (status === "completed") {
+        awardBookingCompletionPoints(booking._id).catch(err => logger.warn({ err: err?.message }, "[Admin] Failed to award loyalty points on completion"));
+    } else if (status === "cancelled" || status === "rejected") {
+        reversePointsForBooking({ userId: booking.customer, bookingId: booking._id }).catch(err => logger.warn({ err: err?.message }, "[Admin] Failed to reverse loyalty points on cancellation"));
+    }
+
     return res.status(200).json(new ApiResponse(200, booking, "Booking status updated"));
 });
 

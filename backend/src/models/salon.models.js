@@ -28,6 +28,15 @@ const salonSchema = new mongoose.Schema({
   description: String,
   address: String,
   images: [String],
+  beforeAfterPhotos: [
+    {
+      beforeUrl: { type: String, required: true },
+      afterUrl: { type: String, required: true },
+      serviceName: { type: String, default: "" },
+      stylistName: { type: String, default: "" },
+      title: { type: String, default: "" },
+    },
+  ],
   contactNumber: {
     type: String,
     required: false

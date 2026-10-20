@@ -1,10 +1,14 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosConfig";
-import { Calendar, Clock, MapPin, Scissors, CheckCircle2, Phone, User, AlertCircle, X, Loader2 } from "lucide-react";
+import { useBookingCart } from "../context/BookingCartContext";
+import { Calendar, Clock, MapPin, Scissors, CheckCircle2, Phone, User, AlertCircle, X, Loader2, RotateCcw } from "lucide-react";
 import { BookingCardSkeleton } from "../components/skeletons/index.jsx";
 
 
 export function MyBookingsPage() {
+    const navigate = useNavigate();
+    const { setCartServices } = useBookingCart();
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [cancelModalBooking, setCancelModalBooking] = useState(null);
@@ -12,6 +16,7 @@ export function MyBookingsPage() {
     const [cancelling, setCancelling] = useState(false);
     const [cancelError, setCancelError] = useState("");
     const [cancelSuccess, setCancelSuccess] = useState("");
+    const [bookAgainLoading, setBookAgainLoading] = useState(null);
 
     const fetchBookings = async () => {
         try {
@@ -24,6 +29,38 @@ export function MyBookingsPage() {
         } finally {
             setLoading(false);
         }
+    };
+
+    // Sprint 1.5: Book Again — pre-fills cart from past booking's snapshot services
+    const handleBookAgain = async (booking) => {
+        const salonId = booking.salon?._id || booking.salon;
+        if (!salonId) return;
+        setBookAgainLoading(booking._id);
+
+        // Build service objects from snapshotServices if available, else from serviceNames
+        let services = [];
+        if (booking.snapshotServices && booking.snapshotServices.length > 0) {
+            services = booking.snapshotServices.map(s => ({
+                _id: s.serviceId || s._id,
+                serviceId: s.serviceId || s._id,
+                name: s.name,
+                price: Number(s.price) || 0,
+                durationMin: Number(s.durationMin) || 30,
+            }));
+        } else if (booking.serviceNames && booking.serviceNames.length > 0) {
+            // Fallback: minimal objects from service name strings
+            services = booking.serviceNames.map((name, i) => ({
+                _id: `rebooking-${i}`,
+                serviceId: `rebooking-${i}`,
+                name,
+                price: 0,
+                durationMin: 30,
+            }));
+        }
+
+        setCartServices(salonId, services);
+        setBookAgainLoading(null);
+        navigate(`/shop/${salonId}`);
     };
 
     useEffect(() => {
@@ -237,6 +274,28 @@ export function MyBookingsPage() {
                                                 className="text-xs font-semibold px-4 py-2 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors cursor-pointer"
                                             >
                                                 Cancel Appointment
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {/* Sprint 1.5: Book Again CTA — shown on completed or cancelled bookings */}
+                                    {["completed", "cancelled"].includes(booking.status) && booking.salon?._id && (
+                                        <div className="pt-4 border-t border-gray-200/50 flex items-center justify-between gap-3">
+                                            <p className="text-xs text-gray-400 font-medium">
+                                                {booking.status === "completed" ? "Enjoyed your visit? Come back again!" : "Rebook this appointment"}
+                                            </p>
+                                            <button
+                                                type="button"
+                                                disabled={bookAgainLoading === booking._id}
+                                                onClick={() => handleBookAgain(booking)}
+                                                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1a1a1a] text-white text-xs font-bold hover:bg-black transition-all active:scale-95 shadow-sm disabled:opacity-50 shrink-0"
+                                            >
+                                                {bookAgainLoading === booking._id ? (
+                                                    <Loader2 size={14} className="animate-spin" />
+                                                ) : (
+                                                    <RotateCcw size={13} className="text-[#D4AF37]" />
+                                                )}
+                                                Book Again
                                             </button>
                                         </div>
                                     )}

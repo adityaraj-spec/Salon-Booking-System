@@ -35,7 +35,9 @@ export const initiateBookingSchema = {
   body: z.object({
     holdId: objectIdSchema,
     idempotencyKey: z.string().trim().optional(),
-  }),
+    useLoyaltyPoints: z.boolean().optional(),
+    pointsToRedeem: z.number().optional().nullable(),
+  }).passthrough(),
 };
 
 export const cancelBookingSchema = {

@@ -20,6 +20,7 @@ import paymentRouter from "./routes/payment.routes.js";
 import paymentWebhookRouter from "./routes/payment.webhook.routes.js";
 import healthRouter from "./routes/health.routes.js";
 import growthRouter from "./routes/growth.routes.js";
+import loyaltyRouter from "./routes/loyalty.routes.js";
 import metricsRouter from "./routes/metrics.routes.js";
 import ApiError from "./utils/apiError.js";
 
@@ -129,6 +130,7 @@ app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/owner", ownerRouter);
 app.use("/api/v1/payments", paymentRouter); // non-webhook payment routes (create-order, verify) — JSON body is fine here
 app.use("/api/v1/growth", growthRouter);
+app.use("/api/v1/loyalty", loyaltyRouter);
 
 
 // SPA Fallback for generic routes (must be placed before generic error handler)
