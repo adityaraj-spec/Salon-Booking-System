@@ -593,8 +593,79 @@ export const appointmentCancelled = (email, customerName, salonName, bookingTime
     return sendTemplateEmail(email, `Appointment Cancelled - ${salonName}`, html);
 };
 
-export const paymentReceipt = (email, customerName, salonName, amount, paymentId, bookingReference) => {
-    const payment = renderPaymentCard({ shopName: salonName, amount, paymentId });
+export const paymentReceipt = (
+    email,
+    customerName,
+    salonName,
+    bookingTimeOrAmount,
+    amountOrPaymentId,
+    paymentIdOrBookingRef,
+    bookingReference
+) => {
+    let bookingTime = null;
+    let amount = null;
+    let paymentId = null;
+    let bookingRef = null;
+
+    // Detect if called with 7 arguments: (email, customerName, salonName, bookingTime, amount, paymentId, bookingReference)
+    if (bookingReference !== undefined) {
+        bookingTime = bookingTimeOrAmount;
+        amount = amountOrPaymentId;
+        paymentId = paymentIdOrBookingRef;
+        bookingRef = bookingReference;
+    } else {
+        // 6 arguments passed:
+        // Check if 4th parameter is date-like (contains 'at', '-', ':', 'AM', 'PM', or is a Date)
+        const isDateLike = (val) => {
+            if (!val) return false;
+            if (val instanceof Date) return true;
+            const s = String(val).trim();
+            return s.includes(" at ") || s.includes("T") || s.includes("AM") || s.includes("PM") || (s.includes("-") && s.length >= 8);
+        };
+
+        if (isDateLike(bookingTimeOrAmount)) {
+            // (email, customerName, salonName, bookingTime, amount, paymentId)
+            bookingTime = bookingTimeOrAmount;
+            amount = amountOrPaymentId;
+            paymentId = paymentIdOrBookingRef;
+        } else {
+            // Original signature: (email, customerName, salonName, amount, paymentId, bookingReference)
+            amount = bookingTimeOrAmount;
+            paymentId = amountOrPaymentId;
+            bookingRef = paymentIdOrBookingRef;
+        }
+    }
+
+    // Safety corrections:
+    // If paymentId is a number and amount is a string (e.g. 'pay_...'), swap them
+    if (typeof amount === "string" && amount.startsWith("pay_") && (!isNaN(Number(paymentId)) || typeof paymentId === "number")) {
+        const temp = amount;
+        amount = paymentId;
+        paymentId = temp;
+    }
+
+    // If bookingRef starts with 'pay_', it was mistakenly passed the payment ID
+    if (typeof bookingRef === "string" && bookingRef.startsWith("pay_")) {
+        if (!paymentId) paymentId = bookingRef;
+        bookingRef = null;
+    }
+
+    const payment = renderPaymentCard({
+        shopName: salonName,
+        bookingTime,
+        amount,
+        paymentId,
+    });
+
+    const rows = [];
+    if (hasValue(bookingRef)) {
+        rows.push({ label: "Booking reference", value: bookingRef });
+    }
+
+    const ctaHref = hasValue(bookingRef)
+        ? `${FRONTEND_URL()}/bookings/${bookingRef}`
+        : `${FRONTEND_URL()}/bookings`;
+
     const html = renderEmail({
         preheader: `Payment receipt for your visit to ${salonName}`,
         category: "Payment Receipt",
@@ -605,10 +676,8 @@ export const paymentReceipt = (email, customerName, salonName, amount, paymentId
             `Thank you for your payment. Here is the receipt for your transaction at ${salonName}.`,
         ],
         payment,
-        rows: [
-            { label: "Booking reference", value: bookingReference },
-        ],
-        cta: { label: "View Booking", href: `${FRONTEND_URL()}/bookings/${bookingReference}` },
+        rows,
+        cta: { label: "View Booking", href: ctaHref },
     });
     return sendTemplateEmail(email, `Payment Receipt - ${salonName}`, html);
 };
@@ -789,7 +858,7 @@ export const sendVerificationEmail = (email, userName, code) => emailVerificatio
 export const sendLoginEmail = (email, userName, details) => accountNotification(email, userName, details || "New login detected on your account", new Date());
 export const sendLogoutEmail = (email, userName, details) => accountNotification(email, userName, details || "Account session ended", new Date());
 export const sendShopAddedEmail = (email, ownerName, shopName) => listingUpdate(email, ownerName, shopName, "Your salon has been successfully added to SalonNow.");
-export const sendPaymentReceiptEmail = (email, customerName, salonName, amount, paymentId, bookingReference) => paymentReceipt(email, customerName, salonName, amount, paymentId, bookingReference);
+export const sendPaymentReceiptEmail = (email, customerName, salonName, bookingTimeOrAmount, amountOrPaymentId, paymentIdOrBookingRef, bookingReference) => paymentReceipt(email, customerName, salonName, bookingTimeOrAmount, amountOrPaymentId, paymentIdOrBookingRef, bookingReference);
 export const sendOwnerPaymentNotificationEmail = (email, ownerName, customerName, shopName, bookingTime, amount, paymentId) => ownerPaidBooking(email, ownerName, customerName, shopName, bookingTime, amount, paymentId);
 export const sendBookingConfirmationEmail = (email, customerName, salonName, bookingTime, bookingReference, services, amount) => bookingConfirmation(email, customerName, salonName, bookingTime, bookingReference, services, amount);
 export const sendBookingPendingEmail = (email, customerName, salonName, bookingTime, bookingReference) => bookingPending(email, customerName, salonName, bookingTime, bookingReference);

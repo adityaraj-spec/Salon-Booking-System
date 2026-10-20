@@ -109,7 +109,8 @@ export const confirmPaymentAndBooking = async ({
               booking.salon?.name || "Salon",
               bookingTime,
               booking.totalAmount,
-              result.payment.razorpayPaymentId
+              result.payment.razorpayPaymentId,
+              booking._id?.toString()
             )
           : Promise.resolve(),
         booking.salon?.owner?.email
