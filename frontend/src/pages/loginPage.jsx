@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Scissors, Eye, EyeOff } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosConfig";
 import { useAuth } from "../context/AuthContext";
 import { useNotification } from "../context/NotificationContext";
@@ -12,6 +12,7 @@ export function LoginPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const navigate = useNavigate();
+    const location = useLocation();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -39,7 +40,10 @@ export function LoginPage() {
                 if (user.role === 'unassigned') {
                     navigate("/role-selection", { replace: true });
                 } else {
-                    navigate("/home", { replace: true });
+                    const destination = typeof location.state?.from === "string"
+                        ? location.state.from
+                        : "/home";
+                    navigate(destination, { replace: true });
                 }
             } else {
                 const msg = response.data.message || "Login failed";

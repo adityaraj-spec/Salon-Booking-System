@@ -55,11 +55,13 @@ function App() {
                     <Route element={<MainLayout />}>
                       <Route index element={<LandingPage />} />
                       <Route path="role-selection" element={<RoleSelectionPage />} />
+                      {/* Public discovery routes: guests may browse salons before signing in. */}
+                      <Route path="home" element={<Shops />} />
+                      <Route path="shop/:id" element={<Shop />} />
+                      <Route path="explore" element={<Navigate to="/home" replace />} />
                       
                       <Route element={<RoleProtectedRoute />}>
-                        <Route path="home" element={<Shops />} />
                         <Route path="create-salon" element={<CreateSalonPage />} />
-                        <Route path="shop/:id" element={<Shop />} />
                         <Route path="booking/:id" element={<BookingPage />} />
                         <Route path="profile" element={<ProfilePage />} />
                         <Route path="bookings" element={<MyBookingsPage />} />
@@ -76,7 +78,6 @@ function App() {
                         <Route path="owner/listings" element={<Navigate to="/salon/manage" replace />} />
                         <Route path="owner/management" element={<Navigate to="/salon/manage" replace />} />
                         <Route path="owner/manage" element={<Navigate to="/salon/manage" replace />} />
-                        <Route path="explore" element={<Navigate to="/home" replace />} />
                         <Route path="account/profile" element={<Navigate to="/profile" replace />} />
                         <Route path="account/security" element={<Navigate to="/profile" replace />} />
                       </Route>

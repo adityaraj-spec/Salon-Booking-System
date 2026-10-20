@@ -47,10 +47,11 @@ function StaffSection({ staff, salonId, navigate, user, formatLabel }) {
 
     const handleBookWith = (e, member) => {
         e.stopPropagation();
+        const bookingPath = `/booking/${salonId}?staffId=${member._id}&staffName=${encodeURIComponent(member.name)}`;
         if (!user) {
-            navigate('/login');
+            navigate('/login', { state: { from: bookingPath } });
         } else {
-            navigate(`/booking/${salonId}?staffId=${member._id}&staffName=${encodeURIComponent(member.name)}`);
+            navigate(bookingPath);
         }
     };
 
@@ -430,6 +431,14 @@ export function Shop() {
     } = useBookingCart();
 
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+    const goToBooking = (bookingPath) => {
+        if (!user) {
+            navigate("/login", { state: { from: bookingPath } });
+            return;
+        }
+        navigate(bookingPath);
+    };
 
     const handleToggleService = (service) => {
         if (!salon) return;
@@ -1503,11 +1512,7 @@ export function Shop() {
                         {/* Primary Customer CTA: Always Book Appointment */}
                         <button 
                             onClick={() => {
-                                if (!user) {
-                                    navigate("/login");
-                                } else if (salon.isOpen) {
-                                    navigate(`/booking/${salon._id}`);
-                                }
+                                if (salon.isOpen) goToBooking(`/booking/${salon._id}`);
                             }}
                             disabled={!salon.isOpen}
                             className={`w-full font-bold py-4 rounded-xl transition-all active:scale-[0.98] shadow-md text-base flex items-center justify-center gap-2 ${
@@ -1640,11 +1645,7 @@ export function Shop() {
                                     type="button"
                                     onClick={() => {
                                         setIsDrawerOpen(false);
-                                        if (!user) {
-                                            navigate("/login");
-                                        } else {
-                                            navigate(`/booking/${salon._id}`);
-                                        }
+                                        goToBooking(`/booking/${salon._id}`);
                                     }}
                                     className="bg-[#1a1a1a] hover:bg-black text-white font-bold px-6 py-3 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center gap-2"
                                 >
@@ -1689,11 +1690,7 @@ export function Shop() {
                         <button
                             type="button"
                             onClick={() => {
-                                if (!user) {
-                                    navigate("/login");
-                                } else {
-                                    navigate(`/booking/${salon._id}`);
-                                }
+                                goToBooking(`/booking/${salon._id}`);
                             }}
                             className="bg-[#D4AF37] hover:bg-[#c59e2a] text-[#1a1a1a] font-bold px-5 sm:px-6 py-2.5 rounded-xl text-sm sm:text-base transition-all shadow-md active:scale-95 flex items-center gap-2 shrink-0"
                         >
