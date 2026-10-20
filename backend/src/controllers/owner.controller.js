@@ -7,7 +7,12 @@ import { Booking } from "../models/booking.models.js";
 import { Staff } from "../models/staff.models.js";
 import { Notification } from "../models/notification.models.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
-import { sendProfileUpdateEmail, sendManagementUpdateEmail, sendBookingStatusEmail } from "../utils/mailer.js";
+import {
+    sendListingUpdateEmail,
+    sendManagementUpdateEmail,
+    sendBookingConfirmationEmail,
+    sendAppointmentCancelledEmail,
+} from "../utils/mailer.js";
 import { emitToUser } from "../socket.js";
 import { pickAllowedFields, STAFF_UPDATABLE_FIELDS } from "../utils/dto.js";
 import logger from "../lib/logger.js";
@@ -104,9 +109,9 @@ const updateOwnerSalon = asyncHandler(async (req, res) => {
 
     const updated = await Salon.findByIdAndUpdate(salon._id, { $set: updates }, { new: true });
 
-    // Trigger notification email
-    sendProfileUpdateEmail(req.user.email, req.user.fullName, updated.name)
-        .catch(err => logger.warn({ err: err?.message }, "[Owner] Failed to send profile update email"));
+    // Notify owner of successful salon listing update
+    sendListingUpdateEmail(req.user.email, req.user.fullName, updated.name, "Your salon details have been successfully updated.")
+        .catch(err => logger.warn({ err: err?.message }, "[Owner] Failed to send listing update email"));
 
     return res.status(200).json(new ApiResponse(200, updated, "Salon updated successfully"));
 });
@@ -137,8 +142,8 @@ const createOwnerService = asyncHandler(async (req, res) => {
     if (!name) throw new ApiError(400, "Service name is required");
     const service = await Service.create({ name, category, price, duration, description, salon: salon._id });
 
-    // Trigger notification email
-    sendManagementUpdateEmail(req.user.email, req.user.fullName, "Created new service", name, "Service")
+    // Notify owner of new service
+    sendManagementUpdateEmail(req.user.email, req.user.fullName, salon.name, `New service "${name}" has been added to your salon.`)
         .catch(err => logger.warn({ err: err?.message }, "[Owner] Failed to send service creation email"));
 
     return res.status(201).json(new ApiResponse(201, service, "Service created"));
@@ -160,8 +165,8 @@ const updateOwnerService = asyncHandler(async (req, res) => {
 
     const updated = await Service.findByIdAndUpdate(id, { $set: updates }, { new: true });
 
-    // Trigger notification email
-    sendManagementUpdateEmail(req.user.email, req.user.fullName, "Updated service details", updated.name, "Service")
+    // Notify owner of service update
+    sendManagementUpdateEmail(req.user.email, req.user.fullName, salon.name, `Service "${updated.name}" details have been successfully updated.`)
         .catch(err => logger.warn({ err: err?.message }, "[Owner] Failed to send service update email"));
 
     return res.status(200).json(new ApiResponse(200, updated, "Service updated"));
@@ -213,17 +218,27 @@ const updateOwnerBookingStatus = asyncHandler(async (req, res) => {
     booking.status = status;
     await booking.save();
 
-    // Send customer email notification
+    // Route to the correct email template based on the new booking status
     if (booking.customer?.email) {
-        const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
-        sendBookingStatusEmail(
-            booking.customer.email,
-            booking.customer.fullName,
-            salon.name,
-            booking.date,
-            booking.time,
-            statusLabel
-        ).catch(err => logger.warn({ err: err.message }, "[Owner] Failed to send booking status email"));
+        const bookingTime = booking.startTime
+            ? booking.startTime.toISOString()
+            : `${booking.date || ""} at ${booking.time || ""}`;
+        const bookingRef = booking._id.toString();
+        const customerEmail = booking.customer.email;
+        const customerName = booking.customer.fullName;
+
+        if (status === "cancelled" || status === "rejected") {
+            sendAppointmentCancelledEmail(
+                customerEmail, customerName, salon.name, bookingTime, bookingRef,
+                `Your appointment has been ${status} by the salon`
+            ).catch(err => logger.warn({ err: err.message }, "[Owner] Failed to send cancellation email"));
+        } else if (status === "confirmed") {
+            sendBookingConfirmationEmail(
+                customerEmail, customerName, salon.name, bookingTime, bookingRef,
+                booking.serviceNames || [], booking.totalAmount
+            ).catch(err => logger.warn({ err: err.message }, "[Owner] Failed to send confirmation email"));
+        }
+        // "completed" and "pending" — no outbound email
     }
 
     // Create notification for customer
@@ -263,8 +278,8 @@ const createOwnerStaff = asyncHandler(async (req, res) => {
     if (!name) throw new ApiError(400, "Staff name is required");
     const staff = await Staff.create({ name, role, experience, skills, salon: salon._id });
 
-    // Trigger notification email
-    sendManagementUpdateEmail(req.user.email, req.user.fullName, `Added new staff member: ${role || 'Stylist'}`, name, "Staff")
+    // Notify owner of new staff member
+    sendManagementUpdateEmail(req.user.email, req.user.fullName, salon.name, `New staff member "${name}" (${role || "Stylist"}) has been added to your salon.`)
         .catch(err => logger.warn({ err: err?.message }, "[Owner] Failed to send staff creation email"));
 
     return res.status(201).json(new ApiResponse(201, staff, "Staff member added"));
@@ -284,8 +299,8 @@ const updateOwnerStaff = asyncHandler(async (req, res) => {
         { new: true }
     );
 
-    // Trigger notification email
-    sendManagementUpdateEmail(req.user.email, req.user.fullName, "Updated staff profile", updated.name, "Staff")
+    // Notify owner of staff profile update
+    sendManagementUpdateEmail(req.user.email, req.user.fullName, salon.name, `Staff member "${updated.name}" profile has been successfully updated.`)
         .catch(err => logger.warn({ err: err?.message }, "[Owner] Failed to send staff update email"));
 
     return res.status(200).json(new ApiResponse(200, updated, "Staff updated"));

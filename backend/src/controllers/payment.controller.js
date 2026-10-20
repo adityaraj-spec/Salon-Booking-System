@@ -9,6 +9,8 @@ import {
   initiateRefund,
 } from "../services/payment.service.js";
 import { WebhookEvent } from "../models/webhookEvent.model.js";
+import { Booking } from "../models/booking.models.js";
+import { sendAppointmentCancelledEmail } from "../utils/mailer.js";
 import logger from "../lib/logger.js";
 
 export const createOrderHandler = asyncHandler(async (req, res) => {
@@ -174,6 +176,31 @@ export const refundHandler = asyncHandler(async (req, res) => {
     customerId: req.user._id,
     reason,
   });
+
+  // ── Notify customer of cancellation + refund outcome (fire-and-forget) ──
+  Booking.findById(result.booking._id)
+    .populate("customer", "fullName email")
+    .populate({ path: "salon", select: "name" })
+    .then((populatedBooking) => {
+      if (!populatedBooking?.customer?.email) return;
+      const refundNote = result.refundAmount > 0
+        ? `A refund of \u20b9${result.refundAmount} has been initiated to your original payment method.`
+        : "No refund is applicable as per the cancellation policy.";
+      const cancellationReason = reason
+        ? `${reason}. ${refundNote}`
+        : `Customer requested cancellation. ${refundNote}`;
+      sendAppointmentCancelledEmail(
+        populatedBooking.customer.email,
+        populatedBooking.customer.fullName,
+        populatedBooking.salon?.name || "Salon",
+        populatedBooking.startTime
+          ? populatedBooking.startTime.toISOString()
+          : `${populatedBooking.date || ""} at ${populatedBooking.time || ""}`,
+        populatedBooking._id.toString(),
+        cancellationReason
+      ).catch(err => logger.warn({ err: err?.message }, "[Payment] Failed to send refund cancellation email"));
+    })
+    .catch(err => logger.warn({ err: err?.message }, "[Payment] Booking populate failed for refund cancellation email"));
 
   return res.status(200).json(
     new ApiResponse(200, result, "Booking cancelled and refund processed successfully")

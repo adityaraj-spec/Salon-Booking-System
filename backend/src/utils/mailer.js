@@ -800,6 +800,21 @@ export const sendAccountNotificationEmail = (email, userName, actionDescription,
 export const sendListingUpdateEmail = (email, ownerName, shopName, updateDetails) => listingUpdate(email, ownerName, shopName, updateDetails);
 export const sendProfileUpdateEmail = (email, userName, updateType) => profileUpdate(email, userName, updateType);
 export const sendManagementUpdateEmail = (email, ownerName, shopName, details) => managementUpdate(email, ownerName, shopName, details);
-export const sendBookingStatusEmail = (email, customerName, salonName, bookingTime, bookingReference, status) => bookingUpdate(email, customerName, salonName, bookingTime, bookingTime, bookingReference);
+export const sendBookingStatusEmail = (email, customerName, salonName, bookingTime, bookingReference, status, reason) => {
+    const normalizedStatus = String(status || "").toLowerCase().trim();
+    if (normalizedStatus === "cancelled" || normalizedStatus === "rejected") {
+        return appointmentCancelled(email, customerName, salonName, bookingTime, bookingReference,
+            reason || `Your appointment has been ${normalizedStatus}`);
+    }
+    if (normalizedStatus === "confirmed") {
+        return bookingConfirmation(email, customerName, salonName, bookingTime, bookingReference, [], null);
+    }
+    // Generic fallback — completed, pending, or any future status
+    return accountNotification(
+        email, customerName,
+        `Your booking at ${salonName || "the salon"} has been updated to: ${status || "unknown"}.`,
+        new Date()
+    );
+};
 export const sendOwnerNewBookingEmail = (email, ownerName, customerName, salonName, bookingTime, services, bookingReference) => newBookingRequest(email, ownerName, customerName, salonName, bookingTime, services, bookingReference);
 export const testEmailConfiguration = (email, testRecipient) => emailConfigurationTest(email, testRecipient);
