@@ -216,6 +216,7 @@ const updateOwnerBookingStatus = asyncHandler(async (req, res) => {
     const booking = await Booking.findOne({ _id: id, salon: salon._id }).populate("customer", "fullName email");
     if (!booking) throw new ApiError(404, "Booking not found or unauthorized");
 
+    const previousStatus = booking.status;
     booking.status = status;
     await booking.save();
 
@@ -239,7 +240,7 @@ const updateOwnerBookingStatus = asyncHandler(async (req, res) => {
                 customerEmail, customerName, salon.name, bookingTime, bookingRef,
                 `Your appointment has been ${status} by the salon`
             ).catch(err => logger.warn({ err: err.message }, "[Owner] Failed to send cancellation email"));
-        } else if (status === "confirmed") {
+        } else if (status === "confirmed" && previousStatus !== "confirmed") {
             sendBookingConfirmationEmail(
                 customerEmail, customerName, salon.name, bookingTime, bookingRef,
                 booking.serviceNames || [], booking.totalAmount

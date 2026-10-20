@@ -7,11 +7,8 @@ import { Salon } from "../models/salon.models.js";
 import { Notification } from "../models/notification.models.js";
 import {
     sendBookingConfirmationEmail,
-    sendBookingPendingEmail,
     sendBookingUpdateEmail,
     sendAppointmentCancelledEmail,
-    sendNewBookingRequestEmail,
-    sendOwnerNewBookingEmail,
 } from "../utils/mailer.js";
 import logger from "../lib/logger.js";
 import { emitToUser } from "../socket.js";
@@ -54,49 +51,8 @@ const createBooking = asyncHandler(async (req, res) => {
         pointsToRedeem: req.body.pointsToRedeem !== undefined && req.body.pointsToRedeem !== null ? Number(req.body.pointsToRedeem) : null,
     });
 
-    const salon = await Salon.findById(salonId).populate("owner", "fullName email");
-    if (salon) {
-        sendBookingConfirmationEmail(
-            req.user.email?.trim().toLowerCase(),
-            req.user.fullName,
-            salon.name,
-            `${date} at ${time}`,
-            booking._id.toString(),
-            serviceNames || [],
-            booking.totalAmount
-        ).catch(err => logger.warn({ err: err?.message }, "[Booking] Failed to send booking confirmation email"));
-
-        const ownerId = salon.owner?._id || salon.owner;
-        const ownerEmail = salon.owner?.email;
-        const ownerName = salon.owner?.fullName || "Salon Owner";
-
-        if (ownerEmail) {
-            sendOwnerNewBookingEmail(
-                ownerEmail,
-                ownerName,
-                req.user.fullName,
-                salon.name,
-                `${date} at ${time}`,
-                serviceNames || [],
-                booking._id.toString()
-            ).catch(err => logger.warn({ err: err?.message }, "[Booking] Failed to send owner booking notification email"));
-        }
-
-        const notification = await Notification.create({
-            recipient: ownerId,
-            sender: req.user._id,
-            title: "New Confirmed Booking",
-            message: `New booking from ${req.user.fullName} for ${date} at ${time}.`,
-            type: "booking_confirmed",
-            bookingId: booking._id
-        });
-
-        emitToUser(ownerId, "newNotification", notification);
-        emitToUser(ownerId, "bookingUpdate", { booking, type: "NEW_REQUEST" });
-    }
-
     return res.status(201).json(
-        new ApiResponse(201, booking, "Your booking has been successfully confirmed!")
+        new ApiResponse(201, booking, "Booking initiated successfully; payment is required to confirm it.")
     );
 });
 
@@ -180,6 +136,7 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
         throw new ApiError(403, "You do not have permission to manage this booking");
     }
 
+    const previousStatus = booking.status;
     booking.status = status;
     await booking.save();
 
@@ -218,7 +175,7 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
             customerEmail, customerName, salonDisplayName, bookingTime, bookingRef,
             "Your appointment has been cancelled by the salon"
         ).catch(err => logger.warn({ err: err?.message }, "[Booking] Failed to send cancellation email"));
-    } else if (status === "confirmed") {
+    } else if (status === "confirmed" && previousStatus !== "confirmed") {
         sendBookingConfirmationEmail(
             customerEmail, customerName, salonDisplayName, bookingTime, bookingRef,
             booking.serviceNames || [], booking.totalAmount
@@ -303,49 +260,6 @@ const initiateBookingHandler = asyncHandler(async (req, res) => {
         useLoyaltyPoints: Boolean(useLoyaltyPoints),
         pointsToRedeem: pointsToRedeem !== undefined && pointsToRedeem !== null ? Number(pointsToRedeem) : null,
     });
-
-    // ── Fire-and-forget: notify customer + owner after the booking row is committed ──
-    Salon.findById(booking.salon)
-        .populate("owner", "fullName email")
-        .then(async (salon) => {
-            if (!salon) return;
-            const customerEmail = req.user.email?.trim().toLowerCase();
-            const customerName = req.user.fullName;
-            const salonName = salon.name;
-            const bookingTime = booking.startTime
-                ? booking.startTime.toISOString()
-                : `${booking.date || ""} at ${booking.time || ""}`;
-            const bookingRef = booking._id.toString();
-            const serviceNames = booking.serviceNames || [];
-
-            await Promise.allSettled([
-                // Customer: booking received, awaiting payment
-                sendBookingPendingEmail(customerEmail, customerName, salonName, bookingTime, bookingRef),
-                // Owner: new booking request received
-                salon.owner?.email
-                    ? sendNewBookingRequestEmail(
-                        salon.owner.email,
-                        salon.owner.fullName || "Salon Owner",
-                        customerName, salonName, bookingTime, serviceNames, bookingRef
-                    )
-                    : Promise.resolve(),
-            ]);
-
-            // In-app + socket notification for salon owner
-            if (salon.owner?._id) {
-                const notification = await Notification.create({
-                    recipient: salon.owner._id,
-                    sender: req.user._id,
-                    title: "New Booking Request",
-                    message: `New booking from ${customerName} for ${bookingTime}.`,
-                    type: "booking_confirmed",
-                    bookingId: booking._id,
-                });
-                emitToUser(salon.owner._id, "newNotification", notification);
-                emitToUser(salon.owner._id, "bookingUpdate", { booking, type: "NEW_REQUEST" });
-            }
-        })
-        .catch(err => logger.warn({ err: err?.message }, "[Booking] Post-initiation notification failed"));
 
     return res.status(201).json(new ApiResponse(201, booking, "Booking initiated successfully"));
 });

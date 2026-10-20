@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axiosInstance from "../api/axiosConfig";
 import { useNotification } from "../context/NotificationContext";
+import { useSocket } from "../context/SocketContext";
 import {
     Calendar,
     Clock,
@@ -20,12 +21,13 @@ import { NavLink } from "react-router-dom";
 
 const SalonBookingsPage = () => {
     const { showNotification } = useNotification();
+    const socket = useSocket();
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState("all");
     const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-    const fetchBookings = async () => {
+    const fetchBookings = useCallback(async () => {
         setLoading(true);
         try {
             const response = await axiosInstance.get("/bookings/salon-bookings");
@@ -41,11 +43,37 @@ const SalonBookingsPage = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         fetchBookings();
-    }, []);
+    }, [fetchBookings]);
+
+    useEffect(() => {
+        if (!socket) return undefined;
+
+        const handleBookingUpdate = (data) => {
+            if (!data?.booking?._id) {
+                fetchBookings();
+                return;
+            }
+
+            setBookings((currentBookings) => {
+                const nextBooking = data.booking;
+                const exists = currentBookings.some((booking) => booking._id === nextBooking._id);
+                return exists
+                    ? currentBookings.map((booking) => booking._id === nextBooking._id ? { ...booking, ...nextBooking } : booking)
+                    : [nextBooking, ...currentBookings];
+            });
+        };
+
+        socket.on("bookingUpdate", handleBookingUpdate);
+        socket.on("salonBookingUpdate", handleBookingUpdate);
+        return () => {
+            socket.off("bookingUpdate", handleBookingUpdate);
+            socket.off("salonBookingUpdate", handleBookingUpdate);
+        };
+    }, [fetchBookings, socket]);
 
     const handleStatusUpdate = async (bookingId, newStatus) => {
         try {

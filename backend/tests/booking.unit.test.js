@@ -6,10 +6,11 @@ import { Salon } from "../src/models/salon.models.js";
 import { BookingHold } from "../src/models/bookingHold.model.js";
 import { Booking } from "../src/models/booking.models.js";
 import { Service } from "../src/models/service.models.js";
+import { Staff } from "../src/models/staff.models.js";
 import { User } from "../src/models/user.models.js";
 import { createHold, expireHold } from "../src/services/hold.service.js";
 import { initiateBookingFromHold } from "../src/services/booking.service.js";
-import { getSalonCapacity } from "../src/services/availability.service.js";
+import { getAvailableSlots, getSalonCapacity } from "../src/services/availability.service.js";
 
 let replSet;
 
@@ -31,6 +32,7 @@ beforeEach(async () => {
   await Salon.createIndexes();
   await BookingHold.createIndexes();
   await Booking.createIndexes();
+  await Staff.deleteMany({});
 });
 
 // ─── Overlap-Query Capacity Tests ─────────────────────────────────────────────
@@ -75,6 +77,23 @@ describe("Booking Engine Unit Tests (Overlap-Query Capacity)", () => {
     expect(getSalonCapacity({})).toBe(5);
     expect(getSalonCapacity({ staff: [{ _id: "one" }, { _id: "two" }] })).toBe(2);
     expect(getSalonCapacity({ totalSeats: 7 })).toBe(7);
+  });
+
+  test("falls back to salon hours for a stylist without a custom schedule", async () => {
+    const staff = await Staff.create({
+      salon: salon._id,
+      name: "Unscheduled Stylist",
+    });
+
+    const availability = await getAvailableSlots({
+      salonId: salon._id.toString(),
+      date: "2026-08-01",
+      staffId: staff._id.toString(),
+      durationMinutes: 30,
+    });
+
+    expect(availability.slots.length).toBeGreaterThan(0);
+    expect(availability.slots.every((slot) => slot.available && slot.seatsLeft === 1)).toBe(true);
   });
 
   test("Should create a 10-minute hold and record it as an active BookingHold", async () => {

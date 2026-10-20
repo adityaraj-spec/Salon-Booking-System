@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosConfig";
 import { useBookingCart } from "../context/BookingCartContext";
+import { useSocket } from "../context/SocketContext";
 import { Calendar, Clock, MapPin, Scissors, CheckCircle2, Phone, User, AlertCircle, X, Loader2, RotateCcw } from "lucide-react";
 import { BookingCardSkeleton } from "../components/skeletons/index.jsx";
 import salonPlaceholder from "../assets/salon1.jpg";
@@ -10,6 +11,7 @@ import salonPlaceholder from "../assets/salon1.jpg";
 export function MyBookingsPage() {
     const navigate = useNavigate();
     const { setCartServices } = useBookingCart();
+    const socket = useSocket();
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [cancelModalBooking, setCancelModalBooking] = useState(null);
@@ -19,7 +21,7 @@ export function MyBookingsPage() {
     const [cancelSuccess, setCancelSuccess] = useState("");
     const [bookAgainLoading, setBookAgainLoading] = useState(null);
 
-    const fetchBookings = async () => {
+    const fetchBookings = useCallback(async () => {
         try {
             const response = await axiosInstance.get("/bookings/my-bookings");
             if (response.data.success) {
@@ -30,7 +32,7 @@ export function MyBookingsPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     // Sprint 1.5: Book Again — pre-fills cart from past booking's snapshot services
     const handleBookAgain = async (booking) => {
@@ -66,7 +68,29 @@ export function MyBookingsPage() {
 
     useEffect(() => {
         fetchBookings();
-    }, []);
+    }, [fetchBookings]);
+
+    useEffect(() => {
+        if (!socket) return undefined;
+
+        const handleBookingUpdate = (data) => {
+            if (!data?.booking?._id) {
+                fetchBookings();
+                return;
+            }
+
+            setBookings((currentBookings) => {
+                const nextBooking = data.booking;
+                const exists = currentBookings.some((booking) => booking._id === nextBooking._id);
+                return exists
+                    ? currentBookings.map((booking) => booking._id === nextBooking._id ? { ...booking, ...nextBooking } : booking)
+                    : [nextBooking, ...currentBookings];
+            });
+        };
+
+        socket.on("bookingUpdate", handleBookingUpdate);
+        return () => socket.off("bookingUpdate", handleBookingUpdate);
+    }, [fetchBookings, socket]);
 
     const handleConfirmCancel = async () => {
         if (!cancelModalBooking) return;

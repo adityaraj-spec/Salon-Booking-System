@@ -56,6 +56,27 @@ export const getSalonCapacity = (salon, staffId = null) => {
   return normalizedCapacity > 0 ? normalizedCapacity : DEFAULT_CAPACITY;
 };
 
+const getSalonOperatingWindow = (salon, dayOfWeek) => {
+  const configuredOpenMinutes = timeToMinutes(salon?.openingHours);
+  const configuredCloseMinutes = timeToMinutes(salon?.closingHours);
+  let openMinutes = Number.isFinite(configuredOpenMinutes) ? configuredOpenMinutes : DEFAULT_OPEN_MINUTES;
+  let closeMinutes = Number.isFinite(configuredCloseMinutes) ? configuredCloseMinutes : DEFAULT_CLOSE_MINUTES;
+  let isClosed = false;
+
+  if (Array.isArray(salon?.operatingHours) && salon.operatingHours.length > 0) {
+    const dayConfig = salon.operatingHours.find((hours) => hours.dayOfWeek === dayOfWeek);
+    if (dayConfig) {
+      isClosed = Boolean(dayConfig.isClosed);
+      const configuredDayOpen = timeToMinutes(dayConfig.openTime);
+      const configuredDayClose = timeToMinutes(dayConfig.closeTime);
+      if (Number.isFinite(configuredDayOpen)) openMinutes = configuredDayOpen;
+      if (Number.isFinite(configuredDayClose)) closeMinutes = configuredDayClose;
+    }
+  }
+
+  return { openMinutes, closeMinutes, isClosed };
+};
+
 // ─── Core Overlap Query ───────────────────────────────────────────────────────
 
 // In-memory promise coalescing map for in-flight getAvailableSlots requests
@@ -309,24 +330,11 @@ export const getAvailableSlots = async ({
   const dayOfWeek = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
 
   // 1. Get salon operating hours for this day
-  const configuredOpenMinutes = timeToMinutes(salon.openingHours);
-  const configuredCloseMinutes = timeToMinutes(salon.closingHours);
-  let openMinutes = Number.isFinite(configuredOpenMinutes) ? configuredOpenMinutes : DEFAULT_OPEN_MINUTES;
-  let closeMinutes = Number.isFinite(configuredCloseMinutes) ? configuredCloseMinutes : DEFAULT_CLOSE_MINUTES;
-
-  if (salon.operatingHours && salon.operatingHours.length > 0) {
-    const dayConfig = salon.operatingHours.find((h) => h.dayOfWeek === dayOfWeek);
-    if (dayConfig) {
-      if (dayConfig.isClosed) {
-        const result = { date, slots: [], reason: "Salon is closed on this day." };
-        await cacheSetAvailability(cacheKey, result, salonId, date, AVAILABILITY_CACHE_TTL_SECONDS);
-        return result;
-      }
-      const configuredDayOpen = timeToMinutes(dayConfig.openTime);
-      const configuredDayClose = timeToMinutes(dayConfig.closeTime);
-      if (Number.isFinite(configuredDayOpen)) openMinutes = configuredDayOpen;
-      if (Number.isFinite(configuredDayClose)) closeMinutes = configuredDayClose;
-    }
+  const { openMinutes, closeMinutes, isClosed } = getSalonOperatingWindow(salon, dayOfWeek);
+  if (isClosed) {
+    const result = { date, slots: [], reason: "Salon is closed on this day." };
+    await cacheSetAvailability(cacheKey, result, salonId, date, AVAILABILITY_CACHE_TTL_SECONDS);
+    return result;
   }
 
   // 2. Keep the salon schedule visible even when a selected staff member is unavailable.
@@ -337,12 +345,22 @@ export const getAvailableSlots = async ({
       staffAvailability = { available: false, reason: "Staff member is not available." };
     } else {
       const exception = (staff.exceptions || []).find((ex) => ex.date === date);
-      const daySchedule = (staff.schedule || []).find((s) => s.dayOfWeek === dayOfWeek);
+      const hasCustomSchedule = Array.isArray(staff.schedule) && staff.schedule.length > 0;
+      const daySchedule = hasCustomSchedule
+        ? staff.schedule.find((schedule) => schedule.dayOfWeek === dayOfWeek)
+        : null;
 
       if (exception) {
         staffAvailability = {
           available: false,
           reason: `Staff unavailable: ${exception.reason || exception.type}`,
+        };
+      } else if (!hasCustomSchedule) {
+        staffAvailability = {
+          available: true,
+          start: openMinutes,
+          end: closeMinutes,
+          breaks: [],
         };
       } else if (!daySchedule || !daySchedule.isWorking) {
         staffAvailability = { available: false, reason: "Staff does not work on this day." };

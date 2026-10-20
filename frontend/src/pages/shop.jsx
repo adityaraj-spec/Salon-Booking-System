@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, NavLink, useNavigate } from "react-router-dom";
 import { Star, MapPin, Users, Clock, ShieldCheck, Sparkles, ArrowLeft, MessageSquare, Send, Trash2, Heart, Phone, Scissors, Award, ChevronLeft, ChevronRight, X, Images, Settings, Share2, Check, Plus, ShoppingBag, ChevronUp, ChevronDown } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
@@ -8,6 +8,14 @@ import axiosInstance from "../api/axiosConfig";
 import { SalonMap } from "../components/SalonMap";
 import { ShopDetailSkeleton } from "../components/skeletons/index.jsx";
 import salonPlaceholder from "../assets/salon1.jpg";
+
+const getTodayDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+};
 
 // Sprint 2.3: Staff / Stylist Profile Cards — horizontally scrollable, interactive
 function StaffSection({ staff, salonId, navigate, user, formatLabel }) {
@@ -376,6 +384,15 @@ export function Shop() {
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [availabilityDate, setAvailabilityDate] = useState(getTodayDate);
+    const [liveAvailability, setLiveAvailability] = useState({
+        loading: true,
+        error: false,
+        hasSlots: false,
+        seatsLeft: null,
+        maxCapacity: null,
+        reason: "",
+    });
     
     // Review form state
     const [rating, setRating] = useState(0);
@@ -493,6 +510,43 @@ export function Shop() {
         return trimmed;
     };
 
+    const fetchLiveAvailability = useCallback(async () => {
+        if (!id || !availabilityDate) return;
+
+        setLiveAvailability((current) => ({ ...current, loading: true, error: false }));
+        try {
+            const response = await axiosInstance.get(`/salons/${id}/availability`, {
+                params: {
+                    date: availabilityDate,
+                    durationMinutes: Math.max(30, Number(totalDurationMin) || 30),
+                },
+            });
+            const availability = response.data?.data || {};
+            const slots = Array.isArray(availability.slots) ? availability.slots : [];
+            const seatsBySlot = slots
+                .map((slot) => Number(slot?.seatsLeft ?? slot?.availableSeats))
+                .filter((seats) => Number.isFinite(seats));
+
+            setLiveAvailability({
+                loading: false,
+                error: false,
+                hasSlots: slots.length > 0,
+                seatsLeft: seatsBySlot.length > 0 ? Math.max(...seatsBySlot) : 0,
+                maxCapacity: Number(availability.maxCapacity ?? availability.totalSeats) || null,
+                reason: availability.reason || "",
+            });
+        } catch (err) {
+            setLiveAvailability({
+                loading: false,
+                error: true,
+                hasSlots: false,
+                seatsLeft: null,
+                maxCapacity: null,
+                reason: "",
+            });
+        }
+    }, [availabilityDate, id, totalDurationMin]);
+
     useEffect(() => {
         const fetchSalonDetails = async () => {
             setLoading(true);
@@ -548,6 +602,32 @@ export function Shop() {
             fetchStaff();
         }
     }, [id]);
+
+    useEffect(() => {
+        if (!id) return undefined;
+
+        fetchLiveAvailability();
+        const refreshTimer = window.setInterval(fetchLiveAvailability, 15000);
+        return () => window.clearInterval(refreshTimer);
+    }, [fetchLiveAvailability, id]);
+
+    useEffect(() => {
+        if (!socket || !id) return undefined;
+
+        const handleAvailabilityUpdate = (data) => {
+            const eventSalonId = data?.salonId || data?.booking?.salon?._id || data?.booking?.salon;
+            if (!eventSalonId || String(eventSalonId) === String(id)) {
+                fetchLiveAvailability();
+            }
+        };
+
+        socket.on("salonBookingUpdate", handleAvailabilityUpdate);
+        socket.on("bookingUpdate", handleAvailabilityUpdate);
+        return () => {
+            socket.off("salonBookingUpdate", handleAvailabilityUpdate);
+            socket.off("bookingUpdate", handleAvailabilityUpdate);
+        };
+    }, [fetchLiveAvailability, id, socket]);
 
     useEffect(() => {
         if (socket && id) {
@@ -1384,11 +1464,32 @@ export function Shop() {
                             </div>
                             <div className="p-3.5 bg-gray-50/70 border border-gray-100 rounded-xl flex items-center justify-between text-xs">
                                 <div className="flex items-center gap-2.5 text-gray-600 font-medium">
-                                    <Sparkles size={16} className={salon.availableSeats > 0 ? "text-emerald-500" : "text-rose-500"} /> 
-                                    Live Availability
+                                    <Sparkles size={16} className={liveAvailability.seatsLeft > 0 ? "text-emerald-500" : "text-rose-500"} />
+                                    <div className="flex flex-col gap-1">
+                                        <span>Live Availability</span>
+                                        <label htmlFor="availability-date" className="text-[10px] text-gray-400 font-normal">
+                                            For {" "}
+                                            <input
+                                                id="availability-date"
+                                                type="date"
+                                                value={availabilityDate}
+                                                min={getTodayDate()}
+                                                onChange={(event) => setAvailabilityDate(event.target.value)}
+                                                className="bg-transparent text-[10px] text-gray-600 outline-none"
+                                            />
+                                        </label>
+                                    </div>
                                 </div>
-                                <span className={`font-semibold ${salon.availableSeats > 0 ? "text-emerald-700" : "text-rose-600"}`}>
-                                    {salon.availableSeats > 0 ? `${salon.availableSeats} Seats Available` : "Full House"}
+                                <span className={`font-semibold text-right ${liveAvailability.seatsLeft > 0 ? "text-emerald-700" : "text-rose-600"}`}>
+                                    {liveAvailability.loading
+                                        ? "Checking..."
+                                        : liveAvailability.error
+                                            ? "Unavailable"
+                                            : !liveAvailability.hasSlots
+                                                ? (liveAvailability.reason || "No slots")
+                                                : liveAvailability.seatsLeft > 0
+                                                    ? `${liveAvailability.seatsLeft} Seats Available`
+                                                    : "Full House"}
                                 </span>
                             </div>
                         </div>

@@ -1,13 +1,15 @@
 import { Payment } from "../models/payment.models.js";
 import { Refund } from "../models/refund.models.js";
 import { Booking } from "../models/booking.models.js";
+import { Notification } from "../models/notification.models.js";
 import { getRazorpayKeyId, verifyRazorpaySignature, verifyWebhookSignature } from "../utils/razorpay.js";
 import { razorpayCreateOrder, razorpayRefundPayment } from "../utils/razorpayBreaker.js";
 import { writeOutboxEvent } from "./outbox.service.js";
 import { withTransactionRetry } from "../utils/transaction.js";
 import ApiError from "../utils/apiError.js";
 import logger from "../lib/logger.js";
-import { sendPaymentReceiptEmail, sendOwnerPaymentNotificationEmail } from "../utils/mailer.js";
+import { sendBookingConfirmationEmail, sendOwnerConfirmedBookingEmail } from "../utils/mailer.js";
+import { emitToUser } from "../socket.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SHARED IDEMPOTENT CONFIRMATION FUNCTION — I3, I4, I8, I9
@@ -44,6 +46,10 @@ export const confirmPaymentAndBooking = async ({
       throw new ApiError(404, "Payment record not found for this order");
     }
 
+    if (bookingId && payment.booking.toString() !== bookingId.toString()) {
+      throw new ApiError(400, "Payment order does not belong to the requested booking");
+    }
+
     // ── Idempotency short-circuit ─────────────────────────────────────────
     // If already captured, return success without re-mutating ANY state.
     // This is the mechanism that enforces I3 and I8 on both paths.
@@ -59,8 +65,7 @@ export const confirmPaymentAndBooking = async ({
     payment.status = "captured";
     await payment.save({ session });
 
-    const targetBookingId = bookingId || payment.booking;
-    const booking = await Booking.findById(targetBookingId).session(session);
+    const booking = await Booking.findById(payment.booking).session(session);
     if (!booking) {
       throw new ApiError(404, "Booking not found");
     }
@@ -91,40 +96,90 @@ export const confirmPaymentAndBooking = async ({
 
   if (!result.alreadyConfirmed && result.booking) {
     const booking = await Booking.findById(result.booking._id)
-      .populate("customer", "fullName email")
+      .populate("customer", "fullName email phonenumber")
       .populate("staff", "name")
       .populate({
         path: "salon",
-        select: "name owner",
-        populate: { path: "owner", select: "fullName email" },
+        select: "name city state address images contactNumber owner",
+        populate: { path: "owner", select: "fullName email phonenumber" },
       });
 
     if (booking) {
       const bookingTime = `${booking.date || ""} at ${booking.time || ""}`;
+      const serviceNames = booking.snapshotServices?.length
+        ? booking.snapshotServices.map((service) => service.name).filter(Boolean)
+        : booking.serviceNames || [];
+      const paidAmount = booking.amounts?.total > 0
+        ? booking.amounts.total
+        : booking.totalAmount > 0
+          ? booking.totalAmount
+          : result.payment.amount;
       await Promise.allSettled([
         booking.customer?.email
-          ? sendPaymentReceiptEmail(
+          ? sendBookingConfirmationEmail(
               booking.customer.email,
               booking.customer.fullName,
               booking.salon?.name || "Salon",
               bookingTime,
-              booking.totalAmount,
-              result.payment.razorpayPaymentId,
-              booking._id?.toString()
+              booking._id?.toString(),
+              serviceNames,
+              paidAmount,
+              new Date()
             )
           : Promise.resolve(),
         booking.salon?.owner?.email
-          ? sendOwnerPaymentNotificationEmail(
+          ? sendOwnerConfirmedBookingEmail(
               booking.salon.owner.email,
               booking.salon.owner.fullName,
               booking.customer?.fullName || "A customer",
               booking.salon.name,
               bookingTime,
-              booking.totalAmount,
-              result.payment.razorpayPaymentId
+              serviceNames,
+              booking._id?.toString(),
+              paidAmount,
+              result.payment.razorpayPaymentId,
+              new Date()
             )
           : Promise.resolve(),
       ]);
+
+      const customerId = booking.customer?._id;
+      const ownerId = booking.salon?.owner?._id || booking.salon?.owner;
+      const notificationDocuments = [
+        customerId && {
+          recipient: customerId,
+          sender: ownerId,
+          title: "Booking Confirmed!",
+          message: `Your appointment at ${booking.salon?.name || "Salon"} for ${booking.date || "the selected date"} is confirmed.`,
+          type: "booking_confirmed",
+          bookingId: booking._id,
+        },
+        ownerId && {
+          recipient: ownerId,
+          sender: customerId,
+          title: "New Confirmed Appointment",
+          message: `${booking.customer?.fullName || "A customer"} completed payment for ${booking.date || "the selected date"} at ${booking.time || "the selected time"}.`,
+          type: "booking_confirmed",
+          bookingId: booking._id,
+        },
+      ].filter(Boolean);
+
+      try {
+        const notifications = await Notification.create(notificationDocuments);
+        notifications.forEach((notification) => {
+          emitToUser(notification.recipient, "newNotification", notification);
+        });
+      } catch (err) {
+        logger.warn({ bookingId: booking._id, err: err.message }, "[Payment] Failed to create confirmation notifications");
+      }
+
+      const realtimeBooking = booking.toObject();
+      if (customerId) {
+        emitToUser(customerId, "bookingUpdate", { booking: realtimeBooking, type: "BOOKING_CONFIRMED" });
+      }
+      if (ownerId) {
+        emitToUser(ownerId, "bookingUpdate", { booking: realtimeBooking, type: "BOOKING_CONFIRMED" });
+      }
       logger.info({ bookingId: booking._id }, "[Payment] Confirmation emails dispatched");
     }
   }
