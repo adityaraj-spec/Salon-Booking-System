@@ -40,6 +40,7 @@ import getRedisClient from "./redis.js";
 import logger from "./logger.js";
 import Redis from "ioredis";
 import { cacheHitTotal, cacheMissTotal } from "./metrics.js";
+import { getRedisConnectionUrl, getRedisTlsOptions } from "./redis.js";
 
 const DEFAULT_TTL_SECONDS = 60;
 
@@ -241,17 +242,24 @@ export const subscribeCacheInvalidation = () => {
     subscriber = new Redis.Cluster(subOptions.nodes, {
       redisOptions: {
         password: process.env.REDIS_PASSWORD || undefined,
-        tls: process.env.REDIS_TLS === "true" ? {} : undefined,
+        tls: getRedisTlsOptions(),
       },
     });
   } else {
-    subscriber = new Redis({
-      host: subOptions.host,
-      port: subOptions.port,
+    const connectionUrl = getRedisConnectionUrl();
+    const subscriberOptions = {
       password: process.env.REDIS_PASSWORD || undefined,
-      tls: process.env.REDIS_TLS === "true" ? {} : undefined,
+      tls: getRedisTlsOptions(connectionUrl),
       maxRetriesPerRequest: 3,
-    });
+    };
+
+    subscriber = connectionUrl
+      ? new Redis(connectionUrl, subscriberOptions)
+      : new Redis({
+          host: subOptions.host,
+          port: subOptions.port,
+          ...subscriberOptions,
+        });
   }
 
   subscriber.subscribe(INVALIDATION_CHANNEL, (err) => {

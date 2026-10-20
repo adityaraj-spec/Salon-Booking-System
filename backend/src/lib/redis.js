@@ -11,8 +11,8 @@
  *
  * BullMQ NOTE: BullMQ requires a NON-cluster ioredis client for its internal scripting.
  *              Use getBullMQRedisConnection() for all BullMQ Queue and Worker instances.
- *              It returns a fresh standalone ioredis connection configured via REDIS_HOST/PORT
- *              even when REDIS_MODE=cluster, pointing at a single cluster node entry point.
+ *              It returns a fresh standalone ioredis connection configured via REDIS_URL or
+ *              REDIS_HOST/PORT even when REDIS_MODE=cluster.
  *
  * Hash Tag NOTE: When REDIS_MODE=cluster, all multi-key operations (locks, pipelines,
  *                Lua scripts) MUST use hash tags like {salonId} to pin keys to the same
@@ -33,6 +33,20 @@ let customMockClient = null;
 // ─── Test overrides ───────────────────────────────────────────────────────────
 export const setMockRedisClient = (mock) => {
   customMockClient = mock;
+};
+
+export const getRedisConnectionUrl = () =>
+  process.env.REDIS_URL?.trim() ||
+  process.env.REDIS_CONNECTION_STRING?.trim() ||
+  process.env.REDIS_URI?.trim() ||
+  null;
+
+export const getRedisTlsOptions = (connectionUrl = getRedisConnectionUrl()) => {
+  const tlsEnabled =
+    process.env.REDIS_TLS?.trim().toLowerCase() === "true" ||
+    connectionUrl?.toLowerCase().startsWith("rediss://");
+
+  return tlsEnabled ? { rejectUnauthorized: false } : undefined;
 };
 
 // ─── Shared retry / connection options ───────────────────────────────────────
@@ -89,18 +103,24 @@ export const getRedisClient = () => {
  * Returns a fresh ioredis connection config object for BullMQ.
  *
  * BullMQ requires maxRetriesPerRequest: null and does not work with ioredis Cluster
- * clients. This always returns a plain standalone config pointing at REDIS_HOST/PORT.
+ * clients. This returns a plain standalone config pointing at REDIS_URL or REDIS_HOST/PORT.
  * When deploying Redis Cluster, REDIS_HOST should point at the cluster entry node —
  * BullMQ commands are automatically redirected via the CLUSTER REDIRECT mechanism.
  *
  * Do NOT use getRedisClient() for BullMQ — use this config object instead.
  */
 export const getBullMQRedisConnection = () => {
+  const connectionUrl = getRedisConnectionUrl();
+
   return {
-    host: process.env.REDIS_HOST || "localhost",
-    port: parseInt(process.env.REDIS_PORT || "6379", 10),
+    ...(connectionUrl
+      ? { url: connectionUrl }
+      : {
+          host: process.env.REDIS_HOST || "localhost",
+          port: parseInt(process.env.REDIS_PORT || "6379", 10),
+        }),
     password: process.env.REDIS_PASSWORD || undefined,
-    tls: process.env.REDIS_TLS === "true" ? {} : undefined,
+    tls: getRedisTlsOptions(connectionUrl),
     maxRetriesPerRequest: null, // Required by BullMQ — do not change
     enableOfflineQueue: false,
   };
@@ -113,13 +133,20 @@ export const getBullMQRedisConnection = () => {
  */
 const _createStandaloneClient = () => {
   logger.info("[Redis] Initializing standalone client");
+  const connectionUrl = getRedisConnectionUrl();
+  const options = {
+    password: process.env.REDIS_PASSWORD || undefined,
+    db: parseInt(process.env.REDIS_DB || "0", 10),
+    tls: getRedisTlsOptions(connectionUrl),
+    ...SHARED_OPTIONS,
+  };
+
+  if (connectionUrl) return new Redis(connectionUrl, options);
+
   return new Redis({
     host: process.env.REDIS_HOST || "localhost",
     port: parseInt(process.env.REDIS_PORT || "6379", 10),
-    password: process.env.REDIS_PASSWORD || undefined,
-    db: parseInt(process.env.REDIS_DB || "0", 10),
-    tls: process.env.REDIS_TLS === "true" ? {} : undefined,
-    ...SHARED_OPTIONS,
+    ...options,
   });
 };
 
@@ -148,6 +175,7 @@ const _createSentinelClient = () => {
     password: process.env.REDIS_PASSWORD || undefined,
     sentinelPassword: process.env.REDIS_SENTINEL_PASSWORD || undefined,
     role: "master",
+    tls: getRedisTlsOptions(),
     ...SHARED_OPTIONS,
   });
 };
@@ -176,7 +204,7 @@ const _createClusterClient = () => {
   return new Redis.Cluster(startupNodes, {
     redisOptions: {
       password: process.env.REDIS_PASSWORD || undefined,
-      tls: process.env.REDIS_TLS === "true" ? {} : undefined,
+      tls: getRedisTlsOptions(),
       maxRetriesPerRequest: 3,
       enableReadyCheck: true,
     },

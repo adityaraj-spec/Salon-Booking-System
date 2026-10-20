@@ -450,6 +450,27 @@ describe("Part F — BullMQ Redis Connection Configuration (I6)", () => {
     delete process.env.REDIS_HOST;
     delete process.env.REDIS_PORT;
   });
+
+  test("F4: Redis TLS options enable certificate bypass for TLS flags and rediss URLs", async () => {
+    const { getBullMQRedisConnection, getRedisTlsOptions } = await import("../src/lib/redis.js");
+    const previousTls = process.env.REDIS_TLS;
+    const previousUrl = process.env.REDIS_URL;
+
+    process.env.REDIS_TLS = "true";
+    delete process.env.REDIS_URL;
+    expect(getRedisTlsOptions()).toEqual({ rejectUnauthorized: false });
+    expect(getBullMQRedisConnection().tls).toEqual({ rejectUnauthorized: false });
+
+    process.env.REDIS_TLS = "false";
+    process.env.REDIS_URL = "rediss://:password@redis.example.com:6380";
+    expect(getRedisTlsOptions()).toEqual({ rejectUnauthorized: false });
+    expect(getBullMQRedisConnection().url).toBe(process.env.REDIS_URL);
+
+    if (previousTls === undefined) delete process.env.REDIS_TLS;
+    else process.env.REDIS_TLS = previousTls;
+    if (previousUrl === undefined) delete process.env.REDIS_URL;
+    else process.env.REDIS_URL = previousUrl;
+  });
 });
 
 // ─── Part G: Redis Mode Configuration Tests (I4) ────────────────────────────

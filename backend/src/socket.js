@@ -50,6 +50,7 @@ import { createAdapter } from "@socket.io/redis-adapter";
 import Redis from "ioredis";
 import jwt from "jsonwebtoken";
 import logger from "./lib/logger.js";
+import { getRedisConnectionUrl, getRedisTlsOptions } from "./lib/redis.js";
 
 let io = null;
 let pubClient = null;
@@ -66,7 +67,7 @@ const _createSocketRedisClient = () => {
 
   const baseOptions = {
     password: process.env.REDIS_PASSWORD || undefined,
-    tls: process.env.REDIS_TLS === "true" ? {} : undefined,
+    tls: getRedisTlsOptions(),
     maxRetriesPerRequest: 1,
     lazyConnect: true,
     enableOfflineQueue: false,
@@ -101,6 +102,9 @@ const _createSocketRedisClient = () => {
   }
 
   // Standalone
+  const connectionUrl = getRedisConnectionUrl();
+  if (connectionUrl) return new Redis(connectionUrl, baseOptions);
+
   return new Redis({
     host: process.env.REDIS_HOST || "localhost",
     port: parseInt(process.env.REDIS_PORT || "6379", 10),
