@@ -140,6 +140,11 @@ ACCESS_TOKEN_EXPIRY=1d
 REFRESH_TOKEN_SECRET=your_jwt_refresh_secret
 REFRESH_TOKEN_EXPIRY=10d
 
+RAZORPAY_KEY_ID=your_razorpay_key_id
+RAZORPAY_KEY_SECRET=your_razorpay_key_secret
+RAZORPAY_WEBHOOK_SECRET=your_razorpay_webhook_secret
+INTERNAL_CRON_SECRET=your_internal_cron_secret
+
 CLOUDINARY_CLOUD_NAME=your_cloudinary_name
 CLOUDINARY_CLOUD_API_KEY=your_cloudinary_api_key
 CLOUDINARY_CLOUD_API_SECRET=your_cloudinary_api_secret
@@ -151,7 +156,7 @@ SENDER_EMAIL=aadityajandaha07@gmail.com
 VITE_MAPBOX_TOKEN=your_mapbox_token_here
 ```
 
-For production, set `SENDER_EMAIL` to a sender address permitted and verified in Brevo. The default sender is suitable for local configuration only; production delivery still requires sender verification in Brevo.
+Production requires all authentication, Razorpay, webhook, and internal-job secrets above. The API fails closed when required production secrets are missing; do not use placeholder values. Set `SENDER_EMAIL` to a sender address permitted and verified in Brevo.
 
 ### `/frontend/.env`
 ```env

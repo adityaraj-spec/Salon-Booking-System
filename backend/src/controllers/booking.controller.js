@@ -452,6 +452,24 @@ const rescheduleBookingHandler = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, rescheduled, "Booking rescheduled successfully"));
 });
 
+const getUpcomingBooking = asyncHandler(async (req, res) => {
+    const now = new Date();
+    const in24Hours = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+    const booking = await Booking.findOne({
+        customer: req.user._id,
+        status: "confirmed",
+        startTime: { $gte: now, $lte: in24Hours },
+    })
+        .populate("salon", "name address phone images coverImage city")
+        .populate("staff", "name specialization photo")
+        .sort({ startTime: 1 });
+
+    return res.status(200).json(
+        new ApiResponse(200, booking || null, booking ? "Upcoming booking retrieved" : "No upcoming booking within 24 hours")
+    );
+});
+
 export {
     createBooking,
     getUserBookings,
@@ -464,4 +482,6 @@ export {
     cancelBookingHandler,
     createWalkInBookingHandler,
     rescheduleBookingHandler,
+    getUpcomingBooking,
 };
+

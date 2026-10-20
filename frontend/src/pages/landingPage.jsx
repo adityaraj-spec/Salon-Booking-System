@@ -8,6 +8,7 @@ import { useNotification } from '../context/NotificationContext';
 import { useCityResolution } from '../hooks/useCityResolution';
 import axiosInstance from '../api/axiosConfig';
 import { MiniSalonCardSkeleton, DestinationCardSkeleton } from '../components/skeletons/index.jsx';
+import salonPlaceholder from '../assets/salon1.jpg';
 
 const heroImages = [
     { url: "/adam-winger-KVVjmb3IIL8-unsplash.jpg", isDark: true },
@@ -172,8 +173,14 @@ export function LandingPage() {
                 </AnimatePresence>
 
                 <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="relative z-10 px-6 max-w-4xl mx-auto flex flex-col items-center pt-8">
+                    {/* Brand Eyebrow Badge (L3) */}
+                    <motion.div variants={fadeUpVariants} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/50 backdrop-blur-md border border-[#D4AF37]/50 text-[#ffd166] text-xs sm:text-sm font-semibold tracking-wider uppercase mb-5 shadow-xl">
+                        <Scissors size={15} className="text-[#ffd166]" />
+                        <span>SalonNow • Premium Grooming & Salons</span>
+                    </motion.div>
+
                     {/* Dynamic H1 Headline */}
-                    <motion.h1 variants={fadeUpVariants} className="text-4xl sm:text-6xl md:text-7xl font-bold mb-6 leading-tight drop-shadow-md text-white">
+                    <motion.h1 variants={fadeUpVariants} className="text-4xl sm:text-6xl md:text-7xl font-serif font-bold mb-6 leading-tight drop-shadow-md text-white">
                         Book top salons in{" "}
                         <button
                             type="button"
@@ -391,7 +398,7 @@ export function LandingPage() {
                                         featuredSalons.map((salon) => (
                                             <div key={salon._id} className="min-w-[250px] w-[250px] flex-shrink-0 bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition group snap-start cursor-pointer" onClick={() => navigate(`/shop/${salon._id}`)}>
                                                 <div className="relative h-40 w-full overflow-hidden flex-shrink-0">
-                                                    <img src={salon.images?.[0] || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=80"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={salon.name} />
+                                                    <img src={salon.images?.[0] || salonPlaceholder} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={salon.name} />
                                                     <button aria-label={`${userFavorites.includes(salon._id) ? 'Remove' : 'Save'} ${salon.name} from favorites`} aria-pressed={userFavorites.includes(salon._id)} className={`absolute top-2.5 right-2.5 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm transition-all hover:scale-110 ${userFavorites.includes(salon._id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`} onClick={(e) => handleToggleFavorite(e, salon._id)}>
                                                         <Heart size={14} strokeWidth={userFavorites.includes(salon._id) ? 1.5 : 2} className={userFavorites.includes(salon._id) ? "fill-red-500" : ""} />
                                                     </button>
@@ -484,7 +491,7 @@ export function LandingPage() {
                                         cheapestServices.map((service) => (
                                             <div key={service._id} className="min-w-[210px] w-[210px] flex-shrink-0 bg-white border border-gray-100 rounded-2xl overflow-hidden flex flex-col hover:shadow-md transition group snap-start cursor-pointer" onClick={() => service.salon?._id && navigate(`/shop/${service.salon._id}`)}>
                                                 <div className="relative h-36 w-full overflow-hidden flex-shrink-0">
-                                                    <img src={service.salon?.images?.[0] || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=80"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={service.name} />
+                                                    <img src={service.salon?.images?.[0] || salonPlaceholder} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={service.name} />
                                                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/75 to-transparent px-3 py-2">
                                                         <span className="text-white text-xs font-bold capitalize">{service.name}</span>
                                                     </div>

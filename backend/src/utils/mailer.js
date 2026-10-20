@@ -949,3 +949,26 @@ export const sendBookingStatusEmail = (email, customerName, salonName, bookingTi
 };
 export const sendOwnerNewBookingEmail = (email, ownerName, customerName, salonName, bookingTime, services, bookingReference) => newBookingRequest(email, ownerName, customerName, salonName, bookingTime, services, bookingReference);
 export const testEmailConfiguration = (email, testRecipient) => emailConfigurationTest(email, testRecipient);
+
+export const sendAppointmentReminderEmail = (email, customerName, salonName, bookingTime, bookingReference, services = [], hoursUntil = 24) => {
+    const timeLabel = hoursUntil <= 2 ? "in ~2 hours" : "tomorrow (in ~24 hours)";
+    const html = renderEmail({
+        preheader: `Reminder: Your appointment at ${salonName} is ${timeLabel}`,
+        category: "Appointment Reminder",
+        icon: "clock",
+        heading: `Appointment Reminder: ${timeLabel}`,
+        greeting: `Hi ${customerName || "Valued Customer"},`,
+        paragraphs: [
+            `This is a friendly reminder that your upcoming appointment at <strong>${salonName}</strong> is scheduled for ${timeLabel}.`,
+            `Please plan to arrive 5–10 minutes early so our specialists can prepare your experience seamlessly.`,
+        ],
+        rows: [
+            { label: "Salon", value: salonName },
+            { label: "Scheduled Time", value: bookingTime },
+            { label: "Selected Services", value: (services && services.length) ? services.join(", ") : "Salon Services" },
+            { label: "Booking Reference", value: `#${bookingReference}` },
+        ],
+        cta: { label: "View Booking Details", href: `${FRONTEND_URL()}/bookings` },
+    });
+    return sendTemplateEmail(email, `Reminder: Your appointment at ${salonName} is ${timeLabel}`, html);
+};

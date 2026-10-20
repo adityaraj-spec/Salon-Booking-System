@@ -1,5 +1,22 @@
 import ApiError from "./apiError.js";
 
+const parseClockMinutes = (value) => {
+  if (typeof value !== "string") return Number.NaN;
+  const match = value.trim().match(/^(\d{1,2}):(\d{2})(?:\s*(AM|PM))?$/i);
+  if (!match) return Number.NaN;
+
+  let hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  const meridiem = match[3]?.toUpperCase();
+  if (minutes > 59 || hours > (meridiem ? 12 : 23)) return Number.NaN;
+
+  if (meridiem) {
+    if (hours === 12) hours = 0;
+    if (meridiem === "PM") hours += 12;
+  }
+  return hours * 60 + minutes;
+};
+
 /**
  * Parses time string (e.g. "09:30 AM", "14:00", "2:15 PM") and combines with YYYY-MM-DD into a Date.
  */
@@ -48,22 +65,20 @@ export const validateOperatingHours = (start, end, salon) => {
   const startMinutes = startDate.getUTCHours() * 60 + startDate.getUTCMinutes();
   const endMinutes = endDate.getUTCHours() * 60 + endDate.getUTCMinutes();
 
-  let openMinutes = 9 * 60; // default 9:00 AM
-  let closeMinutes = 21 * 60; // default 9:00 PM
+  const configuredOpenMinutes = parseClockMinutes(salon.openingHours);
+  const configuredCloseMinutes = parseClockMinutes(salon.closingHours);
+  let openMinutes = Number.isFinite(configuredOpenMinutes) ? configuredOpenMinutes : 9 * 60;
+  let closeMinutes = Number.isFinite(configuredCloseMinutes) ? configuredCloseMinutes : 21 * 60;
   let isClosed = false;
 
   if (salon.operatingHours && salon.operatingHours.length > 0) {
     const dayConfig = salon.operatingHours.find((h) => h.dayOfWeek === dayOfWeek);
     if (dayConfig) {
       if (dayConfig.isClosed) isClosed = true;
-      if (dayConfig.openTime) {
-        const [h, m] = dayConfig.openTime.split(":").map(Number);
-        openMinutes = h * 60 + m;
-      }
-      if (dayConfig.closeTime) {
-        const [h, m] = dayConfig.closeTime.split(":").map(Number);
-        closeMinutes = h * 60 + m;
-      }
+      const configuredDayOpen = parseClockMinutes(dayConfig.openTime);
+      const configuredDayClose = parseClockMinutes(dayConfig.closeTime);
+      if (Number.isFinite(configuredDayOpen)) openMinutes = configuredDayOpen;
+      if (Number.isFinite(configuredDayClose)) closeMinutes = configuredDayClose;
     }
   }
 

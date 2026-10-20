@@ -18,11 +18,6 @@ import {
     Coins
 } from "lucide-react";
 
-const TIME_SLOTS = [
-    "09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM",
-    "02:00 PM", "03:00 PM", "04:00 PM", "05:00 PM", "06:00 PM"
-];
-
 const loadRazorpay = () => new Promise((resolve, reject) => {
     if (window.Razorpay) {
         resolve(true);
@@ -43,6 +38,29 @@ const loadRazorpay = () => new Promise((resolve, reject) => {
     script.onerror = () => reject(new Error("Unable to load the payment gateway."));
     document.body.appendChild(script);
 });
+
+const getSlotTimeLabel = (slot) => {
+    if (slot?.time) return slot.time;
+    if (!slot?.startTime) return "Time unavailable";
+
+    return new Date(slot.startTime).toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: "UTC",
+    });
+};
+
+const getSlotSeatsLeft = (slot) => {
+    const value = slot?.seatsLeft ?? slot?.availableSeats;
+    const seats = Number(value);
+    return Number.isFinite(seats) ? Math.max(0, seats) : 0;
+};
+
+const isSlotAvailable = (slot) => {
+    const seatsLeft = getSlotSeatsLeft(slot);
+    return seatsLeft > 0 && slot?.available !== false;
+};
 
 function CustomCalendar({ selectedDate, onDateSelect }) {
     const [viewDate, setViewDate] = useState(new Date());
@@ -148,7 +166,8 @@ export function BookingPage() {
     const [selectedStaff, setSelectedStaff] = useState(null);
     const [date, setDate] = useState("");
     const [time, setTime] = useState("");
-    const [availability, setAvailability] = useState({});
+    const [availableSlots, setAvailableSlots] = useState([]);
+    const [availabilityReason, setAvailabilityReason] = useState("");
     const [availabilityLoading, setAvailabilityLoading] = useState(false);
     const [loyaltyPoints, setLoyaltyPoints] = useState(0);
     const [useLoyaltyPoints, setUseLoyaltyPoints] = useState(false);
@@ -256,6 +275,9 @@ export function BookingPage() {
         const fetchAvailability = async () => {
             if (!id || !date) return;
             setAvailabilityLoading(true);
+            setTime("");
+            setAvailableSlots([]);
+            setAvailabilityReason("");
             try {
                 const params = {
                     date,
@@ -267,20 +289,17 @@ export function BookingPage() {
                     .catch(() => axiosInstance.get(`/bookings/availability/${id}`, { params }));
 
                 if (response?.data?.success) {
-                    const slots = response.data.data?.slots || [];
-                    const slotAvailability = Object.fromEntries(slots.map((slot) => [
-                        new Date(slot.startTime).toLocaleTimeString("en-US", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: true,
-                            timeZone: "UTC",
-                        }),
-                        slot.availableSeats,
-                    ]));
-                    setAvailability(slotAvailability);
+                    const availability = response.data.data || {};
+                    const slots = Array.isArray(availability.slots) ? availability.slots : [];
+                    setAvailableSlots(slots);
+                    setAvailabilityReason(availability.reason || "");
+                } else {
+                    setAvailableSlots([]);
+                    setAvailabilityReason("Unable to load availability. Please try again.");
                 }
             } catch {
-                // silently fail - slots will show as unavailable
+                setAvailableSlots([]);
+                setAvailabilityReason("Unable to load availability. Please try again.");
             } finally {
                 setAvailabilityLoading(false);
             }
@@ -301,17 +320,22 @@ export function BookingPage() {
             axiosInstance.get(`/salons/${id}/availability`, { params })
                 .catch(() => axiosInstance.get(`/bookings/availability/${id}`, { params }))
                 .then((response) => {
-                    const slots = response?.data?.data?.slots || [];
-                    setAvailability(Object.fromEntries(slots.map((slot) => [
-                        new Date(slot.startTime).toLocaleTimeString("en-US", {
-                            hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "UTC",
-                        }),
-                        slot.availableSeats,
-                    ])));
+                    const availability = response?.data?.data || {};
+                    const slots = Array.isArray(availability.slots) ? availability.slots : [];
+                    setAvailableSlots(slots);
+                    setAvailabilityReason(availability.reason || "");
                 }).catch(() => {});
         }, 5000);
         return () => window.clearInterval(refreshTimer);
     }, [id, date, selectedStaff, combinedDurationMin]);
+
+    useEffect(() => {
+        if (!time) return;
+        const selectedSlot = availableSlots.find((slot) => getSlotTimeLabel(slot) === time);
+        if (!selectedSlot || !isSlotAvailable(selectedSlot)) {
+            setTime("");
+        }
+    }, [availableSlots, time]);
 
     const toggleService = (service) => {
         setSelectedServices((prev) => {
@@ -639,35 +663,41 @@ export function BookingPage() {
                                             <Loader2 size={24} className="animate-spin text-[#D4AF37]" />
                                         </div>
                                     )}
-                                    {TIME_SLOTS.map(t => {
-                                        const totalSeats = salon?.totalSeats || 6;
-                                        const seatsLeft = Math.max(0, availability[t] ?? totalSeats);
-                                        const isFull = seatsLeft <= 0;
+                                    {availableSlots.length > 0 ? availableSlots.map((slot) => {
+                                        const slotTime = getSlotTimeLabel(slot);
+                                        const seatsLeft = getSlotSeatsLeft(slot);
+                                        const slotAvailable = isSlotAvailable(slot);
+                                        const maxCapacity = Number(slot.maxCapacity) || null;
 
                                         return (
                                             <button
-                                                key={t}
-                                                disabled={isFull || !date}
-                                                onClick={() => setTime(t)}
+                                                key={slot.startTime || slot.time}
+                                                disabled={!date || !slotAvailable}
+                                                onClick={() => setTime(slotTime)}
                                                 className={`py-3 px-2 rounded-xl text-sm font-medium transition-all flex flex-col items-center justify-center gap-0.5 relative ${
-                                                    time === t
-                                                    ? "bg-[#1a1a1a] text-white shadow-md"
-                                                    : isFull
-                                                        ? "bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed"
+                                                    time === slotTime
+                                                        ? "bg-[#1a1a1a] text-white shadow-md"
+                                                        : !slotAvailable
+                                                            ? "bg-red-50 text-red-700 border border-red-200 cursor-not-allowed"
                                                         : !date
                                                             ? "bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed"
                                                             : "bg-white text-gray-600 border border-gray-100 hover:border-gray-200"
                                                 }`}
                                             >
-                                                <span>{t}</span>
-                                                {date && !isFull && (
-                                                    <span className={`text-sm font-normal ${time === t ? "text-[#D4AF37]" : "text-green-500"}`}>
-                                                        {seatsLeft} available
+                                                <span>{slotTime}</span>
+                                                {date && slotAvailable && (
+                                                    <span className={`text-sm font-normal ${time === slotTime ? "text-[#D4AF37]" : "text-green-500"}`}>
+                                                        {seatsLeft} {seatsLeft === 1 ? "seat" : "seats"} left
                                                     </span>
                                                 )}
-                                                {date && isFull && (
+                                                {date && !slotAvailable && (
                                                     <span className="text-sm font-normal text-red-500">
-                                                        FULL
+                                                        0 seats available
+                                                    </span>
+                                                )}
+                                                {maxCapacity && slotAvailable && (
+                                                    <span className="text-[10px] font-normal text-gray-400">
+                                                        of {maxCapacity}
                                                     </span>
                                                 )}
                                                 {!date && (
@@ -677,7 +707,11 @@ export function BookingPage() {
                                                 )}
                                             </button>
                                         );
-                                    })}
+                                    }) : (
+                                        <p className="col-span-full py-8 text-center text-sm text-gray-400">
+                                            {date ? (availabilityReason || "No operating times are configured for this date.") : "Pick a date to see available times."}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         </section>

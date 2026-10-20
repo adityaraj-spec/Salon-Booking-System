@@ -9,11 +9,51 @@ import logger from "../lib/logger.js";
 
 const ACTIVE_BOOKING_STATUSES = ["pending", "pending_payment", "confirmed"];
 const AVAILABILITY_CACHE_TTL_SECONDS = 5;
+const DEFAULT_OPEN_MINUTES = 9 * 60;
+const DEFAULT_CLOSE_MINUTES = 21 * 60;
+const DEFAULT_CAPACITY = 5;
 
 // ─── Helper: parse "HH:MM" to total minutes from midnight ────────────────────
 const timeToMinutes = (str) => {
-  const [h, m] = str.split(":").map(Number);
-  return h * 60 + m;
+  if (typeof str !== "string") return Number.NaN;
+
+  const match = str.trim().match(/^(\d{1,2}):(\d{2})(?:\s*(AM|PM))?$/i);
+  if (!match) return Number.NaN;
+
+  let hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  const meridiem = match[3]?.toUpperCase();
+
+  if (minutes > 59 || hours > (meridiem ? 12 : 23)) return Number.NaN;
+  if (meridiem) {
+    if (hours === 12) hours = 0;
+    if (meridiem === "PM") hours += 12;
+  }
+
+  return hours * 60 + minutes;
+};
+
+const formatTimeLabel = (minutesFromMidnight) => {
+  const hours24 = Math.floor(minutesFromMidnight / 60) % 24;
+  const minutes = minutesFromMidnight % 60;
+  const period = hours24 >= 12 ? "PM" : "AM";
+  const hours12 = hours24 % 12 || 12;
+  return `${hours12}:${String(minutes).padStart(2, "0")} ${period}`;
+};
+
+export const getSalonCapacity = (salon, staffId = null) => {
+  if (staffId) return 1;
+
+  const staffCounts = [salon?.staff, salon?.staffMembers]
+    .filter(Array.isArray)
+    .map((staff) => staff.length);
+  const staffCount = staffCounts.length > 0 ? Math.max(...staffCounts) : 0;
+  const configuredCapacity = [salon?.maxConcurrentStaff, salon?.totalSeats, staffCount]
+    .map(Number)
+    .find((capacity) => Number.isFinite(capacity) && capacity > 0);
+
+  const normalizedCapacity = Math.floor(configuredCapacity || 0);
+  return normalizedCapacity > 0 ? normalizedCapacity : DEFAULT_CAPACITY;
 };
 
 // ─── Core Overlap Query ───────────────────────────────────────────────────────
@@ -199,6 +239,9 @@ export const checkTimeRangeAvailability = async ({
   excludeBookingId = null,
   session = null,
 }) => {
+  const normalizedTotalSeats = Math.floor(Number(totalSeats) || 0);
+  const safeTotalSeats = normalizedTotalSeats > 0 ? normalizedTotalSeats : DEFAULT_CAPACITY;
+
   // 1. Check staff schedule (day off, working hours, breaks)
   if (staffId) {
     await validateStaffScheduleForTimeRange(staffId, startTime, endTime);
@@ -218,11 +261,11 @@ export const checkTimeRangeAvailability = async ({
     session,
   });
 
-  if (currentOccupancy >= totalSeats) {
+  if (currentOccupancy >= safeTotalSeats) {
     throw new ApiError(409, "Salon seat capacity limit reached for this time range.");
   }
 
-  return { available: true, currentOccupancy, totalSeats };
+  return { available: true, currentOccupancy, totalSeats: safeTotalSeats };
 };
 
 // ─── Available Slot Generator ─────────────────────────────────────────────────
@@ -266,8 +309,10 @@ export const getAvailableSlots = async ({
   const dayOfWeek = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
 
   // 1. Get salon operating hours for this day
-  let openMinutes = 9 * 60;   // default 09:00
-  let closeMinutes = 21 * 60; // default 21:00
+  const configuredOpenMinutes = timeToMinutes(salon.openingHours);
+  const configuredCloseMinutes = timeToMinutes(salon.closingHours);
+  let openMinutes = Number.isFinite(configuredOpenMinutes) ? configuredOpenMinutes : DEFAULT_OPEN_MINUTES;
+  let closeMinutes = Number.isFinite(configuredCloseMinutes) ? configuredCloseMinutes : DEFAULT_CLOSE_MINUTES;
 
   if (salon.operatingHours && salon.operatingHours.length > 0) {
     const dayConfig = salon.operatingHours.find((h) => h.dayOfWeek === dayOfWeek);
@@ -277,45 +322,43 @@ export const getAvailableSlots = async ({
         await cacheSetAvailability(cacheKey, result, salonId, date, AVAILABILITY_CACHE_TTL_SECONDS);
         return result;
       }
-      if (dayConfig.openTime) openMinutes = timeToMinutes(dayConfig.openTime);
-      if (dayConfig.closeTime) closeMinutes = timeToMinutes(dayConfig.closeTime);
+      const configuredDayOpen = timeToMinutes(dayConfig.openTime);
+      const configuredDayClose = timeToMinutes(dayConfig.closeTime);
+      if (Number.isFinite(configuredDayOpen)) openMinutes = configuredDayOpen;
+      if (Number.isFinite(configuredDayClose)) closeMinutes = configuredDayClose;
     }
   }
 
-  // 2. If staffId provided, narrow window to staff working hours
-  let staffBreaks = [];
+  // 2. Keep the salon schedule visible even when a selected staff member is unavailable.
+  let staffAvailability = null;
   if (staffId) {
-    const staff = await Staff.findById(staffId);
+    const staff = await Staff.findById(staffId).select("schedule isActive exceptions").lean();
     if (!staff || !staff.isActive) {
-      const result = { date, slots: [], reason: "Staff member is not available." };
-      await cacheSetAvailability(cacheKey, result, salonId, date, AVAILABILITY_CACHE_TTL_SECONDS);
-      return result;
-    }
+      staffAvailability = { available: false, reason: "Staff member is not available." };
+    } else {
+      const exception = (staff.exceptions || []).find((ex) => ex.date === date);
+      const daySchedule = (staff.schedule || []).find((s) => s.dayOfWeek === dayOfWeek);
 
-    const exception = staff.exceptions.find((ex) => ex.date === date);
-    if (exception) {
-      const result = { date, slots: [], reason: `Staff unavailable: ${exception.reason || exception.type}` };
-      await cacheSetAvailability(cacheKey, result, salonId, date, AVAILABILITY_CACHE_TTL_SECONDS);
-      return result;
-    }
-
-    const daySchedule = staff.schedule.find((s) => s.dayOfWeek === dayOfWeek);
-    if (!daySchedule || !daySchedule.isWorking) {
-      const result = { date, slots: [], reason: "Staff does not work on this day." };
-      await cacheSetAvailability(cacheKey, result, salonId, date, AVAILABILITY_CACHE_TTL_SECONDS);
-      return result;
-    }
-
-    const staffStart = timeToMinutes(daySchedule.startTime || "09:00");
-    const staffEnd = timeToMinutes(daySchedule.endTime || "18:00");
-    openMinutes = Math.max(openMinutes, staffStart);
-    closeMinutes = Math.min(closeMinutes, staffEnd);
-
-    if (daySchedule.breakStart && daySchedule.breakEnd) {
-      staffBreaks.push({
-        start: timeToMinutes(daySchedule.breakStart),
-        end: timeToMinutes(daySchedule.breakEnd),
-      });
+      if (exception) {
+        staffAvailability = {
+          available: false,
+          reason: `Staff unavailable: ${exception.reason || exception.type}`,
+        };
+      } else if (!daySchedule || !daySchedule.isWorking) {
+        staffAvailability = { available: false, reason: "Staff does not work on this day." };
+      } else {
+        staffAvailability = {
+          available: true,
+          start: timeToMinutes(daySchedule.startTime || "09:00"),
+          end: timeToMinutes(daySchedule.endTime || "18:00"),
+          breaks: daySchedule.breakStart && daySchedule.breakEnd
+            ? [{
+                start: timeToMinutes(daySchedule.breakStart),
+                end: timeToMinutes(daySchedule.breakEnd),
+              }]
+            : [],
+        };
+      }
     }
   }
 
@@ -356,32 +399,51 @@ export const getAvailableSlots = async ({
 
   // 4. Generate candidate slots and compute availability in memory
   const slots = [];
-  const totalSeats = staffId ? 1 : (salon.totalSeats || 6);
+  const maxCapacity = getSalonCapacity(salon, staffId);
+  const intervalMinutes = Number.isFinite(Number(slotIntervalMinutes)) && Number(slotIntervalMinutes) > 0
+    ? Math.floor(Number(slotIntervalMinutes))
+    : 30;
 
-  for (let slotStart = openMinutes; slotStart + durationMinutes <= closeMinutes; slotStart += slotIntervalMinutes) {
+  for (let slotStart = openMinutes; slotStart + durationMinutes <= closeMinutes; slotStart += intervalMinutes) {
     const slotEnd = slotStart + durationMinutes;
 
-    const overlapsBreak = staffBreaks.some((b) => slotStart < b.end && slotEnd > b.start);
-    if (overlapsBreak) continue;
+    const staffCanServeSlot = !staffId || (
+      staffAvailability?.available === true &&
+      slotStart >= staffAvailability.start &&
+      slotEnd <= staffAvailability.end &&
+      !staffAvailability.breaks.some((b) => slotStart < b.end && slotEnd > b.start)
+    );
 
     const startDate = new Date(Date.UTC(year, month - 1, day, Math.floor(slotStart / 60), slotStart % 60));
     const endDate = new Date(Date.UTC(year, month - 1, day, Math.floor(slotEnd / 60), slotEnd % 60));
 
     // In-memory overlap count (no extra DB queries)
-    const occupancy = allOccupied.filter(
-      (b) => new Date(b.startTime) < endDate && new Date(b.endTime) > startDate
-    ).length;
+    const occupancy = staffCanServeSlot
+      ? allOccupied.filter(
+          (b) => new Date(b.startTime) < endDate && new Date(b.endTime) > startDate
+        ).length
+      : maxCapacity;
+    const seatsLeft = Math.max(0, maxCapacity - occupancy);
 
-    if (occupancy < totalSeats) {
-      slots.push({
-        startTime: startDate.toISOString(),
-        endTime: endDate.toISOString(),
-        availableSeats: totalSeats - occupancy,
-      });
-    }
+    slots.push({
+      time: formatTimeLabel(slotStart),
+      startTime: startDate.toISOString(),
+      endTime: endDate.toISOString(),
+      available: staffCanServeSlot && seatsLeft > 0,
+      seatsLeft,
+      maxCapacity,
+      availableSeats: seatsLeft,
+    });
   }
 
-  const result = { date, slots, totalSeats: salon.totalSeats || 6, durationMinutes };
+  const result = {
+    date,
+    slots,
+    maxCapacity,
+    totalSeats: maxCapacity,
+    durationMinutes,
+    reason: staffAvailability?.available === false ? staffAvailability.reason : undefined,
+  };
 
   // Register key in the availability index for targeted invalidation
   await cacheSetAvailability(cacheKey, result, salonId, date, AVAILABILITY_CACHE_TTL_SECONDS);

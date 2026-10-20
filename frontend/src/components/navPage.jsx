@@ -6,6 +6,7 @@ import { useSocket } from "../context/SocketContext";
 import { useUI } from "../context/UIContext";
 import { useNotification } from "../context/NotificationContext";
 import axiosInstance from "../api/axiosConfig";
+import { UpcomingAppointmentBanner } from "./UpcomingAppointmentBanner";
 
 
 export function NavBar() {
@@ -190,15 +191,16 @@ export function NavBar() {
                     ? 'bg-transparent border-transparent'
                     : 'bg-white/90 backdrop-blur-xl border-b border-gray-100/50 shadow-sm'
                 }`}>
+                <UpcomingAppointmentBanner />
                 <div className="max-w-[1280px] mx-auto px-6 md:px-10 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <NavLink to="/home" aria-label="SalonNow home" className="text-[#8a6500] cursor-pointer" >
-                            <div className="bg-[#1a1a1a] p-2 rounded-full text-white">
-                                <Scissors size={20} className="md:w-6 md:h-6" />
-                            </div>
-                        </NavLink>
-                        <span className={`text-xl md:text-2xl font-serif font-semibold tracking-tight transition-colors duration-1000 ${isTransparent ? (isDark ? 'text-white' : 'text-gray-900') : 'text-[#1a1a1a]'}`}>Salon<span className="text-[#D4AF37]">Now</span></span>
-                    </div>
+                    <NavLink to="/home" aria-label="SalonNow home" className="flex items-center gap-2.5 group cursor-pointer">
+                        <div className="bg-[#1a1a1a] p-2 rounded-full text-[#D4AF37] group-hover:bg-[#D4AF37] group-hover:text-black transition-all shadow-sm">
+                            <Scissors size={20} className="md:w-5 md:h-5 transition-transform group-hover:rotate-12" />
+                        </div>
+                        <span className={`text-xl md:text-2xl font-serif font-bold tracking-tight transition-colors duration-300 ${isTransparent ? (isDark ? 'text-white' : 'text-gray-900') : 'text-[#1a1a1a]'}`}>
+                            Salon<span className="text-[#D4AF37]">Now</span>
+                        </span>
+                    </NavLink>
 
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center gap-6">

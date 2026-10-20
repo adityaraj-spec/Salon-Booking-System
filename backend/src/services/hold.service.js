@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { BookingHold } from "../models/bookingHold.model.js";
 
 import { calculateServicesDurationAndPrice } from "./duration.service.js";
-import { checkTimeRangeAvailability } from "./availability.service.js";
+import { checkTimeRangeAvailability, getSalonCapacity } from "./availability.service.js";
 import { parseDateTimeString, validateOperatingHours } from "../utils/timeRange.js";
 import { scheduleHoldExpiry } from "../queues/holdExpiry.queue.js";
 import { withTransactionRetry } from "../utils/transaction.js";
@@ -42,6 +42,10 @@ export const createHold = async ({
     ? services
     : (inputSnapshotServices || []).map((s) => s.serviceId || s._id).filter(Boolean);
 
+  if (effectiveServices.length === 0) {
+    throw new ApiError(400, "At least one service must be selected.");
+  }
+
   const {
     services: serviceDocs,
     serviceNames: fetchedServiceNames,
@@ -72,8 +76,8 @@ export const createHold = async ({
 
   const formattedDate = date || startTime.toISOString().split("T")[0];
   const formattedTime = time || startTime.toISOString().split("T")[1].substring(0, 5);
-   const finalTotalAmount = calculatedAmount;
-  const finalServiceNames = serviceNames && serviceNames.length > 0 ? serviceNames : fetchedServiceNames;
+  const finalTotalAmount = calculatedAmount;
+  const finalServiceNames = fetchedServiceNames;
 
   // ── 3. Build idempotency key ──────────────────────────────────────────────
   const isFallback = !clientIdempotencyKey;
@@ -118,23 +122,16 @@ export const createHold = async ({
             staffId,
             startTime,
             endTime,
-            totalSeats: salon.totalSeats || 6,
+            totalSeats: getSalonCapacity(salon, staffId),
             session,
           });
 
-          const snapshotServices = (inputSnapshotServices && inputSnapshotServices.length > 0)
-            ? inputSnapshotServices.map((s) => ({
-                serviceId: s.serviceId || s._id,
-                name: s.name,
-                price: typeof s.price === "number" ? s.price : 0,
-                durationMin: typeof s.durationMin === "number" ? s.durationMin : (s.duration || 30),
-              }))
-            : (serviceDocs || []).map((s) => ({
-                serviceId: s._id,
-                name: s.name,
-                price: s.price || 0,
-                durationMin: s.durationMin || s.duration || 30,
-              }));
+          const snapshotServices = (serviceDocs || []).map((service) => ({
+            serviceId: service._id,
+            name: service.name,
+            price: service.price || 0,
+            durationMin: service.durationMin || service.duration || 30,
+          }));
 
           // Create the hold
           const [createdHold] = await BookingHold.create(
@@ -201,18 +198,20 @@ export const createHold = async ({
  */
 export const cancelHold = async (holdId, customerId) => {
   return await withTransactionRetry(async (session) => {
-    const hold = await BookingHold.findOne({
+    const hold = await BookingHold.findOneAndUpdate({
       _id: holdId,
       customer: customerId,
       status: "active",
-    }).session(session);
+    }, {
+      $set: { status: "cancelled" },
+    }, {
+      returnDocument: "after",
+      session,
+    });
 
     if (!hold) {
       throw new ApiError(404, "Active hold not found or unauthorized");
     }
-
-    hold.status = "cancelled";
-    await hold.save({ session });
 
     // Write outbox event for cache invalidation
     await writeOutboxEvent(session, "hold.cancelled", {
@@ -233,17 +232,15 @@ export const cancelHold = async (holdId, customerId) => {
  */
 export const expireHold = async (holdId) => {
   return await withTransactionRetry(async (session) => {
-    const hold = await BookingHold.findById(holdId).session(session);
-    if (!hold) return null;
-
-    if (hold.status === "converted") {
+    const convertedHold = await BookingHold.findOne({ _id: holdId, status: "converted" }).session(session);
+    if (convertedHold) {
       const { Booking } = await import("../models/booking.models.js");
-      const pendingBooking = await Booking.findOne({ holdId: hold._id, status: "pending_payment" }).session(session);
+      const pendingBooking = await Booking.findOneAndUpdate(
+        { holdId: convertedHold._id, status: "pending_payment" },
+        { $set: { status: "expired", paymentStatus: "failed" } },
+        { returnDocument: "after", session }
+      );
       if (pendingBooking) {
-        pendingBooking.status = "expired";
-        pendingBooking.paymentStatus = "failed";
-        await pendingBooking.save({ session });
-
         await writeOutboxEvent(session, "booking.cancelled", {
           bookingId: pendingBooking._id.toString(),
           salonId: pendingBooking.salon.toString(),
@@ -253,15 +250,15 @@ export const expireHold = async (holdId) => {
           reason: "hold_expired",
         });
       }
-      return hold;
+      return convertedHold;
     }
 
-    if (hold.status !== "active") {
-      return null; // Idempotent — already expired/cancelled is not an error
-    }
-
-    hold.status = "expired";
-    await hold.save({ session });
+    const hold = await BookingHold.findOneAndUpdate(
+      { _id: holdId, status: "active" },
+      { $set: { status: "expired" } },
+      { returnDocument: "after", session }
+    );
+    if (!hold) return null;
 
     // Write outbox event in the same transaction — I10: never lose an invalidation
     await writeOutboxEvent(session, "hold.expired", {

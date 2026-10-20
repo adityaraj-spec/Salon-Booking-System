@@ -5,6 +5,7 @@ import axiosInstance from '../api/axiosConfig';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 import { SalonCardSkeleton } from '../components/skeletons/index.jsx';
+import salonPlaceholder from '../assets/salon1.jpg';
 
 
 export function FavoritesPage() {
@@ -118,7 +119,7 @@ export function FavoritesPage() {
                                     onClick={() => navigate(`/shop/${salon._id}`)}
                                 >
                                     <img
-                                        src={salon.images && salon.images.length > 0 ? salon.images[0] : "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=80"}
+                                        src={salon.images && salon.images.length > 0 ? salon.images[0] : salonPlaceholder}
                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                         alt={salon.name}
                                     />
@@ -199,4 +200,3 @@ export function FavoritesPage() {
         </div>
     );
 }
-

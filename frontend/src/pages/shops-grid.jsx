@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, Star, MapPin, Phone, Heart, ArrowUpDown, ChevronLeft, ChevronRight, SlidersHorizontal, X, Map, Loader2, Navigation } from 'lucide-react';
+import { Search, Star, MapPin, Phone, Heart, ArrowUpDown, ChevronLeft, ChevronRight, SlidersHorizontal, X, Map, Loader2, Navigation, MapPinOff, RotateCcw, Sparkles, Scissors, Palette, Flame, Sparkle, Smile, Crown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { State, City } from 'country-state-city';
 import axiosInstance from '../api/axiosConfig';
@@ -8,15 +8,16 @@ import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 import { useCityResolution } from '../hooks/useCityResolution';
 import { SalonCardSkeleton } from '../components/skeletons/index.jsx';
+import salonPlaceholder from '../assets/salon1.jpg';
 
 const SERVICE_CATEGORIES = [
-    { id: "all", label: "All Services", icon: "✨" },
-    { id: "haircut", label: "Haircut", icon: "✂️" },
-    { id: "colour", label: "Colour", icon: "🎨" },
-    { id: "spa", label: "Spa", icon: "💆" },
-    { id: "nails", label: "Nails", icon: "💅" },
-    { id: "facial", label: "Facial", icon: "🧖" },
-    { id: "bridal", label: "Bridal", icon: "💒" },
+    { id: "all", label: "All Services", icon: Sparkles, iconClass: "text-amber-500" },
+    { id: "haircut", label: "Haircut", icon: Scissors, iconClass: "text-rose-500" },
+    { id: "colour", label: "Colour", icon: Palette, iconClass: "text-indigo-500" },
+    { id: "spa", label: "Spa", icon: Flame, iconClass: "text-amber-600" },
+    { id: "nails", label: "Nails", icon: Sparkle, iconClass: "text-purple-500" },
+    { id: "facial", label: "Facial", icon: Smile, iconClass: "text-emerald-500" },
+    { id: "bridal", label: "Bridal", icon: Crown, iconClass: "text-pink-500" },
 ];
 
 
@@ -336,6 +337,28 @@ export function Shops() {
                             )}
                         </button>
                     </div>
+
+                    {/* L5: Mobile Quick Location Trigger */}
+                    <div className="md:hidden flex items-center justify-center mt-3 max-w-3xl mx-auto w-full px-4">
+                        <button
+                            type="button"
+                            onClick={handleUseMyLocation}
+                            disabled={detectingLocation}
+                            className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-amber-500/10 via-[#D4AF37]/15 to-amber-500/10 border border-[#D4AF37]/40 text-xs font-bold text-[#8a6500] hover:bg-[#D4AF37]/20 active:scale-98 transition-all shadow-xs"
+                        >
+                            {detectingLocation ? (
+                                <>
+                                    <Loader2 size={14} className="animate-spin text-[#8a6500]" />
+                                    <span>Detecting your location...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Navigation size={14} className="text-[#8a6500] fill-[#8a6500]/20" />
+                                    <span>Detect My Location</span>
+                                </>
+                            )}
+                        </button>
+                    </div>
                 </div>
 
                 {/* Sprint 2.1 (M1): Airbnb-style Horizontally Scrollable Visual Category Bar */}
@@ -359,6 +382,7 @@ export function Shops() {
                         >
                             {SERVICE_CATEGORIES.map((cat) => {
                                 const isActive = (cat.id === "all" && !selectedCategory) || (selectedCategory === cat.id);
+                                const CategoryIcon = cat.icon;
                                 return (
                                     <button
                                         key={cat.id}
@@ -370,7 +394,7 @@ export function Shops() {
                                                 : 'bg-gray-50/80 hover:bg-gray-100 border-gray-200/70 text-gray-700 hover:text-black'
                                         }`}
                                     >
-                                        <span className="text-base leading-none">{cat.icon}</span>
+                                        <CategoryIcon className={`w-4 h-4 ${cat.iconClass}`} aria-hidden="true" />
                                         <span>{cat.label}</span>
                                         {isActive && cat.id !== "all" && (
                                             <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] ml-0.5 animate-pulse" />
@@ -655,13 +679,73 @@ export function Shops() {
                             <button onClick={() => fetchSalons()} className="text-[#D4AF37] font-bold border-b-2 border-[#D4AF37] hover:text-[#B48F27] transition-colors">Try Again</button>
                         </div>
                     ) : salons.length === 0 ? (
-                        <div className="text-center py-20">
-                            <div className="bg-gray-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <Search className="text-gray-300 w-10 h-10" />
+                        <div className="max-w-2xl mx-auto my-12 p-8 md:p-12 text-center bg-gradient-to-b from-gray-50/80 to-white border border-gray-100 rounded-3xl shadow-sm">
+                            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-amber-500/10 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37] shadow-inner">
+                                <MapPinOff size={36} strokeWidth={1.8} />
                             </div>
-                            <h3 className="text-2xl font-serif font-bold text-gray-900 mb-2">No Salons Found</h3>
-                            <p className="text-gray-500">We couldn't find any salons matching your search criteria.</p>
-                            <button onClick={() => setSearchParams({})} className="mt-6 text-[#D4AF37] font-bold hover:text-[#B48F27] transition-colors">Clear Filters</button>
+                            <h3 className="text-2xl md:text-3xl font-serif font-bold text-gray-900 mb-3">
+                                {cityParam ? `No Salons Found in ${cityParam}` : "No Salons Found"}
+                            </h3>
+                            <p className="text-gray-500 text-sm md:text-base max-w-md mx-auto leading-relaxed mb-6">
+                                We couldn't find any salons matching your current filters or selected city. Try exploring nearby cities or resetting your search.
+                            </p>
+
+                            {/* Quick Action CTAs */}
+                            <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setCityQuery("");
+                                        setSelectedCategory("all");
+                                        setSearchParams({});
+                                    }}
+                                    className="px-5 py-2.5 rounded-full bg-[#1A1A1A] text-white hover:bg-black font-bold text-xs sm:text-sm flex items-center gap-2 shadow-sm transition-all active:scale-95"
+                                >
+                                    <RotateCcw size={15} />
+                                    <span>Clear Filters</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleUseMyLocation}
+                                    disabled={detectingLocation}
+                                    className="px-5 py-2.5 rounded-full bg-[#D4AF37] text-white hover:bg-[#b8962e] font-bold text-xs sm:text-sm flex items-center gap-2 shadow-sm transition-all active:scale-95 disabled:opacity-50"
+                                >
+                                    {detectingLocation ? (
+                                        <Loader2 size={15} className="animate-spin" />
+                                    ) : (
+                                        <Navigation size={15} />
+                                    )}
+                                    <span>Try Nearby City</span>
+                                </button>
+                            </div>
+
+                            {/* Quick City Pills */}
+                            <div className="pt-6 border-t border-gray-100">
+                                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                                    Or explore popular salon hubs:
+                                </p>
+                                <div className="flex flex-wrap justify-center gap-2">
+                                    {["Bangalore", "Mumbai", "New Delhi", "Pune", "Patna"].map((city) => (
+                                        <button
+                                            key={city}
+                                            type="button"
+                                            onClick={() => {
+                                                setCityQuery(city);
+                                                selectCity(city);
+                                                setSearchParams((prev) => {
+                                                    const next = new URLSearchParams(prev);
+                                                    next.set("city", city);
+                                                    next.set("page", "1");
+                                                    return next;
+                                                });
+                                            }}
+                                            className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-gray-200 text-gray-700 hover:border-[#D4AF37] hover:text-[#8a6500] hover:bg-amber-50/50 transition-all shadow-xs"
+                                        >
+                                            {city}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     ) : (
                         <>
@@ -670,7 +754,7 @@ export function Shops() {
                                     <div key={salon._id} className="w-full bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col transition hover:shadow-md group">
                                         <div className="relative h-56 w-full overflow-hidden flex-shrink-0 cursor-pointer" onClick={() => navigate(`/shop/${salon._id}`)}>
                                             <img
-                                                src={salon.images && salon.images.length > 0 ? salon.images[0] : "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=400&q=80"}
+                                                src={salon.images && salon.images.length > 0 ? salon.images[0] : salonPlaceholder}
                                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                                 alt={salon.name}
                                             />

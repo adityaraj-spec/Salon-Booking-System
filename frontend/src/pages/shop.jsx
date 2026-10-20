@@ -7,6 +7,7 @@ import { useBookingCart } from "../context/BookingCartContext";
 import axiosInstance from "../api/axiosConfig";
 import { SalonMap } from "../components/SalonMap";
 import { ShopDetailSkeleton } from "../components/skeletons/index.jsx";
+import salonPlaceholder from "../assets/salon1.jpg";
 
 // Sprint 2.3: Staff / Stylist Profile Cards — horizontally scrollable, interactive
 function StaffSection({ staff, salonId, navigate, user, formatLabel }) {
@@ -158,7 +159,22 @@ function StaffSection({ staff, salonId, navigate, user, formatLabel }) {
 function BeforeAfterCard({ item }) {
     const [sliderPos, setSliderPos] = useState(50);
     const [isInteracting, setIsInteracting] = useState(false);
+    const [containerWidth, setContainerWidth] = useState(330);
     const containerRef = useRef(null);
+
+    useEffect(() => {
+        if (!containerRef.current) return undefined;
+
+        const updateContainerWidth = () => {
+            setContainerWidth(containerRef.current?.offsetWidth || 330);
+        };
+
+        updateContainerWidth();
+        if (typeof ResizeObserver === "undefined") return undefined;
+        const resizeObserver = new ResizeObserver(updateContainerWidth);
+        resizeObserver.observe(containerRef.current);
+        return () => resizeObserver.disconnect();
+    }, []);
 
     const updateSlider = (clientX) => {
         if (!containerRef.current) return;
@@ -198,6 +214,10 @@ function BeforeAfterCard({ item }) {
                     alt={`${item.serviceName || 'Transformation'} After`}
                     className="absolute inset-0 w-full h-full object-cover pointer-events-none"
                     loading="lazy"
+                    onError={(event) => {
+                        event.currentTarget.onerror = null;
+                        event.currentTarget.src = salonPlaceholder;
+                    }}
                 />
                 <span className="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10 uppercase tracking-wider">
                     After
@@ -212,8 +232,12 @@ function BeforeAfterCard({ item }) {
                         src={item.beforeUrl}
                         alt={`${item.serviceName || 'Transformation'} Before`}
                         className="absolute inset-0 h-full object-cover max-w-none pointer-events-none"
-                        style={{ width: containerRef.current ? `${containerRef.current.offsetWidth}px` : '330px' }}
+                        style={{ width: `${containerWidth}px` }}
                         loading="lazy"
+                        onError={(event) => {
+                            event.currentTarget.onerror = null;
+                            event.currentTarget.src = salonPlaceholder;
+                        }}
                     />
                     <span className="absolute top-3 left-3 bg-[#1a1a1a]/80 backdrop-blur-md text-[#D4AF37] text-[10px] font-bold px-2 py-0.5 rounded-full z-10 uppercase tracking-wider">
                         Before
@@ -281,32 +305,8 @@ function BeforeAfterCard({ item }) {
 
 function TransformationGallerySection({ photos = [] }) {
     const scrollRef = useRef(null);
-
-    const defaultItems = [
-        {
-            beforeUrl: "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&w=600&q=80",
-            afterUrl: "https://images.unsplash.com/photo-1560869713-7d0a29430803?auto=format&fit=crop&w=600&q=80",
-            serviceName: "Balayage & Gloss",
-            stylistName: "Senior Colorist",
-            title: "Sun-Kissed Blonde Transformation",
-        },
-        {
-            beforeUrl: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=600&q=80",
-            afterUrl: "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=600&q=80",
-            serviceName: "Fade & Beard Sculpt",
-            stylistName: "Master Barber",
-            title: "Precision Taper & Beard Line-up",
-        },
-        {
-            beforeUrl: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80",
-            afterUrl: "https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&w=600&q=80",
-            serviceName: "Keratin Smoothening",
-            stylistName: "Texture Specialist",
-            title: "Intense Frizz-Free Glass Hair",
-        },
-    ];
-
-    const displayPhotos = photos && photos.length > 0 ? photos : defaultItems;
+    const displayPhotos = (Array.isArray(photos) ? photos : [])
+        .filter((photo) => photo?.beforeUrl && photo?.afterUrl);
 
     const scrollLeft = () => scrollRef.current?.scrollBy({ left: -320, behavior: 'smooth' });
     const scrollRight = () => scrollRef.current?.scrollBy({ left: 320, behavior: 'smooth' });
@@ -320,10 +320,14 @@ function TransformationGallerySection({ photos = [] }) {
                         <Sparkles size={18} className="text-[#D4AF37]" />
                         <h3 className="text-2xl font-serif font-bold text-[#1a1a1a]">Transformation Gallery</h3>
                     </div>
-                    <p className="text-sm text-gray-500 mt-1">Real before & after results crafted by our artists</p>
+                    <p className="text-sm text-gray-500 mt-1">
+                        {displayPhotos.length > 0
+                            ? "Real before & after results crafted by our artists"
+                            : "Transformation photos will appear here when this salon adds them."}
+                    </p>
                 </div>
                 {/* Scroll arrows */}
-                <div className="hidden md:flex items-center gap-2">
+                {displayPhotos.length > 1 && <div className="hidden md:flex items-center gap-2">
                     <button
                         type="button"
                         aria-label="Scroll transformations left"
@@ -340,19 +344,24 @@ function TransformationGallerySection({ photos = [] }) {
                     >
                         <ChevronRight size={18} />
                     </button>
-                </div>
+                </div>}
             </div>
 
-            {/* Scrollable track */}
-            <div
-                ref={scrollRef}
-                className="flex gap-5 overflow-x-auto pb-4 scroll-smooth no-scrollbar"
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-                {displayPhotos.map((item, idx) => (
-                    <BeforeAfterCard key={item._id || idx} item={item} />
-                ))}
-            </div>
+            {displayPhotos.length > 0 ? (
+                <div
+                    ref={scrollRef}
+                    className="flex gap-5 overflow-x-auto pb-4 scroll-smooth no-scrollbar"
+                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                >
+                    {displayPhotos.map((item, idx) => (
+                        <BeforeAfterCard key={item._id || idx} item={item} />
+                    ))}
+                </div>
+            ) : (
+                <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-10 text-center text-sm text-gray-500">
+                    No transformation photos have been published yet.
+                </div>
+            )}
         </div>
     );
 }
@@ -469,7 +478,7 @@ export function Shop() {
         .replace(/\bstate\b/gi, "State");
 
     const getCleanDescription = (desc) => {
-        const fallback = "Welcome to our premier destination for luxury grooming and beauty. We combine traditional techniques with modern style to give you the perfect look. Our studio features state-of-the-art equipment and a relaxing atmosphere designed for your comfort.";
+        const fallback = "No salon description has been provided yet.";
         if (!desc || typeof desc !== "string" || desc.trim().length < 15) {
             return fallback;
         }
@@ -670,17 +679,19 @@ export function Shop() {
     }
 
     // Use seeded images or fallback
-    const displayImages = salon.images && salon.images.length > 0
-        ? salon.images
-        : ["https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&q=80"];
+    const displayImages = Array.isArray(salon.images) && salon.images.length > 0
+        ? salon.images.filter(Boolean)
+        : [salonPlaceholder];
 
     // Build a 5-slot mosaic array (fills from available images, no random seed needed)
-    const mosaicImages = Array.from({ length: 5 }, (_, i) => displayImages[i % displayImages.length]);
+    const mosaicImages = displayImages.length > 0
+        ? Array.from({ length: 5 }, (_, i) => displayImages[i % displayImages.length])
+        : [];
 
     // Fill the gallery array to exactly 8 for mobile carousel
     const galleryImages = [...displayImages];
-    while (galleryImages.length < 8) {
-        galleryImages.push(displayImages[Math.floor(Math.random() * displayImages.length)]);
+    while (galleryImages.length > 0 && galleryImages.length < 8) {
+        galleryImages.push(displayImages[galleryImages.length % displayImages.length]);
     }
 
     return (
@@ -746,7 +757,11 @@ export function Shop() {
                         <span className="hidden md:inline text-gray-300">•</span>
                         <div className="flex items-center gap-1">
                             <Clock className="w-4 h-4 text-[#D4AF37]" />
-                            <span className="text-[#1a1a1a] font-medium">{salon.openingHours || "9:00 AM"} - {salon.closingHours || "9:00 PM"}</span>
+                            <span className="text-[#1a1a1a] font-medium">
+                                {salon.openingHours && salon.closingHours
+                                    ? `${salon.openingHours} - ${salon.closingHours}`
+                                    : "Hours not provided"}
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -1070,7 +1085,7 @@ export function Shop() {
                                                     <Scissors size={15} className="text-[#D4AF37] shrink-0" />
                                                     <h4 className="font-bold text-[#1a1a1a] text-sm truncate">{formatServiceName(service.name)}</h4>
                                                 </div>
-                                                <p className="ui-subtext line-clamp-1 mb-2">{service.description || "Professional salon service"}</p>
+                                                <p className="ui-subtext line-clamp-1 mb-2">{service.description || "Description unavailable"}</p>
                                                 <div className="flex items-center gap-2 text-xs text-gray-500">
                                                     <span className="inline-flex items-center gap-1 font-medium bg-gray-50 border border-gray-100 px-2 py-0.5 rounded-md text-gray-600">
                                                         <Clock size={11} className="text-[#D4AF37]" />
@@ -1361,7 +1376,11 @@ export function Shop() {
                         <div className="space-y-3 mb-6">
                             <div className="p-3.5 bg-gray-50/70 border border-gray-100 rounded-xl flex items-center justify-between text-xs">
                                 <div className="flex items-center gap-2.5 text-gray-600 font-medium"><Clock size={16} className="text-[#D4AF37]" /> Opening Hours</div>
-                                <span className="font-semibold text-[#1a1a1a]">{salon.openingHours || "09:00 AM"} - {salon.closingHours || "09:00 PM"}</span>
+                                <span className="font-semibold text-[#1a1a1a]">
+                                    {salon.openingHours && salon.closingHours
+                                        ? `${salon.openingHours} - ${salon.closingHours}`
+                                        : "Hours not provided"}
+                                </span>
                             </div>
                             <div className="p-3.5 bg-gray-50/70 border border-gray-100 rounded-xl flex items-center justify-between text-xs">
                                 <div className="flex items-center gap-2.5 text-gray-600 font-medium">

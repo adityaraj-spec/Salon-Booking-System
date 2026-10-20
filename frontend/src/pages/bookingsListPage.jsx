@@ -4,6 +4,7 @@ import axiosInstance from "../api/axiosConfig";
 import { useBookingCart } from "../context/BookingCartContext";
 import { Calendar, Clock, MapPin, Scissors, CheckCircle2, Phone, User, AlertCircle, X, Loader2, RotateCcw } from "lucide-react";
 import { BookingCardSkeleton } from "../components/skeletons/index.jsx";
+import salonPlaceholder from "../assets/salon1.jpg";
 
 
 export function MyBookingsPage() {
@@ -153,7 +154,7 @@ export function MyBookingsPage() {
                                 {/* PART 1: IMAGE (Left) */}
                                 <div className="w-full lg:w-56 h-56 lg:h-auto rounded-[32px] overflow-hidden shrink-0 shadow-lg border border-white relative group">
                                     <img
-                                        src={booking.salon?.images?.[0] || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=300&h=300&auto=format&fit=crop"}
+                                        src={booking.salon?.images?.[0] || salonPlaceholder}
                                         alt={booking.salon?.name}
                                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                     />

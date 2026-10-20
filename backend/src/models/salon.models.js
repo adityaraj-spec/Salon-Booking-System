@@ -97,6 +97,11 @@ const salonSchema = new mongoose.Schema({
     type: Number,
     default: 6 // Default capacity per salon
   },
+  maxConcurrentStaff: {
+    type: Number,
+    min: 1,
+    max: 100,
+  },
   timezone: {
     type: String,
     default: "Asia/Kolkata"

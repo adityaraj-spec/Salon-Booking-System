@@ -106,6 +106,39 @@ describe("Automated API Testing: Booking Operations Suite", () => {
       expect(res.body.success).toBe(true);
       expect(res.body.data).toBeDefined();
     });
+
+    it("should return fully booked slots with zero remaining seats", async () => {
+      const slotStart = new Date("2026-11-21T10:00:00.000Z");
+      const slotEnd = new Date("2026-11-21T10:30:00.000Z");
+
+      await Booking.create(Array.from({ length: testSalon.totalSeats }, (_, index) => ({
+        customer: testCustomer._id,
+        salon: testSalon._id,
+        services: [testService._id],
+        serviceNames: ["Classic Haircut"],
+        date: "2026-11-21",
+        time: "10:00 AM",
+        startTime: slotStart,
+        endTime: slotEnd,
+        totalAmount: 350,
+        idempotencyKey: `availability-full-${index}-${Date.now()}`,
+        status: "confirmed",
+      })));
+
+      const res = await request(app).get(
+        `/api/v1/bookings/availability/${testSalon._id}?date=2026-11-21&durationMinutes=30`
+      );
+
+      expect(res.status).toBe(200);
+      const fullSlot = res.body.data.slots.find((slot) => slot.time === "10:00 AM");
+      expect(fullSlot).toMatchObject({
+        time: "10:00 AM",
+        available: false,
+        seatsLeft: 0,
+        maxCapacity: testSalon.totalSeats,
+      });
+      expect(res.body.data.slots.length).toBeGreaterThan(0);
+    });
   });
 
   describe("GET /api/v1/bookings/my-bookings", () => {

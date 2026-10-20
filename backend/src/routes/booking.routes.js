@@ -11,6 +11,7 @@ import {
   cancelBookingHandler,
   createWalkInBookingHandler,
   rescheduleBookingHandler,
+  getUpcomingBooking,
 } from "../controllers/booking.controller.js";
 import { verifyJWT } from "../middleware/auth.middleware.js";
 import { authorize, requireOwnership } from "../middleware/authorize.js";
@@ -20,6 +21,7 @@ import {
   createHoldSchema,
   initiateBookingSchema,
   cancelBookingSchema,
+  updateBookingStatusSchema,
 } from "../schemas/booking.schema.js";
 import {
   createWalkInBookingSchema,
@@ -65,7 +67,8 @@ router.route("/:bookingId/cancel").post(
 );
 
 // General bookings
-router.route("/").post(verifyJWT, createBooking);
+router.route("/").post(verifyJWT, validate(createHoldSchema), createBooking);
+router.route("/upcoming").get(verifyJWT, getUpcomingBooking);
 router.route("/my-bookings").get(verifyJWT, getUserBookings);
 router.route("/salon-bookings").get(verifyJWT, authorize("owner", "staff", "admin"), getSalonBookings);
 router.route("/availability/:salonId").get(getAvailability);
@@ -74,6 +77,7 @@ router.route("/availability/:salonId").get(getAvailability);
 router.route("/:bookingId/status").patch(
   verifyJWT,
   authorize("owner", "staff", "admin"),
+  validate(updateBookingStatusSchema),
   updateBookingStatus
 );
 

@@ -94,6 +94,10 @@ const bookingSchema = new mongoose.Schema(
       type: String,
       enum: ["pending", "pending_payment", "confirmed", "completed", "cancelled", "rejected", "no_show", "expired"],
       default: "pending"
+    },
+    reminderSent: {
+      h24: { type: Boolean, default: false },
+      h2: { type: Boolean, default: false },
     }
   },
   { 
@@ -108,6 +112,8 @@ bookingSchema.index({ salon: 1, status: 1, date: 1 });
 bookingSchema.index({ staff: 1, date: 1, time: 1 });
 bookingSchema.index({ salon: 1, startTime: 1, endTime: 1, status: 1 });
 bookingSchema.index({ staff: 1, startTime: 1, endTime: 1, status: 1 });
+bookingSchema.index({ status: 1, startTime: 1, "reminderSent.h24": 1 });
+bookingSchema.index({ status: 1, startTime: 1, "reminderSent.h2": 1 });
 
 // Slot-level index: optimizes queries for slot overlap and capacity lookups
 bookingSchema.index(

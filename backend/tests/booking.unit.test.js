@@ -9,6 +9,7 @@ import { Service } from "../src/models/service.models.js";
 import { User } from "../src/models/user.models.js";
 import { createHold, expireHold } from "../src/services/hold.service.js";
 import { initiateBookingFromHold } from "../src/services/booking.service.js";
+import { getSalonCapacity } from "../src/services/availability.service.js";
 
 let replSet;
 
@@ -67,6 +68,13 @@ describe("Booking Engine Unit Tests (Overlap-Query Capacity)", () => {
       price: 500,
       duration: 30,
     });
+  });
+
+  test("uses a safe minimum capacity when salon capacity data is empty", () => {
+    expect(getSalonCapacity({ maxConcurrentStaff: 0, totalSeats: 0, staff: [] })).toBe(5);
+    expect(getSalonCapacity({})).toBe(5);
+    expect(getSalonCapacity({ staff: [{ _id: "one" }, { _id: "two" }] })).toBe(2);
+    expect(getSalonCapacity({ totalSeats: 7 })).toBe(7);
   });
 
   test("Should create a 10-minute hold and record it as an active BookingHold", async () => {

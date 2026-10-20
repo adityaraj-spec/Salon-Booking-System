@@ -1,5 +1,5 @@
 import { Booking } from "../models/booking.models.js";
-import { checkTimeRangeAvailability } from "./availability.service.js";
+import { checkTimeRangeAvailability, getSalonCapacity } from "./availability.service.js";
 import { calculateServicesDurationAndPrice } from "./duration.service.js";
 import { validateOperatingHours } from "../utils/timeRange.js";
 import { withTransactionRetry } from "../utils/transaction.js";
@@ -52,7 +52,7 @@ export const rescheduleBooking = async ({ bookingId, customerId, newStartTime })
       staffId: booking.staff,
       startTime: start,
       endTime: end,
-      totalSeats: salon.totalSeats || 6,
+      totalSeats: getSalonCapacity(salon, booking.staff),
       excludeBookingId: booking._id,
       session,
     });

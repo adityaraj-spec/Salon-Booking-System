@@ -8,25 +8,13 @@ export const createHoldSchema = {
     staffId: objectIdSchema.optional().nullable(),
     staff: objectIdSchema.optional().nullable(),
     services: z.array(objectIdSchema).optional(),
-    serviceNames: z.array(z.string()).optional(),
-    snapshotServices: z.array(
-      z.object({
-        serviceId: objectIdSchema.optional(),
-        _id: objectIdSchema.optional(),
-        name: z.string().optional(),
-        price: z.number().optional(),
-        durationMin: z.number().optional(),
-        duration: z.number().optional(),
-      }).passthrough()
-    ).optional(),
     date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
     time: z.string().min(1, "Time slot is required"),
     startTime: z.string().optional(),
-    totalAmount: z.number().optional(),
     staffName: z.string().optional(),
-    idempotencyKey: z.string().optional(),
-  }).passthrough().refine(
-    (data) => (data.services && data.services.length > 0) || (data.snapshotServices && data.snapshotServices.length > 0),
+    idempotencyKey: z.string().trim().min(1).max(128).optional(),
+  }).refine(
+    (data) => data.services && data.services.length > 0,
     { message: "At least one service must be selected", path: ["services"] }
   ),
 };
@@ -36,12 +24,24 @@ export const initiateBookingSchema = {
     holdId: objectIdSchema,
     idempotencyKey: z.string().trim().optional(),
     useLoyaltyPoints: z.boolean().optional(),
-    pointsToRedeem: z.number().optional().nullable(),
-  }).passthrough(),
+    pointsToRedeem: z.number().int().min(0).optional().nullable(),
+  }),
 };
 
 export const cancelBookingSchema = {
   params: z.object({
     bookingId: objectIdSchema,
+  }),
+  body: z.object({
+    reason: z.string().trim().max(500).optional(),
+  }),
+};
+
+export const updateBookingStatusSchema = {
+  params: z.object({
+    bookingId: objectIdSchema,
+  }),
+  body: z.object({
+    status: z.enum(["pending", "confirmed", "completed", "cancelled", "rejected"]),
   }),
 };

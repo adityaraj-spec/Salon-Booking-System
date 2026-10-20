@@ -1,13 +1,19 @@
 import Razorpay from "razorpay";
 import crypto from "crypto";
 
-const razorpayKeyId = process.env.RAZORPAY_KEY_ID || "rzp_test_dummy";
-const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET || "dummy_secret";
+const razorpayKeyId = process.env.RAZORPAY_KEY_ID?.trim();
+const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET?.trim();
 
-export const razorpayClient = new Razorpay({
-  key_id: razorpayKeyId,
-  key_secret: razorpayKeySecret,
-});
+export const razorpayClient = razorpayKeyId && razorpayKeySecret
+  ? new Razorpay({ key_id: razorpayKeyId, key_secret: razorpayKeySecret })
+  : null;
+
+export const getRazorpayKeyId = () => {
+  if (!razorpayKeyId) {
+    throw new Error("RAZORPAY_KEY_ID is not configured");
+  }
+  return razorpayKeyId;
+};
 
 /**
  * Verifies Razorpay checkout signature for client callback.
@@ -20,7 +26,8 @@ export const razorpayClient = new Razorpay({
 export const verifyRazorpaySignature = ({ orderId, paymentId, signature }) => {
   if (!orderId || !paymentId || !signature) return false;
 
-  const secret = process.env.RAZORPAY_KEY_SECRET || "dummy_secret";
+  const secret = process.env.RAZORPAY_KEY_SECRET?.trim();
+  if (!secret) return false;
   const generatedSignature = crypto
     .createHmac("sha256", secret)
     .update(`${orderId}|${paymentId}`)
@@ -43,10 +50,11 @@ export const verifyRazorpaySignature = ({ orderId, paymentId, signature }) => {
 export const verifyWebhookSignature = (body, signatureHeader, webhookSecret) => {
   if (!body || !signatureHeader) return false;
 
-  const secret = webhookSecret || process.env.RAZORPAY_WEBHOOK_SECRET || "dummy_webhook_secret";
+  const secret = webhookSecret?.trim() || process.env.RAZORPAY_WEBHOOK_SECRET?.trim();
+  if (!secret) return false;
   const expectedSignature = crypto
     .createHmac("sha256", secret)
-    .update(typeof body === "string" ? body : JSON.stringify(body))
+    .update(Buffer.isBuffer(body) || typeof body === "string" ? body : JSON.stringify(body))
     .digest("hex");
 
   const bufferA = Buffer.from(expectedSignature, "utf8");

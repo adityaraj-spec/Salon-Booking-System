@@ -11,5 +11,5 @@ export const searchSalonsSchema = {
     query: z.string().optional(),
     page: z.string().optional(),
     limit: z.string().optional(),
-  }).passthrough(),
+  }),
 };

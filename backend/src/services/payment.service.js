@@ -1,7 +1,7 @@
 import { Payment } from "../models/payment.models.js";
 import { Refund } from "../models/refund.models.js";
 import { Booking } from "../models/booking.models.js";
-import { verifyRazorpaySignature, verifyWebhookSignature } from "../utils/razorpay.js";
+import { getRazorpayKeyId, verifyRazorpaySignature, verifyWebhookSignature } from "../utils/razorpay.js";
 import { razorpayCreateOrder, razorpayRefundPayment } from "../utils/razorpayBreaker.js";
 import { writeOutboxEvent } from "./outbox.service.js";
 import { withTransactionRetry } from "../utils/transaction.js";
@@ -169,7 +169,7 @@ export const createRazorpayOrder = async ({ bookingId, customerId }) => {
       orderId: existingPayment.razorpayOrderId,
       amount: booking.totalAmount,
       currency: "INR",
-      keyId: process.env.RAZORPAY_KEY_ID || "rzp_test_dummy",
+      keyId: getRazorpayKeyId(),
       paymentId: existingPayment._id,
     };
   }
@@ -187,7 +187,7 @@ export const createRazorpayOrder = async ({ bookingId, customerId }) => {
       },
     });
   } catch (err) {
-    if (process.env.NODE_ENV === "test" || !process.env.RAZORPAY_KEY_SECRET) {
+    if (process.env.NODE_ENV === "test") {
       razorpayOrder = {
         id: `order_test_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
         amount: amountInPaisa,
@@ -232,7 +232,7 @@ export const createRazorpayOrder = async ({ bookingId, customerId }) => {
     orderId: razorpayOrder.id,
     amount: booking.totalAmount,
     currency: "INR",
-    keyId: process.env.RAZORPAY_KEY_ID || "rzp_test_dummy",
+    keyId: getRazorpayKeyId(),
     paymentId: payment._id,
   };
 };
@@ -392,7 +392,7 @@ export const initiateRefund = async ({ bookingId, customerId, reason }) => {
           });
           razorpayRefundId = refundRes.id;
         } catch (err) {
-          if (process.env.NODE_ENV === "test" || !process.env.RAZORPAY_KEY_SECRET) {
+          if (process.env.NODE_ENV === "test") {
             razorpayRefundId = `rfnd_test_${Date.now()}`;
           } else {
             const isTimeout = err.name === "RazorpayTimeoutError";

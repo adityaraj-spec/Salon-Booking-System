@@ -9,7 +9,7 @@ import { writeOutboxEvent } from "./outbox.service.js";
 import { withIdempotency, buildFallbackKey } from "./idempotency.service.js";
 import { confirmPaymentAndBooking } from "./payment.service.js";
 import { buildSlotLockKeys, acquireSlotLock, releaseSlotLock } from "../lib/redisLock.js";
-import { checkTimeRangeAvailability } from "./availability.service.js";
+import { checkTimeRangeAvailability, getSalonCapacity } from "./availability.service.js";
 import { calculateServicesDurationAndPrice } from "./duration.service.js";
 import { calculateLoyaltyDiscount, reversePointsForBooking } from "./loyalty.service.js";
 import ApiError from "../utils/apiError.js";
@@ -36,19 +36,21 @@ export const initiateBookingFromHold = async ({
     isFallback,
     async () => {
       const bookingDoc = await withTransactionRetry(async (session) => {
-        const hold = await BookingHold.findOne({
+        const hold = await BookingHold.findOneAndUpdate({
           _id: holdId,
           customer: customerId,
           status: "active",
           expiresAt: { $gt: new Date() },
-        }).session(session);
+        }, {
+          $set: { status: "converted" },
+        }, {
+          returnDocument: "after",
+          session,
+        });
 
         if (!hold) {
           throw new ApiError(400, "Hold has expired, been cancelled, or does not exist.");
         }
-
-        hold.status = "converted";
-        await hold.save({ session });
 
         const salon = await Salon.findById(hold.salon).session(session);
         const slotKeys =
@@ -248,7 +250,7 @@ export const rescheduleBooking = async ({
             staffId: targetStaffId,
             startTime: newStartTime,
             endTime: newEndTime,
-            totalSeats: salon.totalSeats || 6,
+            totalSeats: getSalonCapacity(salon, targetStaffId),
             excludeBookingId: existingBooking._id,
             session,
           });
@@ -343,7 +345,7 @@ export const createWalkInBooking = async ({
             staffId,
             startTime,
             endTime,
-            totalSeats: salon.totalSeats || 6,
+            totalSeats: getSalonCapacity(salon, staffId),
             session,
           });
 

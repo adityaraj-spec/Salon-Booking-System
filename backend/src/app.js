@@ -21,6 +21,7 @@ import paymentWebhookRouter from "./routes/payment.webhook.routes.js";
 import healthRouter from "./routes/health.routes.js";
 import growthRouter from "./routes/growth.routes.js";
 import loyaltyRouter from "./routes/loyalty.routes.js";
+import internalRouter from "./routes/internal.routes.js";
 import metricsRouter from "./routes/metrics.routes.js";
 import ApiError from "./utils/apiError.js";
 
@@ -131,6 +132,7 @@ app.use("/api/v1/owner", ownerRouter);
 app.use("/api/v1/payments", paymentRouter); // non-webhook payment routes (create-order, verify) — JSON body is fine here
 app.use("/api/v1/growth", growthRouter);
 app.use("/api/v1/loyalty", loyaltyRouter);
+app.use("/api/v1/internal", internalRouter);
 
 
 // SPA Fallback for generic routes (must be placed before generic error handler)
@@ -165,7 +167,9 @@ app.use((err, req, res, next) => {
 
     return res.status(500).json({
         success: false,
-        message: err.message || "Internal Server Error",
+        message: process.env.NODE_ENV === "production"
+            ? "Internal Server Error"
+            : (err.message || "Internal Server Error"),
         code: "INTERNAL_SERVER_ERROR",
         errors: [],
         requestId,
