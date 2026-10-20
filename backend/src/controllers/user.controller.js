@@ -42,6 +42,21 @@ const getCookieOptions = () => {
     };
 };
 
+const dispatchVerificationEmail = (email, fullName, code, context) => {
+    sendVerificationEmail(email, fullName, code)
+        .then((result) => {
+            if (result?.success === false) {
+                logger.warn(
+                    { email, reason: result.error },
+                    `[User] ${context} verification email was not delivered`
+                );
+            }
+        })
+        .catch((err) => {
+            logger.warn({ email, err: err.message }, `[User] ${context} verification email failed`);
+        });
+};
+
 const registerUser = asyncHandler(async (req, res) => {
     const { fullName, email: rawEmail, username, password, phonenumber, role = "unassigned" } = req.body
     const email = rawEmail.trim().toLowerCase();
@@ -85,10 +100,7 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(505, "Something went wrong registering the user")
     }
 
-    // Send verification email with raw code (do not await to avoid blocking response)
-    sendVerificationEmail(email, fullName, rawVerificationCode).catch(err => {
-        logger.warn({ err: err.message }, "[User] Failed to send verification email");
-    });
+    dispatchVerificationEmail(email, fullName, rawVerificationCode, "Initial");
 
     return res
         .status(201)
@@ -190,9 +202,7 @@ const resendVerificationCode = asyncHandler(async (req, res) => {
     user.verificationCodeExpiry = verificationCodeExpiry;
     await user.save({ validateBeforeSave: false });
 
-    sendVerificationEmail(email, user.fullName, rawVerificationCode).catch(err => {
-        logger.warn({ err: err.message }, "[User] Failed to resend verification email");
-    });
+    dispatchVerificationEmail(email, user.fullName, rawVerificationCode, "Resend");
 
     return res
         .status(200)
@@ -230,9 +240,7 @@ const loginUser = asyncHandler(async (req, res) => {
         user.verificationCodeExpiry = verificationCodeExpiry;
         await user.save({ validateBeforeSave: false });
 
-        sendVerificationEmail(user.email, user.fullName, rawVerificationCode).catch(err => {
-            logger.warn({ err: err.message }, "[User] Failed to resend verification email on login");
-        });
+        dispatchVerificationEmail(user.email, user.fullName, rawVerificationCode, "Login");
 
         throw new ApiError(403, "Email not verified. A new verification code has been sent to your email.")
     }

@@ -77,6 +77,21 @@ if (process.env.NODE_ENV === "production") {
   }
 }
 
+const brevoApiKey = process.env.BREVO_API_KEY?.trim();
+if (!brevoApiKey) {
+  logger.warn(
+    "[Startup] BREVO_API_KEY is not set - verification emails will be skipped; registration remains available"
+  );
+} else if (!brevoApiKey.startsWith("xkeysib-")) {
+  logger.warn("[Startup] BREVO_API_KEY does not look like a Brevo REST API v3 key");
+}
+
+if (process.env.NODE_ENV === "production" && process.env.ENABLE_REDIS === "false") {
+  logger.warn(
+    "[Startup] ENABLE_REDIS=false in production - OTP request rate limiting and Redis-backed sessions are disabled"
+  );
+}
+
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {
     logger.error({ envVar }, "FATAL STARTUP ERROR: Required environment variable is missing — exiting");

@@ -139,9 +139,22 @@ export const sendBrevoEmail = async ({ to, subject, html, text, cc, bcc, replyTo
         logger.info({ subject, messageId }, "[Mailer] Email accepted by Brevo REST API");
         return { success: true, id: messageId, info: { messageId } };
     } catch (error) {
-        const code = error?.response?.statusCode || error?.statusCode || error?.code;
-        const msg = error?.response?.body?.message || error?.message;
-        logger.error({ subject, code, err: msg }, "[Mailer] Brevo REST API error");
+        const response = error?.response;
+        const responseData = response?.body ?? response?.data;
+        const status = response?.statusCode ?? response?.status ?? error?.statusCode;
+        const message = responseData?.message || error?.message;
+
+        logger.error(
+            {
+                subject,
+                status,
+                code: error?.code,
+                message,
+                responseData,
+                err: error?.message,
+            },
+            "[Mailer] Brevo REST API error"
+        );
         return { success: false, error: "Email delivery failed" };
     }
 };

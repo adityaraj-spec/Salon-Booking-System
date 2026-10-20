@@ -19,9 +19,10 @@ export const generateOTP = () => {
 export const checkOTPRequestRateLimit = async (email, ipAddress = "unknown") => {
   const redis = getRedisClient();
   if (!redis) {
-    if (process.env.NODE_ENV === "production") {
-      throw new ApiError(503, "Verification service is temporarily unavailable. Please try again later.");
-    }
+    logger.warn(
+      { email, ipAddress },
+      "[OTP] Redis unavailable - skipping request rate-limit check"
+    );
     return;
   }
 
