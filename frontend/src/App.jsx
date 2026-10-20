@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { SocketProvider } from "./context/SocketContext.jsx";
@@ -61,9 +61,22 @@ function App() {
                         <Route path="booking/:id" element={<BookingPage />} />
                         <Route path="profile" element={<ProfilePage />} />
                         <Route path="bookings" element={<MyBookingsPage />} />
+                        <Route path="bookings/:id" element={<MyBookingsPage />} />
                         <Route path="salon/dashboard" element={<SalonBookingsPage />} />
                         <Route path="salon/manage" element={<SalonManagementPage />} />
                         <Route path="favorites" element={<FavoritesPage />} />
+
+                        {/* Email CTA Redirects */}
+                        <Route path="dashboard" element={<Navigate to="/salon/dashboard" replace />} />
+                        <Route path="owner/dashboard" element={<Navigate to="/salon/dashboard" replace />} />
+                        <Route path="owner/bookings" element={<Navigate to="/salon/dashboard" replace />} />
+                        <Route path="owner/bookings/:id" element={<Navigate to="/salon/dashboard" replace />} />
+                        <Route path="owner/listings" element={<Navigate to="/salon/manage" replace />} />
+                        <Route path="owner/management" element={<Navigate to="/salon/manage" replace />} />
+                        <Route path="owner/manage" element={<Navigate to="/salon/manage" replace />} />
+                        <Route path="explore" element={<Navigate to="/home" replace />} />
+                        <Route path="account/profile" element={<Navigate to="/profile" replace />} />
+                        <Route path="account/security" element={<Navigate to="/profile" replace />} />
                       </Route>
                     </Route>
                     
@@ -71,6 +84,9 @@ function App() {
                     <Route path="login" element={<LoginPage />} />
                     <Route path="signup" element={<SignUpPage />} />
                     <Route path="verify-email" element={<VerifyEmailPage />} />
+                    <Route path="verify" element={<Navigate to="/verify-email" replace />} />
+                    <Route path="privacy" element={<Navigate to="/" replace />} />
+                    <Route path="terms" element={<Navigate to="/" replace />} />
                   </Routes>
                 </ErrorBoundary>
               </Suspense>

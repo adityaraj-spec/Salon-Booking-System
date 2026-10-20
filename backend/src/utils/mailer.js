@@ -1,7 +1,7 @@
 import * as Brevo from "@getbrevo/brevo";
 import logger from "../lib/logger.js";
 
-const FRONTEND_URL = () => process.env.FRONTEND_URL || "http://localhost:5173";
+const FRONTEND_URL = () => (process.env.FRONTEND_URL || "http://localhost:5173").trim().replace(/\/+$/, "");
 
 let _brevoClient = null;
 
@@ -513,7 +513,7 @@ export const ownerPaidBooking = (email, ownerName, customerName, shopName, booki
             `A payment has been successfully recorded for your salon ${shopName} from customer ${customerName}.`,
         ],
         payment,
-        cta: { label: "View Dashboard", href: `${FRONTEND_URL()}/dashboard` },
+        cta: { label: "View Dashboard", href: `${FRONTEND_URL()}/salon/dashboard` },
     });
     return sendTemplateEmail(email, `Payment Received: ₹${amount} - ${shopName}`, html);
 };
@@ -539,7 +539,7 @@ export const bookingConfirmation = (email, customerName, salonName, bookingTime,
             `Your appointment at ${salonName} has been successfully confirmed. We look forward to seeing you.`,
         ],
         booking,
-        cta: { label: "View Booking Details", href: `${FRONTEND_URL()}/bookings/${bookingReference}` },
+        cta: { label: "View Booking Details", href: `${FRONTEND_URL()}/bookings` },
     });
     return sendTemplateEmail(email, `Booking Confirmed at ${salonName}`, html);
 };
@@ -563,7 +563,7 @@ export const bookingPending = (email, customerName, salonName, bookingTime, book
             `We have received your booking request for ${salonName}. The salon will review and confirm your appointment shortly.`,
         ],
         booking,
-        cta: { label: "Check Status", href: `${FRONTEND_URL()}/bookings/${bookingReference}` },
+        cta: { label: "Check Status", href: `${FRONTEND_URL()}/bookings` },
     });
     return sendTemplateEmail(email, `Booking Pending at ${salonName}`, html);
 };
@@ -588,7 +588,7 @@ export const appointmentCancelled = (email, customerName, salonName, bookingTime
             hasValue(reason) ? `Reason provided: ${reason}` : "",
         ].filter(Boolean),
         booking,
-        cta: { label: "Book Again", href: `${FRONTEND_URL()}/explore` },
+        cta: { label: "Book Again", href: `${FRONTEND_URL()}/home` },
     });
     return sendTemplateEmail(email, `Appointment Cancelled - ${salonName}`, html);
 };
@@ -662,9 +662,7 @@ export const paymentReceipt = (
         rows.push({ label: "Booking reference", value: bookingRef });
     }
 
-    const ctaHref = hasValue(bookingRef)
-        ? `${FRONTEND_URL()}/bookings/${bookingRef}`
-        : `${FRONTEND_URL()}/bookings`;
+    const ctaHref = `${FRONTEND_URL()}/bookings`;
 
     const html = renderEmail({
         preheader: `Payment receipt for your visit to ${salonName}`,
@@ -702,7 +700,7 @@ export const newBookingRequest = (email, ownerName, customerName, salonName, boo
             `You have received a new booking request from ${customerName} for ${salonName}. Please review and respond to this request.`,
         ],
         booking,
-        cta: { label: "Manage Booking", href: `${FRONTEND_URL()}/owner/bookings/${bookingReference}` },
+        cta: { label: "Manage Booking", href: `${FRONTEND_URL()}/salon/dashboard` },
     });
     return sendTemplateEmail(email, `New Booking Request - ${salonName}`, html);
 };
@@ -721,7 +719,7 @@ export const accountNotification = (email, userName, actionDescription, timestam
         rows: [
             { label: "Timestamp", value: formatDateTime(timestamp) || "Just now" },
         ],
-        cta: { label: "Review Account", href: `${FRONTEND_URL()}/account/security` },
+        cta: { label: "Review Account", href: `${FRONTEND_URL()}/profile` },
     });
     return sendTemplateEmail(email, `SalonNow Account Notification`, html);
 };
@@ -745,7 +743,7 @@ export const bookingUpdate = (email, customerName, salonName, oldBookingTime, ne
             `Your appointment at ${salonName} has been updated from ${formatDateTime(oldBookingTime)} to the new time below.`,
         ],
         booking,
-        cta: { label: "View Details", href: `${FRONTEND_URL()}/bookings/${bookingReference}` },
+        cta: { label: "View Details", href: `${FRONTEND_URL()}/bookings` },
     });
     return sendTemplateEmail(email, `Appointment Updated - ${salonName}`, html);
 };
@@ -761,7 +759,7 @@ export const listingUpdate = (email, ownerName, shopName, updateDetails) => {
             `Your salon listing for ${shopName} has been successfully updated with the following details:`,
             updateDetails,
         ],
-        cta: { label: "View Listing", href: `${FRONTEND_URL()}/owner/listings` },
+        cta: { label: "View Listing", href: `${FRONTEND_URL()}/salon/manage` },
     });
     return sendTemplateEmail(email, `Listing Updated: ${shopName}`, html);
 };
@@ -776,7 +774,7 @@ export const profileUpdate = (email, userName, updateType) => {
         paragraphs: [
             `Your profile details (${updateType}) were successfully updated on your SalonNow account.`,
         ],
-        cta: { label: "View Profile", href: `${FRONTEND_URL()}/account/profile` },
+        cta: { label: "View Profile", href: `${FRONTEND_URL()}/profile` },
     });
     return sendTemplateEmail(email, `Profile Updated - SalonNow`, html);
 };
@@ -792,7 +790,7 @@ export const managementUpdate = (email, ownerName, shopName, details) => {
             `An administrative update has been applied to your salon ${shopName}:`,
             details,
         ],
-        cta: { label: "Open Management Panel", href: `${FRONTEND_URL()}/owner/management` },
+        cta: { label: "Open Management Panel", href: `${FRONTEND_URL()}/salon/manage` },
     });
     return sendTemplateEmail(email, `Management Update - ${shopName}`, html);
 };
@@ -808,7 +806,7 @@ export const emailVerification = (email, userName, verificationCode) => {
             `Please use the verification code below to complete your registration or sign-in on SalonNow. This code is valid for 10 minutes.`,
         ],
         code: verificationCode,
-        cta: { label: "Verify Email", href: `${FRONTEND_URL()}/verify` },
+        cta: { label: "Verify Email", href: `${FRONTEND_URL()}/verify-email` },
     });
     return sendTemplateEmail(email, `Your SalonNow Verification Code`, html);
 };
@@ -827,7 +825,7 @@ export const emailConfigurationTest = (email, testRecipient) => {
             { label: "Recipient", value: testRecipient },
             { label: "Timestamp", value: formatDateTime(new Date()) },
         ],
-        cta: { label: "Go to Dashboard", href: `${FRONTEND_URL()}/dashboard` },
+        cta: { label: "Go to Dashboard", href: `${FRONTEND_URL()}/home` },
     });
     return sendTemplateEmail(email, `SalonNow Email Test Successful`, html);
 };
@@ -845,7 +843,7 @@ export const welcomeToSalonNow = (email, name, role = "Customer") => {
                 ? `Thank you for registering your salon on SalonNow. You can now list your services, manage bookings, and grow your business.`
                 : `Thank you for joining SalonNow. Discover and book appointments at the best hair, beauty, and wellness salons near you.`,
         ],
-        cta: { label: isOwner ? "Go to Owner Dashboard" : "Explore Salons", href: `${FRONTEND_URL()}/${isOwner ? "owner/dashboard" : "explore"}` },
+        cta: { label: isOwner ? "Go to Owner Dashboard" : "Explore Salons", href: `${FRONTEND_URL()}/${isOwner ? "salon/dashboard" : "home"}` },
     });
     return sendTemplateEmail(email, `Welcome to SalonNow`, html);
 };
