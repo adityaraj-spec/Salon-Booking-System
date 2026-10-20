@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams, NavLink, useNavigate } from "react-router-dom";
+import { useParams, NavLink, useNavigate, useLocation } from "react-router-dom";
 import axiosInstance from "../api/axiosConfig";
 import { useAuth } from "../context/AuthContext";
 import { useBookingCart } from "../context/BookingCartContext";
@@ -162,12 +162,30 @@ export function BookingPage() {
         clearCart,
     } = useBookingCart();
 
+    // Read ?staffId=&staffName= from URL (set by shop.jsx "Book with [Name]" CTA)
+    const location = useLocation();
+    const urlParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
+    const preselectedStaffId = urlParams.get('staffId');
+    const preselectedStaffName = urlParams.get('staffName');
+
     // Initialize selected services from cart if matching this salon
     useEffect(() => {
         if (cartSalonId === id && cartItems.length > 0) {
             setSelectedServices(cartItems);
         }
     }, [id, cartSalonId]);
+
+    // Auto-select staff from URL query param once staff list is loaded
+    useEffect(() => {
+        if (!preselectedStaffId || staffMembers.length === 0 || selectedStaff) return;
+        const match = staffMembers.find(s => s._id === preselectedStaffId);
+        if (match) {
+            setSelectedStaff(match);
+        } else if (preselectedStaffName) {
+            // Fallback: construct minimal staff object from URL params so the summary still shows
+            setSelectedStaff({ _id: preselectedStaffId, name: decodeURIComponent(preselectedStaffName), role: 'Stylist' });
+        }
+    }, [preselectedStaffId, preselectedStaffName, staffMembers, selectedStaff]);
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -682,6 +700,16 @@ export function BookingPage() {
                             )}
 
                             <div className="pt-6 border-t border-gray-100 mt-6">
+                                {/* Total Duration Chip — Sprint 2.4 */}
+                                {selectedServices.length > 0 && (
+                                    <div className="flex items-center justify-between mb-4 bg-amber-50/70 border border-amber-100/80 rounded-xl px-4 py-2.5">
+                                        <div className="flex items-center gap-2 text-sm text-amber-800 font-semibold">
+                                            <Clock size={14} className="text-[#D4AF37] shrink-0" />
+                                            <span>Est. Appointment Time</span>
+                                        </div>
+                                        <span className="text-sm font-bold text-[#1a1a1a]">{combinedDurationMin} min</span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between items-center mb-6">
                                     <span className="text-lg font-bold text-[#1a1a1a]">Total</span>
                                     <span className="text-2xl font-serif font-bold text-[#e65c00]">₹{totalAmount}</span>

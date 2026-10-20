@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, NavLink, useNavigate } from "react-router-dom";
 import { Star, MapPin, Users, Clock, ShieldCheck, Sparkles, ArrowLeft, MessageSquare, Send, Trash2, Heart, Phone, Scissors, Award, ChevronLeft, ChevronRight, X, Images, Settings, Share2, Check, Plus, ShoppingBag, ChevronUp, ChevronDown } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
@@ -7,6 +7,152 @@ import { useBookingCart } from "../context/BookingCartContext";
 import axiosInstance from "../api/axiosConfig";
 import { SalonMap } from "../components/SalonMap";
 import { ShopDetailSkeleton } from "../components/skeletons/index.jsx";
+
+// Sprint 2.3: Staff / Stylist Profile Cards — horizontally scrollable, interactive
+function StaffSection({ staff, salonId, navigate, user, formatLabel }) {
+    const scrollRef = useRef(null);
+
+    const scrollLeft = () => scrollRef.current?.scrollBy({ left: -280, behavior: 'smooth' });
+    const scrollRight = () => scrollRef.current?.scrollBy({ left: 280, behavior: 'smooth' });
+
+    // Map role/skills to a human-friendly specialization label
+    const getSpecialization = (member) => {
+        if (member.skills && member.skills.length > 0) {
+            const skill = member.skills[0];
+            const labelMap = {
+                haircut: 'Hair Specialist',
+                hair: 'Hair Specialist',
+                colour: 'Color Expert',
+                color: 'Color Expert',
+                spa: 'Spa & Wellness',
+                nails: 'Nail Artist',
+                facial: 'Skin Specialist',
+                bridal: 'Bridal Expert',
+                shave: 'Grooming Expert',
+                massage: 'Massage Therapist',
+            };
+            return labelMap[skill.toLowerCase()] || formatLabel(skill, 'Stylist');
+        }
+        return formatLabel(member.role, 'Stylist');
+    };
+
+    const handleBookWith = (e, member) => {
+        e.stopPropagation();
+        if (!user) {
+            navigate('/login');
+        } else {
+            navigate(`/booking/${salonId}?staffId=${member._id}&staffName=${encodeURIComponent(member.name)}`);
+        }
+    };
+
+    return (
+        <div className="py-8 border-b border-gray-100">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+                <div>
+                    <h3 className="text-2xl font-serif font-bold text-[#1a1a1a]">Meet Our Team</h3>
+                    <p className="text-sm text-gray-500 mt-1">Book directly with your preferred stylist</p>
+                </div>
+                {/* Desktop scroll arrows */}
+                <div className="hidden md:flex items-center gap-2">
+                    <button
+                        type="button"
+                        aria-label="Scroll staff left"
+                        onClick={scrollLeft}
+                        className="w-9 h-9 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm hover:bg-gray-50 transition-all active:scale-95 text-gray-600"
+                    >
+                        <ChevronLeft size={18} />
+                    </button>
+                    <button
+                        type="button"
+                        aria-label="Scroll staff right"
+                        onClick={scrollRight}
+                        className="w-9 h-9 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm hover:bg-gray-50 transition-all active:scale-95 text-gray-600"
+                    >
+                        <ChevronRight size={18} />
+                    </button>
+                </div>
+            </div>
+
+            {/* Horizontally scrollable staff strip */}
+            <div
+                ref={scrollRef}
+                className="flex gap-4 overflow-x-auto pb-3 scroll-smooth no-scrollbar"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+                {staff.map((member) => {
+                    const specialization = getSpecialization(member);
+                    const hasPhoto = Boolean(member.profilePic);
+                    const initials = member.name
+                        ? member.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+                        : '?';
+
+                    return (
+                        <div
+                            key={member._id}
+                            className="group shrink-0 w-[200px] bg-white border border-gray-100 rounded-3xl p-5 flex flex-col items-center text-center shadow-sm hover:shadow-md hover:border-[#D4AF37]/30 transition-all duration-300"
+                        >
+                            {/* Photo / Avatar */}
+                            <div className="relative mb-4">
+                                {hasPhoto ? (
+                                    <img
+                                        src={member.profilePic}
+                                        alt={member.name}
+                                        className="w-20 h-20 rounded-full object-cover border-2 border-gray-100 group-hover:border-[#D4AF37]/40 transition-all"
+                                    />
+                                ) : (
+                                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#1a1a1a] to-[#3a3a3a] flex items-center justify-center text-white font-serif font-bold text-2xl border-2 border-[#D4AF37]/20 group-hover:border-[#D4AF37]/50 transition-all shadow-lg">
+                                        {initials}
+                                    </div>
+                                )}
+                                {/* Online / Active indicator dot */}
+                                <span className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-emerald-400 border-2 border-white shadow-sm" title="Available" />
+                            </div>
+
+                            {/* Name */}
+                            <h4 className="font-bold text-[#1a1a1a] text-sm leading-tight mb-1 truncate w-full">
+                                {member.name}
+                            </h4>
+
+                            {/* Specialization */}
+                            <p className="text-xs text-[#D4AF37] font-semibold mb-2 truncate w-full">
+                                {specialization}
+                            </p>
+
+                            {/* Experience badge or Skills tags */}
+                            {member.experience > 0 ? (
+                                <div className="inline-flex items-center gap-1 text-[11px] text-gray-500 bg-gray-50 border border-gray-100 px-2.5 py-1 rounded-full mb-4">
+                                    <Award size={11} className="text-orange-400 shrink-0" />
+                                    <span>{member.experience}+ yrs exp</span>
+                                </div>
+                            ) : member.skills && member.skills.length > 0 ? (
+                                <div className="flex flex-wrap gap-1 justify-center mb-4">
+                                    {member.skills.slice(0, 2).map((sk) => (
+                                        <span key={sk} className="text-[10px] bg-amber-50 text-amber-700 border border-amber-100 px-2 py-0.5 rounded-full font-medium capitalize">
+                                            {sk}
+                                        </span>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="mb-4" />
+                            )}
+
+                            {/* Book with CTA */}
+                            <button
+                                type="button"
+                                onClick={(e) => handleBookWith(e, member)}
+                                className="w-full py-2 rounded-xl text-xs font-bold bg-[#1a1a1a] text-white hover:bg-black active:scale-95 transition-all shadow-sm flex items-center justify-center gap-1.5"
+                            >
+                                <Scissors size={12} className="text-[#D4AF37]" />
+                                <span>Book with {member.name.split(' ')[0]}</span>
+                            </button>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
 
 export function Shop() {
     const { user } = useAuth();
@@ -760,28 +906,15 @@ export function Shop() {
                         </div>
                     )}
 
-                    {/* MEET OUR TEAM SECTION */}
+                    {/* MEET OUR TEAM SECTION — Sprint 2.3 */}
                     {staff.length > 0 && (
-                        <div className="py-6 border-b border-gray-100">
-                            <h3 className="text-2xl font-serif font-bold text-[#1a1a1a] mb-6">Meet Our Team</h3>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-                                {staff.map((member) => (
-                                    <div key={member._id} className="text-center group">
-                                        <div className="w-24 h-24 mx-auto rounded-full bg-gray-50 border-2 border-gray-50 p-1 mb-4 group-hover:border-[#D4AF37]/30 transition-all overflow-hidden">
-                                            <div className="w-full h-full rounded-full bg-[#fafafa] flex items-center justify-center text-gray-300">
-                                                <Users size={40} />
-                                            </div>
-                                        </div>
-                                        <h4 className="font-bold text-[#1a1a1a] text-sm mb-1">{member.name}</h4>
-                                        <p className="ui-meta">{formatLabel(member.role, "Stylist")}</p>
-                                        <div className="flex items-center justify-center gap-1 mt-2">
-                                            <Award size={12} className="text-orange-400" />
-                                            <span className="subtext-style-target">{member.experience}+ Years Experience</span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                        <StaffSection
+                            staff={staff}
+                            salonId={salon._id}
+                            navigate={navigate}
+                            user={user}
+                            formatLabel={formatLabel}
+                        />
                     )}
 
                     <div className="grid sm:grid-cols-2 gap-8">
