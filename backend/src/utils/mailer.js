@@ -313,7 +313,20 @@ const renderDetailCard = (rows = []) => {
     };
 };
 
-const renderBookingPanel = ({ bookingReference, bookingTime, salonName, salonAddress, stylist, services, price, customerName, status, statusColor = COLORS.pending }) => {
+const renderBookingPanel = ({
+    bookingReference,
+    bookingTime,
+    salonName,
+    salonAddress,
+    stylist,
+    services,
+    price,
+    customerName,
+    status,
+    statusColor = COLORS.pending,
+    actionTime = new Date(),
+    actionLabel = "Activity time",
+}) => {
     const safeSalonName = displayValue(salonName, "Salon");
     const hasAppointmentDetails = hasValue(bookingTime) || hasValue(stylist) || hasValue(services);
     const serviceText = hasValue(services) ? displayServices(services) : "";
@@ -322,10 +335,14 @@ const renderBookingPanel = ({ bookingReference, bookingTime, salonName, salonAdd
     const hasTotal = hasValue(price);
     const hasBookingReference = hasValue(bookingReference);
     const hasCustomer = hasValue(customerName);
+    const formattedActionTime = hasValue(actionTime) ? formatDateTime(actionTime) : "";
 
     return {
         html: `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background:#ffffff;border:1px solid ${COLORS.border};border-radius:8px;overflow:hidden;margin:24px 0;">
-          ${hasBookingReference ? `<tr style="background:${COLORS.warm};border-bottom:1px solid${COLORS.border};"><td style="padding:14px 16px;"><p style="margin:0 0 4px;color:${COLORS.muted};font-size:11px;font-weight:500;letter-spacing:1px;text-transform:uppercase;">${renderIcon("receipt", COLORS.gold, 16)}<span style="vertical-align:middle;">Booking reference</span></p><p style="margin:0;color:${COLORS.text};font-size:16px;font-weight:700;word-break:break-word;">${escapeHtml(displayValue(bookingReference))}</p></td></tr>` : ""}
+          ${(hasBookingReference || formattedActionTime) ? `<tr style="background:${COLORS.warm};border-bottom:1px solid ${COLORS.border};"><td style="padding:14px 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr>
+            ${hasBookingReference ? `<td valign="top"><p style="margin:0 0 4px;color:${COLORS.muted};font-size:11px;font-weight:500;letter-spacing:1px;text-transform:uppercase;">${renderIcon("receipt", COLORS.gold, 16)}<span style="vertical-align:middle;">Booking reference</span></p><p style="margin:0;color:${COLORS.text};font-size:15px;font-weight:700;word-break:break-word;">${escapeHtml(displayValue(bookingReference))}</p></td>` : ""}
+            ${formattedActionTime ? `<td align="${hasBookingReference ? "right" : "left"}" valign="top" style="${hasBookingReference ? "padding-left:12px;" : ""}"><p style="margin:0 0 4px;color:${COLORS.muted};font-size:11px;font-weight:500;letter-spacing:1px;text-transform:uppercase;">${renderIcon("clock", COLORS.gold, 14)}<span style="vertical-align:middle;">${escapeHtml(actionLabel)}</span></p><p style="margin:0;color:${COLORS.text};font-size:13px;font-weight:600;">${escapeHtml(formattedActionTime)}</p></td>` : ""}
+          </tr></table></td></tr>` : ""}
           <tr><td style="padding:20px 16px 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr>
             <td width="48" valign="top"><span style="display:inline-block;width:40px;height:40px;border-radius:50%;background:${COLORS.header};color:#ffffff;font-size:15px;line-height:40px;text-align:center;font-weight:700;">${escapeHtml(getInitials(safeSalonName))}</span></td>
             <td valign="top" style="padding-left:12px;"><p style="margin:0;color:${COLORS.text};font-size:16px;font-weight:700;line-height:1.35;">${escapeHtml(safeSalonName)}</p>${hasValue(salonAddress) ? `<p style="margin:4px 0 0;color:${COLORS.muted};font-size:12px;line-height:1.5;">${renderIcon("store", COLORS.muted, 14)}<span style="vertical-align:middle;">${escapeHtml(displayValue(salonAddress))}</span></p>` : ""}</td>
@@ -333,16 +350,17 @@ const renderBookingPanel = ({ bookingReference, bookingTime, salonName, salonAdd
           </tr></table></td></tr>
           ${hasCustomer ? `<tr><td style="padding:14px 16px;border-top:1px solid ${COLORS.border};"><p style="margin:0 0 4px;color:${COLORS.muted};font-size:11px;font-weight:500;letter-spacing:1px;text-transform:uppercase;">${renderIcon("person", COLORS.gold, 16)}<span style="vertical-align:middle;">Customer</span></p><p style="margin:0;color:${COLORS.text};font-size:14px;font-weight:700;word-break:break-word;">${escapeHtml(displayValue(customerName))}</p></td></tr>` : ""}
           ${hasAppointmentDetails ? `<tr><td style="padding:16px;border-top:1px solid ${COLORS.border};"><p style="margin:0 0 12px;color:${COLORS.text};font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Appointment details</p><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr>
-            ${appointmentValue ? `<td class="sn-stack-cell" width="50%" valign="top" style="padding-right:12px;${serviceText || hasValue(stylist) ? `border-right:1px solid ${COLORS.border};` : ""}"><p style="margin:0 0 6px;color:${COLORS.muted};font-size:12px;font-weight:500;">${renderIcon("calendar", COLORS.gold, 16)}<span style="vertical-align:middle;">Date &amp; Time</span></p><p style="margin:0;color:${COLORS.body};font-size:14px;font-weight:600;line-height:1.55;word-break:break-word;">${escapeHtml(appointmentValue)}</p></td>` : ""}
+            ${appointmentValue ? `<td class="sn-stack-cell" width="50%" valign="top" style="padding-right:12px;${serviceText || hasValue(stylist) ? `border-right:1px solid ${COLORS.border};` : ""}"><p style="margin:0 0 6px;color:${COLORS.muted};font-size:12px;font-weight:500;">${renderIcon("calendar", COLORS.gold, 16)}<span style="vertical-align:middle;">Appointment Slot</span></p><p style="margin:0;color:${COLORS.body};font-size:14px;font-weight:600;line-height:1.55;word-break:break-word;">${escapeHtml(appointmentValue)}</p></td>` : ""}
             ${(serviceText || hasValue(stylist)) ? `<td class="sn-stack-cell" valign="top" style="padding-left:${appointmentValue ? "12px" : "0"};"><p style="margin:0 0 6px;color:${COLORS.muted};font-size:12px;font-weight:500;">${renderIcon("scissors", COLORS.gold, 16)}<span style="vertical-align:middle;">Service</span></p>${serviceText ? `<p style="margin:0;color:${COLORS.body};font-size:14px;font-weight:600;line-height:1.55;word-break:break-word;">${escapeHtml(serviceText)}</p>` : ""}${hasValue(stylist) ? `<p style="margin:6px 0 0;color:${COLORS.muted};font-size:12px;line-height:1.5;">Stylist: <span style="color:${COLORS.body};font-weight:600;">${escapeHtml(displayValue(stylist))}</span></p>` : ""}</td>` : ""}
           </tr></table></td></tr>` : ""}
           ${hasTotal ? `<tr><td style="padding:16px;background:${COLORS.warm};border-top:1px solid${COLORS.border};"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr><td style="color:${COLORS.text};font-size:13px;font-weight:700;">Total amount</td><td align="right" style="color:${COLORS.text};font-size:18px;font-weight:700;">&#8377;${escapeHtml(displayValue(price, "0"))}</td></tr></table></td></tr>` : ""}
         </table>`,
         lines: [
             ...(hasBookingReference ? [`Booking reference: ${displayValue(bookingReference)}`] : []),
+            ...(formattedActionTime ? [`${actionLabel}: ${formattedActionTime}`] : []),
             `Salon: ${safeSalonName}`,
             ...(hasCustomer ? [`Customer: ${displayValue(customerName)}`] : []),
-            ...(appointmentValue ? [`Date & Time: ${appointmentValue}`] : []),
+            ...(appointmentValue ? [`Appointment Slot: ${appointmentValue}`] : []),
             ...(serviceText ? [`Service: ${serviceText}`] : []),
             ...(hasValue(stylist) ? [`Stylist: ${displayValue(stylist)}`] : []),
             ...(bookingStatus ? [`Status: ${bookingStatus}`] : []),
@@ -360,12 +378,14 @@ const renderSupportLine = () => {
     };
 };
 
-const renderPaymentCard = ({ shopName, bookingTime, amount, paymentId }) => {
+const renderPaymentCard = ({ shopName, bookingTime, amount, paymentId, paidAt }) => {
+    const paymentTimestamp = formatDateTime(paidAt || new Date());
     const cells = [
         { label: "Amount paid", value: amount, textValue: hasValue(amount) ? `Rs ${displayValue(amount, "0")}` : "", emphasis: true, currency: true, icon: "receipt" },
         { label: "Payment reference", value: paymentId, textValue: paymentId, icon: "card" },
         { label: "Salon", value: shopName, textValue: shopName, icon: "store" },
-        { label: "Appointment", value: hasValue(bookingTime) ? formatDateTime(bookingTime) : "", textValue: hasValue(bookingTime) ? formatDateTime(bookingTime) : "", icon: "calendar" },
+        { label: "Appointment Slot", value: hasValue(bookingTime) ? formatDateTime(bookingTime) : "", textValue: hasValue(bookingTime) ? formatDateTime(bookingTime) : "", icon: "calendar" },
+        { label: "Payment time", value: paymentTimestamp, textValue: paymentTimestamp, icon: "clock" },
     ].filter((cell) => hasValue(cell.value));
     const rows = [];
 
@@ -501,8 +521,8 @@ ${renderSocialIcon(SOCIAL_LINKS[2].type, SOCIAL_LINKS[2].href, SOCIAL_LINKS[2].t
 // 14 EXPORTED EMAIL TEMPLATES
 // ==========================================
 
-export const ownerPaidBooking = (email, ownerName, customerName, shopName, bookingTime, amount, paymentId) => {
-    const payment = renderPaymentCard({ shopName, bookingTime, amount, paymentId });
+export const ownerPaidBooking = (email, ownerName, customerName, shopName, bookingTime, amount, paymentId, paidAt) => {
+    const payment = renderPaymentCard({ shopName, bookingTime, amount, paymentId, paidAt: paidAt || new Date() });
     const html = renderEmail({
         preheader: `Payment recorded of ₹${amount} for ${shopName}`,
         category: "Owner Payment Notification",
@@ -518,7 +538,7 @@ export const ownerPaidBooking = (email, ownerName, customerName, shopName, booki
     return sendTemplateEmail(email, `Payment Received: ₹${amount} - ${shopName}`, html);
 };
 
-export const bookingConfirmation = (email, customerName, salonName, bookingTime, bookingReference, services, amount) => {
+export const bookingConfirmation = (email, customerName, salonName, bookingTime, bookingReference, services, amount, confirmedAt) => {
     const booking = renderBookingPanel({
         bookingReference,
         bookingTime,
@@ -528,6 +548,8 @@ export const bookingConfirmation = (email, customerName, salonName, bookingTime,
         customerName,
         status: "Confirmed",
         statusColor: COLORS.success,
+        actionTime: confirmedAt || new Date(),
+        actionLabel: "Confirmed on",
     });
     const html = renderEmail({
         preheader: `Your booking at ${salonName} is confirmed`,
@@ -544,7 +566,7 @@ export const bookingConfirmation = (email, customerName, salonName, bookingTime,
     return sendTemplateEmail(email, `Booking Confirmed at ${salonName}`, html);
 };
 
-export const bookingPending = (email, customerName, salonName, bookingTime, bookingReference) => {
+export const bookingPending = (email, customerName, salonName, bookingTime, bookingReference, requestedAt) => {
     const booking = renderBookingPanel({
         bookingReference,
         bookingTime,
@@ -552,6 +574,8 @@ export const bookingPending = (email, customerName, salonName, bookingTime, book
         customerName,
         status: "Pending Approval",
         statusColor: COLORS.pending,
+        actionTime: requestedAt || new Date(),
+        actionLabel: "Requested on",
     });
     const html = renderEmail({
         preheader: `Your booking request at ${salonName} is pending`,
@@ -568,7 +592,7 @@ export const bookingPending = (email, customerName, salonName, bookingTime, book
     return sendTemplateEmail(email, `Booking Pending at ${salonName}`, html);
 };
 
-export const appointmentCancelled = (email, customerName, salonName, bookingTime, bookingReference, reason) => {
+export const appointmentCancelled = (email, customerName, salonName, bookingTime, bookingReference, reason, cancelledAt) => {
     const booking = renderBookingPanel({
         bookingReference,
         bookingTime,
@@ -576,6 +600,8 @@ export const appointmentCancelled = (email, customerName, salonName, bookingTime
         customerName,
         status: "Cancelled",
         statusColor: COLORS.danger,
+        actionTime: cancelledAt || new Date(),
+        actionLabel: "Cancelled on",
     });
     const html = renderEmail({
         preheader: `Your appointment at ${salonName} was cancelled`,
@@ -655,11 +681,14 @@ export const paymentReceipt = (
         bookingTime,
         amount,
         paymentId,
+        paidAt: new Date(),
     });
 
-    const rows = [];
+    const rows = [
+        { label: "Payment time", value: formatDateTime(new Date()) },
+    ];
     if (hasValue(bookingRef)) {
-        rows.push({ label: "Booking reference", value: bookingRef });
+        rows.unshift({ label: "Booking reference", value: bookingRef });
     }
 
     const ctaHref = `${FRONTEND_URL()}/bookings`;
@@ -680,7 +709,7 @@ export const paymentReceipt = (
     return sendTemplateEmail(email, `Payment Receipt - ${salonName}`, html);
 };
 
-export const newBookingRequest = (email, ownerName, customerName, salonName, bookingTime, services, bookingReference) => {
+export const newBookingRequest = (email, ownerName, customerName, salonName, bookingTime, services, bookingReference, requestedAt) => {
     const booking = renderBookingPanel({
         bookingReference,
         bookingTime,
@@ -689,6 +718,8 @@ export const newBookingRequest = (email, ownerName, customerName, salonName, boo
         customerName,
         status: "Action Required",
         statusColor: COLORS.gold,
+        actionTime: requestedAt || new Date(),
+        actionLabel: "Received on",
     });
     const html = renderEmail({
         preheader: `New booking request from ${customerName} at ${salonName}`,
@@ -717,14 +748,14 @@ export const accountNotification = (email, userName, actionDescription, timestam
             actionDescription,
         ],
         rows: [
-            { label: "Timestamp", value: formatDateTime(timestamp) || "Just now" },
+            { label: "Activity time", value: formatDateTime(timestamp || new Date()) },
         ],
         cta: { label: "Review Account", href: `${FRONTEND_URL()}/profile` },
     });
     return sendTemplateEmail(email, `SalonNow Account Notification`, html);
 };
 
-export const bookingUpdate = (email, customerName, salonName, oldBookingTime, newBookingTime, bookingReference) => {
+export const bookingUpdate = (email, customerName, salonName, oldBookingTime, newBookingTime, bookingReference, rescheduledAt) => {
     const booking = renderBookingPanel({
         bookingReference,
         bookingTime: newBookingTime,
@@ -732,6 +763,8 @@ export const bookingUpdate = (email, customerName, salonName, oldBookingTime, ne
         customerName,
         status: "Rescheduled",
         statusColor: COLORS.gold,
+        actionTime: rescheduledAt || new Date(),
+        actionLabel: "Rescheduled on",
     });
     const html = renderEmail({
         preheader: `Your appointment at ${salonName} has been rescheduled`,
@@ -748,7 +781,7 @@ export const bookingUpdate = (email, customerName, salonName, oldBookingTime, ne
     return sendTemplateEmail(email, `Appointment Updated - ${salonName}`, html);
 };
 
-export const listingUpdate = (email, ownerName, shopName, updateDetails) => {
+export const listingUpdate = (email, ownerName, shopName, updateDetails, updatedAt) => {
     const html = renderEmail({
         preheader: `Listing update for ${shopName}`,
         category: "Listing Update",
@@ -759,12 +792,15 @@ export const listingUpdate = (email, ownerName, shopName, updateDetails) => {
             `Your salon listing for ${shopName} has been successfully updated with the following details:`,
             updateDetails,
         ],
+        rows: [
+            { label: "Updated on", value: formatDateTime(updatedAt || new Date()) },
+        ],
         cta: { label: "View Listing", href: `${FRONTEND_URL()}/salon/manage` },
     });
     return sendTemplateEmail(email, `Listing Updated: ${shopName}`, html);
 };
 
-export const profileUpdate = (email, userName, updateType) => {
+export const profileUpdate = (email, userName, updateType, updatedAt) => {
     const html = renderEmail({
         preheader: `Your SalonNow profile has been updated`,
         category: "Profile Update",
@@ -774,12 +810,15 @@ export const profileUpdate = (email, userName, updateType) => {
         paragraphs: [
             `Your profile details (${updateType}) were successfully updated on your SalonNow account.`,
         ],
+        rows: [
+            { label: "Updated on", value: formatDateTime(updatedAt || new Date()) },
+        ],
         cta: { label: "View Profile", href: `${FRONTEND_URL()}/profile` },
     });
     return sendTemplateEmail(email, `Profile Updated - SalonNow`, html);
 };
 
-export const managementUpdate = (email, ownerName, shopName, details) => {
+export const managementUpdate = (email, ownerName, shopName, details, updatedAt) => {
     const html = renderEmail({
         preheader: `Management update for ${shopName}`,
         category: "Management Update",
@@ -790,12 +829,15 @@ export const managementUpdate = (email, ownerName, shopName, details) => {
             `An administrative update has been applied to your salon ${shopName}:`,
             details,
         ],
+        rows: [
+            { label: "Updated on", value: formatDateTime(updatedAt || new Date()) },
+        ],
         cta: { label: "Open Management Panel", href: `${FRONTEND_URL()}/salon/manage` },
     });
     return sendTemplateEmail(email, `Management Update - ${shopName}`, html);
 };
 
-export const emailVerification = (email, userName, verificationCode) => {
+export const emailVerification = (email, userName, verificationCode, requestedAt) => {
     const html = renderEmail({
         preheader: `Your SalonNow verification code is ${verificationCode}`,
         category: "Email Verification",
@@ -806,6 +848,9 @@ export const emailVerification = (email, userName, verificationCode) => {
             `Please use the verification code below to complete your registration or sign-in on SalonNow. This code is valid for 10 minutes.`,
         ],
         code: verificationCode,
+        rows: [
+            { label: "Requested on", value: formatDateTime(requestedAt || new Date()) },
+        ],
         cta: { label: "Verify Email", href: `${FRONTEND_URL()}/verify-email` },
     });
     return sendTemplateEmail(email, `Your SalonNow Verification Code`, html);
@@ -830,7 +875,7 @@ export const emailConfigurationTest = (email, testRecipient) => {
     return sendTemplateEmail(email, `SalonNow Email Test Successful`, html);
 };
 
-export const welcomeToSalonNow = (email, name, role = "Customer") => {
+export const welcomeToSalonNow = (email, name, role = "Customer", registeredAt) => {
     const isOwner = String(role).toLowerCase().includes("owner");
     const html = renderEmail({
         preheader: `Welcome to SalonNow, ${name}!`,
@@ -843,6 +888,10 @@ export const welcomeToSalonNow = (email, name, role = "Customer") => {
                 ? `Thank you for registering your salon on SalonNow. You can now list your services, manage bookings, and grow your business.`
                 : `Thank you for joining SalonNow. Discover and book appointments at the best hair, beauty, and wellness salons near you.`,
         ],
+        rows: [
+            { label: "Registered on", value: formatDateTime(registeredAt || new Date()) },
+            { label: "Account type", value: isOwner ? "Salon Owner" : "Customer" },
+        ],
         cta: { label: isOwner ? "Go to Owner Dashboard" : "Explore Salons", href: `${FRONTEND_URL()}/${isOwner ? "salon/dashboard" : "home"}` },
     });
     return sendTemplateEmail(email, `Welcome to SalonNow`, html);
@@ -851,22 +900,22 @@ export const welcomeToSalonNow = (email, name, role = "Customer") => {
 // ==========================================
 // ALL COMPATIBILITY EXPORT ALIASES
 // ==========================================
-export const sendWelcomeEmail = (email, name, role) => welcomeToSalonNow(email, name, role);
-export const sendVerificationEmail = (email, userName, code) => emailVerification(email, userName, code);
-export const sendLoginEmail = (email, userName, details) => accountNotification(email, userName, details || "New login detected on your account", new Date());
-export const sendLogoutEmail = (email, userName, details) => accountNotification(email, userName, details || "Account session ended", new Date());
-export const sendShopAddedEmail = (email, ownerName, shopName) => listingUpdate(email, ownerName, shopName, "Your salon has been successfully added to SalonNow.");
-export const sendPaymentReceiptEmail = (email, customerName, salonName, bookingTimeOrAmount, amountOrPaymentId, paymentIdOrBookingRef, bookingReference) => paymentReceipt(email, customerName, salonName, bookingTimeOrAmount, amountOrPaymentId, paymentIdOrBookingRef, bookingReference);
-export const sendOwnerPaymentNotificationEmail = (email, ownerName, customerName, shopName, bookingTime, amount, paymentId) => ownerPaidBooking(email, ownerName, customerName, shopName, bookingTime, amount, paymentId);
-export const sendBookingConfirmationEmail = (email, customerName, salonName, bookingTime, bookingReference, services, amount) => bookingConfirmation(email, customerName, salonName, bookingTime, bookingReference, services, amount);
-export const sendBookingPendingEmail = (email, customerName, salonName, bookingTime, bookingReference) => bookingPending(email, customerName, salonName, bookingTime, bookingReference);
-export const sendAppointmentCancelledEmail = (email, customerName, salonName, bookingTime, bookingReference, reason) => appointmentCancelled(email, customerName, salonName, bookingTime, bookingReference, reason);
-export const sendBookingUpdateEmail = (email, customerName, salonName, oldBookingTime, newBookingTime, bookingReference) => bookingUpdate(email, customerName, salonName, oldBookingTime, newBookingTime, bookingReference);
-export const sendNewBookingRequestEmail = (email, ownerName, customerName, salonName, bookingTime, services, bookingReference) => newBookingRequest(email, ownerName, customerName, salonName, bookingTime, services, bookingReference);
+export const sendWelcomeEmail = (email, name, role, registeredAt) => welcomeToSalonNow(email, name, role, registeredAt);
+export const sendVerificationEmail = (email, userName, code, requestedAt) => emailVerification(email, userName, code, requestedAt);
+export const sendLoginEmail = (email, userName, details, timestamp) => accountNotification(email, userName, details || "New login detected on your account", timestamp || new Date());
+export const sendLogoutEmail = (email, userName, details, timestamp) => accountNotification(email, userName, details || "Account session ended", timestamp || new Date());
+export const sendShopAddedEmail = (email, ownerName, shopName, updatedAt) => listingUpdate(email, ownerName, shopName, "Your salon has been successfully added to SalonNow.", updatedAt);
+export const sendPaymentReceiptEmail = (email, customerName, salonName, bookingTimeOrAmount, amountOrPaymentId, paymentIdOrBookingRef, bookingReference, paidAt) => paymentReceipt(email, customerName, salonName, bookingTimeOrAmount, amountOrPaymentId, paymentIdOrBookingRef, bookingReference, paidAt);
+export const sendOwnerPaymentNotificationEmail = (email, ownerName, customerName, shopName, bookingTime, amount, paymentId, paidAt) => ownerPaidBooking(email, ownerName, customerName, shopName, bookingTime, amount, paymentId, paidAt);
+export const sendBookingConfirmationEmail = (email, customerName, salonName, bookingTime, bookingReference, services, amount, confirmedAt) => bookingConfirmation(email, customerName, salonName, bookingTime, bookingReference, services, amount, confirmedAt);
+export const sendBookingPendingEmail = (email, customerName, salonName, bookingTime, bookingReference, requestedAt) => bookingPending(email, customerName, salonName, bookingTime, bookingReference, requestedAt);
+export const sendAppointmentCancelledEmail = (email, customerName, salonName, bookingTime, bookingReference, reason, cancelledAt) => appointmentCancelled(email, customerName, salonName, bookingTime, bookingReference, reason, cancelledAt);
+export const sendBookingUpdateEmail = (email, customerName, salonName, oldBookingTime, newBookingTime, bookingReference, rescheduledAt) => bookingUpdate(email, customerName, salonName, oldBookingTime, newBookingTime, bookingReference, rescheduledAt);
+export const sendNewBookingRequestEmail = (email, ownerName, customerName, salonName, bookingTime, services, bookingReference, requestedAt) => newBookingRequest(email, ownerName, customerName, salonName, bookingTime, services, bookingReference, requestedAt);
 export const sendAccountNotificationEmail = (email, userName, actionDescription, timestamp) => accountNotification(email, userName, actionDescription, timestamp);
-export const sendListingUpdateEmail = (email, ownerName, shopName, updateDetails) => listingUpdate(email, ownerName, shopName, updateDetails);
-export const sendProfileUpdateEmail = (email, userName, updateType) => profileUpdate(email, userName, updateType);
-export const sendManagementUpdateEmail = (email, ownerName, shopName, details) => managementUpdate(email, ownerName, shopName, details);
+export const sendListingUpdateEmail = (email, ownerName, shopName, updateDetails, updatedAt) => listingUpdate(email, ownerName, shopName, updateDetails, updatedAt);
+export const sendProfileUpdateEmail = (email, userName, updateType, updatedAt) => profileUpdate(email, userName, updateType, updatedAt);
+export const sendManagementUpdateEmail = (email, ownerName, shopName, details, updatedAt) => managementUpdate(email, ownerName, shopName, details, updatedAt);
 export const sendBookingStatusEmail = (email, customerName, salonName, bookingTime, bookingReference, status, reason) => {
     const normalizedStatus = String(status || "").toLowerCase().trim();
     if (normalizedStatus === "cancelled" || normalizedStatus === "rejected") {
