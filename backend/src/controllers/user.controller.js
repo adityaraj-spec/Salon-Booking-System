@@ -34,7 +34,7 @@ const generateAccessAndRefreshToken = async (userId) => {
 
 // Helper: Build cookie options based on environment
 const getCookieOptions = () => {
-    const isProduction = process.env.NODE_ENV === "production" || process.env.FRONTEND_URL?.includes('onrender.com');
+    const isProduction = process.env.NODE_ENV === "production";
     return {
         httpOnly: true,
         secure: isProduction,

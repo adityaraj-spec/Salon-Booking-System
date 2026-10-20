@@ -124,8 +124,11 @@ export const initializeSocket = async (server) => {
   io = new Server(server, {
     cors: {
       origin: (origin, callback) => {
-        const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173,http://localhost:3000")
-          .split(",")
+        const allowedOrigins = [
+          process.env.CORS_ORIGIN || "http://localhost:5173,http://localhost:3000",
+          process.env.FRONTEND_URL || "",
+        ]
+          .flatMap((o) => o.split(","))
           .map((o) => o.trim())
           .filter(Boolean);
         if (!origin || allowedOrigins.includes(origin) || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {

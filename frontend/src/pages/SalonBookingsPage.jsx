@@ -30,10 +30,14 @@ const SalonBookingsPage = () => {
         try {
             const response = await axiosInstance.get("/bookings/salon-bookings");
             if (response.data.success) {
-                setBookings(response.data.data);
+                const list = response.data.data?.bookings || response.data.data || [];
+                setBookings(Array.isArray(list) ? list : []);
+            } else {
+                setBookings([]);
             }
         } catch (error) {
             // silently fail — empty state shown
+            setBookings([]);
         } finally {
             setLoading(false);
         }
@@ -48,7 +52,7 @@ const SalonBookingsPage = () => {
             const response = await axiosInstance.patch(`/bookings/${bookingId}/status`, { status: newStatus });
             if (response.data.success) {
                 // Update local state
-                setBookings(prev => prev.map(b => b._id === bookingId ? { ...b, status: newStatus } : b));
+                setBookings(prev => (Array.isArray(prev) ? prev : []).map(b => b._id === bookingId ? { ...b, status: newStatus } : b));
                 showNotification(`Booking status updated to ${newStatus}`, "success");
             }
         } catch (error) {
@@ -56,7 +60,8 @@ const SalonBookingsPage = () => {
         }
     };
 
-    const filteredBookings = bookings.filter(b => {
+    const bookingList = Array.isArray(bookings) ? bookings : [];
+    const filteredBookings = bookingList.filter(b => {
         if (filter === "all") return true;
         return b.status === filter;
     });

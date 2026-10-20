@@ -22,8 +22,14 @@ export const applySecurityHeaders = (req, res, next) => {
 
   // Build connect-src dynamically to allow local dev origins
   const isDev = process.env.NODE_ENV !== "production";
-  const frontendUrl = process.env.FRONTEND_URL || "";
-  const adminUrl = process.env.ADMIN_URL || "";
+  const frontendOrigins = (process.env.FRONTEND_URL || "")
+    .split(",")
+    .map((u) => u.trim())
+    .filter(Boolean);
+  const adminOrigins = (process.env.ADMIN_URL || "")
+    .split(",")
+    .map((u) => u.trim())
+    .filter(Boolean);
 
   const connectSrcAllowed = [
     "'self'",
@@ -31,8 +37,8 @@ export const applySecurityHeaders = (req, res, next) => {
     "ws:",
     "https://lumberjack.razorpay.com",
     "https://api.razorpay.com",
-    frontendUrl,
-    adminUrl,
+    ...frontendOrigins,
+    ...adminOrigins,
   ];
 
   // In development, allow all localhost ports for easier local dev

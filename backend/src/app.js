@@ -53,7 +53,7 @@ const defaultOrigins = [
     "http://localhost:5173",
     "http://localhost:3000",
 ];
-const envOrigins = [process.env.CLIENT_URL, process.env.CORS_ORIGIN]
+const envOrigins = [process.env.CLIENT_URL, process.env.CORS_ORIGIN, process.env.FRONTEND_URL]
     .filter(Boolean)
     .flatMap((v) => v.split(","))
     .map((o) => o.trim())

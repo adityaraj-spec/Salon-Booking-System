@@ -1,7 +1,22 @@
 import * as Brevo from "@getbrevo/brevo";
 import logger from "../lib/logger.js";
 
-const FRONTEND_URL = () => (process.env.FRONTEND_URL || "http://localhost:5173").trim().replace(/\/+$/, "");
+const FRONTEND_URL = () => {
+    const raw = process.env.FRONTEND_URL || "http://localhost:5173";
+    const urls = raw.split(",").map((u) => u.trim().replace(/\/+$/, "")).filter(Boolean);
+    if (!urls.length) return "http://localhost:5173";
+    if (urls.length === 1) return urls[0];
+
+    // If comma-separated (e.g. Render URL and localhost):
+    const isProd = process.env.NODE_ENV === "production";
+    if (isProd) {
+        const prod = urls.find((u) => !u.includes("localhost") && !u.includes("127.0.0.1"));
+        return prod || urls[0];
+    } else {
+        const local = urls.find((u) => u.includes("localhost") || u.includes("127.0.0.1"));
+        return local || urls[0];
+    }
+};
 
 let _brevoClient = null;
 
