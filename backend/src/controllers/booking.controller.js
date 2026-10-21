@@ -10,11 +10,19 @@ import {
     sendBookingUpdateEmail,
     sendAppointmentCancelledEmail,
     sendServiceCompletedEmail,
+    sendFinalReceiptEmail,
 } from "../utils/mailer.js";
 import logger from "../lib/logger.js";
 import { emitToUser } from "../socket.js";
 import { createHold, cancelHold } from "../services/hold.service.js";
-import { initiateBookingFromHold, cancelPendingBooking, cancelBooking } from "../services/booking.service.js";
+import {
+    initiateBookingFromHold,
+    cancelPendingBooking,
+    cancelBooking,
+    verifyBookingPin,
+    addExtraBookingServices,
+    completeBooking,
+} from "../services/booking.service.js";
 import { createWalkInBooking } from "../services/walkin.service.js";
 import { rescheduleBooking } from "../services/reschedule.service.js";
 import { getAvailableSlots, invalidateAvailability } from "../services/availability.service.js";
@@ -50,10 +58,24 @@ const createBooking = asyncHandler(async (req, res) => {
         idempotencyKey,
         useLoyaltyPoints: Boolean(req.body.useLoyaltyPoints),
         pointsToRedeem: req.body.pointsToRedeem !== undefined && req.body.pointsToRedeem !== null ? Number(req.body.pointsToRedeem) : null,
+        paymentAfterService: true,
     });
 
+    const bookingSalon = await Salon.findById(salonId).select("name");
+    sendBookingConfirmationEmail(
+        req.user.email,
+        req.user.fullName,
+        bookingSalon?.name || "Salon",
+        booking.startTime || `${booking.date} at ${booking.time}`,
+        booking._id.toString(),
+        booking.serviceNames || [],
+        booking.totalAmount,
+        new Date(),
+        booking.verificationPin,
+    ).catch((err) => logger.warn({ err: err?.message }, "[Booking] Failed to send confirmation email"));
+
     return res.status(201).json(
-        new ApiResponse(201, booking, "Booking initiated successfully; payment is required to confirm it.")
+        new ApiResponse(201, booking, "Booking confirmed. Payment is due after the service.")
     );
 });
 
@@ -276,9 +298,65 @@ const initiateBookingHandler = asyncHandler(async (req, res) => {
         idempotencyKey,
         useLoyaltyPoints: Boolean(useLoyaltyPoints),
         pointsToRedeem: pointsToRedeem !== undefined && pointsToRedeem !== null ? Number(pointsToRedeem) : null,
+        paymentAfterService: Boolean(req.body.paymentAfterService),
     });
 
-    return res.status(201).json(new ApiResponse(201, booking, "Booking initiated successfully"));
+    const salon = await Salon.findById(booking.salon).select("name");
+    sendBookingConfirmationEmail(
+        req.user.email,
+        req.user.fullName,
+        salon?.name || "Salon",
+        booking.startTime || `${booking.date} at ${booking.time}`,
+        booking._id.toString(),
+        booking.serviceNames || [],
+        booking.totalAmount,
+        new Date(),
+        booking.verificationPin,
+    ).catch((err) => logger.warn({ err: err?.message }, "[Booking] Failed to send confirmation email"));
+
+    return res.status(201).json(new ApiResponse(201, booking, "Booking confirmed successfully"));
+});
+
+const verifyBookingPinHandler = asyncHandler(async (req, res) => {
+    const pin = String(req.body?.pin || req.body?.verificationPin || "").trim();
+    if (!/^\d{4}$/.test(pin)) throw new ApiError(400, "A 4-digit PIN is required.");
+    const booking = await verifyBookingPin({ pin, ownerId: req.user._id, role: req.user.role });
+    await invalidateAvailability({ salonId: booking.salon._id || booking.salon, staffId: booking.staff, dates: [booking.date] });
+    emitToUser(booking.customer?._id || booking.customer, "bookingUpdate", { booking, type: "CHECK_IN" });
+    return res.status(200).json(new ApiResponse(200, booking, "Customer checked in successfully"));
+});
+
+const addExtraServicesHandler = asyncHandler(async (req, res) => {
+    const serviceIds = req.body?.serviceIds || req.body?.services || [];
+    if (!Array.isArray(serviceIds)) throw new ApiError(400, "serviceIds must be an array.");
+    const booking = await addExtraBookingServices({ bookingId: req.params.bookingId, ownerId: req.user._id, role: req.user.role, serviceIds });
+    emitToUser(booking.customer, "bookingUpdate", { booking, type: "SERVICES_UPDATED" });
+    return res.status(200).json(new ApiResponse(200, booking, "Extra services added successfully"));
+});
+
+const completeBookingHandler = asyncHandler(async (req, res) => {
+    const paymentMethod = String(req.body?.paymentMethod || "").toLowerCase();
+    if (!["cash", "card", "upi"].includes(paymentMethod)) {
+        throw new ApiError(400, "Payment method must be cash, card, or upi.");
+    }
+    const booking = await completeBooking({ bookingId: req.params.bookingId, ownerId: req.user._id, role: req.user.role, paymentMethod });
+    const items = (booking.snapshotServices || []).map((service) => ({ name: service.name, price: service.price }))
+        .concat((booking.extraServices || []).map((service) => ({ name: service.name, price: service.price })));
+    if (booking.customer?.email) {
+        sendFinalReceiptEmail(
+            booking.customer.email,
+            booking.customer.fullName,
+            booking.salon?.name || "Salon",
+            booking.startTime || `${booking.date} at ${booking.time}`,
+            booking._id.toString(),
+            items,
+            booking.totalAmount,
+            paymentMethod,
+        ).catch((err) => logger.warn({ err: err?.message }, "[Booking] Failed to send final receipt"));
+    }
+    awardBookingCompletionPoints(booking._id).catch((err) => logger.warn({ err: err?.message }, "[Loyalty] Failed to award completion points"));
+    emitToUser(booking.customer?._id || booking.customer, "bookingUpdate", { booking, type: "COMPLETED" });
+    return res.status(200).json(new ApiResponse(200, booking, "Booking completed and payment recorded"));
 });
 
 const cancelPendingBookingHandler = asyncHandler(async (req, res) => {
@@ -414,5 +492,8 @@ export {
     createWalkInBookingHandler,
     rescheduleBookingHandler,
     getUpcomingBooking,
+    verifyBookingPinHandler,
+    addExtraServicesHandler,
+    completeBookingHandler,
 };
 

@@ -34,6 +34,14 @@ const bookingSchema = new mongoose.Schema(
         durationMin: Number,
       },
     ],
+    extraServices: [
+      {
+        serviceId: { type: mongoose.Schema.Types.ObjectId, ref: "Service" },
+        name: String,
+        price: Number,
+        durationMin: Number,
+      },
+    ],
     totalAmount: Number,
     amounts: {
       subtotal: { type: Number, default: 0 },
@@ -78,6 +86,16 @@ const bookingSchema = new mongoose.Schema(
       enum: ["unpaid", "pending", "paid", "refunded", "failed"],
       default: "unpaid"
     },
+    paymentMethod: {
+      type: String,
+      enum: ["cash", "card", "upi"],
+    },
+    completedAt: Date,
+    verificationPin: {
+      type: String,
+      match: /^\d{4}$/,
+      index: true,
+    },
     idempotencyKey: {
       type: String
     },
@@ -92,7 +110,7 @@ const bookingSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "pending_payment", "confirmed", "completed", "cancelled", "rejected", "no_show", "expired"],
+      enum: ["pending", "pending_payment", "confirmed", "in_progress", "completed", "cancelled", "rejected", "no_show", "expired"],
       default: "pending"
     },
     reminderSent: {

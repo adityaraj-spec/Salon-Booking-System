@@ -22,6 +22,7 @@ const outboxEventSchema = new mongoose.Schema(
         "hold.cancelled",
         "booking.initiated",
         "booking.confirmed",
+        "booking.in_progress",
         "booking.cancelled",
         "booking.rescheduled",
         "booking.completed",

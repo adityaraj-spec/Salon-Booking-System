@@ -6,6 +6,7 @@ import { useSocket } from "../context/SocketContext";
 import { useBookingCart } from "../context/BookingCartContext";
 import axiosInstance from "../api/axiosConfig";
 import { SalonMap } from "../components/SalonMap";
+import { SeatDisplay } from "../components/SeatDisplay.jsx";
 import { ShopDetailSkeleton } from "../components/skeletons/index.jsx";
 import salonPlaceholder from "../assets/salon1.jpg";
 
@@ -1499,6 +1500,19 @@ export function Shop() {
                                                     : `${liveAvailability.seatsLeft}/${liveAvailability.maxCapacity || "?"}`}
                                 </span>
                             </div>
+                        </div>
+
+                        <div className="mb-6 -mx-2 rounded-xl border border-gray-100 bg-gray-50/70 px-3 py-2">
+                            <div className="mb-1.5 flex items-center justify-between gap-3">
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Seats</span>
+                                <span className="text-[10px] font-semibold text-gray-400">Free / occupied</span>
+                            </div>
+                            <SeatDisplay
+                                totalSeats={liveAvailability.maxCapacity || salon.totalSeats}
+                                availableSeats={liveAvailability.seatsLeft}
+                                loading={liveAvailability.loading}
+                                error={liveAvailability.error}
+                            />
                         </div>
 
                         {/* Cancellation Policy Trust Banner */}

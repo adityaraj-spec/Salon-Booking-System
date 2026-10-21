@@ -30,6 +30,7 @@ export const dispatchOutboxEvent = async (event) => {
     case "hold.cancelled":
     case "booking.initiated":
     case "booking.confirmed":
+    case "booking.in_progress":
     case "booking.cancelled":
     case "booking.rescheduled":
     case "booking.completed":

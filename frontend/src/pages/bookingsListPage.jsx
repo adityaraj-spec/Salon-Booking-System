@@ -221,6 +221,13 @@ export function MyBookingsPage() {
 
                                 {/* PART 3: REMAINING THINGS (Right - Details Grid) */}
                                 <div className="lg:w-[48%] bg-gray-50/50 rounded-[32px] p-6 lg:p-8 border border-gray-100/50 flex flex-col justify-center gap-6">
+                                    {booking.verificationPin && ["confirmed", "in_progress"].includes(booking.status) && (
+                                        <div className="rounded-2xl border border-[#D4AF37]/30 bg-amber-50 px-4 py-3">
+                                            <p className="text-[10px] font-bold uppercase tracking-widest text-amber-700">Check-in PIN</p>
+                                            <p className="text-2xl font-black tracking-[0.3em] text-[#1a1a1a]">{booking.verificationPin}</p>
+                                            <p className="text-[11px] text-amber-800">Show this code at the salon.</p>
+                                        </div>
+                                    )}
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         {/* Column 1: Services */}
                                         <div className="flex items-start gap-4">
@@ -277,7 +284,7 @@ export function MyBookingsPage() {
                                                     <span className="text-xl font-bold">₹</span>
                                                 </div>
                                                 <div className="flex-1">
-                                                    <p className="ui-label leading-none mb-1.5">Total Paid</p>
+                                                    <p className="ui-label leading-none mb-1.5">{booking.paymentStatus === "paid" ? "Total Paid" : "Amount Due"}</p>
                                                     <p className="text-xl font-black text-[#1a1a1a] tracking-tighter leading-none">
                                                         <span className="text-xl mr-1">₹</span>{booking.totalAmount}
                                                     </p>

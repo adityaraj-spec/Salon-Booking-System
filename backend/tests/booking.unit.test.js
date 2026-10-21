@@ -128,6 +128,52 @@ describe("Booking Engine Unit Tests (Overlap-Query Capacity)", () => {
     expect(hold.status).toBe("active");
   });
 
+  test("keeps a scheduled stylist available when isWorking is omitted", async () => {
+    const staff = await Staff.create({
+      salon: salon._id,
+      name: "Scheduled Stylist",
+      schedule: [{ dayOfWeek: 6, startTime: "09:00", endTime: "18:00" }],
+    });
+
+    const availability = await getAvailableSlots({
+      salonId: salon._id.toString(),
+      date: "2026-08-01",
+      staffId: staff._id.toString(),
+      durationMinutes: 30,
+    });
+
+    expect(availability.reason).toBeUndefined();
+    expect(availability.maxCapacity).toBe(1);
+    expect(availability.slots.some((slot) => slot.available && slot.seatsLeft === 1)).toBe(true);
+  });
+
+  test("does not count another stylist's booking against the selected stylist seat", async () => {
+    const selectedStaff = await Staff.create({ salon: salon._id, name: "Selected Stylist" });
+    const otherStaff = await Staff.create({ salon: salon._id, name: "Other Stylist" });
+    await Booking.create({
+      customer: owner._id,
+      salon: salon._id,
+      staff: otherStaff._id,
+      startTime: new Date("2026-08-01T14:00:00.000Z"),
+      endTime: new Date("2026-08-01T14:30:00.000Z"),
+      date: "2026-08-01",
+      time: "2:00 PM",
+      status: "confirmed",
+      totalAmount: 500,
+      idempotencyKey: `other-stylist-${Date.now()}`,
+    });
+
+    const availability = await getAvailableSlots({
+      salonId: salon._id.toString(),
+      date: "2026-08-01",
+      staffId: selectedStaff._id.toString(),
+      durationMinutes: 30,
+    });
+    const selectedSlot = availability.slots.find((slot) => slot.time === "2:00 PM");
+
+    expect(selectedSlot).toMatchObject({ available: true, seatsLeft: 1, maxCapacity: 1 });
+  });
+
   test("does not count completed bookings against future capacity", async () => {
     const startTime = new Date(Date.UTC(2026, 7, 1, 14, 0));
     const endTime = new Date(Date.UTC(2026, 7, 1, 14, 30));

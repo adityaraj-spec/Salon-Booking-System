@@ -12,6 +12,9 @@ import {
   createWalkInBookingHandler,
   rescheduleBookingHandler,
   getUpcomingBooking,
+  verifyBookingPinHandler,
+  addExtraServicesHandler,
+  completeBookingHandler,
 } from "../controllers/booking.controller.js";
 import { verifyJWT } from "../middleware/auth.middleware.js";
 import { authorize, requireOwnership } from "../middleware/authorize.js";
@@ -72,6 +75,10 @@ router.route("/upcoming").get(verifyJWT, getUpcomingBooking);
 router.route("/my-bookings").get(verifyJWT, getUserBookings);
 router.route("/salon-bookings").get(verifyJWT, authorize("owner", "staff", "admin"), getSalonBookings);
 router.route("/availability/:salonId").get(getAvailability);
+
+router.route("/verify-pin").post(verifyJWT, authorize("owner", "staff", "admin"), verifyBookingPinHandler);
+router.route("/:bookingId/services").patch(verifyJWT, authorize("owner", "staff", "admin"), addExtraServicesHandler);
+router.route("/:bookingId/complete").post(verifyJWT, authorize("owner", "staff", "admin"), completeBookingHandler);
 
 // Update status (requires owner/staff/admin authorization)
 router.route("/:bookingId/status").patch(

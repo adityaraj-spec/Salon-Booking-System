@@ -237,7 +237,7 @@ export const validateStaffScheduleForTimeRange = async (staffId, startTime, endT
   // A schedule entry is day-specific. Missing entries mean the stylist has
   // no custom shift for that day and inherits the salon's operating window.
   if (!daySchedule) return;
-  if (!daySchedule.isWorking) {
+  if (daySchedule.isWorking === false) {
     throw new ApiError(409, "Staff member does not work on the selected day.");
   }
 
@@ -389,7 +389,7 @@ export const getAvailableSlots = async ({
           end: closeMinutes,
           breaks: [],
         };
-      } else if (!daySchedule.isWorking) {
+      } else if (daySchedule.isWorking === false) {
         staffAvailability = { available: false, reason: "Staff does not work on this day." };
       } else {
         staffAvailability = {

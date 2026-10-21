@@ -1,6 +1,7 @@
 import { Booking } from "../models/booking.models.js";
 import { BookingHold } from "../models/bookingHold.model.js";
 import { Salon } from "../models/salon.models.js";
+import { Service } from "../models/service.models.js";
 import { User } from "../models/user.models.js";
 import { LoyaltyLedger } from "../models/loyaltyLedger.model.js";
 import { LoyaltyTransaction } from "../models/loyaltyTransaction.models.js";
@@ -13,6 +14,32 @@ import { checkTimeRangeAvailability, getSalonCapacity } from "./availability.ser
 import { calculateServicesDurationAndPrice } from "./duration.service.js";
 import { calculateLoyaltyDiscount, reversePointsForBooking } from "./loyalty.service.js";
 import ApiError from "../utils/apiError.js";
+import crypto from "crypto";
+import mongoose from "mongoose";
+import { Staff } from "../models/staff.models.js";
+
+const generateVerificationPin = async (session) => {
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    const pin = crypto.randomInt(0, 10000).toString().padStart(4, "0");
+    const existing = await Booking.findOne({
+      verificationPin: pin,
+      status: { $in: ["confirmed", "in_progress"] },
+    }).select("_id").session(session).lean();
+    if (!existing) return pin;
+  }
+  throw new ApiError(503, "Unable to generate a unique verification PIN. Please retry.");
+};
+
+const getManagedSalonIds = async ({ userId, role }) => {
+  const normalizedRole = role?.toString().trim().toLowerCase();
+  if (["admin", "super_admin"].includes(normalizedRole)) {
+    return Salon.find({}).distinct("_id");
+  }
+  if (normalizedRole === "staff") {
+    return Staff.find({ userId, isActive: true }).distinct("salon");
+  }
+  return Salon.find({ owner: userId }).distinct("_id");
+};
 
 /**
  * Initiates a booking from an active 10-minute hold.
@@ -23,6 +50,7 @@ export const initiateBookingFromHold = async ({
   idempotencyKey: clientIdempotencyKey,
   useLoyaltyPoints = false,
   pointsToRedeem = null,
+  paymentAfterService = false,
 }) => {
   const isFallback = !clientIdempotencyKey;
   const idempotencyKey = clientIdempotencyKey
@@ -32,7 +60,7 @@ export const initiateBookingFromHold = async ({
   const { body } = await withIdempotency(
     idempotencyKey,
     "booking",
-    { holdId, customerId: customerId.toString(), useLoyaltyPoints, pointsToRedeem },
+    { holdId, customerId: customerId.toString(), useLoyaltyPoints, pointsToRedeem, paymentAfterService },
     isFallback,
     async () => {
       const bookingDoc = await withTransactionRetry(async (session) => {
@@ -101,6 +129,8 @@ export const initiateBookingFromHold = async ({
           }
         }
 
+        const verificationPin = paymentAfterService ? await generateVerificationPin(session) : undefined;
+
         const [createdBooking] = await Booking.create(
           [
             {
@@ -128,8 +158,9 @@ export const initiateBookingFromHold = async ({
               durationMinutes: hold.durationMinutes,
               bufferMinutes: hold.bufferMinutes,
               holdId: hold._id,
-              status: "pending_payment",
-              paymentStatus: "pending",
+              status: paymentAfterService ? "confirmed" : "pending_payment",
+              paymentStatus: paymentAfterService ? "unpaid" : "pending",
+              verificationPin,
               idempotencyKey: clientIdempotencyKey || idempotencyKey,
             },
           ],
@@ -154,7 +185,7 @@ export const initiateBookingFromHold = async ({
           );
         }
 
-        await writeOutboxEvent(session, "booking.initiated", {
+        await writeOutboxEvent(session, paymentAfterService ? "booking.confirmed" : "booking.initiated", {
           bookingId: createdBooking._id.toString(),
           salonId: createdBooking.salon.toString(),
           staffId: createdBooking.staff ? createdBooking.staff.toString() : null,
@@ -458,7 +489,26 @@ export const cancelBooking = async ({ bookingId, customerId, reason }) => {
     return await cancelPendingBooking(bookingId, customerId);
   }
 
-  // Confirmed booking: execute policy-compliant refund via initiateRefund
+  if (["confirmed", "in_progress"].includes(existing.status) && existing.paymentStatus !== "paid") {
+    return await withTransactionRetry(async (session) => {
+      const booking = await Booking.findOneAndUpdate(
+        { _id: bookingId, customer: customerId, status: existing.status },
+        { $set: { status: "cancelled", paymentStatus: "failed", slotKeys: [] } },
+        { new: true, session }
+      );
+      if (!booking) throw new ApiError(409, "Booking changed before cancellation could be completed.");
+      await writeOutboxEvent(session, "booking.cancelled", {
+        bookingId: booking._id.toString(),
+        salonId: booking.salon.toString(),
+        staffId: booking.staff ? booking.staff.toString() : null,
+        customerId: customerId.toString(),
+        date: booking.date,
+      });
+      return booking;
+    });
+  }
+
+  // Legacy paid booking: execute policy-compliant refund via initiateRefund
   const { initiateRefund } = await import("./payment.service.js");
   const refundResult = await initiateRefund({ bookingId, customerId, reason });
   await reversePointsForBooking({ userId: customerId, bookingId });
@@ -492,4 +542,110 @@ export const expirePendingBooking = async (bookingId) => {
 
     return booking;
   });
+};
+
+export const verifyBookingPin = async ({ pin, ownerId, role }) => {
+  const salonIds = await getManagedSalonIds({ userId: ownerId, role });
+  if (!salonIds.length) throw new ApiError(403, "You do not manage any salons.");
+
+  const booking = await withTransactionRetry(async (session) => {
+    const updated = await Booking.findOneAndUpdate(
+      { salon: { $in: salonIds }, verificationPin: String(pin), status: "confirmed" },
+      { $set: { status: "in_progress", slotKeys: [] } },
+      { new: true, session }
+    );
+    if (!updated) throw new ApiError(400, "Invalid PIN or booking is no longer awaiting check-in.");
+
+    await writeOutboxEvent(session, "booking.in_progress", {
+      bookingId: updated._id.toString(),
+      salonId: updated.salon.toString(),
+      staffId: updated.staff ? updated.staff.toString() : null,
+      customerId: updated.customer ? updated.customer.toString() : null,
+      date: updated.date,
+      reason: "check_in",
+    });
+    return updated;
+  });
+
+  return Booking.findById(booking._id)
+    .populate("customer", "fullName email phonenumber")
+    .populate("salon", "name");
+};
+
+export const addExtraBookingServices = async ({ bookingId, ownerId, role, serviceIds }) => {
+  const salonIds = await getManagedSalonIds({ userId: ownerId, role });
+  if (!salonIds.length) throw new ApiError(403, "You do not manage any salons.");
+
+  return withTransactionRetry(async (session) => {
+    const booking = await Booking.findOne({ _id: bookingId, salon: { $in: salonIds }, status: "in_progress" }).session(session);
+    if (!booking) throw new ApiError(404, "In-progress booking not found or unauthorized.");
+
+    const normalizedIds = [...new Set((serviceIds || []).map((id) => {
+      if (typeof id === "object") return id?._id || id?.serviceId;
+      return id;
+    }).filter(Boolean).map((id) => id.toString()))];
+    if (!normalizedIds.length) throw new ApiError(400, "At least one extra service is required.");
+    if (normalizedIds.some((id) => !mongoose.isValidObjectId(id))) {
+      throw new ApiError(400, "One or more service IDs are invalid.");
+    }
+    const services = await Service.find({ _id: { $in: normalizedIds }, salon: booking.salon }).session(session).lean();
+    if (services.length !== normalizedIds.length) throw new ApiError(400, "One or more services are invalid for this salon.");
+
+    const existingExtras = booking.extraServices || [];
+    const existingIds = new Set(existingExtras.map((service) => service.serviceId?.toString()));
+    const additions = services
+      .filter((service) => !existingIds.has(service._id.toString()))
+      .map((service) => ({
+        serviceId: service._id,
+        name: service.name,
+        price: Number(service.price) || 0,
+        durationMin: Number(service.durationMin || service.duration) || 30,
+      }));
+    if (!additions.length) return booking;
+
+    booking.extraServices = [...(booking.extraServices || []), ...additions];
+    const baseItems = booking.snapshotServices || [];
+    const baseSubtotal = baseItems.reduce((sum, service) => sum + (Number(service.price) || 0), 0)
+      || Math.max(0, (Number(booking.amounts?.subtotal) || 0) - existingExtras.reduce((sum, service) => sum + (Number(service.price) || 0), 0));
+    const allItems = [...baseItems, ...booking.extraServices];
+    const subtotal = baseSubtotal + booking.extraServices.reduce((sum, service) => sum + (Number(service.price) || 0), 0);
+    const pointsDiscount = Number(booking.amounts?.pointsDiscount) || 0;
+    const convenienceFee = Number(booking.amounts?.convenienceFee) || 0;
+    const total = Math.max(0, subtotal + convenienceFee - pointsDiscount);
+    booking.serviceNames = allItems.map((service) => service.name).filter(Boolean);
+    booking.totalAmount = total;
+    booking.amounts = {
+      ...(booking.amounts?.toObject?.() || booking.amounts || {}),
+      subtotal,
+      total,
+    };
+    await booking.save({ session });
+    return booking;
+  });
+};
+
+export const completeBooking = async ({ bookingId, ownerId, role, paymentMethod }) => {
+  const salonIds = await getManagedSalonIds({ userId: ownerId, role });
+  if (!salonIds.length) throw new ApiError(403, "You do not manage any salons.");
+
+  const booking = await withTransactionRetry(async (session) => {
+    const updated = await Booking.findOneAndUpdate(
+      { _id: bookingId, salon: { $in: salonIds }, status: "in_progress" },
+      { $set: { status: "completed", paymentStatus: "paid", paymentMethod, completedAt: new Date() } },
+      { new: true, session }
+    );
+    if (!updated) throw new ApiError(400, "Only checked-in bookings can be completed.");
+    await writeOutboxEvent(session, "booking.completed", {
+      bookingId: updated._id.toString(),
+      salonId: updated.salon.toString(),
+      staffId: updated.staff ? updated.staff.toString() : null,
+      customerId: updated.customer ? updated.customer.toString() : null,
+      date: updated.date,
+    });
+    return updated;
+  });
+
+  return Booking.findById(booking._id)
+    .populate("customer", "fullName email phonenumber")
+    .populate({ path: "salon", select: "name owner", populate: { path: "owner", select: "fullName email" } });
 };

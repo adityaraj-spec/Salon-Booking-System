@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, NavLink, useNavigate, useLocation } from "react-router-dom";
 import axiosInstance from "../api/axiosConfig";
+import { SeatMatrix } from "../components/SeatMatrix.jsx";
 import { useAuth } from "../context/AuthContext";
 import { useBookingCart } from "../context/BookingCartContext";
 import {
@@ -17,27 +18,6 @@ import {
     ChevronRight,
     Coins
 } from "lucide-react";
-
-const loadRazorpay = () => new Promise((resolve, reject) => {
-    if (window.Razorpay) {
-        resolve(true);
-        return;
-    }
-
-    const existingScript = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]');
-    if (existingScript) {
-        existingScript.addEventListener("load", () => resolve(true), { once: true });
-        existingScript.addEventListener("error", () => reject(new Error("Unable to load the payment gateway.")), { once: true });
-        return;
-    }
-
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.async = true;
-    script.onload = () => resolve(true);
-    script.onerror = () => reject(new Error("Unable to load the payment gateway."));
-    document.body.appendChild(script);
-});
 
 const getSlotTimeLabel = (slot) => {
     if (slot?.time) return slot.time;
@@ -161,14 +141,15 @@ export function BookingPage() {
     const [loading, setLoading] = useState(true);
     const [bookingLoading, setBookingLoading] = useState(false);
     const [bookingSuccess, setBookingSuccess] = useState(false);
+    const [confirmedBooking, setConfirmedBooking] = useState(null);
     const [bookingError, setBookingError] = useState("");
     const [selectedServices, setSelectedServices] = useState([]);
     const [selectedStaff, setSelectedStaff] = useState(null);
-    const [date, setDate] = useState("");
+    const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
     const [time, setTime] = useState("");
     const [availableSlots, setAvailableSlots] = useState([]);
-    const [availabilityReason, setAvailabilityReason] = useState("");
-    const [availabilityLoading, setAvailabilityLoading] = useState(false);
+    const [, setAvailabilityReason] = useState("");
+    const [, setAvailabilityLoading] = useState(false);
     const [loyaltyPoints, setLoyaltyPoints] = useState(0);
     const [useLoyaltyPoints, setUseLoyaltyPoints] = useState(false);
     
@@ -189,13 +170,15 @@ export function BookingPage() {
     const urlParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
     const preselectedStaffId = urlParams.get('staffId');
     const preselectedStaffName = urlParams.get('staffName');
+    const preselectedDate = urlParams.get('date');
+    const preselectedTime = urlParams.get('time');
 
     // Initialize selected services from cart if matching this salon
     useEffect(() => {
         if (cartSalonId === id && cartItems.length > 0) {
             setSelectedServices(cartItems);
         }
-    }, [id, cartSalonId]);
+    }, [id, cartItems, cartSalonId]);
 
     // Auto-select staff from URL query param once staff list is loaded
     useEffect(() => {
@@ -208,6 +191,11 @@ export function BookingPage() {
             setSelectedStaff({ _id: preselectedStaffId, name: decodeURIComponent(preselectedStaffName), role: 'Stylist' });
         }
     }, [preselectedStaffId, preselectedStaffName, staffMembers, selectedStaff]);
+
+    useEffect(() => {
+        if (preselectedDate) setDate(preselectedDate);
+        if (preselectedTime) setTime(preselectedTime);
+    }, [preselectedDate, preselectedTime]);
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -375,9 +363,6 @@ export function BookingPage() {
         }
         setBookingLoading(true);
         setBookingError("");
-        let pendingBookingId = null;
-        let paymentVerified = false;
-
         // Generate fresh idempotency key per checkout attempt
         const idempotencyKey = crypto.randomUUID();
 
@@ -417,13 +402,14 @@ export function BookingPage() {
                 throw new Error("Failed to reserve slot hold.");
             }
 
-            // Step 2: Convert the hold into a pending-payment booking with loyalty redemption
+            // Step 2: Convert the hold into a confirmed booking. Payment happens after the visit.
             const initiateResponse = await axiosInstance.post(
                 "/bookings/initiate",
                 {
                     holdId,
                     useLoyaltyPoints: Boolean(useLoyaltyPoints && maxRedeemablePoints > 0),
                     pointsToRedeem: useLoyaltyPoints ? maxRedeemablePoints : 0,
+                    paymentAfterService: true,
                 },
                 {
                     headers: { "Idempotency-Key": idempotencyKey },
@@ -433,61 +419,16 @@ export function BookingPage() {
 
             const booking = initiateResponse.data?.data;
             const bookingId = booking?._id;
-            pendingBookingId = bookingId;
             if (!initiateResponse.data?.success || !bookingId) {
-                throw new Error("Unable to start payment for this reservation.");
+                throw new Error("Unable to confirm this reservation.");
             }
-
-            // Step 3: Create the server-priced Razorpay order.
-            const orderResponse = await axiosInstance.post("/payments/create-order", { bookingId });
-            const order = orderResponse.data?.data;
-            await loadRazorpay();
-
-            await new Promise((resolve, reject) => {
-                const checkout = new window.Razorpay({
-                    key: order.keyId,
-                    amount: Math.round(Number(order.amount) * 100),
-                    currency: order.currency || "INR",
-                    name: "SalonNow",
-                    description: `Appointment at ${salon?.name || "SalonNow"}`,
-                    order_id: order.orderId,
-                    prefill: {
-                        name: user?.fullName || "",
-                        email: user?.email || "",
-                        contact: user?.phonenumber || "",
-                    },
-                    theme: { color: "#D4AF37" },
-                    handler: async (paymentResponse) => {
-                        try {
-                            paymentVerified = "pending";
-                            await axiosInstance.post("/payments/verify", {
-                                bookingId,
-                                razorpayOrderId: paymentResponse.razorpay_order_id,
-                                razorpayPaymentId: paymentResponse.razorpay_payment_id,
-                                razorpaySignature: paymentResponse.razorpay_signature,
-                            });
-                            paymentVerified = true;
-                            resolve();
-                        } catch (verificationError) {
-                            reject(Object.assign(verificationError, { paymentVerificationPending: true }));
-                        }
-                    },
-                    modal: {
-                        ondismiss: () => reject(new Error("Payment was cancelled.")),
-                    },
-                });
-                checkout.on("payment.failed", (paymentError) => reject(new Error(paymentError.error?.description || "Payment failed.")));
-                checkout.open();
-            });
 
             // Clear booking cart on successful confirmation
             clearCart();
+            setConfirmedBooking(booking);
             setBookingSuccess(true);
         } catch (err) {
             console.error("Booking error:", err);
-            if (pendingBookingId && !paymentVerified && !err.paymentVerificationPending) {
-                await axiosInstance.post(`/bookings/${pendingBookingId}/cancel-pending`).catch(() => {});
-            }
             const status = err.response?.status;
             if (status === 409) {
                 setBookingError("This slot or staff member is no longer available. Please select a different time or stylist.");
@@ -508,7 +449,14 @@ export function BookingPage() {
                     </div>
                     <h2 className="text-3xl font-serif font-bold text-[#1a1a1a] mb-3">Booking Confirmed!</h2>
                     <p className="text-gray-500 mb-2">Your appointment at <strong>{salon?.name}</strong> is all set.</p>
-                    <p className="text-gray-400 text-sm mb-8">A confirmation email has been sent to your inbox.</p>
+                    <p className="text-gray-400 text-sm mb-4">A confirmation email has been sent to your inbox.</p>
+                    {confirmedBooking?.verificationPin && (
+                        <div className="mb-8 rounded-2xl border border-[#D4AF37]/30 bg-amber-50 px-6 py-4">
+                            <p className="text-[11px] font-bold uppercase tracking-widest text-amber-700">Your check-in PIN</p>
+                            <p className="mt-1 text-3xl font-black tracking-[0.35em] text-[#1a1a1a]">{confirmedBooking.verificationPin}</p>
+                            <p className="mt-1 text-xs text-amber-800">Show this PIN when you arrive. Payment is collected after your service.</p>
+                        </div>
+                    )}
                     <NavLink to="/home" className="inline-block bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold tracking-widest text-sm uppercase hover:bg-black transition-colors">
                         Back to Home
                     </NavLink>
@@ -641,75 +589,21 @@ export function BookingPage() {
                         </section>
 
                         {/* 3. Date & Time Section */}
-                        <section className="grid md:grid-cols-2 gap-10 md:gap-8">
-                            <div className="bg-white rounded-[24px] p-1">
-                                <div className="flex items-center gap-2 mb-4">
-                                    <span className="bg-[#1a1a1a] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold font-serif">3</span>
-                                    <h2 className="text-lg md:text-xl font-serif font-bold text-[#1a1a1a]">Pick a Date</h2>
-                                </div>
-                                <CustomCalendar 
-                                    selectedDate={date} 
-                                    onDateSelect={(newDate) => setDate(newDate)} 
-                                />
-                            </div>
-                            <div className="bg-white border border-gray-100 rounded-[24px] p-6 shadow-sm">
-                                <div className="flex items-center gap-2 mb-4">
-                                    <span className="bg-[#1a1a1a] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold font-serif">4</span>
-                                    <h2 className="text-lg md:text-xl font-serif font-bold text-[#1a1a1a]">Select Time</h2>
-                                </div>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 relative">
-                                    {availabilityLoading && (
-                                        <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-xl">
-                                            <Loader2 size={24} className="animate-spin text-[#D4AF37]" />
-                                        </div>
-                                    )}
-                                    {availableSlots.length > 0 ? availableSlots.map((slot) => {
-                                        const slotTime = getSlotTimeLabel(slot);
-                                        const seatsLeft = getSlotSeatsLeft(slot);
-                                        const slotAvailable = isSlotAvailable(slot);
-                                        const maxCapacity = Number(slot.maxCapacity) || null;
-                                        const capacityLabel = maxCapacity ? `${seatsLeft}/${maxCapacity}` : `${seatsLeft}`;
-
-                                        return (
-                                            <button
-                                                key={slot.startTime || slot.time}
-                                                disabled={!date || !slotAvailable}
-                                                onClick={() => setTime(slotTime)}
-                                                className={`py-3 px-2 rounded-xl text-sm font-medium transition-all flex flex-col items-center justify-center gap-0.5 relative ${
-                                                    time === slotTime
-                                                        ? "bg-[#1a1a1a] text-white shadow-md"
-                                                        : !slotAvailable
-                                                            ? "bg-red-50 text-red-700 border border-red-200 cursor-not-allowed"
-                                                        : !date
-                                                            ? "bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed"
-                                                            : "bg-white text-gray-600 border border-gray-100 hover:border-gray-200"
-                                                }`}
-                                            >
-                                                <span>{slotTime}</span>
-                                                {date && slotAvailable && (
-                                                    <span className={`text-sm font-normal ${time === slotTime ? "text-[#D4AF37]" : "text-green-500"}`}>
-                                                        {capacityLabel}
-                                                    </span>
-                                                )}
-                                                {date && !slotAvailable && (
-                                                    <span className="text-sm font-normal text-red-500">
-                                                        {capacityLabel}
-                                                    </span>
-                                                )}
-                                                {!date && (
-                                                    <span className="ui-meta text-xs italic">
-                                                        Pick Date
-                                                    </span>
-                                                )}
-                                            </button>
-                                        );
-                                    }) : (
-                                        <p className="col-span-full py-8 text-center text-sm text-gray-400">
-                                            {date ? (availabilityReason || "No operating times are configured for this date.") : "Pick a date to see available times."}
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
+                        <section>
+                            <SeatMatrix
+                                salonId={id}
+                                date={date}
+                                onDateChange={(newDate) => {
+                                    setDate(newDate);
+                                    setTime("");
+                                }}
+                                durationMinutes={combinedDurationMin}
+                                staffId={selectedStaff?._id}
+                                onSlotSelect={(slot, selectedDate) => {
+                                    setDate(selectedDate);
+                                    setTime(getSlotTimeLabel(slot));
+                                }}
+                            />
                         </section>
 
                     </div>

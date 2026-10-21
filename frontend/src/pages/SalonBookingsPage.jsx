@@ -15,7 +15,12 @@ import {
     Phone,
     Mail,
     ChevronDown,
-    Settings
+    Settings,
+    Plus,
+    X,
+    Banknote,
+    CreditCard,
+    Smartphone
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
@@ -26,10 +31,19 @@ const SalonBookingsPage = () => {
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState("all");
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [checkInPin, setCheckInPin] = useState("");
+    const [checkInLoading, setCheckInLoading] = useState(false);
+    const [paymentBooking, setPaymentBooking] = useState(null);
+    const [paymentMethod, setPaymentMethod] = useState("cash");
+    const [paymentLoading, setPaymentLoading] = useState(false);
+    const [extraBooking, setExtraBooking] = useState(null);
+    const [serviceOptions, setServiceOptions] = useState([]);
+    const [selectedExtraIds, setSelectedExtraIds] = useState([]);
+    const [extraLoading, setExtraLoading] = useState(false);
 
     const fetchBookings = useCallback(async () => {
         setLoading(true);
-        try {
+                        try {
             const response = await axiosInstance.get("/bookings/salon-bookings");
             if (response.data.success) {
                 const list = response.data.data?.bookings || response.data.data || [];
@@ -37,7 +51,7 @@ const SalonBookingsPage = () => {
             } else {
                 setBookings([]);
             }
-        } catch (error) {
+        } catch {
             // silently fail — empty state shown
             setBookings([]);
         } finally {
@@ -83,8 +97,70 @@ const SalonBookingsPage = () => {
                 setBookings(prev => (Array.isArray(prev) ? prev : []).map(b => b._id === bookingId ? { ...b, status: newStatus } : b));
                 showNotification(`Booking status updated to ${newStatus}`, "success");
             }
-        } catch (error) {
+        } catch {
             showNotification("Failed to update status. Please try again.", "error");
+        }
+    };
+
+    const handleVerifyPin = async (event) => {
+        event.preventDefault();
+        if (!/^\d{4}$/.test(checkInPin)) {
+            showNotification("Enter the customer's 4-digit PIN.", "error");
+            return;
+        }
+        setCheckInLoading(true);
+        try {
+            const response = await axiosInstance.post("/bookings/verify-pin", { pin: checkInPin });
+            if (response.data.success) {
+                setCheckInPin("");
+                await fetchBookings();
+                showNotification("Customer checked in and seat released.", "success");
+            }
+        } catch (error) {
+            showNotification(error.response?.data?.message || "Invalid or unavailable PIN.", "error");
+        } finally {
+            setCheckInLoading(false);
+        }
+    };
+
+    const openExtraServices = async (booking) => {
+        try {
+            const response = await axiosInstance.get(`/services/salon/${booking.salon?._id || booking.salon}`);
+            setServiceOptions(response.data?.data || []);
+            setSelectedExtraIds([]);
+            setExtraBooking(booking);
+        } catch {
+            showNotification("Unable to load salon services.", "error");
+        }
+    };
+
+    const handleAddExtras = async () => {
+        if (!extraBooking || selectedExtraIds.length === 0) return;
+        setExtraLoading(true);
+        try {
+            await axiosInstance.patch(`/bookings/${extraBooking._id}/services`, { serviceIds: selectedExtraIds });
+            setExtraBooking(null);
+            await fetchBookings();
+            showNotification("Extra services added.", "success");
+        } catch (error) {
+            showNotification(error.response?.data?.message || "Unable to add extra services.", "error");
+        } finally {
+            setExtraLoading(false);
+        }
+    };
+
+    const handleCompleteBooking = async () => {
+        if (!paymentBooking) return;
+        setPaymentLoading(true);
+        try {
+            await axiosInstance.post(`/bookings/${paymentBooking._id}/complete`, { paymentMethod });
+            setPaymentBooking(null);
+            await fetchBookings();
+            showNotification("Payment recorded and booking completed.", "success");
+        } catch (error) {
+            showNotification(error.response?.data?.message || "Unable to complete booking.", "error");
+        } finally {
+            setPaymentLoading(false);
         }
     };
 
@@ -98,6 +174,7 @@ const SalonBookingsPage = () => {
         switch (status) {
             case "pending": return "bg-amber-100 text-amber-700 border-amber-200";
             case "confirmed": return "bg-emerald-100 text-emerald-700 border-emerald-200";
+            case "in_progress": return "bg-blue-100 text-blue-700 border-blue-200";
             case "completed": return "bg-amber-50 text-amber-700 border-amber-200";
             case "rejected": return "bg-red-100 text-red-700 border-red-200";
             case "cancelled": return "bg-gray-100 text-gray-700 border-gray-200";
@@ -126,6 +203,19 @@ const SalonBookingsPage = () => {
                     </div>
 
                     <div className="relative flex items-center gap-3">
+                        <form onSubmit={handleVerifyPin} className="flex items-center gap-2">
+                            <input
+                                value={checkInPin}
+                                onChange={(event) => setCheckInPin(event.target.value.replace(/\D/g, "").slice(0, 4))}
+                                inputMode="numeric"
+                                maxLength={4}
+                                placeholder="Check-in PIN"
+                                className="w-32 rounded-full border border-gray-200 px-4 py-2.5 text-xs font-bold outline-none focus:border-[#D4AF37]"
+                            />
+                            <button type="submit" disabled={checkInLoading} className="salon-action-button salon-action-button--dark rounded-full">
+                                {checkInLoading ? <Loader2 size={14} className="animate-spin" /> : "Check in"}
+                            </button>
+                        </form>
                         <button
                             onClick={() => setIsFilterOpen(!isFilterOpen)}
                             className="salon-action-button salon-action-button--secondary rounded-full"
@@ -145,7 +235,7 @@ const SalonBookingsPage = () => {
 
                         {isFilterOpen && (
                             <div className="absolute right-0 mt-3 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-20 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
-                                {["all", "pending", "confirmed", "completed", "rejected"].map((option) => (
+                                {["all", "pending", "confirmed", "in_progress", "completed", "cancelled", "rejected"].map((option) => (
                                     <button
                                         key={option}
                                         onClick={() => {
@@ -262,15 +352,19 @@ const SalonBookingsPage = () => {
                                                     </button>
                                                 </>
                                             )}
-                                            {booking.status === "confirmed" && (
-                                                <button
-                                                    onClick={() => handleStatusUpdate(booking._id, "completed")}
-                                                    className="salon-action-button salon-action-button--dark flex-1"
-                                                >
-                                                    <CheckCircle size={16} className="text-[#D4AF37]" />
-                                                    Mark as Completed
-                                                </button>
-                                            )}
+                            {booking.status === "confirmed" && (
+                                <span className="text-xs font-semibold text-amber-700">Ask for the customer's PIN to check them in.</span>
+                            )}
+                            {booking.status === "in_progress" && (
+                                <>
+                                    <button onClick={() => openExtraServices(booking)} className="salon-action-button salon-action-button--secondary flex-1">
+                                        <Plus size={16} /> Add services
+                                    </button>
+                                    <button onClick={() => { setPaymentBooking(booking); setPaymentMethod("cash"); }} className="salon-action-button salon-action-button--dark flex-1">
+                                        <CheckCircle size={16} className="text-[#D4AF37]" /> Mark as Complete
+                                    </button>
+                                </>
+                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -279,6 +373,53 @@ const SalonBookingsPage = () => {
                     </div>
                 )}
             </div>
+
+            {paymentBooking && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                    <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
+                        <div className="flex items-center justify-between mb-5">
+                            <h2 className="text-xl font-serif font-bold">Collect payment</h2>
+                            <button onClick={() => setPaymentBooking(null)}><X size={20} /></button>
+                        </div>
+                        <p className="mb-4 text-sm text-gray-500">Amount due: <strong className="text-gray-900">₹{paymentBooking.totalAmount || 0}</strong></p>
+                        <div className="grid grid-cols-3 gap-2 mb-6">
+                            {[{ value: "cash", label: "Cash" }, { value: "card", label: "Card" }, { value: "upi", label: "UPI" }].map(({ value, label }) => (
+                                <button key={value} onClick={() => setPaymentMethod(value)} className={`rounded-2xl border p-3 text-xs font-bold ${paymentMethod === value ? "border-[#D4AF37] bg-amber-50" : "border-gray-200"}`}>
+                                    {value === "cash" && <Banknote size={18} className="mx-auto mb-1 text-[#D4AF37]" />}
+                                    {value === "card" && <CreditCard size={18} className="mx-auto mb-1 text-[#D4AF37]" />}
+                                    {value === "upi" && <Smartphone size={18} className="mx-auto mb-1 text-[#D4AF37]" />}
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
+                        <button onClick={handleCompleteBooking} disabled={paymentLoading} className="salon-action-button salon-action-button--dark w-full justify-center">
+                            {paymentLoading ? <Loader2 size={16} className="animate-spin" /> : "Confirm payment & complete"}
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {extraBooking && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                    <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
+                        <div className="flex items-center justify-between mb-5">
+                            <h2 className="text-xl font-serif font-bold">Add extra services</h2>
+                            <button onClick={() => setExtraBooking(null)}><X size={20} /></button>
+                        </div>
+                        <div className="max-h-64 space-y-2 overflow-y-auto">
+                            {serviceOptions.map((service) => (
+                                <label key={service._id} className="flex cursor-pointer items-center justify-between rounded-xl border border-gray-100 p-3 text-sm">
+                                    <span>{service.name} · ₹{service.price || 0}</span>
+                                    <input type="checkbox" checked={selectedExtraIds.includes(service._id)} onChange={() => setSelectedExtraIds((current) => current.includes(service._id) ? current.filter((id) => id !== service._id) : [...current, service._id])} />
+                                </label>
+                            ))}
+                        </div>
+                        <button onClick={handleAddExtras} disabled={extraLoading || selectedExtraIds.length === 0} className="salon-action-button salon-action-button--dark mt-5 w-full justify-center">
+                            {extraLoading ? <Loader2 size={16} className="animate-spin" /> : "Add selected services"}
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
