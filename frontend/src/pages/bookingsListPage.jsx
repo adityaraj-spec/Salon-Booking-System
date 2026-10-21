@@ -223,7 +223,7 @@ export function MyBookingsPage() {
                                 <div className="lg:w-[48%] bg-gray-50/50 rounded-[32px] p-6 lg:p-8 border border-gray-100/50 flex flex-col justify-center gap-6">
                                     {booking.verificationPin && ["confirmed", "in_progress"].includes(booking.status) && (
                                         <div className="rounded-2xl border border-[#D4AF37]/30 bg-amber-50 px-4 py-3">
-                                            <p className="text-[10px] font-bold uppercase tracking-widest text-amber-700">Check-in PIN</p>
+                                            <p className="text-[10px] font-bold uppercase tracking-widest text-amber-700">🔑 Check-in PIN</p>
                                             <p className="text-2xl font-black tracking-[0.3em] text-[#1a1a1a]">{booking.verificationPin}</p>
                                             <p className="text-[11px] text-amber-800">Show this code at the salon.</p>
                                         </div>

@@ -33,6 +33,8 @@ const SalonBookingsPage = () => {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [checkInPin, setCheckInPin] = useState("");
     const [checkInLoading, setCheckInLoading] = useState(false);
+    const [cardCheckInPins, setCardCheckInPins] = useState({});
+    const [cardCheckInLoading, setCardCheckInLoading] = useState({});
     const [paymentBooking, setPaymentBooking] = useState(null);
     const [paymentMethod, setPaymentMethod] = useState("cash");
     const [paymentLoading, setPaymentLoading] = useState(false);
@@ -123,6 +125,36 @@ const SalonBookingsPage = () => {
         }
     };
 
+    const handleCardVerifyPin = async (event, booking) => {
+        event.preventDefault();
+        const pin = String(cardCheckInPins[booking._id] || "").trim();
+        if (!/^\d{4}$/.test(pin)) {
+            showNotification("Enter the customer's 4-digit PIN.", "error");
+            return;
+        }
+        setCardCheckInLoading((current) => ({ ...current, [booking._id]: true }));
+        try {
+            const response = await axiosInstance.post("/bookings/verify-pin", {
+                bookingId: booking._id,
+                pin,
+            });
+            if (response.data.success) {
+                const updatedBooking = response.data.data || {};
+                setBookings((current) => current.map((currentBooking) => (
+                    currentBooking._id === booking._id
+                        ? { ...currentBooking, ...updatedBooking, status: "in_progress" }
+                        : currentBooking
+                )));
+                setCardCheckInPins((current) => ({ ...current, [booking._id]: "" }));
+                showNotification("Customer checked in and service started.", "success");
+            }
+        } catch (error) {
+            showNotification(error.response?.data?.message || "Invalid or unavailable PIN.", "error");
+        } finally {
+            setCardCheckInLoading((current) => ({ ...current, [booking._id]: false }));
+        }
+    };
+
     const openExtraServices = async (booking) => {
         try {
             const response = await axiosInstance.get(`/services/salon/${booking.salon?._id || booking.salon}`);
@@ -174,6 +206,7 @@ const SalonBookingsPage = () => {
         switch (status) {
             case "pending": return "bg-amber-100 text-amber-700 border-amber-200";
             case "confirmed": return "bg-emerald-100 text-emerald-700 border-emerald-200";
+            case "pending_payment": return "bg-amber-100 text-amber-700 border-amber-200";
             case "in_progress": return "bg-blue-100 text-blue-700 border-blue-200";
             case "completed": return "bg-amber-50 text-amber-700 border-amber-200";
             case "rejected": return "bg-red-100 text-red-700 border-red-200";
@@ -294,7 +327,7 @@ const SalonBookingsPage = () => {
                                             <div className="flex flex-col items-end gap-3">
                                                 <div className={`px-5 py-2 rounded-full text-sm font-normal capitalize border flex items-center gap-2 ${getStatusColor(booking.status)}`}>
                                                     {booking.status === 'confirmed' && <CheckCircle size={14} />}
-                                                    {booking.status}
+                                                    {booking.status?.toUpperCase()}
                                                 </div>
                                                 <p className="text-2xl font-black text-[#1a1a1a]">
                                                     <span className="text-lg font-medium text-[#D4AF37] mr-1">₹</span>
@@ -352,8 +385,22 @@ const SalonBookingsPage = () => {
                                                     </button>
                                                 </>
                                             )}
-                            {booking.status === "confirmed" && (
-                                <span className="text-xs font-semibold text-amber-700">Ask for the customer's PIN to check them in.</span>
+                            {booking.verificationPin && ["confirmed", "pending_payment"].includes(booking.status) && (
+                                <form onSubmit={(event) => handleCardVerifyPin(event, booking)} className="flex w-full flex-col gap-2 rounded-2xl border border-amber-100 bg-amber-50/60 p-3 sm:flex-row sm:items-center">
+                                    <label htmlFor={`check-in-pin-${booking._id}`} className="sr-only">Enter 4-digit PIN</label>
+                                    <input
+                                        id={`check-in-pin-${booking._id}`}
+                                        value={cardCheckInPins[booking._id] || ""}
+                                        onChange={(event) => setCardCheckInPins((current) => ({ ...current, [booking._id]: event.target.value.replace(/\D/g, "").slice(0, 4) }))}
+                                        inputMode="numeric"
+                                        maxLength={4}
+                                        placeholder="Enter 4-digit PIN"
+                                        className="min-w-0 flex-1 rounded-full border border-amber-200 bg-white px-4 py-2.5 text-xs font-bold outline-none focus:border-[#D4AF37]"
+                                    />
+                                    <button type="submit" disabled={Boolean(cardCheckInLoading[booking._id])} className="salon-action-button salon-action-button--dark whitespace-nowrap rounded-full">
+                                        {cardCheckInLoading[booking._id] ? <Loader2 size={14} className="animate-spin" /> : "Verify & Start Service"}
+                                    </button>
+                                </form>
                             )}
                             {booking.status === "in_progress" && (
                                 <>

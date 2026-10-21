@@ -251,7 +251,7 @@ const updateOwnerBookingStatus = asyncHandler(async (req, res) => {
         } else if (statusChanged && status === "confirmed") {
             sendBookingConfirmationEmail(
                 customerEmail, customerName, salon.name, bookingTime, bookingRef,
-                booking.serviceNames || [], booking.totalAmount
+                booking.serviceNames || [], booking.totalAmount, new Date(), booking.verificationPin
             ).catch(err => logger.warn({ err: err.message }, "[Owner] Failed to send confirmation email"));
         } else if (statusChanged && status === "completed") {
             const completedServices = booking.snapshotServices?.length

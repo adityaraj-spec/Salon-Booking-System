@@ -124,7 +124,8 @@ export const confirmPaymentAndBooking = async ({
               booking._id?.toString(),
               serviceNames,
               paidAmount,
-              new Date()
+              new Date(),
+              booking.verificationPin
             )
           : Promise.resolve(),
         booking.salon?.owner?.email

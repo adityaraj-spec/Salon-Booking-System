@@ -544,13 +544,22 @@ export const expirePendingBooking = async (bookingId) => {
   });
 };
 
-export const verifyBookingPin = async ({ pin, ownerId, role }) => {
+export const verifyBookingPin = async ({ bookingId, pin, ownerId, role }) => {
   const salonIds = await getManagedSalonIds({ userId: ownerId, role });
   if (!salonIds.length) throw new ApiError(403, "You do not manage any salons.");
 
   const booking = await withTransactionRetry(async (session) => {
+    if (bookingId && !mongoose.isValidObjectId(bookingId)) {
+      throw new ApiError(400, "A valid booking ID is required.");
+    }
+    const bookingFilter = {
+      salon: { $in: salonIds },
+      verificationPin: String(pin),
+      status: "confirmed",
+    };
+    if (bookingId) bookingFilter._id = bookingId;
     const updated = await Booking.findOneAndUpdate(
-      { salon: { $in: salonIds }, verificationPin: String(pin), status: "confirmed" },
+      bookingFilter,
       { $set: { status: "in_progress", slotKeys: [] } },
       { new: true, session }
     );

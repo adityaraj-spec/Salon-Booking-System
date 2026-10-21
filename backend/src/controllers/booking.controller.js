@@ -209,7 +209,7 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
     } else if (statusChanged && status === "confirmed" && customerEmail) {
         sendBookingConfirmationEmail(
             customerEmail, customerName, salonDisplayName, bookingTime, bookingRef,
-            booking.serviceNames || [], booking.totalAmount
+            booking.serviceNames || [], booking.totalAmount, new Date(), booking.verificationPin
         ).catch(err => logger.warn({ err: err?.message }, "[Booking] Failed to send confirmation email"));
     } else if (statusChanged && status === "completed" && customerEmail) {
         const completedServices = booking.snapshotServices?.length
@@ -320,7 +320,7 @@ const initiateBookingHandler = asyncHandler(async (req, res) => {
 const verifyBookingPinHandler = asyncHandler(async (req, res) => {
     const pin = String(req.body?.pin || req.body?.verificationPin || "").trim();
     if (!/^\d{4}$/.test(pin)) throw new ApiError(400, "A 4-digit PIN is required.");
-    const booking = await verifyBookingPin({ pin, ownerId: req.user._id, role: req.user.role });
+    const booking = await verifyBookingPin({ bookingId: req.body?.bookingId, pin, ownerId: req.user._id, role: req.user.role });
     await invalidateAvailability({ salonId: booking.salon._id || booking.salon, staffId: booking.staff, dates: [booking.date] });
     emitToUser(booking.customer?._id || booking.customer, "bookingUpdate", { booking, type: "CHECK_IN" });
     return res.status(200).json(new ApiResponse(200, booking, "Customer checked in successfully"));

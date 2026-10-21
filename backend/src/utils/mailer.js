@@ -431,7 +431,7 @@ const renderPaymentCard = ({ shopName, bookingTime, amount, paymentId, paidAt })
     };
 };
 
-const renderEmail = ({ preheader, category, icon = "dot", heading, greeting, paragraphs = [], rows = [], booking, payment, notice, code, cta, accent = COLORS.gold }) => {
+const renderEmail = ({ preheader, category, icon = "dot", heading, greeting, paragraphs = [], rows = [], booking, payment, notice, code, verificationPin, cta, accent = COLORS.gold }) => {
     const safeHeading = displayValue(heading, "SalonNow");
     const safePreheader = displayValue(preheader, safeHeading);
     const safeCategory = displayValue(category, "SalonNow");
@@ -441,11 +441,13 @@ const renderEmail = ({ preheader, category, icon = "dot", heading, greeting, par
     const safeParagraphs = paragraphs.map((paragraph) => displayValue(paragraph, "")).filter(Boolean);
     const safeNotice = notice && hasValue(notice.text) ? { label: displayValue(notice.label, "Update"), text: displayValue(notice.text), color: notice.color || accent } : null;
     const safeCode = code === undefined || code === null ? "" : String(code);
+    const safeVerificationPin = verificationPin === undefined || verificationPin === null ? "" : String(verificationPin);
     const safeCta = cta ? { label: displayValue(cta.label, "Open SalonNow"), href: safeHref(cta.href) } : null;
     const detailCard = renderDetailCard(rows);
     const support = renderSupportLine();
     const noticeHtml = safeNotice ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:24px 0;"><tr><td style="border-left:4px solid ${safeNotice.color};background:${COLORS.warm};padding:14px 16px;border-radius:0 8px 8px 0;"><p style="margin:0 0 4px;color:${safeNotice.color};font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">${escapeHtml(safeNotice.label)}</p><p style="margin:0;color:${COLORS.body};font-size:14px;line-height:1.6;">${escapeHtml(safeNotice.text)}</p></td></tr></table>` : "";
     const codeHtml = safeCode ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:24px 0;"><tr><td align="center" style="background:${COLORS.warm};border:1px dashed ${accent};border-radius:8px;padding:20px 12px;"><p style="margin:0 0 8px;color:${COLORS.muted};font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Your verification code</p><p style="margin:0;color:${COLORS.text};font-size:32px;font-weight:700;letter-spacing:8px;line-height:1.2;">${escapeHtml(safeCode)}</p></td></tr></table>` : "";
+    const verificationPinHtml = safeVerificationPin ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:20px 0;"><tr><td align="center" style="background-color:#f3f4f6;border-radius:8px;padding:16px;text-align:center;"><p style="margin:0;font-size:14px;color:#4b5563;">YOUR CHECK-IN PIN</p><h2 style="margin:8px 0 0 0;font-size:32px;letter-spacing:6px;color:#111827;line-height:1.2;">${escapeHtml(safeVerificationPin)}</h2></td></tr></table>` : "";
     const ctaHtml = safeCta ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:28px 0 12px;"><tr><td align="center"><a href="${escapeHtml(safeCta.href)}" style="display:inline-block;padding:14px 28px;background:${accent};color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;border-radius:6px;box-shadow:0 2px 4px rgba(0,0,0,0.1);">${escapeHtml(safeCta.label)}</a></td></tr></table>` : "";
 
     const bookingHtml = booking ? booking.html : "";
@@ -500,6 +502,7 @@ ${safeGreeting ? `<p style="margin:0 0 16px;font-size:15px;line-height:1.5;color
 ${safeParagraphs.map((p) => `<p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:${COLORS.body};">${escapeHtml(p)}</p>`).join("")}
 ${noticeHtml}
 ${codeHtml}
+${verificationPinHtml}
 ${bookingHtml}
 ${paymentHtml}
 ${detailCard.html}
@@ -636,7 +639,7 @@ export const bookingConfirmation = (email, customerName, salonName, bookingTime,
             `Your appointment at ${salonName} has been successfully confirmed. We look forward to seeing you.`,
         ],
         booking,
-        rows: verificationPin ? [{ label: "Check-in PIN", value: verificationPin, emphasis: true }] : undefined,
+        verificationPin,
         cta: { label: "View Booking Details", href: `${FRONTEND_URL()}/bookings` },
     });
     return sendTemplateEmail(email, `Booking Confirmed at ${salonName}`, html);
