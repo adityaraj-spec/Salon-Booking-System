@@ -13,6 +13,12 @@ import { scheduleArrivalGraceCheck, cancelArrivalGraceCheck } from "../queues/ar
 import { emitToUser, emitToRoom, emitToAll } from "../socket.js";
 import { getZonedTimeParts } from "../utils/salonTime.js";
 import { writeOutboxEvent } from "./outbox.service.js";
+import {
+  sendBookingConfirmationEmail,
+  sendFinalReceiptEmail,
+  sendServiceCompletedEmail,
+  sendAppointmentCancelledEmail,
+} from "../utils/mailer.js";
 
 /**
  * Generate a 4-digit numeric verification PIN for queue check-in / start.
@@ -563,6 +569,22 @@ export const acceptQueueRequest = async ({ bookingId, ownerId, role }) => {
     const graceMinutes = salonDoc?.queueSettings?.arrivalGraceMinutes || 15;
     await scheduleArrivalGraceCheck(refreshed._id.toString(), graceMinutes);
 
+    // ── Email: booking confirmation with queue PIN ────────────────────────────
+    if (refreshed.customer?.email) {
+      const serviceNames = (refreshed.services || []).map((s) => s.name || "Service");
+      sendBookingConfirmationEmail(
+        refreshed.customer.email,
+        refreshed.customer.fullName || refreshed.guestName || "Customer",
+        refreshed.salon?.name || "Salon",
+        new Date().toISOString(),
+        refreshed._id.toString(),
+        serviceNames,
+        refreshed.totalAmount || 0,
+        new Date(),
+        refreshed.verificationPin,
+      ).catch((err) => logger.warn({ err: err?.message }, "[QueueService] Failed to send acceptance email"));
+    }
+
     return refreshed;
   });
 };
@@ -605,6 +627,20 @@ export const rejectQueueRequest = async ({ bookingId, ownerId, role, reason }) =
     emitToRoom(`salon:${current.salon}`, "queue:request_rejected", {
       bookingId: current._id.toString(),
     });
+
+    // ── Email: notify customer of rejection ──────────────────────────────────
+    const customerDoc = await User.findById(current.customer).select("fullName email").lean();
+    if (customerDoc?.email) {
+      const salonDoc2 = await Salon.findById(current.salon).select("name").lean();
+      sendAppointmentCancelledEmail(
+        customerDoc.email,
+        customerDoc.fullName || "Customer",
+        salonDoc2?.name || "Salon",
+        new Date().toISOString(),
+        current._id.toString(),
+        current.rejectionReason,
+      ).catch((err) => logger.warn({ err: err?.message }, "[QueueService] Failed to send rejection email"));
+    }
 
     return current;
   });
@@ -800,6 +836,36 @@ export const completeQueueService = async ({ bookingId, ownerId, role, paymentMe
     emitToRoom(`salon:${refreshed.salon}`, "queue:service_completed", {
       bookingId: refreshed._id.toString(),
     });
+
+    // ── Email: final receipt + service-completed notification ────────────────
+    if (refreshed.customer?.email) {
+      const salonPopulated = await Salon.findById(refreshed.salon).select("name").lean();
+      const salonName = salonPopulated?.name || "Salon";
+      const serviceNames = (refreshed.services || []).map((s) => ({ name: s.name || "Service", price: s.price || 0 }));
+      const bookingTime = refreshed.scheduledDate || refreshed.completedAt || new Date();
+
+      sendFinalReceiptEmail(
+        refreshed.customer.email,
+        refreshed.customer.fullName || "Customer",
+        salonName,
+        bookingTime,
+        refreshed._id.toString(),
+        serviceNames,
+        refreshed.totalAmount || 0,
+        paymentMethod,
+      ).catch((err) => logger.warn({ err: err?.message }, "[QueueService] Failed to send final receipt email"));
+
+      sendServiceCompletedEmail(
+        refreshed.customer.email,
+        refreshed.customer.fullName || "Customer",
+        salonName,
+        bookingTime,
+        refreshed._id.toString(),
+        serviceNames.map((s) => s.name),
+        refreshed.totalAmount || 0,
+        refreshed.completedAt,
+      ).catch((err) => logger.warn({ err: err?.message }, "[QueueService] Failed to send service-completed email"));
+    }
 
     return refreshed;
   });
