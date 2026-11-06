@@ -495,6 +495,30 @@ export const requestQueuePosition = async ({
       salonId: salonId.toString(),
     });
 
+    // ── Email: send booking code immediately to customer upon booking ────────
+    let recipientEmail = null;
+    let recipientName = guestName || "Customer";
+    if (customerId) {
+      const customerDoc = await User.findById(customerId).select("email fullName").lean();
+      if (customerDoc?.email) {
+        recipientEmail = customerDoc.email;
+        recipientName = customerDoc.fullName || recipientName;
+      }
+    }
+    if (recipientEmail) {
+      sendBookingConfirmationEmail(
+        recipientEmail,
+        recipientName,
+        salon.name || "Salon",
+        booking.requestedAt.toISOString(),
+        booking._id.toString(),
+        snapshotServices.map((s) => s.name),
+        subtotal,
+        booking.requestedAt,
+        verificationPin
+      ).catch((err) => logger.warn({ err: err?.message }, "[QueueService] Failed to send booking creation email"));
+    }
+
     return booking;
   });
 };
