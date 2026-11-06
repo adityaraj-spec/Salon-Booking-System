@@ -1053,3 +1053,185 @@ export const declineExtraServices = async ({ bookingId, customerId, ownerId, rol
     return current;
   });
 };
+
+/**
+ * Computes deep operational queue analytics for a salon across an optional date range.
+ */
+export const getQueueAnalytics = async ({ salonId, ownerId, role, from, to }) => {
+  if (ownerId && role) {
+    await verifySalonAccess(salonId, ownerId, role);
+  }
+
+  const salon = await Salon.findById(salonId).select("name queueSettings totalSeats timezone").lean();
+  if (!salon) {
+    throw new ApiError(404, "Salon not found");
+  }
+
+  const match = { salon: new mongoose.Types.ObjectId(salonId), bookingType: "queue" };
+  if (from || to) {
+    match.createdAt = {};
+    if (from) match.createdAt.$gte = new Date(from);
+    if (to) match.createdAt.$lte = new Date(to);
+  }
+
+  // 1. Overall status breakdown
+  const statusCounts = await Booking.aggregate([
+    { $match: match },
+    { $group: { _id: "$status", count: { $sum: 1 } } },
+  ]);
+
+  const counts = {
+    total: 0,
+    requested: 0,
+    waiting: 0,
+    arrived: 0,
+    in_progress: 0,
+    completed: 0,
+    rejected: 0,
+    expired: 0,
+    no_show: 0,
+  };
+
+  for (const item of statusCounts) {
+    counts[item._id] = item.count;
+    counts.total += item.count;
+  }
+
+  // 2. Wait-time and Duration Accuracy for Completed Bookings
+  const completedMatch = {
+    ...match,
+    status: "completed",
+    actualStartTime: { $exists: true, $ne: null },
+  };
+
+  const completedStats = await Booking.aggregate([
+    { $match: completedMatch },
+    {
+      $project: {
+        estimatedWaitMin: { $ifNull: ["$estimatedWaitMin", 0] },
+        actualWaitMin: {
+          $max: [
+            0,
+            {
+              $divide: [
+                { $subtract: ["$actualStartTime", { $ifNull: ["$requestedAt", "$createdAt"] }] },
+                60000,
+              ],
+            },
+          ],
+        },
+        durationMinutes: { $ifNull: ["$durationMinutes", 30] },
+        actualDurationMin: {
+          $cond: [
+            { $and: ["$actualCompletionTime", "$actualStartTime"] },
+            {
+              $max: [
+                1,
+                { $divide: [{ $subtract: ["$actualCompletionTime", "$actualStartTime"] }, 60000] },
+              ],
+            },
+            "$durationMinutes",
+          ],
+        },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        avgEstimatedWait: { $avg: "$estimatedWaitMin" },
+        avgActualWait: { $avg: "$actualWaitMin" },
+        avgExpectedDuration: { $avg: "$durationMinutes" },
+        avgActualDuration: { $avg: "$actualDurationMin" },
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const waitMetrics = completedStats[0] || {
+    avgEstimatedWait: 0,
+    avgActualWait: 0,
+    avgExpectedDuration: 0,
+    avgActualDuration: 0,
+    count: 0,
+  };
+
+  // 3. Abandonment metrics
+  const dropouts = (counts.rejected || 0) + (counts.expired || 0) + (counts.no_show || 0);
+  const abandonmentRate = counts.total > 0 ? Number(((dropouts / counts.total) * 100).toFixed(1)) : 0;
+  const completionRate = counts.total > 0 ? Number(((counts.completed / counts.total) * 100).toFixed(1)) : 0;
+
+  // 4. Daily queue trends
+  const dailyTrends = await Booking.aggregate([
+    { $match: match },
+    {
+      $group: {
+        _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+        totalRequests: { $sum: 1 },
+        completed: {
+          $sum: { $cond: [{ $eq: ["$status", "completed"] }, 1, 0] },
+        },
+        dropped: {
+          $sum: {
+            $cond: [{ $in: ["$status", ["rejected", "expired", "no_show"]] }, 1, 0],
+          },
+        },
+        revenue: {
+          $sum: {
+            $cond: [{ $eq: ["$status", "completed"] }, "$totalAmount", 0],
+          },
+        },
+      },
+    },
+    { $sort: { _id: 1 } },
+  ]);
+
+  // 5. Hourly traffic distribution
+  const hourlyTraffic = await Booking.aggregate([
+    { $match: match },
+    {
+      $group: {
+        _id: { $hour: { date: { $ifNull: ["$requestedAt", "$createdAt"] }, timezone: salon.timezone || "Asia/Kolkata" } },
+        count: { $sum: 1 },
+      },
+    },
+    { $sort: { _id: 1 } },
+  ]);
+
+  const maxCapacity = salon.queueSettings?.maxCapacity || 10;
+  const activeNow = (counts.waiting || 0) + (counts.arrived || 0) + (counts.in_progress || 0);
+  const capacityUtilization = Number(((activeNow / maxCapacity) * 100).toFixed(1));
+
+  return {
+    salonId: salon._id,
+    salonName: salon.name,
+    counts,
+    efficiency: {
+      avgEstimatedWaitMin: Math.round(waitMetrics.avgEstimatedWait || 0),
+      avgActualWaitMin: Math.round(waitMetrics.avgActualWait || 0),
+      avgExpectedDurationMin: Math.round(waitMetrics.avgExpectedDuration || 0),
+      avgActualDurationMin: Math.round(waitMetrics.avgActualDuration || 0),
+      accuracyPercentage: waitMetrics.avgEstimatedWait > 0
+        ? Math.min(100, Math.round((Math.min(waitMetrics.avgEstimatedWait, waitMetrics.avgActualWait) / Math.max(waitMetrics.avgEstimatedWait, waitMetrics.avgActualWait)) * 100))
+        : 100,
+    },
+    abandonment: {
+      dropouts,
+      abandonmentRate,
+      completionRate,
+      breakdown: {
+        rejected: counts.rejected || 0,
+        expired: counts.expired || 0,
+        no_show: counts.no_show || 0,
+      },
+    },
+    liveStatus: {
+      activeNow,
+      maxCapacity,
+      capacityUtilization,
+      waiting: counts.waiting || 0,
+      inProgress: counts.in_progress || 0,
+    },
+    dailyTrends,
+    hourlyTraffic,
+  };
+};

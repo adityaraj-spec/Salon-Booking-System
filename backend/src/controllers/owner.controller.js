@@ -1,3 +1,4 @@
+import * as queueService from "../services/queue.service.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import ApiError from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
@@ -65,13 +66,16 @@ const getOwnerDashboard = asyncHandler(async (req, res) => {
         { $sort: { _id: 1 } }
     ]);
 
+    const queueMetrics = await queueService.getQueueAnalytics({ salonId: salon._id }).catch(() => null);
+
     return res.status(200).json(new ApiResponse(200, {
         salon,
         stats: {
             totalBookings,
             totalRevenue: revenueAgg[0]?.total || 0,
             totalServices,
-            totalStaff
+            totalStaff,
+            queueMetrics
         },
         recentBookings,
         dailyBookings
@@ -379,7 +383,8 @@ const getOwnerReports = asyncHandler(async (req, res) => {
         { $sort: { _id: 1 } }
     ]);
 
-    return res.status(200).json(new ApiResponse(200, { revenue }, "Reports fetched"));
+    const queueAnalytics = await queueService.getQueueAnalytics({ salonId: salon._id, from, to }).catch(() => null);
+    return res.status(200).json(new ApiResponse(200, { revenue, queueAnalytics }, "Reports fetched"));
 });
 
 export {

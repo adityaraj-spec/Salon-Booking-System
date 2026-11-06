@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { TrendingUp, Calendar, Scissors, Users, ArrowRight } from 'lucide-react';
+import { TrendingUp, Calendar, Scissors, Users, ArrowRight, Clock, Activity, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
@@ -53,6 +53,38 @@ export default function OwnerDashboard() {
           </button>
         </div>
       )}
+
+      
+      {/* Live Queue Performance */}
+      <div className="bg-white rounded-[32px] border border-gray-100 p-6 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-serif font-black text-[#1a1a1a] text-base flex items-center gap-2">
+            Live Queue & Workload Status
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          </h3>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+            Capacity: {stats?.queueMetrics?.liveStatus?.activeNow || 0}/{stats?.queueMetrics?.liveStatus?.maxCapacity || 10} ({stats?.queueMetrics?.liveStatus?.capacityUtilization || 0}%)
+          </span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="bg-amber-50/60 rounded-2xl p-4 border border-amber-100">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-amber-700">Waiting in Queue</p>
+            <p className="text-2xl font-black text-amber-900 mt-1">{stats?.queueMetrics?.liveStatus?.waiting || 0}</p>
+          </div>
+          <div className="bg-blue-50/60 rounded-2xl p-4 border border-blue-100">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-blue-700">In Service Now</p>
+            <p className="text-2xl font-black text-blue-900 mt-1">{stats?.queueMetrics?.liveStatus?.inProgress || 0}</p>
+          </div>
+          <div className="bg-emerald-50/60 rounded-2xl p-4 border border-emerald-100">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-700">Avg Wait Time</p>
+            <p className="text-2xl font-black text-emerald-900 mt-1">{stats?.queueMetrics?.efficiency?.avgActualWaitMin || 0}m</p>
+          </div>
+          <div className="bg-purple-50/60 rounded-2xl p-4 border border-purple-100">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-purple-700">Completion Rate</p>
+            <p className="text-2xl font-black text-purple-900 mt-1">{stats?.queueMetrics?.abandonment?.completionRate || 100}%</p>
+          </div>
+        </div>
+      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">

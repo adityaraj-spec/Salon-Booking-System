@@ -485,6 +485,33 @@ export const cancelBooking = async ({ bookingId, customerId, reason }) => {
     throw new ApiError(400, `Cannot cancel booking with status '${existing.status}'`);
   }
 
+  if (existing.bookingType === "queue") {
+    if (["completed", "cancelled", "rejected", "expired"].includes(existing.status)) {
+      throw new ApiError(400, `Cannot cancel queue booking with status '${existing.status}'`);
+    }
+
+    const { cancelQueueExpiry } = await import("../queues/queueExpiry.queue.js");
+    const { cancelArrivalGraceCheck } = await import("../queues/arrivalGrace.queue.js");
+    const { recalculateQueuePositionsAndETAs } = await import("./queue.service.js");
+    const { emitToRoom } = await import("../socket.js");
+
+    await cancelQueueExpiry(existing._id.toString());
+    await cancelArrivalGraceCheck(existing._id.toString());
+
+    existing.status = "cancelled";
+    existing.queuePosition = null;
+    await existing.save();
+
+    await recalculateQueuePositionsAndETAs(existing.salon);
+
+    emitToRoom(`salon:${existing.salon}`, "queue:customer_cancelled", {
+      bookingId: existing._id.toString(),
+      salonId: existing.salon.toString(),
+    });
+
+    return existing;
+  }
+
   if (existing.status === "pending_payment") {
     return await cancelPendingBooking(bookingId, customerId);
   }

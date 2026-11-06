@@ -173,3 +173,18 @@ export const declineExtraServices = asyncHandler(async (req, res) => {
 
   return res.status(200).json(new ApiResponse(200, booking, "Extra services declined"));
 });
+
+export const getQueueAnalytics = asyncHandler(async (req, res) => {
+  const { salonId } = req.params;
+  const { from, to } = req.query;
+
+  const analytics = await queueService.getQueueAnalytics({
+    salonId,
+    ownerId: req.user._id,
+    role: req.user.role,
+    from,
+    to,
+  });
+
+  return res.status(200).json(new ApiResponse(200, analytics, "Queue analytics retrieved successfully"));
+});

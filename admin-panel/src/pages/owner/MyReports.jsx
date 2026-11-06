@@ -9,6 +9,7 @@ import {
 
 export default function MyReports() {
   const [revenue, setRevenue] = useState([]);
+  const [queueAnalytics, setQueueAnalytics] = useState(null);
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,6 +21,7 @@ export default function MyReports() {
     try {
       const r = await api.get('/owner/reports', { params: { from, to } });
       setRevenue(r.data.data.revenue || []);
+      setQueueAnalytics(r.data.data.queueAnalytics || null);
     } catch { toast.error('Failed to load reports'); }
     finally { 
       setLoading(false); 
@@ -74,6 +76,49 @@ export default function MyReports() {
           <p className="text-4xl font-serif font-black text-[#D4AF37]">{totalBookings}</p>
         </div>
       </div>
+
+      
+      {/* Queue Efficiency & Retention Metrics */}
+      {queueAnalytics && (
+        <div className="bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm">
+          <h3 className="font-serif font-black text-[#1a1a1a] text-lg mb-6 flex items-center gap-2">
+            Queue Performance & ETA Accuracy
+            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100">
+              <p className="text-[10px] font-black uppercase tracking-wider text-gray-400">Avg Estimated Wait</p>
+              <p className="text-2xl font-black text-gray-900 mt-1">{queueAnalytics.efficiency?.avgEstimatedWaitMin || 0} mins</p>
+            </div>
+            <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100">
+              <p className="text-[10px] font-black uppercase tracking-wider text-gray-400">Avg Actual Wait</p>
+              <p className="text-2xl font-black text-amber-600 mt-1">{queueAnalytics.efficiency?.avgActualWaitMin || 0} mins</p>
+            </div>
+            <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100">
+              <p className="text-[10px] font-black uppercase tracking-wider text-gray-400">ETA Accuracy</p>
+              <p className="text-2xl font-black text-emerald-600 mt-1">{queueAnalytics.efficiency?.accuracyPercentage || 100}%</p>
+            </div>
+            <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100">
+              <p className="text-[10px] font-black uppercase tracking-wider text-gray-400">Abandonment Rate</p>
+              <p className="text-2xl font-black text-rose-600 mt-1">{queueAnalytics.abandonment?.abandonmentRate || 0}%</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-4 text-center text-xs border-t border-gray-100 pt-4">
+            <div>
+              <span className="text-gray-400">Completed Visits:</span>
+              <span className="font-bold text-gray-900 ml-1.5">{queueAnalytics.counts?.completed || 0}</span>
+            </div>
+            <div>
+              <span className="text-gray-400">Expired Requests:</span>
+              <span className="font-bold text-gray-900 ml-1.5">{queueAnalytics.counts?.expired || 0}</span>
+            </div>
+            <div>
+              <span className="text-gray-400">No-Shows / Rejected:</span>
+              <span className="font-bold text-gray-900 ml-1.5">{(queueAnalytics.counts?.no_show || 0) + (queueAnalytics.counts?.rejected || 0)}</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Chart */}
       <div className="bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm">

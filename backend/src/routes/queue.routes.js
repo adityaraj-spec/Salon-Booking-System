@@ -93,5 +93,14 @@ router.post(
   queueController.declineExtraServices
 );
 
+
+// Owner / Admin: queue analytics report
+router.get(
+  "/salon/:salonId/analytics",
+  verifyJWT,
+  authorize("owner", "admin"),
+  queueController.getQueueAnalytics
+);
+
 export default router;
 
