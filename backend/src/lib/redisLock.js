@@ -294,3 +294,40 @@ const _releaseKeys = async (redis, keys, token) => {
     logger.warn({ err: err.message, keys }, "[RedisLock] Error releasing lock (TTL will self-heal)");
   }
 };
+
+/**
+ * Executes a callback within a distributed Redis lock scoped to a salon's queue:
+ *   Key format: `{salonId}:lock:queue`
+ * Pins to the salon's Redis Cluster hash slot.
+ * Retries up to `maxRetries` times with backoff on contention.
+ */
+export const withQueueLock = async (salonId, callback, { ttlMs = 10000, maxRetries = 10, retryDelayMs = 50 } = {}) => {
+  const lockKey = `{${salonId}}:lock:queue`;
+  let attempt = 0;
+  let lockResult = null;
+
+  while (attempt <= maxRetries) {
+    lockResult = await acquireSlotLock([lockKey], ttlMs);
+    if (lockResult.acquired) {
+      break;
+    }
+    attempt++;
+    if (attempt <= maxRetries) {
+      const jitter = Math.floor(Math.random() * 20);
+      await new Promise((resolve) => setTimeout(resolve, retryDelayMs * attempt + jitter));
+    }
+  }
+
+  if (!lockResult || !lockResult.acquired) {
+    const err = new Error("Queue operation currently in progress for this salon. Please retry.");
+    err.code = "QUEUE_LOCKED";
+    err.status = 409;
+    throw err;
+  }
+
+  try {
+    return await callback();
+  } finally {
+    await releaseSlotLock(lockResult.keys, lockResult.token, lockResult.stopWatchdog);
+  }
+};

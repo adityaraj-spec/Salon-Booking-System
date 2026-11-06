@@ -67,6 +67,24 @@ const staffSchema = new mongoose.Schema(
     role: String,
     experience: Number,
     skills: [String],
+    services: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Service",
+      },
+    ],
+    isAvailable: {
+      type: Boolean,
+      default: true,
+    },
+    currentBooking: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Booking",
+    },
+    activeWorkloadMinutes: {
+      type: Number,
+      default: 0,
+    },
     profilePic: String,
     isActive: {
       type: Boolean,

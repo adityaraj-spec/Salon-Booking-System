@@ -2,6 +2,37 @@ import mongoose from "mongoose";
 
 const bookingSchema = new mongoose.Schema(
   {
+    bookingType: {
+      type: String,
+      enum: ["queue", "legacy"],
+      default: "queue",
+      index: true,
+    },
+    queuePosition: {
+      type: Number,
+      default: null,
+      index: true,
+    },
+    requestedAt: Date,
+    acceptedAt: Date,
+    arrivedAt: Date,
+    actualStartTime: Date,
+    actualCompletionTime: Date,
+    estimatedWaitMin: {
+      type: Number,
+      default: 0,
+    },
+    estimatedWaitMax: {
+      type: Number,
+      default: 0,
+    },
+    serviceStaffAssignments: [
+      {
+        serviceId: { type: mongoose.Schema.Types.ObjectId, ref: "Service" },
+        staffId: { type: mongoose.Schema.Types.ObjectId, ref: "Staff" },
+      },
+    ],
+    rejectionReason: String,
     customer: { 
       type: mongoose.Schema.Types.ObjectId, 
       ref: "User", 
@@ -35,6 +66,14 @@ const bookingSchema = new mongoose.Schema(
       },
     ],
     extraServices: [
+      {
+        serviceId: { type: mongoose.Schema.Types.ObjectId, ref: "Service" },
+        name: String,
+        price: Number,
+        durationMin: Number,
+      },
+    ],
+    proposedExtraServices: [
       {
         serviceId: { type: mongoose.Schema.Types.ObjectId, ref: "Service" },
         name: String,
@@ -110,7 +149,23 @@ const bookingSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "pending_payment", "confirmed", "in_progress", "completed", "cancelled", "rejected", "no_show", "expired"],
+      enum: [
+        "pending",
+        "pending_payment",
+        "confirmed",
+        "in_progress",
+        "completed",
+        "cancelled",
+        "rejected",
+        "no_show",
+        "expired",
+        "requested",
+        "accepted",
+        "waiting",
+        "arrived",
+        "ready_to_start",
+        "checked_in",
+      ],
       default: "pending"
     },
     reminderSent: {
@@ -125,6 +180,7 @@ const bookingSchema = new mongoose.Schema(
 );
 
 bookingSchema.index({ idempotencyKey: 1 }, { unique: true, sparse: true });
+bookingSchema.index({ salon: 1, bookingType: 1, status: 1, queuePosition: 1 });
 bookingSchema.index({ customer: 1, status: 1, date: 1 });
 bookingSchema.index({ salon: 1, status: 1, date: 1 });
 bookingSchema.index({ staff: 1, date: 1, time: 1 });

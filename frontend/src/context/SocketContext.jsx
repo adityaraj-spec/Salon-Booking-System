@@ -15,7 +15,7 @@ export const SocketProvider = ({ children }) => {
     useEffect(() => {
         if (userId) {
             const token = localStorage.getItem("authToken");
-            const backendUrl = import.meta.env.VITE_BACKEND_URL || (typeof window !== "undefined" && window.location.hostname === "localhost" ? "http://localhost:8000" : window.location.origin);
+            const backendUrl = import.meta.env.VITE_BACKEND_URL || (typeof window !== "undefined" ? window.location.origin : undefined);
             const newSocket = io(backendUrl, {
                 auth: { token },
                 query: { token, userId },

@@ -1,10 +1,11 @@
+import crypto from "crypto";
 import { asyncHandler } from "../utils/asyncHandler.js"
 import ApiError from "../utils/apiError.js"
 import jwt from "jsonwebtoken"
 import { ApiResponse } from "../utils/apiResponse.js"
 import { User } from "../models/user.models.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
-import { sendWelcomeEmail, sendLoginEmail, sendLogoutEmail, sendVerificationEmail } from "../utils/mailer.js"
+import { sendWelcomeEmail, sendLoginEmail, sendLogoutEmail, sendVerificationEmail, sendPasswordResetEmail } from "../utils/mailer.js"
 import { ROLES } from "../constants.js"
 import { generateOTP, hashOTP, verifyOTPHash, checkOTPLockout, recordOTPAttempt, clearOTPState, checkOTPRequestRateLimit } from "../utils/otp.js"
 import { issueTokenPair, rotateRefreshToken, revokeSession, revokeAllUserSessions } from "../services/auth.service.js"
@@ -451,27 +452,100 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     const incomingRefreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
 
     if (!incomingRefreshToken) {
+        const options = getCookieOptions();
+        res.clearCookie("accessToken", options);
+        res.clearCookie("refreshToken", options);
         throw new ApiError(401, "Refresh token is required");
     }
 
-    // Call central auth service with automatic theft detection and rotation (SI7)
-    const { accessToken, refreshToken: newRefreshToken } = await rotateRefreshToken(incomingRefreshToken);
+    try {
+        const { accessToken, refreshToken: newRefreshToken } = await rotateRefreshToken(incomingRefreshToken);
 
-    const options = getCookieOptions();
-    const accessTokenOptions = { ...options, maxAge: 7 * 24 * 60 * 60 * 1000 };
-    const refreshTokenOptions = { ...options, maxAge: 15 * 24 * 60 * 60 * 1000 };
+        const options = getCookieOptions();
+        const accessTokenOptions = { ...options, maxAge: 7 * 24 * 60 * 60 * 1000 };
+        const refreshTokenOptions = { ...options, maxAge: 15 * 24 * 60 * 60 * 1000 };
 
-    return res
-        .status(200)
-        .cookie("accessToken", accessToken, accessTokenOptions)
-        .cookie("refreshToken", newRefreshToken, refreshTokenOptions)
-        .json(
-            new ApiResponse(
-                200,
-                { accessToken, refreshToken: newRefreshToken },
-                "Access token refreshed successfully"
-            )
+        return res
+            .status(200)
+            .cookie("accessToken", accessToken, accessTokenOptions)
+            .cookie("refreshToken", newRefreshToken, refreshTokenOptions)
+            .json(
+                new ApiResponse(
+                    200,
+                    { accessToken, refreshToken: newRefreshToken },
+                    "Access token refreshed successfully"
+                )
+            );
+    } catch (err) {
+        const options = getCookieOptions();
+        res.clearCookie("accessToken", options);
+        res.clearCookie("refreshToken", options);
+        throw err;
+    }
+});
+
+const forgotPassword = asyncHandler(async (req, res) => {
+    const rawEmail = req.body?.email;
+    const email = rawEmail?.trim().toLowerCase();
+    if (!email) {
+        throw new ApiError(400, "Email is required");
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+        return res.status(200).json(
+            new ApiResponse(200, {}, "If an account with that email exists, password reset instructions have been sent.")
         );
+    }
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const resetTokenHash = crypto.createHash("sha256").update(resetToken).digest("hex");
+    const resetTokenExpiry = new Date(Date.now() + 15 * 60 * 1000);
+
+    user.resetPasswordToken = resetTokenHash;
+    user.resetPasswordExpiry = resetTokenExpiry;
+    await user.save({ validateBeforeSave: false });
+
+    sendPasswordResetEmail(user.email, user.fullName, resetToken).catch((err) => {
+        logger.warn({ err: err?.message, email: user.email }, "[User] Failed to send password reset email");
+    });
+
+    return res.status(200).json(
+        new ApiResponse(200, {}, "If an account with that email exists, password reset instructions have been sent.")
+    );
+});
+
+const resetPassword = asyncHandler(async (req, res) => {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) {
+        throw new ApiError(400, "Token and new password are required");
+    }
+
+    if (newPassword.length < 8) {
+        throw new ApiError(400, "Password must be at least 8 characters long");
+    }
+
+    const tokenHash = crypto.createHash("sha256").update(token.trim()).digest("hex");
+
+    const user = await User.findOne({
+        resetPasswordToken: tokenHash,
+        resetPasswordExpiry: { $gt: new Date() },
+    });
+
+    if (!user) {
+        throw new ApiError(400, "Invalid or expired password reset token");
+    }
+
+    user.password = newPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpiry = undefined;
+    await user.save();
+
+    await revokeAllUserSessions(user._id);
+
+    return res.status(200).json(
+        new ApiResponse(200, {}, "Password has been reset successfully. Please log in with your new password.")
+    );
 });
 
 export {
@@ -486,5 +560,7 @@ export {
     getCurrentUser,
     verifyEmail,
     resendVerificationCode,
-    refreshAccessToken
+    refreshAccessToken,
+    forgotPassword,
+    resetPassword
 }

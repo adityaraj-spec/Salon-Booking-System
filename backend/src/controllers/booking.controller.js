@@ -108,13 +108,33 @@ const getUserBookings = asyncHandler(async (req, res) => {
 });
 
 const getSalonBookings = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 20, status } = req.query;
+    const { page = 1, limit = 20, status, salonId } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
 
-    const salons = await Salon.find({ owner: req.user._id });
-    const salonIds = salons.map(s => s._id);
+    const userRole = req.user.role?.toString().trim().toLowerCase();
+    const isAdmin = ["admin", "super_admin"].includes(userRole);
+    let targetSalonIds = [];
+    if (isAdmin) {
+        if (salonId) {
+            targetSalonIds = [salonId];
+        } else {
+            const allSalons = await Salon.find({}).select("_id");
+            targetSalonIds = allSalons.map(s => s._id);
+        }
+    } else {
+        const salons = await Salon.find({ owner: req.user._id }).select("_id");
+        const ownedIds = salons.map(s => s._id.toString());
+        if (salonId) {
+            if (!ownedIds.includes(salonId.toString())) {
+                throw new ApiError(403, "You do not have permission to view bookings for this salon");
+            }
+            targetSalonIds = [salonId];
+        } else {
+            targetSalonIds = salons.map(s => s._id);
+        }
+    }
 
-    const query = { salon: { $in: salonIds } };
+    const query = { salon: { $in: targetSalonIds } };
     if (status) query.status = status;
 
     const [bookings, total] = await Promise.all([
@@ -142,7 +162,7 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
     const { bookingId } = req.params;
     const { status } = req.body;
 
-    if (!["pending", "confirmed", "completed", "cancelled", "rejected"].includes(status)) {
+    if (!["pending", "confirmed", "completed", "cancelled", "rejected", "requested", "accepted", "waiting", "arrived", "ready_to_start", "in_progress", "expired", "no_show"].includes(status)) {
         throw new ApiError(400, "Invalid booking status");
     }
 
@@ -318,18 +338,21 @@ const initiateBookingHandler = asyncHandler(async (req, res) => {
 });
 
 const verifyBookingPinHandler = asyncHandler(async (req, res) => {
+    const bookingId = String(req.body?.bookingId || "").trim();
     const pin = String(req.body?.pin || req.body?.verificationPin || "").trim();
+    if (!bookingId) throw new ApiError(400, "Booking ID is required.");
     if (!/^\d{4}$/.test(pin)) throw new ApiError(400, "A 4-digit PIN is required.");
-    const booking = await verifyBookingPin({ bookingId: req.body?.bookingId, pin, ownerId: req.user._id, role: req.user.role });
+    const booking = await verifyBookingPin({ bookingId, pin, ownerId: req.user._id, role: req.user.role });
     await invalidateAvailability({ salonId: booking.salon._id || booking.salon, staffId: booking.staff, dates: [booking.date] });
     emitToUser(booking.customer?._id || booking.customer, "bookingUpdate", { booking, type: "CHECK_IN" });
     return res.status(200).json(new ApiResponse(200, booking, "Customer checked in successfully"));
 });
 
 const addExtraServicesHandler = asyncHandler(async (req, res) => {
-    const serviceIds = req.body?.serviceIds || req.body?.services || [];
-    if (!Array.isArray(serviceIds)) throw new ApiError(400, "serviceIds must be an array.");
-    const booking = await addExtraBookingServices({ bookingId: req.params.bookingId, ownerId: req.user._id, role: req.user.role, serviceIds });
+    const serviceIds = req.body?.serviceIds || req.body?.services || (req.body?.serviceId ? [req.body.serviceId] : []);
+    const removeServiceIds = req.body?.removeServiceIds || (req.body?.removeServiceId ? [req.body.removeServiceId] : []);
+    if (!Array.isArray(serviceIds) || !Array.isArray(removeServiceIds)) throw new ApiError(400, "Service IDs must be arrays.");
+    const booking = await addExtraBookingServices({ bookingId: req.params.bookingId, ownerId: req.user._id, role: req.user.role, serviceIds, removeServiceIds });
     emitToUser(booking.customer, "bookingUpdate", { booking, type: "SERVICES_UPDATED" });
     return res.status(200).json(new ApiResponse(200, booking, "Extra services added successfully"));
 });
@@ -340,7 +363,10 @@ const completeBookingHandler = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Payment method must be cash, card, or upi.");
     }
     const booking = await completeBooking({ bookingId: req.params.bookingId, ownerId: req.user._id, role: req.user.role, paymentMethod });
-    const items = (booking.snapshotServices || []).map((service) => ({ name: service.name, price: service.price }))
+    const baseItems = booking.snapshotServices?.length
+        ? booking.snapshotServices
+        : (booking.serviceNames || []).map((name) => ({ name, price: 0 }));
+    const items = baseItems.map((service) => ({ name: service.name, price: service.price }))
         .concat((booking.extraServices || []).map((service) => ({ name: service.name, price: service.price })));
     if (booking.customer?.email) {
         sendFinalReceiptEmail(

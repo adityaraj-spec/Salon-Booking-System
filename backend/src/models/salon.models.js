@@ -102,6 +102,34 @@ const salonSchema = new mongoose.Schema({
     min: 1,
     max: 100,
   },
+  queueSettings: {
+    isAccepting: {
+      type: Boolean,
+      default: true,
+    },
+    isPaused: {
+      type: Boolean,
+      default: false,
+    },
+    maxCapacity: {
+      type: Number,
+      default: 10,
+      min: 1,
+      max: 100,
+    },
+    requestTimeoutMinutes: {
+      type: Number,
+      default: 5,
+      min: 1,
+      max: 60,
+    },
+    arrivalGraceMinutes: {
+      type: Number,
+      default: 15,
+      min: 1,
+      max: 60,
+    },
+  },
   timezone: {
     type: String,
     default: "Asia/Kolkata"

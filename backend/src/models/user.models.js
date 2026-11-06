@@ -58,6 +58,12 @@ const userSchema = new mongoose.Schema(
     verificationCodeExpiry: {
       type: Date,
     },
+    resetPasswordToken: {
+      type: String,
+    },
+    resetPasswordExpiry: {
+      type: Date,
+    },
     favorites: [
       {
         type: mongoose.Schema.Types.ObjectId,

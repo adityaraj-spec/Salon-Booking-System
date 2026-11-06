@@ -5,6 +5,8 @@
  * It bootstraps ONLY the background processing layer:
  *   - MongoDB connection (for Outbox relay reads/writes, hold/booking updates)
  *   - BullMQ HoldExpiry worker
+ *   - BullMQ QueueExpiry worker
+ *   - BullMQ ArrivalGrace worker
  *   - BullMQ PaymentRecovery worker
  *   - Outbox Relay worker (polling-based, atomic claim via findOneAndUpdate)
  *   - MongoDB ChangeStream (optional fallback hold watcher)
@@ -38,6 +40,8 @@ import mongoose from "mongoose";
 import connectDB from "../db/index.js";
 import { startHoldWatcher } from "../changeStreams/holdWatcher.js";
 import { createHoldExpiryWorker, closeHoldExpiryWorker } from "./holdExpiry.worker.js";
+import { createQueueExpiryWorker, closeQueueExpiryWorker } from "./queueExpiry.worker.js";
+import { createArrivalGraceWorker, closeArrivalGraceWorker } from "./arrivalGrace.worker.js";
 import { createPaymentRecoveryWorker, closePaymentRecoveryWorker } from "./paymentRecovery.worker.js";
 import { startOutboxRelayWorker, stopOutboxRelayWorker } from "./outboxRelay.worker.js";
 import getRedisClient from "../lib/redis.js";
@@ -78,6 +82,8 @@ const gracefulShutdown = async (signal) => {
   // Step 2: Close BullMQ workers (waits for in-progress jobs to finish)
   await Promise.allSettled([
     closeHoldExpiryWorker(),
+    closeQueueExpiryWorker(),
+    closeArrivalGraceWorker(),
     closePaymentRecoveryWorker(),
   ]);
   logger.info("[StandaloneWorker] BullMQ workers closed");
@@ -137,6 +143,8 @@ connectDB()
     // Start all workers
     startOutboxRelayWorker();
     createHoldExpiryWorker();
+    createQueueExpiryWorker();
+    createArrivalGraceWorker();
     createPaymentRecoveryWorker();
 
     logger.info("[StandaloneWorker] All workers started and ready");

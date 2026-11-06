@@ -40,3 +40,16 @@ export const selectRoleSchema = {
     role: z.enum(["customer", "salonOwner"]),
   }),
 };
+
+export const forgotPasswordSchema = {
+  body: z.object({
+    email: z.string().trim().email("Invalid email address"),
+  }),
+};
+
+export const resetPasswordSchema = {
+  body: z.object({
+    token: z.string().trim().min(1, "Reset token is required"),
+    newPassword: z.string().min(8, "Password must be at least 8 characters long"),
+  }),
+};

@@ -4,14 +4,29 @@ import api from '../../services/api';
 import DataTable from '../../components/UI/DataTable';
 
 const STATUS_BADGE = {
-  pending:   'bg-amber-100 text-amber-700 font-bold uppercase tracking-widest',
-  confirmed: 'bg-[#D4AF37]/10 text-[#D4AF37] font-bold uppercase tracking-widest',
-  completed: 'bg-emerald-100 text-emerald-700 font-bold uppercase tracking-widest text-[10px]',
-  cancelled: 'bg-red-100 text-red-600 font-bold uppercase tracking-widest',
-  rejected:  'bg-gray-100 text-gray-600 font-bold uppercase tracking-widest',
+  requested:   'bg-amber-100 text-amber-700 font-bold uppercase tracking-widest',
+  waiting:     'bg-blue-100 text-blue-700 font-bold uppercase tracking-widest',
+  arrived:     'bg-emerald-100 text-emerald-800 font-bold uppercase tracking-widest',
+  in_progress: 'bg-purple-100 text-purple-700 font-bold uppercase tracking-widest',
+  pending:     'bg-amber-100 text-amber-700 font-bold uppercase tracking-widest',
+  confirmed:   'bg-[#D4AF37]/10 text-[#D4AF37] font-bold uppercase tracking-widest',
+  completed:   'bg-emerald-100 text-emerald-700 font-bold uppercase tracking-widest text-[10px]',
+  cancelled:   'bg-red-100 text-red-600 font-bold uppercase tracking-widest',
+  rejected:    'bg-gray-100 text-gray-600 font-bold uppercase tracking-widest',
+  expired:     'bg-gray-200 text-gray-500 font-bold uppercase tracking-widest',
 };
 
-const ALL_STATUSES = ['pending', 'confirmed', 'completed', 'cancelled', 'rejected'];
+const ALL_STATUSES = [
+  'requested',
+  'waiting',
+  'arrived',
+  'in_progress',
+  'confirmed',
+  'completed',
+  'cancelled',
+  'rejected',
+  'expired'
+];
 
 export default function MyBookings() {
   const [bookings, setBookings] = useState([]);
@@ -56,14 +71,28 @@ export default function MyBookings() {
         ))}
       </div>
     )},
-    { key: 'date', label: 'Date & Time', render: (v, row) => (
-      <span className="text-sm text-gray-700">{v} {row.time ? `@ ${row.time}` : ''}</span>
+    { key: 'date', label: 'Date / Queue', render: (v, row) => (
+      row.bookingType === 'queue' || !v ? (
+        <div className="flex flex-col">
+          <span className="text-xs font-black text-amber-800">
+            {row.queuePosition ? `Queue #${row.queuePosition}` : 'Pending Request'}
+          </span>
+          <span className="text-[10px] text-gray-400">
+            ~{row.estimatedWaitMin || 0}–{row.estimatedWaitMax || 15}m est. wait
+          </span>
+        </div>
+      ) : (
+        <span className="text-sm text-gray-700">{v} {row.time ? `@ ${row.time}` : ''}</span>
+      )
+    )},
+    { key: 'verificationPin', label: 'PIN', render: (v) => (
+      v ? <span className="font-mono font-bold bg-amber-50 text-amber-800 px-2 py-1 rounded border border-amber-200 text-xs tracking-widest">{v}</span> : '—'
     )},
     { key: 'totalAmount', label: 'Amount', render: (v) => v ? <span className="font-black font-serif text-[#1a1a1a] text-base">₹{v}</span> : '—' },
     { key: 'status', label: 'Status', render: (v, row) => (
       <select value={v} onChange={e => updateStatus(row._id, e.target.value)}
-        className={`text-[10px] font-black px-4 py-2 rounded-full border-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 transition-all shadow-sm ${STATUS_BADGE[v]}`}>
-        {ALL_STATUSES.map(s => <option key={s} value={s}>{s.toUpperCase()}</option>)}
+        className={`text-[10px] font-black px-4 py-2 rounded-full border-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 transition-all shadow-sm ${STATUS_BADGE[v] || 'bg-gray-100 text-gray-600'}`}>
+        {ALL_STATUSES.map(s => <option key={s} value={s}>{s.replace('_', ' ').toUpperCase()}</option>)}
       </select>
     )},
   ];
@@ -73,16 +102,16 @@ export default function MyBookings() {
       <div className="flex items-center justify-between flex-wrap gap-6 mb-8 mt-2">
         <div>
           <h2 className="text-2xl font-serif font-black text-[#1a1a1a] flex items-center gap-2">
-            My Bookings
+            My Salon Bookings & Queue
             <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></span>
           </h2>
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-2">Manage appointments for your salon</p>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-2">Manage queue requests and appointments</p>
         </div>
         <div className="flex items-center gap-3">
           <select value={status} onChange={e => { setStatus(e.target.value); setPage(1); }}
             className="bg-white border-none rounded-2xl px-6 py-3 text-[10px] font-black uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 shadow-xl shadow-black/5 transition-all">
             <option value="">All Statuses</option>
-            {ALL_STATUSES.map(s => <option key={s} value={s}>{s.toUpperCase()}</option>)}
+            {ALL_STATUSES.map(s => <option key={s} value={s}>{s.replace('_', ' ').toUpperCase()}</option>)}
           </select>
         </div>
       </div>

@@ -432,6 +432,7 @@ export function Shop() {
     } = useBookingCart();
 
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [queueSummary, setQueueSummary] = useState(null);
 
     const goToBooking = (bookingPath) => {
         if (!user) {
@@ -607,6 +608,9 @@ export function Shop() {
 
         if (id) {
             fetchSalonDetails();
+            axiosInstance.get(`/queue/salon/${id}`).then(res => {
+                if (res.data?.success) setQueueSummary(res.data.data?.summary);
+            }).catch(() => {});
             fetchReviews();
             fetchServices();
             fetchStaff();
@@ -1536,7 +1540,7 @@ export function Shop() {
                             }`}
                         >
                             <Scissors size={18} className="text-[#D4AF37]" />
-                            {salon.isOpen ? 'Book Appointment' : 'Temporarily Closed'}
+                            {salon.isOpen ? 'Request Place in Queue' : 'Temporarily Closed'}
                         </button>
 
                         {/* Owner Indicator Pill: Non-obtrusive */}

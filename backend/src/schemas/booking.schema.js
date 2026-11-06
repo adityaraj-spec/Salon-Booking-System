@@ -42,6 +42,20 @@ export const updateBookingStatusSchema = {
     bookingId: objectIdSchema,
   }),
   body: z.object({
-    status: z.enum(["pending", "confirmed", "completed", "cancelled", "rejected"]),
+    status: z.enum([
+      "pending",
+      "confirmed",
+      "completed",
+      "cancelled",
+      "rejected",
+      "requested",
+      "accepted",
+      "waiting",
+      "arrived",
+      "ready_to_start",
+      "in_progress",
+      "expired",
+      "no_show",
+    ]),
   }),
 };

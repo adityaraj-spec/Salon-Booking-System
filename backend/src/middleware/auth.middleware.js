@@ -5,6 +5,7 @@ import { User } from "../models/user.models.js";
 import { cacheGet, cacheSet, cacheDel } from "../lib/cacheManager.js";
 import getRedisClient from "../lib/redis.js";
 import logger, { enrichLogContext } from "../lib/logger.js";
+import { Salon } from "../models/salon.models.js";
 
 export const verifyJWT = asyncHandler(async (req, _, next) => {
   try {
@@ -51,6 +52,35 @@ export const verifyJWT = asyncHandler(async (req, _, next) => {
     }
 
     req.user = user;
+
+    // Attach owner salons if user is a salon owner or admin (fixes missing req.ownerSalonId)
+    const normalizedRole = user.role?.toString().trim().toLowerCase();
+    if (["owner", "salonowner", "admin", "super_admin"].includes(normalizedRole)) {
+      try {
+        const ownedSalons = await Salon.find({ owner: user._id }).select("_id").lean();
+        req.ownerSalonIds = ownedSalons.map((s) => s._id.toString());
+
+        const requestedSalonId =
+          req.params?.salonId ||
+          req.params?.id ||
+          req.query?.salonId ||
+          req.body?.salonId ||
+          req.headers?.["x-salon-id"];
+
+        if (
+          requestedSalonId &&
+          (req.ownerSalonIds.includes(requestedSalonId.toString()) ||
+            ["admin", "super_admin"].includes(normalizedRole))
+        ) {
+          req.ownerSalonId = requestedSalonId.toString();
+        } else {
+          req.ownerSalonId = req.ownerSalonIds[0] || null;
+        }
+      } catch (err) {
+        logger.warn({ err: err.message }, "[Auth] Failed to resolve owner salons");
+      }
+    }
+
     // Enrich the AsyncLocalStorage context with the authenticated userId
     // so every log line in this request automatically carries it
     enrichLogContext({ userId: user._id?.toString() || userId.toString() });

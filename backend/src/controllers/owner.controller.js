@@ -212,7 +212,21 @@ const updateOwnerBookingStatus = asyncHandler(async (req, res) => {
     const salon = await getOwnerSalonOrThrow(req.user._id);
     const { id } = req.params;
     const { status } = req.body;
-    const validStatuses = ["pending", "confirmed", "completed", "cancelled", "rejected"];
+    const validStatuses = [
+        "pending",
+        "confirmed",
+        "completed",
+        "cancelled",
+        "rejected",
+        "requested",
+        "accepted",
+        "waiting",
+        "arrived",
+        "ready_to_start",
+        "in_progress",
+        "expired",
+        "no_show",
+    ];
     if (!validStatuses.includes(status)) throw new ApiError(400, "Invalid status");
 
     const booking = await Booking.findOne({ _id: id, salon: salon._id }).populate("customer", "fullName email");

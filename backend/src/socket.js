@@ -129,9 +129,14 @@ export const initializeSocket = async (server) => {
     cors: {
       origin: (origin, callback) => {
         const allowedOrigins = [
-          process.env.CORS_ORIGIN || "http://localhost:5173,http://localhost:3000",
-          process.env.FRONTEND_URL || "",
+          process.env.CLIENT_URL,
+          process.env.CORS_ORIGIN,
+          process.env.FRONTEND_URL,
+          "https://salon-booking-system-gaqg.onrender.com",
+          "http://localhost:5173",
+          "http://localhost:3000",
         ]
+          .filter(Boolean)
           .flatMap((o) => o.split(","))
           .map((o) => o.trim())
           .filter(Boolean);
@@ -207,6 +212,7 @@ export const initializeSocket = async (server) => {
     try {
       const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
       socket.userId = decoded.id || decoded._id;
+      socket.role = decoded.role;
       next();
     } catch (err) {
       logger.warn({ err: err.message }, "[Socket.io] Auth token failed verification — proceeding as guest");
@@ -218,16 +224,47 @@ export const initializeSocket = async (server) => {
   io.on("connection", (socket) => {
     const userId = socket.userId;
 
-    // Auto-join the authenticated user's private room
+    // Auto-join the authenticated user's private rooms
     if (userId) {
       socket.join(userId.toString());
+      socket.join(`user:${userId.toString()}`);
       logger.debug({ userId, socketId: socket.id }, "[Socket.io] Client connected and joined room");
     }
 
-    // Prevent joining other users' rooms — strict room isolation
+    // Join specific user room (with identity guard)
     socket.on("join", (requestedUserId) => {
-      if (requestedUserId && requestedUserId === userId) {
+      if (requestedUserId && requestedUserId.toString() === userId?.toString()) {
         socket.join(requestedUserId.toString());
+        socket.join(`user:${requestedUserId.toString()}`);
+      }
+    });
+
+    // Join salon room (for salon dashboards and public queue tracking)
+    socket.on("joinSalon", (salonId) => {
+      if (salonId) {
+        socket.join(`salon:${salonId.toString()}`);
+        logger.debug({ userId, salonId, socketId: socket.id }, "[Socket.io] Client joined salon room");
+      }
+    });
+
+    socket.on("leaveSalon", (salonId) => {
+      if (salonId) {
+        socket.leave(`salon:${salonId.toString()}`);
+        logger.debug({ userId, salonId, socketId: socket.id }, "[Socket.io] Client left salon room");
+      }
+    });
+
+    // Join specific queue booking room for live granular tracking
+    socket.on("joinQueue", (bookingId) => {
+      if (bookingId) {
+        socket.join(`queue:${bookingId.toString()}`);
+        logger.debug({ userId, bookingId, socketId: socket.id }, "[Socket.io] Client joined queue room");
+      }
+    });
+
+    socket.on("leaveQueue", (bookingId) => {
+      if (bookingId) {
+        socket.leave(`queue:${bookingId.toString()}`);
       }
     });
 
@@ -259,10 +296,7 @@ export const getIO = () => {
 
 /**
  * Emits an event to a specific user's private room.
- *
- * With the Redis Adapter, this emission is forwarded across ALL Socket.io server
- * instances via Redis Pub/Sub, reaching the user regardless of which server
- * holds their WebSocket connection. This is the core of I5 correctness.
+ * Broadcasts to both `userId` and `user:userId` rooms for complete compatibility.
  *
  * @param {string} userId — MongoDB ObjectId string
  * @param {string} event  — Socket.io event name
@@ -270,7 +304,9 @@ export const getIO = () => {
  */
 export const emitToUser = (userId, event, data) => {
   if (io && userId) {
-    io.to(userId.toString()).emit(event, data);
+    const uid = userId.toString();
+    io.to(uid).emit(event, data);
+    io.to(`user:${uid}`).emit(event, data);
   }
 };
 
@@ -285,7 +321,7 @@ export const emitToAll = (event, data) => {
 
 /**
  * Emits an event to all sockets in a named room across all server instances.
- * Useful for salon-owner dashboards (room = salonId) or staff rooms.
+ * Useful for salon-owner dashboards (room = salon:salonId) or queue tracking (room = queue:bookingId).
  */
 export const emitToRoom = (room, event, data) => {
   if (io && room) {

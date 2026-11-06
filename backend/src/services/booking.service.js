@@ -23,7 +23,7 @@ const generateVerificationPin = async (session) => {
     const pin = crypto.randomInt(0, 10000).toString().padStart(4, "0");
     const existing = await Booking.findOne({
       verificationPin: pin,
-      status: { $in: ["confirmed", "in_progress"] },
+      status: { $in: ["pending", "pending_payment", "confirmed", "in_progress"] },
     }).select("_id").session(session).lean();
     if (!existing) return pin;
   }
@@ -129,7 +129,7 @@ export const initiateBookingFromHold = async ({
           }
         }
 
-        const verificationPin = paymentAfterService ? await generateVerificationPin(session) : undefined;
+        const verificationPin = await generateVerificationPin(session);
 
         const [createdBooking] = await Booking.create(
           [
@@ -549,21 +549,24 @@ export const verifyBookingPin = async ({ bookingId, pin, ownerId, role }) => {
   if (!salonIds.length) throw new ApiError(403, "You do not manage any salons.");
 
   const booking = await withTransactionRetry(async (session) => {
-    if (bookingId && !mongoose.isValidObjectId(bookingId)) {
+    if (!bookingId || !mongoose.isValidObjectId(bookingId)) {
       throw new ApiError(400, "A valid booking ID is required.");
     }
     const bookingFilter = {
       salon: { $in: salonIds },
-      verificationPin: String(pin),
-      status: "confirmed",
+      _id: bookingId,
+      status: { $in: ["confirmed", "pending_payment"] },
     };
-    if (bookingId) bookingFilter._id = bookingId;
+    const current = await Booking.findOne(bookingFilter).session(session);
+    if (!current || String(pin).trim() !== String(current.verificationPin).trim()) {
+      throw new ApiError(400, "Invalid 4-digit PIN provided.");
+    }
     const updated = await Booking.findOneAndUpdate(
-      bookingFilter,
+      { _id: current._id, status: current.status },
       { $set: { status: "in_progress", slotKeys: [] } },
       { new: true, session }
     );
-    if (!updated) throw new ApiError(400, "Invalid PIN or booking is no longer awaiting check-in.");
+    if (!updated) throw new ApiError(400, "Invalid or expired PIN.");
 
     await writeOutboxEvent(session, "booking.in_progress", {
       bookingId: updated._id.toString(),
@@ -581,7 +584,7 @@ export const verifyBookingPin = async ({ bookingId, pin, ownerId, role }) => {
     .populate("salon", "name");
 };
 
-export const addExtraBookingServices = async ({ bookingId, ownerId, role, serviceIds }) => {
+export const addExtraBookingServices = async ({ bookingId, ownerId, role, serviceIds, removeServiceIds }) => {
   const salonIds = await getManagedSalonIds({ userId: ownerId, role });
   if (!salonIds.length) throw new ApiError(403, "You do not manage any salons.");
 
@@ -593,15 +596,20 @@ export const addExtraBookingServices = async ({ bookingId, ownerId, role, servic
       if (typeof id === "object") return id?._id || id?.serviceId;
       return id;
     }).filter(Boolean).map((id) => id.toString()))];
-    if (!normalizedIds.length) throw new ApiError(400, "At least one extra service is required.");
-    if (normalizedIds.some((id) => !mongoose.isValidObjectId(id))) {
+    const normalizedRemoveIds = [...new Set((removeServiceIds || []).map((id) => id?.toString()).filter(Boolean))];
+    if (!normalizedIds.length && !normalizedRemoveIds.length) throw new ApiError(400, "At least one service change is required.");
+    if ([...normalizedIds, ...normalizedRemoveIds].some((id) => !mongoose.isValidObjectId(id))) {
       throw new ApiError(400, "One or more service IDs are invalid.");
     }
-    const services = await Service.find({ _id: { $in: normalizedIds }, salon: booking.salon }).session(session).lean();
+    const services = normalizedIds.length
+      ? await Service.find({ _id: { $in: normalizedIds }, salon: booking.salon }).session(session).lean()
+      : [];
     if (services.length !== normalizedIds.length) throw new ApiError(400, "One or more services are invalid for this salon.");
 
     const existingExtras = booking.extraServices || [];
-    const existingIds = new Set(existingExtras.map((service) => service.serviceId?.toString()));
+    const removeIdSet = new Set(normalizedRemoveIds);
+    const retainedExtras = existingExtras.filter((service) => !removeIdSet.has(service.serviceId?.toString()));
+    const existingIds = new Set(retainedExtras.map((service) => service.serviceId?.toString()));
     const additions = services
       .filter((service) => !existingIds.has(service._id.toString()))
       .map((service) => ({
@@ -610,12 +618,12 @@ export const addExtraBookingServices = async ({ bookingId, ownerId, role, servic
         price: Number(service.price) || 0,
         durationMin: Number(service.durationMin || service.duration) || 30,
       }));
-    if (!additions.length) return booking;
-
-    booking.extraServices = [...(booking.extraServices || []), ...additions];
+    booking.extraServices = [...retainedExtras, ...additions];
     const baseItems = booking.snapshotServices || [];
-    const baseSubtotal = baseItems.reduce((sum, service) => sum + (Number(service.price) || 0), 0)
-      || Math.max(0, (Number(booking.amounts?.subtotal) || 0) - existingExtras.reduce((sum, service) => sum + (Number(service.price) || 0), 0));
+    const previousExtraTotal = existingExtras.reduce((sum, service) => sum + (Number(service.price) || 0), 0);
+    const baseSubtotal = baseItems.length
+      ? baseItems.reduce((sum, service) => sum + (Number(service.price) || 0), 0)
+      : Math.max(0, (Number(booking.amounts?.subtotal) || Number(booking.totalAmount) || 0) - previousExtraTotal);
     const allItems = [...baseItems, ...booking.extraServices];
     const subtotal = baseSubtotal + booking.extraServices.reduce((sum, service) => sum + (Number(service.price) || 0), 0);
     const pointsDiscount = Number(booking.amounts?.pointsDiscount) || 0;

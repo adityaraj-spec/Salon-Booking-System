@@ -637,6 +637,7 @@ export const bookingConfirmation = (email, customerName, salonName, bookingTime,
         greeting: `Hi ${customerName}`,
         paragraphs: [
             `Your appointment at ${salonName} has been successfully confirmed. We look forward to seeing you.`,
+            "Please present this 4-digit PIN to the salon owner upon arrival to start your service.",
         ],
         booking,
         verificationPin,
@@ -659,6 +660,7 @@ export const finalReceipt = (
         label: item.name || "Service",
         value: `₹${Number(item.price || 0).toFixed(2)}`,
     }));
+    detailRows.unshift({ label: "Payment status", value: "PAID", emphasis: true });
     detailRows.push({ label: "Payment method", value: String(paymentMethod || "").toUpperCase() });
     detailRows.push({ label: "Total paid", value: `₹${Number(amount || 0).toFixed(2)}`, emphasis: true });
     const booking = renderBookingPanel({
@@ -677,7 +679,7 @@ export const finalReceipt = (
         icon: "receipt",
         heading: "Service Receipt",
         greeting: `Hi ${customerName}`,
-        paragraphs: [`Thank you for visiting ${salonName}. Here is your itemized receipt.`],
+        paragraphs: [`Thank you for choosing SalonNow and visiting ${salonName}. Here is your itemized receipt.`],
         booking,
         rows: detailRows,
         cta: { label: "View Booking History", href: `${FRONTEND_URL()}/bookings` },
@@ -1116,4 +1118,26 @@ export const sendAppointmentReminderEmail = (email, customerName, salonName, boo
         cta: { label: "View Booking Details", href: `${FRONTEND_URL()}/bookings` },
     });
     return sendTemplateEmail(email, `Reminder: Your appointment at ${salonName} is ${timeLabel}`, html);
+};
+
+export const sendPasswordResetEmail = (email, customerName, resetToken) => {
+    const resetUrl = `${FRONTEND_URL()}/reset-password/${resetToken}`;
+    const html = renderEmail({
+        preheader: "Reset your SalonNow account password",
+        category: "Account Security",
+        icon: "shield",
+        heading: "Password Reset Request",
+        greeting: `Hi ${customerName || "Customer"},`,
+        paragraphs: [
+            "We received a request to reset your password for your SalonNow account.",
+            "Click the button below to choose a new password. This link is valid for 15 minutes.",
+            "If you did not request this password reset, please ignore this email or contact support if you have concerns.",
+        ],
+        rows: [
+            { label: "Account Email", value: email },
+            { label: "Link Expiration", value: "15 minutes" },
+        ],
+        cta: { label: "Reset Password", href: resetUrl },
+    });
+    return sendTemplateEmail(email, "Reset your SalonNow password", html);
 };

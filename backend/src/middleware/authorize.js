@@ -2,6 +2,7 @@ import ApiError from "../utils/apiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import logger from "../lib/logger.js";
 import { ROLES } from "../constants.js";
+import { Salon } from "../models/salon.models.js";
 
 const normalizeRole = (role) => {
   const normalized = role?.toString().trim().toLowerCase();
@@ -43,7 +44,7 @@ export const authorize = (...allowedRoles) => {
  * Enforces resource ownership at the database document level before handler execution.
  * Checks:
  *  1. Admin role -> bypass with audit logging.
- *  2. Salon Owner -> validates that resource.salon matches req.ownerSalonId.
+ *  2. Salon Owner -> validates that resource.salon matches owner's salons, or resource is their own salon.
  *  3. User / Customer -> validates that resource[ownerFieldOnDoc] matches req.user._id.
  *
  * @param {import('mongoose').Model} model - Mongoose model to query
@@ -72,11 +73,20 @@ export const requireOwnership = (model, ownerParamKey = "id", ownerFieldOnDoc = 
       return next();
     }
 
-    // 2. Salon Owners checking salon-bound resources (e.g. bookings at their salon)
-    if (normalizeRole(req.user.role) === normalizeRole(ROLES.OWNER) && doc.salon && req.ownerSalonId) {
-      if (doc.salon.toString() === req.ownerSalonId.toString()) {
-        req.resourceDoc = doc;
-        return next();
+    // 2. Salon Owners checking salon-bound resources (e.g. bookings, services, staff at their salon, or the salon itself)
+    if (normalizeRole(req.user.role) === normalizeRole(ROLES.OWNER)) {
+      const salonId = doc.salon ? doc.salon.toString() : (doc.owner ? doc._id.toString() : null);
+      if (salonId) {
+        const isOwnerOfSalon =
+          req.ownerSalonIds?.includes(salonId) ||
+          (req.ownerSalonId && req.ownerSalonId.toString() === salonId) ||
+          (await Salon.exists({ _id: salonId, owner: req.user._id }));
+
+        if (isOwnerOfSalon) {
+          req.resourceDoc = doc;
+          req.ownerSalonId = salonId;
+          return next();
+        }
       }
     }
 

@@ -1,161 +1,52 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams, NavLink, useNavigate, useLocation } from "react-router-dom";
 import axiosInstance from "../api/axiosConfig";
-import { SeatMatrix } from "../components/SeatMatrix.jsx";
 import { useAuth } from "../context/AuthContext";
 import { useBookingCart } from "../context/BookingCartContext";
+import { useSocket } from "../context/SocketContext";
 import {
-    Calendar as CalendarIcon,
     Clock,
     User,
     Check,
-    Sparkles,
     Scissors,
-    Phone,
     ArrowLeft,
     Loader2,
-    ChevronLeft,
-    ChevronRight,
-    Coins
+    Users,
+    AlertCircle,
+    CheckCircle2,
+    XCircle,
+    Hourglass,
+    Sparkles,
+    ShieldCheck,
+    MapPin
 } from "lucide-react";
-
-const getSlotTimeLabel = (slot) => {
-    if (slot?.time) return slot.time;
-    if (!slot?.startTime) return "Time unavailable";
-
-    return new Date(slot.startTime).toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-        timeZone: "UTC",
-    });
-};
-
-const getSlotSeatsLeft = (slot) => {
-    const value = slot?.seatsLeft ?? slot?.availableSeats;
-    const seats = Number(value);
-    return Number.isFinite(seats) ? Math.max(0, seats) : 0;
-};
-
-const isSlotAvailable = (slot) => {
-    const seatsLeft = getSlotSeatsLeft(slot);
-    return seatsLeft > 0 && slot?.available !== false;
-};
-
-function CustomCalendar({ selectedDate, onDateSelect }) {
-    const [viewDate, setViewDate] = useState(new Date());
-    const daysOfWeek = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-
-    const currentYear = viewDate.getFullYear();
-    const currentMonth = viewDate.getMonth();
-
-    const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
-    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-
-    const prevMonth = () => setViewDate(new Date(currentYear, currentMonth - 1, 1));
-    const nextMonth = () => setViewDate(new Date(currentYear, currentMonth + 1, 1));
-
-    const isToday = (day) => {
-        const today = new Date();
-        return today.getDate() === day && today.getMonth() === currentMonth && today.getFullYear() === currentYear;
-    };
-
-    const isSelected = (day) => {
-        if (!selectedDate) return false;
-        const sel = new Date(selectedDate);
-        return sel.getDate() === day && sel.getMonth() === currentMonth && sel.getFullYear() === currentYear;
-    };
-
-    const isPast = (day) => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const current = new Date(currentYear, currentMonth, day);
-        return current < today;
-    };
-
-    return (
-        <div className="bg-white border border-gray-100 rounded-[24px] p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-                <h3 className="font-serif font-bold text-lg text-gray-900">
-                    {viewDate.toLocaleString('default', { month: 'long' })} {currentYear}
-                </h3>
-                <div className="flex gap-2">
-                    <button aria-label="Previous month" onClick={prevMonth} className="p-2 min-w-10 min-h-10 hover:bg-gray-50 rounded-full transition-colors">
-                        <ChevronLeft size={18} />
-                    </button>
-                    <button aria-label="Next month" onClick={nextMonth} className="p-2 min-w-10 min-h-10 hover:bg-gray-50 rounded-full transition-colors">
-                        <ChevronRight size={18} />
-                    </button>
-                </div>
-            </div>
-
-            <div className="grid grid-cols-7 gap-1 mb-2">
-                {daysOfWeek.map(day => (
-                    <div key={day} className="text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest py-2">
-                        {day}
-                    </div>
-                ))}
-            </div>
-
-            <div className="grid grid-cols-7 gap-1">
-                {Array.from({ length: firstDayOfMonth }).map((_, i) => (
-                    <div key={`empty-${i}`} className="aspect-square"></div>
-                ))}
-                {Array.from({ length: daysInMonth }).map((_, i) => {
-                    const day = i + 1;
-                    const disabled = isPast(day);
-                    return (
-                        <button
-                            key={day}
-                            disabled={disabled}
-                            onClick={() => {
-                                const formattedDate = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                                onDateSelect(formattedDate);
-                            }}
-                            aria-label={`${isToday(day) ? 'Today, ' : ''}${isSelected(day) ? 'Selected, ' : ''}${viewDate.toLocaleString('default', { month: 'long' })} ${day}, ${currentYear}`}
-                            aria-pressed={isSelected(day)}
-                            className={`
-                                aspect-square rounded-full flex items-center justify-center text-sm font-medium transition-all relative
-                                ${disabled ? "text-gray-200 cursor-not-allowed" : "text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37]"}
-                                ${isSelected(day) ? "bg-[#1a1a1a] text-white hover:bg-black hover:text-white" : ""}
-                                ${isToday(day) && !isSelected(day) ? "border border-[#D4AF37] text-[#D4AF37]" : ""}
-                            `}
-                        >
-                            {day}
-                            {isToday(day) && !isSelected(day) && (
-                                <span className="absolute bottom-1 w-1 h-1 bg-[#D4AF37] rounded-full"></span>
-                            )}
-                        </button>
-                    );
-                })}
-            </div>
-        </div>
-    );
-}
 
 export function BookingPage() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { user, loading: authLoading } = useAuth();
+    const socket = useSocket();
+
+    // Salon & Catalog data
     const [salon, setSalon] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [bookingLoading, setBookingLoading] = useState(false);
-    const [bookingSuccess, setBookingSuccess] = useState(false);
-    const [confirmedBooking, setConfirmedBooking] = useState(null);
-    const [bookingError, setBookingError] = useState("");
-    const [selectedServices, setSelectedServices] = useState([]);
-    const [selectedStaff, setSelectedStaff] = useState(null);
-    const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
-    const [time, setTime] = useState("");
-    const [availableSlots, setAvailableSlots] = useState([]);
-    const [, setAvailabilityReason] = useState("");
-    const [, setAvailabilityLoading] = useState(false);
-    const [loyaltyPoints, setLoyaltyPoints] = useState(0);
-    const [useLoyaltyPoints, setUseLoyaltyPoints] = useState(false);
-    
-    // Real Data State
     const [services, setServices] = useState([]);
     const [staffMembers, setStaffMembers] = useState([]);
+    const [queueData, setQueueData] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    // Selections
+    const [selectedServices, setSelectedServices] = useState([]);
+    const [selectedStaff, setSelectedStaff] = useState(null);
+
+    // Request lifecycle state
+    const [submitting, setSubmitting] = useState(false);
+    const [requestError, setRequestError] = useState("");
+    const [activeBooking, setActiveBooking] = useState(null);
+    const [checkingIn, setCheckingIn] = useState(false);
+    const [proposedExtras, setProposedExtras] = useState(null);
+    const [turnSoonAlert, setTurnSoonAlert] = useState(null);
+    const [graceExpiredAlert, setGraceExpiredAlert] = useState(false);
+    const [approvingExtras, setApprovingExtras] = useState(false);
 
     // Cart Context Integration
     const {
@@ -165,13 +56,10 @@ export function BookingPage() {
         clearCart,
     } = useBookingCart();
 
-    // Read ?staffId=&staffName= from URL (set by shop.jsx "Book with [Name]" CTA)
     const location = useLocation();
     const urlParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
-    const preselectedStaffId = urlParams.get('staffId');
-    const preselectedStaffName = urlParams.get('staffName');
-    const preselectedDate = urlParams.get('date');
-    const preselectedTime = urlParams.get('time');
+    const preselectedStaffId = urlParams.get("staffId");
+    const preselectedStaffName = urlParams.get("staffName");
 
     // Initialize selected services from cart if matching this salon
     useEffect(() => {
@@ -183,147 +71,216 @@ export function BookingPage() {
     // Auto-select staff from URL query param once staff list is loaded
     useEffect(() => {
         if (!preselectedStaffId || staffMembers.length === 0 || selectedStaff) return;
-        const match = staffMembers.find(s => s._id === preselectedStaffId);
+        const match = staffMembers.find((s) => s._id === preselectedStaffId);
         if (match) {
             setSelectedStaff(match);
         } else if (preselectedStaffName) {
-            // Fallback: construct minimal staff object from URL params so the summary still shows
-            setSelectedStaff({ _id: preselectedStaffId, name: decodeURIComponent(preselectedStaffName), role: 'Stylist' });
+            setSelectedStaff({ _id: preselectedStaffId, name: decodeURIComponent(preselectedStaffName), role: "Stylist" });
         }
     }, [preselectedStaffId, preselectedStaffName, staffMembers, selectedStaff]);
 
     useEffect(() => {
-        if (preselectedDate) setDate(preselectedDate);
-        if (preselectedTime) setTime(preselectedTime);
-    }, [preselectedDate, preselectedTime]);
-
-    useEffect(() => {
         if (!authLoading && !user) {
-            navigate("/login");
+            navigate("/login", { state: { from: `/booking/${id}` } });
         }
-    }, [user, authLoading, navigate]);
+    }, [user, authLoading, navigate, id]);
 
-    // Fetch user's loyalty balance for checkout redemption
+    // Fetch Salon Details, Services, Staff, and Live Queue in parallel
+    const fetchSalonData = useCallback(async () => {
+        try {
+            const [salonRes, servicesRes, staffRes, queueRes] = await Promise.all([
+                axiosInstance.get(`/salons/${id}`),
+                axiosInstance.get(`/services/salon/${id}`),
+                axiosInstance.get(`/staff/salon/${id}`),
+                axiosInstance.get(`/queue/salon/${id}`).catch(() => null),
+            ]);
+
+            if (salonRes.data?.success) setSalon(salonRes.data.data);
+            if (servicesRes.data?.success) setServices(servicesRes.data.data || []);
+            if (staffRes.data?.success) setStaffMembers(staffRes.data.data || []);
+            if (queueRes?.data?.success) setQueueData(queueRes.data.data);
+        } catch (err) {
+            console.error("Failed to load salon queue details:", err);
+        } finally {
+            setLoading(false);
+        }
+    }, [id]);
+
     useEffect(() => {
-        const fetchLoyaltyBalance = async () => {
+        if (id) {
+            setLoading(true);
+            fetchSalonData();
+        }
+    }, [id, fetchSalonData]);
+
+    // Periodically refresh salon queue stats
+    useEffect(() => {
+        if (!id) return;
+        const interval = setInterval(async () => {
             try {
-                const res = await axiosInstance.get("/loyalty/balance")
-                    .catch(() => axiosInstance.get("/growth/loyalty"));
+                const res = await axiosInstance.get(`/queue/salon/${id}`);
                 if (res.data?.success) {
-                    const pts = res.data.data?.points ?? res.data.data?.loyaltyPoints ?? 0;
-                    setLoyaltyPoints(pts);
-                } else if (user?.loyaltyPoints) {
-                    setLoyaltyPoints(user.loyaltyPoints);
+                    setQueueData(res.data.data);
                 }
             } catch {
-                if (user?.loyaltyPoints) setLoyaltyPoints(user.loyaltyPoints);
+                // silently fail polling
             }
-        };
-        if (user) {
-            fetchLoyaltyBalance();
-        }
-    }, [user]);
+        }, 8000);
+        return () => clearInterval(interval);
+    }, [id]);
 
+    // Real-time Socket.IO event listeners for queue lifecycle updates
     useEffect(() => {
-        const fetchSalonData = async () => {
-            setLoading(true);
-            try {
-                // Fetch Salon Details, Services, and Staff in parallel
-                const [salonRes, servicesRes, staffRes] = await Promise.all([
-                    axiosInstance.get(`/salons/${id}`),
-                    axiosInstance.get(`/services/salon/${id}`),
-                    axiosInstance.get(`/staff/salon/${id}`)
-                ]);
+        if (!socket) return;
 
-                if (salonRes.data.success) setSalon(salonRes.data.data);
-                if (servicesRes.data.success) setServices(servicesRes.data.data);
-                if (staffRes.data.success) setStaffMembers(staffRes.data.data);
-                
-            } catch {
-                // silently fail - user will see empty state
-            } finally {
-                setLoading(false);
+        const handleRequestAccepted = (data) => {
+            if (activeBooking && (data.bookingId === activeBooking._id || data._id === activeBooking._id)) {
+                setActiveBooking((prev) => ({
+                    ...prev,
+                    status: "waiting",
+                    queuePosition: data.queuePosition,
+                    estimatedWaitMin: data.estimatedWaitMin ?? prev.estimatedWaitMin,
+                    estimatedWaitMax: data.estimatedWaitMax ?? prev.estimatedWaitMax,
+                }));
+            }
+            fetchSalonData();
+        };
+
+        const handleRequestRejected = (data) => {
+            if (activeBooking && (data.bookingId === activeBooking._id || data._id === activeBooking._id)) {
+                setActiveBooking((prev) => ({
+                    ...prev,
+                    status: "rejected",
+                    rejectionReason: data.reason || "Declined by salon",
+                }));
+            }
+            fetchSalonData();
+        };
+
+        const handleRequestExpired = (data) => {
+            if (activeBooking && (data.bookingId === activeBooking._id || data._id === activeBooking._id)) {
+                setActiveBooking((prev) => ({
+                    ...prev,
+                    status: "expired",
+                }));
+            }
+            fetchSalonData();
+        };
+
+        const handleServiceStarted = (data) => {
+            if (activeBooking && (data.bookingId === activeBooking._id || data._id === activeBooking._id)) {
+                setActiveBooking((prev) => ({
+                    ...prev,
+                    status: "in_progress",
+                    staffName: data.staffName || prev.staffName,
+                    actualStartTime: data.actualStartTime || new Date(),
+                }));
+            }
+            fetchSalonData();
+        };
+
+        const handleServiceCompleted = (data) => {
+            if (activeBooking && (data.bookingId === activeBooking._id || data._id === activeBooking._id)) {
+                setActiveBooking((prev) => ({
+                    ...prev,
+                    status: "completed",
+                    actualCompletionTime: new Date(),
+                }));
+            }
+            fetchSalonData();
+        };
+
+        const handleQueueUpdated = (data) => {
+            if (data.salonId === id) {
+                fetchSalonData();
             }
         };
 
         if (id) {
-            fetchSalonData();
+            socket.emit("joinSalon", id);
         }
-    }, [id]);
+        if (activeBooking?._id) {
+            socket.emit("joinQueue", activeBooking._id);
+        }
 
-    const combinedDurationMin = useMemo(() => {
-        const total = selectedServices.reduce(
-            (sum, s) => sum + (Number(s.durationMin || s.duration) || 30),
-            0
-        );
-        return total > 0 ? total : 30;
-    }, [selectedServices]);
+        const handlePositionUpdated = (data) => {
+            if (activeBooking && (data.bookingId === activeBooking._id || data._id === activeBooking._id)) {
+                setActiveBooking((prev) => ({
+                    ...prev,
+                    queuePosition: data.queuePosition ?? prev.queuePosition,
+                    estimatedWaitMin: data.estimatedWaitMin ?? prev.estimatedWaitMin,
+                    estimatedWaitMax: data.estimatedWaitMax ?? prev.estimatedWaitMax,
+                }));
+            }
+            fetchSalonData();
+        };
 
-    useEffect(() => {
-        const fetchAvailability = async () => {
-            if (!id || !date) return;
-            setAvailabilityLoading(true);
-            setTime("");
-            setAvailableSlots([]);
-            setAvailabilityReason("");
-            try {
-                const params = {
-                    date,
-                    staffId: selectedStaff?._id,
-                    durationMin: combinedDurationMin,
-                    durationMinutes: combinedDurationMin,
-                };
-                const response = await axiosInstance.get(`/salons/${id}/availability`, { params })
-                    .catch(() => axiosInstance.get(`/bookings/availability/${id}`, { params }));
-
-                if (response?.data?.success) {
-                    const availability = response.data.data || {};
-                    const slots = Array.isArray(availability.slots) ? availability.slots : [];
-                    setAvailableSlots(slots);
-                    setAvailabilityReason(availability.reason || "");
-                } else {
-                    setAvailableSlots([]);
-                    setAvailabilityReason("Unable to load availability. Please try again.");
-                }
-            } catch {
-                setAvailableSlots([]);
-                setAvailabilityReason("Unable to load availability. Please try again.");
-            } finally {
-                setAvailabilityLoading(false);
+        const handleYourTurnSoon = (data) => {
+            if (activeBooking && (data.bookingId === activeBooking._id || data._id === activeBooking._id)) {
+                setTurnSoonAlert(data.message || "You're next in line! Please arrive at the salon shortly.");
             }
         };
 
-        fetchAvailability();
-    }, [id, date, selectedStaff, combinedDurationMin]);
-
-    useEffect(() => {
-        if (!id || !date) return undefined;
-        const params = {
-            date,
-            staffId: selectedStaff?._id,
-            durationMin: combinedDurationMin,
-            durationMinutes: combinedDurationMin,
+        const handleExtraServicesProposed = (data) => {
+            if (activeBooking && (data.bookingId === activeBooking._id || data._id === activeBooking._id)) {
+                setProposedExtras(data);
+            }
         };
-        const refreshTimer = window.setInterval(() => {
-            axiosInstance.get(`/salons/${id}/availability`, { params })
-                .catch(() => axiosInstance.get(`/bookings/availability/${id}`, { params }))
-                .then((response) => {
-                    const availability = response?.data?.data || {};
-                    const slots = Array.isArray(availability.slots) ? availability.slots : [];
-                    setAvailableSlots(slots);
-                    setAvailabilityReason(availability.reason || "");
-                }).catch(() => {});
-        }, 5000);
-        return () => window.clearInterval(refreshTimer);
-    }, [id, date, selectedStaff, combinedDurationMin]);
 
-    useEffect(() => {
-        if (!time) return;
-        const selectedSlot = availableSlots.find((slot) => getSlotTimeLabel(slot) === time);
-        if (!selectedSlot || !isSlotAvailable(selectedSlot)) {
-            setTime("");
-        }
-    }, [availableSlots, time]);
+        const handleExtraServicesApproved = (data) => {
+            if (activeBooking && (data.bookingId === activeBooking._id || data._id === activeBooking._id)) {
+                setActiveBooking((prev) => ({
+                    ...prev,
+                    extraServices: data.approvedServices || prev.extraServices,
+                    totalAmount: data.newTotal || prev.totalAmount,
+                    durationMinutes: data.newDuration || prev.durationMinutes,
+                }));
+                setProposedExtras(null);
+            }
+        };
+
+        const handleExtraServicesDeclined = (data) => {
+            if (activeBooking && (data.bookingId === activeBooking._id || data._id === activeBooking._id)) {
+                setProposedExtras(null);
+            }
+        };
+
+        const handleGraceExpired = (data) => {
+            if (activeBooking && (data.bookingId === activeBooking._id || data._id === activeBooking._id)) {
+                setGraceExpiredAlert(true);
+            }
+        };
+
+        socket.on("queue:request_accepted", handleRequestAccepted);
+        socket.on("queue:request_rejected", handleRequestRejected);
+        socket.on("queue:request_expired", handleRequestExpired);
+        socket.on("queue:service_started", handleServiceStarted);
+        socket.on("queue:service_completed", handleServiceCompleted);
+        socket.on("queue:updated", handleQueueUpdated);
+        socket.on("queue:position_updated", handlePositionUpdated);
+        socket.on("queue:your_turn_soon", handleYourTurnSoon);
+        socket.on("queue:extra_services_proposed", handleExtraServicesProposed);
+        socket.on("queue:extra_services_approved", handleExtraServicesApproved);
+        socket.on("queue:extra_services_declined", handleExtraServicesDeclined);
+        socket.on("queue:arrival_grace_expired", handleGraceExpired);
+
+        return () => {
+            if (id) socket.emit("leaveSalon", id);
+            if (activeBooking?._id) socket.emit("leaveQueue", activeBooking._id);
+            socket.off("queue:request_accepted", handleRequestAccepted);
+            socket.off("queue:request_rejected", handleRequestRejected);
+            socket.off("queue:request_expired", handleRequestExpired);
+            socket.off("queue:service_started", handleServiceStarted);
+            socket.off("queue:service_completed", handleServiceCompleted);
+            socket.off("queue:updated", handleQueueUpdated);
+            socket.off("queue:position_updated", handlePositionUpdated);
+            socket.off("queue:your_turn_soon", handleYourTurnSoon);
+            socket.off("queue:extra_services_proposed", handleExtraServicesProposed);
+            socket.off("queue:extra_services_approved", handleExtraServicesApproved);
+            socket.off("queue:extra_services_declined", handleExtraServicesDeclined);
+            socket.off("queue:arrival_grace_expired", handleGraceExpired);
+        };
+    }, [socket, activeBooking, id, fetchSalonData]);
 
     const toggleService = (service) => {
         setSelectedServices((prev) => {
@@ -336,442 +293,628 @@ export function BookingPage() {
         });
     };
 
-    const subtotal = useMemo(() =>
-        selectedServices.reduce((sum, s) => sum + (Number(s.price) || 0), 0),
-        [selectedServices]);
+    const combinedDurationMin = useMemo(() => {
+        const total = selectedServices.reduce(
+            (sum, s) => sum + (Number(s.durationMin || s.duration) || 30),
+            0
+        );
+        return total > 0 ? total : 30;
+    }, [selectedServices]);
 
-    // Loyalty redemption calculation: 1 pt = ₹0.50, capped at 20% of subtotal
-    const { maxRedeemablePoints, discountAmount, finalPayable } = useMemo(() => {
-        const maxDiscountInr = subtotal * 0.20;
-        const maxPoints = Math.min(loyaltyPoints, Math.floor(maxDiscountInr / 0.50));
-        const activePoints = useLoyaltyPoints ? maxPoints : 0;
-        const discount = parseFloat((activePoints * 0.50).toFixed(2));
-        const payable = Math.max(0, subtotal - discount);
-        return {
-            maxRedeemablePoints: maxPoints,
-            discountAmount: discount,
-            finalPayable: payable,
-        };
-    }, [subtotal, loyaltyPoints, useLoyaltyPoints]);
+    const subtotal = useMemo(() => {
+        return selectedServices.reduce((sum, s) => sum + (Number(s.price) || 0), 0);
+    }, [selectedServices]);
 
-    const totalAmount = finalPayable;
-
-    const handleConfirm = async () => {
-        if (selectedServices.length === 0 || !date || !time) {
-            setBookingError("Please select at least one service, a date, and a time.");
+    // Handle Requesting Queue Position
+    const handleRequestService = async () => {
+        if (selectedServices.length === 0) {
+            setRequestError("Please select at least one service.");
             return;
         }
-        setBookingLoading(true);
-        setBookingError("");
-        // Generate fresh idempotency key per checkout attempt
-        const idempotencyKey = crypto.randomUUID();
+
+        setSubmitting(true);
+        setRequestError("");
 
         try {
-            // Format snapshotServices array with serviceId, name, price, durationMin
-            const snapshotServices = selectedServices.map((s) => ({
-                serviceId: s._id || s.serviceId,
-                name: s.name,
-                price: Number(s.price) || 0,
-                durationMin: Number(s.durationMin || s.duration) || 30,
-            }));
+            const serviceIds = selectedServices.map((s) => s._id || s.serviceId);
+            const response = await axiosInstance.post("/queue/request", {
+                salonId: id,
+                serviceIds,
+            });
 
-            // Step 1: Create 10-minute slot hold with snapshotServices
-            const holdResponse = await axiosInstance.post(
-                "/bookings/hold",
-                {
-                    salonId: id,
-                    services: selectedServices.map(s => s._id || s.serviceId),
-                    staff: selectedStaff?._id || null,
-                    serviceNames: selectedServices.map(s => s.name),
-                    staffName: selectedStaff?.name || "Any Available",
-                    snapshotServices,
-                    date,
-                    time,
-                    totalAmount,
-                },
-                {
-                    headers: { "Idempotency-Key": idempotencyKey },
-                    withCredentials: true,
-                }
-            );
-
-            const holdData = holdResponse.data?.data;
-            const holdId = holdData?._id;
-
-            if (!holdId) {
-                throw new Error("Failed to reserve slot hold.");
-            }
-
-            // Step 2: Convert the hold into a confirmed booking. Payment happens after the visit.
-            const initiateResponse = await axiosInstance.post(
-                "/bookings/initiate",
-                {
-                    holdId,
-                    useLoyaltyPoints: Boolean(useLoyaltyPoints && maxRedeemablePoints > 0),
-                    pointsToRedeem: useLoyaltyPoints ? maxRedeemablePoints : 0,
-                    paymentAfterService: true,
-                },
-                {
-                    headers: { "Idempotency-Key": idempotencyKey },
-                    withCredentials: true,
-                }
-            );
-
-            const booking = initiateResponse.data?.data;
-            const bookingId = booking?._id;
-            if (!initiateResponse.data?.success || !bookingId) {
-                throw new Error("Unable to confirm this reservation.");
-            }
-
-            // Clear booking cart on successful confirmation
-            clearCart();
-            setConfirmedBooking(booking);
-            setBookingSuccess(true);
-        } catch (err) {
-            console.error("Booking error:", err);
-            const status = err.response?.status;
-            if (status === 409) {
-                setBookingError("This slot or staff member is no longer available. Please select a different time or stylist.");
+            if (response.data?.success) {
+                clearCart();
+                setActiveBooking(response.data.data);
             } else {
-                setBookingError(err.response?.data?.message || "Booking failed. Please try again.");
+                setRequestError(response.data?.message || "Unable to request queue position.");
             }
+        } catch (err) {
+            const msg = err.response?.data?.message || err.message || "Failed to join queue. Please retry.";
+            setRequestError(msg);
         } finally {
-            setBookingLoading(false);
+            setSubmitting(false);
         }
     };
 
-    if (bookingSuccess) {
-        return (
-            <div className="min-h-screen bg-white flex flex-col items-center justify-center text-center px-6">
-                <div className="max-w-md">
-                    <div className="w-20 h-20 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-6">
-                        <Check className="text-[#D4AF37] w-10 h-10" strokeWidth={3} />
-                    </div>
-                    <h2 className="text-3xl font-serif font-bold text-[#1a1a1a] mb-3">Booking Confirmed!</h2>
-                    <p className="text-gray-500 mb-2">Your appointment at <strong>{salon?.name}</strong> is all set.</p>
-                    <p className="text-gray-400 text-sm mb-4">A confirmation email has been sent to your inbox.</p>
-                    {confirmedBooking?.verificationPin && (
-                        <div className="mb-8 rounded-2xl border border-[#D4AF37]/30 bg-amber-50 px-6 py-4">
-                            <p className="text-[11px] font-bold uppercase tracking-widest text-amber-700">Your check-in PIN</p>
-                            <p className="mt-1 text-3xl font-black tracking-[0.35em] text-[#1a1a1a]">{confirmedBooking.verificationPin}</p>
-                            <p className="mt-1 text-xs text-amber-800">Show this PIN when you arrive. Payment is collected after your service.</p>
-                        </div>
-                    )}
-                    <NavLink to="/home" className="inline-block bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold tracking-widest text-sm uppercase hover:bg-black transition-colors">
-                        Back to Home
-                    </NavLink>
-                </div>
-            </div>
-        );
-    }
+    // Customer marks arrival
+    const handleApproveExtras = async () => {
+        if (!activeBooking) return;
+        setApprovingExtras(true);
+        try {
+            const res = await axiosInstance.post(`/queue/${activeBooking._id}/approve-extras`);
+            if (res.data?.success) {
+                setActiveBooking((prev) => ({
+                    ...prev,
+                    extraServices: res.data.data.extraServices,
+                    totalAmount: res.data.data.totalAmount,
+                    durationMinutes: res.data.data.durationMinutes,
+                }));
+                setProposedExtras(null);
+            }
+        } catch (err) {
+            console.error("Failed to approve extras:", err);
+        } finally {
+            setApprovingExtras(false);
+        }
+    };
+
+    const handleDeclineExtras = async () => {
+        if (!activeBooking) return;
+        try {
+            await axiosInstance.post(`/queue/${activeBooking._id}/decline-extras`, { reason: "Customer declined" });
+            setProposedExtras(null);
+        } catch (err) {
+            console.error("Failed to decline extras:", err);
+        }
+    };
+
+    const handleCheckIn = async () => {
+        if (!activeBooking) return;
+        setCheckingIn(true);
+        try {
+            const res = await axiosInstance.post(`/queue/${activeBooking._id}/check-in`);
+            if (res.data?.success) {
+                setActiveBooking((prev) => ({
+                    ...prev,
+                    status: "arrived",
+                    arrivedAt: res.data.data.arrivedAt,
+                }));
+            }
+        } catch (err) {
+            console.error("Check-in error:", err);
+        } finally {
+            setCheckingIn(false);
+        }
+    };
 
     if (loading) {
         return (
             <div className="min-h-screen bg-white flex flex-col items-center justify-center">
                 <Loader2 className="w-12 h-12 text-[#D4AF37] animate-spin mb-4" />
-                <p className="text-gray-500 animate-pulse">Setting up your booking experience...</p>
+                <p className="text-gray-500 animate-pulse">Loading live salon queue status...</p>
             </div>
         );
     }
 
-    return (
-        <div className="flex flex-col bg-[#fafafa] font-sans">
+    // ─────────────────────────────────────────────────────────────────────────────
+    // ACTIVE QUEUE TRACKER VIEW (when request is placed)
+    // ─────────────────────────────────────────────────────────────────────────────
+    if (activeBooking) {
+        const status = activeBooking.status;
 
-            <main className="flex-1 pt-16">
-                <div className="max-w-[1280px] mx-auto px-6 md:px-10 pb-12">
-                {/* Header Section */}
-                <div className="flex items-center gap-4 mb-6">
-                    <NavLink to={`/shop/${id}`} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                        <ArrowLeft size={20} className="text-gray-600" />
-                    </NavLink>
-                    <div>
-                        <h1 className="text-3xl md:text-4xl font-serif font-bold text-[#1a1a1a] leading-tight">Secure Your Appointment</h1>
-                        <p className="ui-subtext mt-2 text-sm">
-                            Experience the difference with SalonNow at <span className="text-[#D4AF37]">{salon?.name || "Glamour Studio"}</span>
-                        </p>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                    {/* LEFT COLUMN: SELECTIONS */}
-                    <div className="lg:col-span-2 space-y-10">
-
-                        {/* 1. Services Section */}
-                        <section>
-                            <div className="flex items-center gap-2 mb-4">
-                                <span className="bg-[#1a1a1a] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold font-serif">1</span>
-                                <h2 className="text-xl font-serif font-bold text-[#1a1a1a]">Select Services</h2>
-                            </div>
-                            <div className="grid gap-2">
-                                {services.length > 0 ? (
-                                    services.map(service => (
-                                        <button
-                                            key={service._id}
-                                            onClick={() => toggleService(service)}
-                                            className={`group cursor-pointer p-5 rounded-2xl border-2 transition-all flex items-center justify-between ${selectedServices.find(s => s._id === service._id)
-                                                ? "border-[#D4AF37] bg-orange-50/30"
-                                                : "border-gray-100 bg-white hover:border-gray-200"
-                                            }`}
-                                            aria-pressed={Boolean(selectedServices.find(s => s._id === service._id))}
-                                            type="button"
-                                        >
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <h3 className="font-bold text-gray-900">{service.name}</h3>
-                                                </div>
-                                                <p className="ui-subtext line-clamp-1 mb-1">{service.description}</p>
-                                                <span className="inline-flex items-center gap-1 text-xs text-gray-500 font-medium">
-                                                    <Clock size={11} className="text-[#D4AF37]" />
-                                                    {service.durationMin || service.duration || 30} min
-                                                </span>
-                                            </div>
-                                            <div className="text-right ml-4">
-                                                <p className={`font-bold transition-colors ${selectedServices.find(s => (s._id || s.serviceId) === service._id) ? "text-[#D4AF37]" : "text-gray-900"
-                                                    }`}>
-                                                    ₹{service.price}
-                                                </p>
-                                                <div className={`mt-2 w-5 h-5 rounded-full border flex items-center justify-center transition-all ${selectedServices.find(s => (s._id || s.serviceId) === service._id)
-                                                    ? "bg-[#D4AF37] border-[#D4AF37]"
-                                                    : "border-gray-200"
-                                                    }`}>
-                                                    {selectedServices.find(s => (s._id || s.serviceId) === service._id) && <Check size={12} className="text-white" />}
-                                                </div>
-                                            </div>
-                                        </button>
-                                    ))
-                                ) : (
-                                    <div className="text-center py-10 bg-white rounded-2xl border border-dashed border-gray-200 text-gray-400">
-                                        No services available for this salon.
-                                    </div>
-                                )}
-                            </div>
-                        </section>
-
-                        {/* 2. Staff Section */}
-                        <section>
-                            <div className="flex items-center gap-2 mb-4">
-                                <span className="bg-[#1a1a1a] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold font-serif">2</span>
-                                <h2 className="text-lg md:text-xl font-serif font-bold text-[#1a1a1a]">Choose Stylist (Optional)</h2>
-                            </div>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                {staffMembers.length > 0 ? (
-                                    staffMembers.map(staff => (
-                                        <button
-                                            key={staff._id}
-                                            onClick={() => setSelectedStaff(selectedStaff?._id === staff._id ? null : staff)}
-                                            className={`cursor-pointer p-4 rounded-2xl border-2 transition-all text-center ${selectedStaff?._id === staff._id
-                                                ? "border-[#D4AF37] bg-orange-50/30 shadow-sm"
-                                                : "border-gray-100 bg-white hover:border-gray-200"
-                                            }`}
-                                            aria-pressed={selectedStaff?._id === staff._id}
-                                            type="button"
-                                        >
-                                            <div className="relative inline-block mb-3">
-                                                <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-[#1a1a1a] flex items-center justify-center text-white font-bold text-lg border-2 border-[#D4AF37]/20 mx-auto">
-                                                    {staff.name?.charAt(0).toUpperCase()}
-                                                </div>
-                                                {selectedStaff?._id === staff._id && (
-                                                    <div className="absolute -bottom-1 -right-1 bg-[#D4AF37] p-1 rounded-full text-white">
-                                                        <Check size={10} strokeWidth={4} />
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <h3 className="font-bold text-gray-900 text-xs md:text-sm truncate">{staff.name}</h3>
-                                                <p className="ui-meta mt-0.5 truncate">{staff.role}</p>
-                                        </button>
-                                    ))
-                                ) : (
-                                    <div className="col-span-full text-center py-6 bg-white rounded-2xl border border-dashed border-gray-200 text-gray-400 text-sm">
-                                        No specific stylists listed. We will assign an expert for you.
-                                    </div>
-                                )}
-                            </div>
-                        </section>
-
-                        {/* 3. Date & Time Section */}
-                        <section>
-                            <SeatMatrix
-                                salonId={id}
-                                date={date}
-                                onDateChange={(newDate) => {
-                                    setDate(newDate);
-                                    setTime("");
-                                }}
-                                durationMinutes={combinedDurationMin}
-                                staffId={selectedStaff?._id}
-                                onSlotSelect={(slot, selectedDate) => {
-                                    setDate(selectedDate);
-                                    setTime(getSlotTimeLabel(slot));
-                                }}
-                            />
-                        </section>
-
-                    </div>
-
-                    {/* RIGHT COLUMN: BOOKING SUMMARY */}
-                    <div className="lg:col-span-1 order-first lg:order-last">
-                        <div className="bg-white border border-gray-100 rounded-3xl p-6 md:p-8 lg:sticky lg:top-28 shadow-sm">
-                            <h2 className="text-lg font-serif font-bold text-[#1a1a1a] mb-6 border-b border-gray-50 pb-4">Booking Summary</h2>
-
-                            <div className="space-y-4 mb-6">
-                                {selectedServices.length > 0 ? (
-                                    <>
-                                        {selectedServices.map(s => (
-                                            <div key={s._id || s.serviceId} className="flex justify-between items-start text-sm">
-                                                <div>
-                                                    <span className="text-gray-700 font-medium block">{s.name}</span>
-                                                    <span className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
-                                                        <Clock size={10} className="text-[#D4AF37]" />
-                                                        {s.durationMin || s.duration || 30} min
-                                                    </span>
-                                                </div>
-                                                <span className="font-bold text-gray-900">₹{s.price}</span>
-                                            </div>
-                                        ))}
-                                        <div className="flex justify-between items-center text-xs text-gray-500 pt-3 border-t border-gray-100">
-                                            <span>Combined Est. Duration</span>
-                                            <span className="font-semibold text-gray-800">{combinedDurationMin} min</span>
+        return (
+            <div className="min-h-screen bg-[#fafafa] py-12 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center">
+                <div className="w-full max-w-xl bg-white border border-gray-100 rounded-3xl p-8 shadow-xl relative overflow-hidden">
+                    {turnSoonAlert && (
+                        <div className="mb-6 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-2xl p-4 text-xs sm:text-sm font-bold flex items-center gap-3 shadow-lg animate-pulse">
+                            <Sparkles className="w-6 h-6 flex-shrink-0" />
+                            <span>{turnSoonAlert}</span>
+                        </div>
+                    )}
+                    {graceExpiredAlert && (
+                        <div className="mb-6 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl p-4 text-xs font-semibold flex items-center gap-3">
+                            <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0" />
+                            <span>Your arrival grace window has ended. Please check in with the salon immediately to hold your position!</span>
+                        </div>
+                    )}
+                    {proposedExtras && (
+                        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+                            <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-[#D4AF37]/30">
+                                <div className="w-12 h-12 rounded-full bg-amber-100 text-[#D4AF37] flex items-center justify-center mb-4 mx-auto">
+                                    <Scissors className="w-6 h-6" />
+                                </div>
+                                <h3 className="text-xl font-serif font-black text-center text-gray-900 mb-2">Additional Services Proposed</h3>
+                                <p className="text-xs text-gray-500 text-center mb-4">
+                                    Your stylist would like to add the following extra services to your visit:
+                                </p>
+                                <div className="bg-gray-50 rounded-2xl p-4 mb-4 space-y-2 border border-gray-100">
+                                    {(proposedExtras.proposedServices || []).map((s, idx) => (
+                                        <div key={idx} className="flex justify-between items-center text-xs">
+                                            <span className="font-semibold text-gray-800">{s.name} (~{s.durationMin}m)</span>
+                                            <span className="font-bold text-gray-900">+₹{s.price}</span>
                                         </div>
-                                    </>
-                                ) : (
-                                    <p className="text-sm text-gray-400 italic">No services selected yet</p>
-                                )}
-                            </div>
-
-                            {selectedStaff && (
-                                <div className="mb-8 pt-4 border-t border-gray-50">
-                                    <p className="ui-label mb-2">Your Stylist</p>
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-[#1a1a1a] flex items-center justify-center text-white font-bold text-sm border border-[#D4AF37]/20">
-                                            {selectedStaff.name?.charAt(0).toUpperCase()}
-                                        </div>
-                                        <span className="text-sm font-bold text-gray-900">{selectedStaff.name}</span>
+                                    ))}
+                                    <div className="border-t border-gray-200 pt-2 flex justify-between items-center text-sm font-black text-gray-900">
+                                        <span>New Total:</span>
+                                        <span className="text-[#D4AF37]">₹{proposedExtras.newEstimatedTotal}</span>
                                     </div>
                                 </div>
-                            )}
-
-                            {(date || time) && (
-                                <div className="mb-8 pt-4 border-t border-gray-50 space-y-2">
-                                    {date && (
-                                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                                            <CalendarIcon size={14} />
-                                            <span>{new Date(date).toLocaleDateString(undefined, { dateStyle: 'long' })}</span>
-                                        </div>
-                                    )}
-                                    {time && (
-                                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                                            <Clock size={14} />
-                                            <span>{time}</span>
-                                        </div>
-                                    )}
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button
+                                        onClick={handleDeclineExtras}
+                                        className="py-3 rounded-xl border border-gray-300 text-gray-700 font-bold text-xs uppercase tracking-wider hover:bg-gray-100 transition-colors"
+                                    >
+                                        Decline
+                                    </button>
+                                    <button
+                                        onClick={handleApproveExtras}
+                                        disabled={approvingExtras}
+                                        className="py-3 rounded-xl bg-[#D4AF37] text-white font-bold text-xs uppercase tracking-wider hover:bg-[#B8962E] transition-colors flex items-center justify-center gap-1 shadow-md"
+                                    >
+                                        {approvingExtras ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                                        <span>Accept</span>
+                                    </button>
                                 </div>
-                            )}
+                            </div>
+                        </div>
+                    )}
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-[#D4AF37] opacity-[0.03] rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none"></div>
 
-                            <div className="pt-6 border-t border-gray-100 mt-6">
-                                {/* Total Duration Chip — Sprint 2.4 */}
-                                {selectedServices.length > 0 && (
-                                    <div className="flex items-center justify-between mb-4 bg-amber-50/70 border border-amber-100/80 rounded-xl px-4 py-2.5">
-                                        <div className="flex items-center gap-2 text-sm text-amber-800 font-semibold">
-                                            <Clock size={14} className="text-[#D4AF37] shrink-0" />
-                                            <span>Est. Appointment Time</span>
-                                        </div>
-                                        <span className="text-sm font-bold text-[#1a1a1a]">{combinedDurationMin} min</span>
-                                    </div>
-                                )}
-                                {/* Subtotal */}
-                                {selectedServices.length > 0 && (
-                                    <div className="flex justify-between items-center text-sm text-gray-600 mb-2">
-                                        <span>Subtotal</span>
-                                        <span className="font-semibold text-gray-800">₹{subtotal}</span>
-                                    </div>
-                                )}
-
-                                {/* Loyalty Points Redemption Toggle — Sprint 3.4 */}
-                                {loyaltyPoints > 0 && subtotal > 0 && (
-                                    <div className="my-4 p-3.5 bg-gradient-to-r from-amber-50/90 to-orange-50/50 border border-amber-200/80 rounded-2xl">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <Coins size={16} className="text-[#D4AF37]" />
-                                                <div>
-                                                    <p className="text-xs font-bold text-gray-900">
-                                                        Use Loyalty Points ({loyaltyPoints} available)
-                                                    </p>
-                                                    <p className="text-[11px] text-gray-500">
-                                                        Redeem {maxRedeemablePoints} pts for ₹{(maxRedeemablePoints * 0.50).toFixed(2)} off (max 20%)
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <label className="relative inline-flex items-center cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={useLoyaltyPoints}
-                                                    onChange={(e) => setUseLoyaltyPoints(e.target.checked)}
-                                                    className="sr-only peer"
-                                                />
-                                                <div className="w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#D4AF37]"></div>
-                                            </label>
-                                        </div>
-                                        {useLoyaltyPoints && maxRedeemablePoints > 0 && (
-                                            <div className="mt-2 pt-2 border-t border-amber-200/60 flex items-center justify-between text-xs font-bold text-emerald-700">
-                                                <span>Loyalty Discount applied:</span>
-                                                <span>-₹{discountAmount}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {useLoyaltyPoints && discountAmount > 0 && (
-                                    <div className="flex justify-between items-center text-sm text-emerald-600 font-semibold mb-2">
-                                        <span>Points Discount</span>
-                                        <span>-₹{discountAmount}</span>
-                                    </div>
-                                )}
-
-                                <div className="flex justify-between items-center mb-6">
-                                    <span className="text-lg font-bold text-[#1a1a1a]">Total</span>
-                                    <div className="text-right">
-                                        {discountAmount > 0 && (
-                                            <span className="text-sm line-through text-gray-400 mr-2">₹{subtotal}</span>
-                                        )}
-                                        <span className="text-2xl font-serif font-bold text-[#e65c00]">₹{totalAmount}</span>
-                                    </div>
-                                </div>
-                                {bookingError && (
-                                    <p className="text-red-500 text-sm mb-3 text-center">{bookingError}</p>
-                                )}
-
-                                {/* Cancellation Policy & Refund Terms */}
-                                <div className="mb-4 p-3.5 bg-emerald-50/70 border border-emerald-100 rounded-xl flex items-start gap-2.5">
-                                    <span className="text-emerald-600 mt-0.5 shrink-0 text-base leading-none">✅</span>
-                                    <div>
-                                        <p className="text-xs text-emerald-800 font-semibold leading-relaxed">
-                                            {salon?.cancellationPolicy || "Free cancellation up to 24 hours before your appointment. A 20% fee applies thereafter."}
-                                        </p>
-                                        <p className="text-[11px] text-emerald-600/80 mt-1 leading-snug">
-                                            Full refund if cancelled within the free cancellation window. Partial refund thereafter per salon policy.
-                                        </p>
-                                    </div>
-                                </div>
-
+                    {/* STATUS 1: REQUESTED (Awaiting Acceptance) */}
+                    {status === "requested" && (
+                        <div className="text-center py-6">
+                            <div className="w-20 h-20 rounded-full bg-amber-50 border-2 border-amber-200 flex items-center justify-center mx-auto mb-6 relative">
+                                <span className="absolute inset-0 rounded-full border-2 border-[#D4AF37] animate-ping opacity-25"></span>
+                                <Hourglass className="w-8 h-8 text-[#D4AF37] animate-pulse" />
+                            </div>
+                            <h2 className="text-2xl font-serif font-black text-[#1a1a1a] mb-2">Request Sent to Salon</h2>
+                            <p className="text-gray-500 text-sm max-w-md mx-auto mb-6">
+                                <strong>{salon?.name}</strong> has received your service request. The salon team will accept your entry into the queue shortly.
+                            </p>
+                            <div className="bg-amber-50/60 border border-amber-100 rounded-2xl p-4 text-xs text-amber-800 font-medium">
+                                <p className="font-bold mb-1">⏱ Estimated Wait Once Admitted</p>
+                                <p className="text-amber-900 font-bold text-base">
+                                    ~{activeBooking.estimatedWaitMin || 10} – {activeBooking.estimatedWaitMax || 25} mins
+                                </p>
+                            </div>
+                            <div className="mt-8">
                                 <button
-                                    onClick={handleConfirm}
-                                    className="w-full bg-[#1a1a1a] text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-black transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
-                                    disabled={selectedServices.length === 0 || !date || !time || bookingLoading}
+                                    onClick={() => navigate("/bookings")}
+                                    className="text-xs font-bold uppercase tracking-wider text-gray-500 hover:text-black transition-colors"
                                 >
-                                    {bookingLoading ? (
-                                        <><Loader2 className="w-5 h-5 animate-spin" /> Confirming...</>
-                                    ) : (
-                                        <>Confirm Reservation <ChevronRight size={18} /></>
-                                    )}
+                                    View In My Bookings
                                 </button>
-                                <p className="ui-subtext text-center mt-4">
-                                    Secure payment is required to confirm your reservation.
+                            </div>
+                        </div>
+                    )}
+
+                    {/* STATUS 2: WAITING / ACCEPTED (Customer in active queue) */}
+                    {status === "waiting" && (
+                        <div className="text-center py-4">
+                            <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-6 border border-emerald-200">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                Accepted by Salon
+                            </div>
+
+                            <h2 className="text-3xl font-serif font-black text-[#1a1a1a] mb-1">You Are In The Queue!</h2>
+                            <p className="text-gray-500 text-sm mb-6">Head towards <strong>{salon?.name}</strong>.</p>
+
+                            {/* Big Queue Position Display */}
+                            <div className="bg-gradient-to-br from-[#1a1a1a] to-gray-900 rounded-3xl p-6 text-white shadow-xl mb-6 border border-[#D4AF37]/30">
+                                <p className="text-[11px] font-bold uppercase tracking-widest text-[#D4AF37]">Your Queue Position</p>
+                                <p className="text-5xl sm:text-6xl font-black font-serif my-2 tracking-tight text-white">
+                                    #{activeBooking.queuePosition || 1}
+                                </p>
+                                <p className="text-xs text-gray-400">
+                                    Estimated Wait: <span className="text-[#D4AF37] font-bold">~{activeBooking.estimatedWaitMin || 0} – {activeBooking.estimatedWaitMax || 15} mins</span>
+                                </p>
+                            </div>
+
+                            {/* 4-Digit Check-In PIN */}
+                            {activeBooking.verificationPin && (
+                                <div className="mb-6 rounded-2xl border border-dashed border-[#D4AF37] bg-amber-50/50 p-5">
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-amber-700">Check-in Verification PIN</p>
+                                    <p className="text-3xl font-black tracking-[0.35em] text-[#1a1a1a] my-1">
+                                        {activeBooking.verificationPin}
+                                    </p>
+                                    <p className="text-[11px] text-gray-500">Show this 4-digit code to your stylist upon arrival.</p>
+                                </div>
+                            )}
+
+                            {/* Arrival Check-in Action */}
+                            <button
+                                onClick={handleCheckIn}
+                                disabled={checkingIn}
+                                className="w-full py-4 rounded-2xl font-bold text-sm uppercase tracking-wider bg-[#D4AF37] text-white hover:bg-[#B8962E] active:scale-[0.99] transition-all shadow-lg flex items-center justify-center gap-2 mb-4"
+                            >
+                                {checkingIn ? <Loader2 className="w-5 h-5 animate-spin" /> : <MapPin className="w-5 h-5" />}
+                                <span>I Have Arrived at the Salon</span>
+                            </button>
+
+                            <button
+                                onClick={() => navigate("/bookings")}
+                                className="text-xs font-bold text-gray-400 hover:text-black uppercase tracking-wider transition-colors"
+                            >
+                                Go to My Bookings
+                            </button>
+                        </div>
+                    )}
+
+                    {/* STATUS 3: ARRIVED (Checked in at salon) */}
+                    {status === "arrived" && (
+                        <div className="text-center py-6">
+                            <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-4">
+                                <CheckCircle2 className="w-8 h-8" />
+                            </div>
+                            <h2 className="text-2xl font-serif font-black text-[#1a1a1a] mb-2">Checked In Successfully</h2>
+                            <p className="text-gray-500 text-sm mb-6">
+                                You are marked as arrived at <strong>{salon?.name}</strong>. Please relax in the waiting area.
+                            </p>
+
+                            <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100 mb-6">
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="text-xs text-gray-500">Queue Position</span>
+                                    <span className="font-bold text-gray-900 text-lg">#{activeBooking.queuePosition}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-xs text-gray-500">Verification PIN</span>
+                                    <span className="font-bold text-amber-600 font-mono text-xl tracking-widest">{activeBooking.verificationPin}</span>
+                                </div>
+                            </div>
+
+                            <NavLink
+                                to="/bookings"
+                                className="inline-block bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-xs uppercase tracking-wider hover:bg-black transition-colors"
+                            >
+                                Track in My Bookings
+                            </NavLink>
+                        </div>
+                    )}
+
+                    {/* STATUS 4: IN_PROGRESS */}
+                    {status === "in_progress" && (
+                        <div className="text-center py-6">
+                            <div className="w-16 h-16 rounded-full bg-[#D4AF37]/20 text-[#D4AF37] flex items-center justify-center mx-auto mb-4">
+                                <Scissors className="w-8 h-8 animate-bounce" />
+                            </div>
+                            <h2 className="text-2xl font-serif font-black text-[#1a1a1a] mb-2">Service In Progress</h2>
+                            <p className="text-gray-500 text-sm mb-6">
+                                Your service is currently underway{activeBooking.staffName ? ` with ${activeBooking.staffName}` : ""}! Enjoy your experience.
+                            </p>
+                            <NavLink
+                                to="/bookings"
+                                className="inline-block bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-xs uppercase tracking-wider hover:bg-black transition-colors"
+                            >
+                                View Booking Details
+                            </NavLink>
+                        </div>
+                    )}
+
+                    {/* STATUS 5: COMPLETED */}
+                    {status === "completed" && (
+                        <div className="text-center py-6">
+                            <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-4">
+                                <Check className="w-8 h-8" />
+                            </div>
+                            <h2 className="text-3xl font-serif font-black text-[#1a1a1a] mb-2">Service Completed!</h2>
+                            <p className="text-gray-500 text-sm mb-6">
+                                Thank you for visiting <strong>{salon?.name}</strong>. We hope you loved your look!
+                            </p>
+                            <NavLink
+                                to="/home"
+                                className="inline-block bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-xs uppercase tracking-wider hover:bg-black transition-colors"
+                            >
+                                Back to Home
+                            </NavLink>
+                        </div>
+                    )}
+
+                    {/* STATUS 6: REJECTED */}
+                    {status === "rejected" && (
+                        <div className="text-center py-6">
+                            <div className="w-16 h-16 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-4">
+                                <XCircle className="w-8 h-8" />
+                            </div>
+                            <h2 className="text-2xl font-serif font-black text-[#1a1a1a] mb-2">Request Declined</h2>
+                            <p className="text-gray-600 text-sm mb-4">
+                                {activeBooking.rejectionReason || "The salon is unable to accommodate additional queue requests at this time."}
+                            </p>
+                            <p className="text-xs text-gray-400 mb-6">No charges have been made. You can try another salon or request again later.</p>
+                            <button
+                                onClick={() => setActiveBooking(null)}
+                                className="bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-xs uppercase tracking-wider hover:bg-black transition-colors"
+                            >
+                                Modify Request
+                            </button>
+                        </div>
+                    )}
+
+                    {/* STATUS 7: EXPIRED */}
+                    {status === "expired" && (
+                        <div className="text-center py-6">
+                            <div className="w-16 h-16 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center mx-auto mb-4">
+                                <Hourglass className="w-8 h-8" />
+                            </div>
+                            <h2 className="text-2xl font-serif font-black text-[#1a1a1a] mb-2">Request Timed Out</h2>
+                            <p className="text-gray-600 text-sm mb-6">
+                                The salon did not respond within the acceptance timeout window. No fee has been charged.
+                            </p>
+                            <button
+                                onClick={() => setActiveBooking(null)}
+                                className="bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-xs uppercase tracking-wider hover:bg-black transition-colors"
+                            >
+                                Try Again
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // NEW ON-DEMAND QUEUE REQUEST INTERFACE
+    // ─────────────────────────────────────────────────────────────────────────────
+    const queueSummary = queueData?.summary;
+    const isSalonOpen = queueData?.salon?.isCurrentlyOpen ?? salon?.isOpen ?? true;
+    const isAccepting = queueSummary ? queueSummary.isAccepting : true;
+    const isPaused = queueSummary ? queueSummary.isPaused : false;
+    const isQueueFull = queueSummary && queueSummary.waitingCount >= queueSummary.maxCapacity;
+
+    const canJoinQueue = isSalonOpen && isAccepting && !isPaused && !isQueueFull;
+
+    return (
+        <div className="flex flex-col bg-[#fafafa] font-sans min-h-screen">
+            <main className="flex-1 pt-12 md:pt-16 pb-16">
+                <div className="max-w-[1280px] mx-auto px-6 md:px-10">
+
+                    {/* Header */}
+                    <div className="flex items-center gap-4 mb-8">
+                        <NavLink to={`/shop/${id}`} className="p-2.5 bg-white border border-gray-100 hover:bg-gray-50 rounded-full transition-colors shadow-sm">
+                            <ArrowLeft size={20} className="text-gray-700" />
+                        </NavLink>
+                        <div>
+                            <div className="flex items-center gap-3">
+                                <h1 className="text-2xl md:text-3xl font-serif font-bold text-[#1a1a1a]">Request Salon Queue</h1>
+                                <span className={`text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full border ${
+                                    canJoinQueue
+                                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                        : isPaused
+                                        ? "bg-amber-50 text-amber-700 border-amber-200"
+                                        : "bg-red-50 text-red-700 border-red-200"
+                                }`}>
+                                    {canJoinQueue ? "Accepting Requests" : isPaused ? "Queue Paused" : "Not Accepting"}
+                                </span>
+                            </div>
+                            <p className="text-sm text-gray-500 mt-1">
+                                On-demand queue admission at <span className="text-[#D4AF37] font-semibold">{salon?.name}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* LIVE SALON QUEUE STATUS BANNER */}
+                    <div className="mb-10 bg-white border border-gray-100 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-[#D4AF37] shrink-0">
+                                <Clock size={24} />
+                            </div>
+                            <div>
+                                <p className="text-xs font-bold uppercase tracking-wider text-gray-400">Current Workload & Estimated Wait</p>
+                                <p className="text-xl font-serif font-black text-gray-900 mt-0.5">
+                                    ~{queueSummary?.estimatedWaitRangeForNewCustomer?.min || 5} – {queueSummary?.estimatedWaitRangeForNewCustomer?.max || 20} mins wait
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-6 border-t md:border-t-0 md:border-l border-gray-100 pt-4 md:pt-0 md:pl-6 w-full md:w-auto">
+                            <div>
+                                <p className="text-xs font-bold uppercase tracking-wider text-gray-400">In Line Ahead</p>
+                                <p className="text-lg font-bold text-gray-900">
+                                    {queueSummary?.waitingCount || 0} customer{(queueSummary?.waitingCount || 0) === 1 ? "" : "s"}
+                                </p>
+                            </div>
+                            <div>
+                                <p className="text-xs font-bold uppercase tracking-wider text-gray-400">Queue Capacity</p>
+                                <p className="text-lg font-bold text-gray-900">
+                                    {queueSummary?.waitingCount || 0} / {queueSummary?.maxCapacity || 10}
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                </div>
+                    {requestError && (
+                        <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-2">
+                            <AlertCircle size={16} className="shrink-0" />
+                            <span>{requestError}</span>
+                        </div>
+                    )}
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                        {/* LEFT COLUMN: SELECTIONS */}
+                        <div className="lg:col-span-2 space-y-10">
+
+                            {/* 1. Services Section */}
+                            <section>
+                                <div className="flex items-center gap-2 mb-4">
+                                    <span className="bg-[#1a1a1a] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold font-serif">1</span>
+                                    <h2 className="text-xl font-serif font-bold text-[#1a1a1a]">Select Desired Services</h2>
+                                </div>
+                                <div className="grid gap-3">
+                                    {services.length > 0 ? (
+                                        services.map((service) => {
+                                            const isSelected = selectedServices.some((s) => (s._id || s.serviceId) === service._id);
+                                            return (
+                                                <button
+                                                    key={service._id}
+                                                    onClick={() => toggleService(service)}
+                                                    className={`cursor-pointer p-5 rounded-2xl border-2 transition-all flex items-center justify-between text-left ${
+                                                        isSelected
+                                                            ? "border-[#D4AF37] bg-orange-50/30"
+                                                            : "border-gray-100 bg-white hover:border-gray-200"
+                                                    }`}
+                                                    type="button"
+                                                >
+                                                    <div className="flex-1">
+                                                        <h3 className="font-bold text-gray-900">{service.name}</h3>
+                                                        {service.description && (
+                                                            <p className="text-xs text-gray-500 line-clamp-1 mt-0.5">{service.description}</p>
+                                                        )}
+                                                        <span className="inline-flex items-center gap-1 text-xs text-gray-400 font-medium mt-1">
+                                                            <Clock size={11} className="text-[#D4AF37]" />
+                                                            Est. {service.durationMin || service.duration || 30} mins
+                                                        </span>
+                                                    </div>
+                                                    <div className="text-right ml-4">
+                                                        <p className={`font-bold transition-colors ${isSelected ? "text-[#D4AF37]" : "text-gray-900"}`}>
+                                                            ₹{service.price}
+                                                        </p>
+                                                        <div className={`mt-2 w-5 h-5 rounded-full border flex items-center justify-center transition-all ${
+                                                            isSelected ? "bg-[#D4AF37] border-[#D4AF37]" : "border-gray-200"
+                                                        }`}>
+                                                            {isSelected && <Check size={12} className="text-white" />}
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                            );
+                                        })
+                                    ) : (
+                                        <div className="text-center py-10 bg-white rounded-2xl border border-dashed border-gray-200 text-gray-400 text-sm">
+                                            No active services catalog found for this salon.
+                                        </div>
+                                    )}
+                                </div>
+                            </section>
+
+                            {/* 2. Stylist Section (Optional) */}
+                            <section>
+                                <div className="flex items-center gap-2 mb-4">
+                                    <span className="bg-[#1a1a1a] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold font-serif">2</span>
+                                    <h2 className="text-xl font-serif font-bold text-[#1a1a1a]">Preferred Stylist (Optional)</h2>
+                                </div>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                    {staffMembers.length > 0 ? (
+                                        staffMembers.map((staff) => (
+                                            <button
+                                                key={staff._id}
+                                                onClick={() => setSelectedStaff(selectedStaff?._id === staff._id ? null : staff)}
+                                                className={`cursor-pointer p-4 rounded-2xl border-2 transition-all text-center ${
+                                                    selectedStaff?._id === staff._id
+                                                        ? "border-[#D4AF37] bg-orange-50/30 shadow-sm"
+                                                        : "border-gray-100 bg-white hover:border-gray-200"
+                                                }`}
+                                                type="button"
+                                            >
+                                                <div className="relative inline-block mb-3">
+                                                    <div className="w-12 h-12 rounded-full bg-[#1a1a1a] flex items-center justify-center text-white font-bold text-base border-2 border-[#D4AF37]/20 mx-auto">
+                                                        {staff.name?.charAt(0).toUpperCase()}
+                                                    </div>
+                                                    {selectedStaff?._id === staff._id && (
+                                                        <div className="absolute -bottom-1 -right-1 bg-[#D4AF37] p-1 rounded-full text-white">
+                                                            <Check size={10} strokeWidth={4} />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <h3 className="font-bold text-gray-900 text-xs md:text-sm truncate">{staff.name}</h3>
+                                                <p className="text-[11px] text-gray-400 truncate mt-0.5">{staff.role || "Stylist"}</p>
+                                            </button>
+                                        ))
+                                    ) : (
+                                        <div className="col-span-full text-center py-6 bg-white rounded-2xl border border-dashed border-gray-200 text-gray-400 text-sm">
+                                            First available stylist will be assigned upon arrival.
+                                        </div>
+                                    )}
+                                </div>
+                            </section>
+
+                        </div>
+
+                        {/* RIGHT COLUMN: QUEUE REQUEST SUMMARY */}
+                        <div className="lg:col-span-1">
+                            <div className="bg-white border border-gray-100 rounded-3xl p-6 md:p-8 sticky top-24 shadow-sm">
+                                <h2 className="text-lg font-serif font-bold text-[#1a1a1a] mb-6 border-b border-gray-50 pb-4">
+                                    Request Summary
+                                </h2>
+
+                                <div className="space-y-4 mb-6">
+                                    {selectedServices.length > 0 ? (
+                                        <>
+                                            {selectedServices.map((s) => (
+                                                <div key={s._id || s.serviceId} className="flex justify-between items-start text-sm">
+                                                    <div>
+                                                        <span className="text-gray-800 font-medium block">{s.name}</span>
+                                                        <span className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
+                                                            <Clock size={10} className="text-[#D4AF37]" />
+                                                            {s.durationMin || s.duration || 30} mins
+                                                        </span>
+                                                    </div>
+                                                    <span className="font-bold text-gray-900">₹{s.price}</span>
+                                                </div>
+                                            ))}
+                                            <div className="flex justify-between items-center text-xs text-gray-500 pt-3 border-t border-gray-100">
+                                                <span>Combined Est. Service Time</span>
+                                                <span className="font-semibold text-gray-800">{combinedDurationMin} mins</span>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <p className="text-sm text-gray-400 italic">No services selected yet</p>
+                                    )}
+                                </div>
+
+                                {selectedStaff && (
+                                    <div className="mb-6 pt-4 border-t border-gray-50">
+                                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">Preferred Stylist</p>
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-[#1a1a1a] flex items-center justify-center text-white font-bold text-xs border border-[#D4AF37]/20">
+                                                {selectedStaff.name?.charAt(0).toUpperCase()}
+                                            </div>
+                                            <span className="text-sm font-bold text-gray-900">{selectedStaff.name}</span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="pt-6 border-t border-gray-100 mt-6 space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm text-gray-500">Est. Total Amount</span>
+                                        <span className="text-2xl font-black font-serif text-[#1a1a1a]">₹{subtotal}</span>
+                                    </div>
+                                    <p className="text-[11px] text-gray-400 leading-snug">
+                                        Payment is collected at the salon after your service is completed.
+                                    </p>
+
+                                    <button
+                                        onClick={handleRequestService}
+                                        disabled={!canJoinQueue || submitting || selectedServices.length === 0}
+                                        className={`w-full py-4 rounded-2xl font-bold text-sm uppercase tracking-wider transition-all shadow-lg flex items-center justify-center gap-2 ${
+                                            canJoinQueue && selectedServices.length > 0 && !submitting
+                                                ? "bg-[#D4AF37] hover:bg-[#B8962E] text-white active:scale-[0.99]"
+                                                : "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
+                                        }`}
+                                    >
+                                        {submitting ? (
+                                            <Loader2 className="w-5 h-5 animate-spin" />
+                                        ) : (
+                                            <Users className="w-5 h-5" />
+                                        )}
+                                        <span>
+                                            {!isSalonOpen
+                                                ? "Salon Closed"
+                                                : isPaused
+                                                ? "Queue Paused"
+                                                : isQueueFull
+                                                ? "Queue Full"
+                                                : "Request Place in Queue"}
+                                        </span>
+                                    </button>
+
+                                    <div className="flex items-center justify-center gap-1.5 text-[11px] text-gray-400 text-center pt-2">
+                                        <ShieldCheck size={14} className="text-[#D4AF37]" />
+                                        <span>Instant live queue tracking upon acceptance</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </main>
         </div>
