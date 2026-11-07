@@ -721,7 +721,7 @@ export function Shops() {
 
                             {/* Quick City Pills */}
                             <div className="pt-6 border-t border-gray-100">
-                                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                                <p className="text-xs font-medium text-gray-500 mb-3">
                                     Or explore popular salon hubs:
                                 </p>
                                 <div className="flex flex-wrap justify-center gap-2">

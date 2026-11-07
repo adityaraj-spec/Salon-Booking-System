@@ -367,6 +367,7 @@ export const getSalonIncomingRequests = async (salonId, ownerId, role) => {
     .sort({ requestedAt: 1 })
     .populate("customer", "fullName email phonenumber")
     .populate("services", "name price durationMin")
+    .populate("staff", "name role")
     .lean();
 
   return requests;

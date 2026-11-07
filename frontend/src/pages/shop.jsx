@@ -229,7 +229,7 @@ function BeforeAfterCard({ item }) {
                         event.currentTarget.src = salonPlaceholder;
                     }}
                 />
-                <span className="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10 uppercase tracking-wider">
+                <span className="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-white text-[11px] font-semibold px-2 py-0.5 rounded-full z-10">
                     After
                 </span>
 
@@ -249,7 +249,7 @@ function BeforeAfterCard({ item }) {
                             event.currentTarget.src = salonPlaceholder;
                         }}
                     />
-                    <span className="absolute top-3 left-3 bg-[#1a1a1a]/80 backdrop-blur-md text-[#D4AF37] text-[10px] font-bold px-2 py-0.5 rounded-full z-10 uppercase tracking-wider">
+                    <span className="absolute top-3 left-3 bg-[#1a1a1a]/80 backdrop-blur-md text-[#D4AF37] text-[11px] font-semibold px-2 py-0.5 rounded-full z-10">
                         Before
                     </span>
                 </div>
@@ -283,7 +283,7 @@ function BeforeAfterCard({ item }) {
             <div className="p-4 flex flex-col gap-1.5 flex-1 justify-between bg-white">
                 <div>
                     <div className="flex items-center justify-between gap-2">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-[#D4AF37] bg-amber-50 px-2 py-0.5 rounded-md inline-block truncate max-w-[190px]">
+                        <span className="text-[11px] font-semibold text-[#D4AF37] bg-amber-50 px-2 py-0.5 rounded-md inline-block truncate max-w-[190px]">
                             {item.serviceName || "Transformation"}
                         </span>
                         {item.stylistName && (
@@ -799,7 +799,7 @@ export function Shop() {
                 {user?._id === salon?.owner && (
                     <NavLink 
                         to="/salon/manage" 
-                        className="inline-flex items-center gap-2.5 px-6 py-2.5 bg-[#1a1a1a] text-white rounded-full text-xs font-black uppercase tracking-widest hover:bg-black transition-all shadow-xl shadow-black/10 hover:scale-105"
+                        className="inline-flex items-center gap-2.5 px-5 py-2.5 bg-[#1a1a1a] text-white rounded-full text-xs font-bold hover:bg-black transition-all shadow-xl shadow-black/10 hover:scale-105"
                     >
                         <Settings size={14} className="text-[#D4AF37]" />
                         Manage This Salon
@@ -1424,7 +1424,7 @@ export function Shop() {
                                         {reviewError && <p className="text-red-500 text-xs font-bold">{reviewError}</p>}
                                         <button 
                                             disabled={isSubmitting}
-                                            className="bg-[#1a1a1a] text-white px-8 py-3.5 rounded-full font-bold text-sm tracking-widest uppercase hover:bg-black transition-colors flex items-center gap-2 group disabled:opacity-50 mx-auto md:mx-0"
+                                            className="bg-[#1a1a1a] text-white px-8 py-3.5 rounded-full font-bold text-sm hover:bg-black transition-colors flex items-center gap-2 group disabled:opacity-50 mx-auto md:mx-0"
                                         >
                                             {isSubmitting ? "Posting..." : "Post Review"}
                                             <Send size={16} className="group-hover:translate-x-1 transition-transform" />
@@ -1441,7 +1441,7 @@ export function Shop() {
                                 <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                                 <h4 className="text-lg font-bold text-gray-900">Want to share your experience?</h4>
                                 <p className="text-gray-500 text-sm mb-6">Please log in to leave a rating and review for this salon.</p>
-                                <NavLink to="/login" className="inline-block bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-sm tracking-widest uppercase hover:bg-black transition-colors">Login to Review</NavLink>
+                                <NavLink to="/login" className="inline-block bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-sm hover:bg-black transition-colors">Login to Review</NavLink>
                             </div>
                         )}
                     </div>
@@ -1508,7 +1508,7 @@ export function Shop() {
 
                         <div className="mb-6 -mx-2 rounded-xl border border-gray-100 bg-gray-50/70 px-3 py-2">
                             <div className="mb-1.5 flex items-center justify-between gap-3">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Seats</span>
+                                <span className="text-[11px] font-semibold text-gray-500">Seats</span>
                                 <span className="text-[10px] font-semibold text-gray-400">Free / occupied</span>
                             </div>
                             <SeatDisplay

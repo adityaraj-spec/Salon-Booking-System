@@ -211,7 +211,7 @@ export function ProfilePage() {
                                     <div className="flex items-center gap-2 bg-amber-50/80 border border-amber-200/70 rounded-2xl px-4 py-2 self-start md:self-auto">
                                         <Gift size={16} className="text-[#D4AF37]" />
                                         <div className="text-left">
-                                            <p className="text-[10px] uppercase font-bold text-amber-700">Your Referral Code</p>
+                                            <p className="text-[11px] font-bold text-amber-800">Your Referral Code</p>
                                             <p className="text-xs font-mono font-bold text-gray-900 tracking-wider">
                                                 {loyaltyData?.referralCode || user?.referralCode}
                                             </p>
@@ -283,7 +283,7 @@ export function ProfilePage() {
                             <div>
                                 <div className="flex items-center gap-2 mb-4">
                                     <History size={16} className="text-gray-400" />
-                                    <h4 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Points Ledger & History</h4>
+                                    <h4 className="text-sm font-bold text-gray-800">Points Ledger & History</h4>
                                 </div>
 
                                 {loyaltyLoading ? (

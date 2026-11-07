@@ -59,7 +59,7 @@ export function FavoritesPage() {
                 <Heart className="w-16 h-16 text-gray-200 mb-4" />
                 <h2 className="text-2xl font-serif font-bold text-gray-900 mb-2">Please Login</h2>
                 <p className="text-gray-500 mb-6">You need to log in to view your favorite salons.</p>
-                <button onClick={() => navigate("/login")} className="bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-black transition-colors">
+                <button onClick={() => navigate("/login")} className="bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-xs hover:bg-black transition-colors">
                     Login Now
                 </button>
             </div>
@@ -100,7 +100,7 @@ export function FavoritesPage() {
                         <p className="text-gray-500 mb-8 max-w-md mx-auto">You haven't added any salons to your favorites list. Start exploring and click the heart icon to save them here!</p>
                         <button
                             onClick={() => navigate('/home')}
-                            className="bg-[#D4AF37] text-white px-8 py-3.5 rounded-full font-bold tracking-widest text-xs uppercase hover:bg-[#B8962E] transition-colors shadow-lg shadow-[#D4AF37]/20 flex items-center gap-2 mx-auto"
+                            className="bg-[#D4AF37] text-white px-8 py-3 rounded-full font-bold text-xs hover:bg-[#B8962E] transition-colors shadow-lg shadow-[#D4AF37]/20 flex items-center gap-2 mx-auto"
                         >
                             <Search size={16} />
                             Discover Salons
@@ -136,7 +136,7 @@ export function FavoritesPage() {
                                 <div className="p-5 flex flex-col flex-1">
                                     {/* Salon Type & Stars */}
                                     <div className="flex items-center gap-1 mb-2">
-                                        <span className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-widest bg-[#D4AF37]/10 px-2 py-1 rounded-md">Salon</span>
+                                        <span className="text-[11px] font-semibold text-[#D4AF37] bg-[#D4AF37]/10 px-2 py-0.5 rounded-md">Salon</span>
                                         <div className="flex gap-0.5 ml-2">
                                             {[...Array(5)].map((_, i) => (
                                                 <Star key={i} size={11} className="fill-[#D4AF37] text-[#D4AF37]" />
@@ -172,7 +172,7 @@ export function FavoritesPage() {
                                                 {salon.rating || "New"}
                                             </div>
                                             <div className="flex flex-col">
-                                                <span className="text-[11px] font-bold text-gray-900 leading-none mb-1 uppercase tracking-wider">
+                                                <span className="text-[11px] font-bold text-gray-900 leading-none mb-1">
                                                     {salon.rating > 4 ? "Excellent" : (salon.rating > 3 ? "Great" : "Good")}
                                                 </span>
                                                 <span className="text-[10px] text-gray-400 leading-none">
@@ -183,7 +183,7 @@ export function FavoritesPage() {
 
                                         {/* Right: Timing and Seats */}
                                         <div className="text-right flex flex-col items-end">
-                                            <div className="text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-widest">
+                                            <div className="text-[11px] font-semibold text-gray-400 mb-1">
                                                 Timing
                                             </div>
                                             <div className="text-xs font-medium text-gray-600 bg-gray-50 px-2 py-1 rounded-md">

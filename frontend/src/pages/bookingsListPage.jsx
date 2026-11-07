@@ -279,7 +279,7 @@ export function MyBookingsPage() {
                                                 <MapPin size={16} className="text-[#D4AF37] shrink-0 mt-0.5" />
                                                 <div className="flex flex-col">
                                                     <span className="text-xs text-gray-700 leading-snug">{booking.salon?.address || "No address provided"}</span>
-                                                    <span className="text-[10px] text-gray-400 mt-0.5 font-bold uppercase">{booking.salon?.city}</span>
+                                                    <span className="text-[10px] text-gray-400 mt-0.5 font-semibold capitalize">{booking.salon?.city}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -291,7 +291,7 @@ export function MyBookingsPage() {
                                                     <div className="flex items-center gap-3 bg-amber-50/50 px-4 py-2.5 rounded-2xl border border-amber-100/60">
                                                         <Users size={18} className="text-[#D4AF37]" />
                                                         <div className="flex flex-col">
-                                                            <p className="text-[10px] uppercase font-bold text-gray-400">Position</p>
+                                                            <p className="text-[11px] font-semibold text-gray-400">Position</p>
                                                             <p className="text-sm font-black text-gray-900">
                                                                 {booking.queuePosition ? `#${booking.queuePosition}` : "Pending"}
                                                             </p>
@@ -300,7 +300,7 @@ export function MyBookingsPage() {
                                                     <div className="flex items-center gap-3 bg-amber-50/50 px-4 py-2.5 rounded-2xl border border-amber-100/60">
                                                         <Clock size={18} className="text-[#D4AF37]" />
                                                         <div className="flex flex-col">
-                                                            <p className="text-[10px] uppercase font-bold text-gray-400">Est. Wait</p>
+                                                            <p className="text-[11px] font-semibold text-gray-400">Est. Wait</p>
                                                             <p className="text-sm font-bold text-gray-900">
                                                                 ~{booking.estimatedWaitMin || 0} – {booking.estimatedWaitMax || 15}m
                                                             </p>
@@ -312,14 +312,14 @@ export function MyBookingsPage() {
                                                     <div className="flex items-center gap-3 bg-gray-50 px-4 py-2.5 rounded-2xl border border-gray-100">
                                                         <Clock size={18} className="text-[#D4AF37]" />
                                                         <div className="flex flex-col">
-                                                            <p className="text-[10px] uppercase font-bold text-gray-400">Time</p>
+                                                            <p className="text-[11px] font-semibold text-gray-400">Time</p>
                                                             <p className="text-sm font-bold text-gray-800">{booking.time}</p>
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-3 bg-gray-50 px-4 py-2.5 rounded-2xl border border-gray-100">
                                                         <Calendar size={18} className="text-[#D4AF37]" />
                                                         <div className="flex flex-col">
-                                                            <p className="text-[10px] uppercase font-bold text-gray-400">Date</p>
+                                                            <p className="text-[11px] font-semibold text-gray-400">Date</p>
                                                             <p className="text-sm font-bold text-gray-800">
                                                                 {booking.date ? new Date(booking.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) : "N/A"}
                                                             </p>
@@ -337,7 +337,7 @@ export function MyBookingsPage() {
                                         {booking.verificationPin && (
                                             <div className="rounded-2xl border-2 border-[#D4AF37]/40 bg-gradient-to-r from-amber-50 via-orange-50/40 to-amber-50/60 p-4 flex items-center justify-between shadow-sm">
                                                 <div>
-                                                    <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 bg-amber-200/60 px-2 py-0.5 rounded-md inline-block mb-1">
+                                                    <span className="text-[11px] font-semibold text-amber-800 bg-amber-200/60 px-2.5 py-0.5 rounded-md inline-block mb-1">
                                                         Check-in Verification PIN
                                                     </span>
                                                     <p className="text-3xl font-black font-mono tracking-[0.35em] text-[#1a1a1a] my-0.5">
@@ -353,7 +353,7 @@ export function MyBookingsPage() {
 
                                         {/* SERVICES & TOTAL */}
                                         <div>
-                                            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">Selected Services</p>
+                                            <p className="text-xs font-semibold text-gray-500 mb-2">Selected Services</p>
                                             <div className="flex flex-wrap gap-1.5 mb-3">
                                                 {booking.serviceNames?.length > 0 ? (
                                                     booking.serviceNames.map((s, i) => (
@@ -379,7 +379,7 @@ export function MyBookingsPage() {
                                                 <button
                                                     onClick={() => handleCheckIn(booking._id)}
                                                     disabled={checkingInId === booking._id}
-                                                    className="w-full py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-[#D4AF37] hover:bg-[#B8962E] text-white shadow-sm flex items-center justify-center gap-1.5 transition-all"
+                                                    className="w-full py-2.5 rounded-xl font-bold text-xs bg-[#D4AF37] hover:bg-[#B8962E] text-white shadow-sm flex items-center justify-center gap-1.5 transition-all"
                                                 >
                                                     {checkingInId === booking._id ? <Loader2 size={14} className="animate-spin" /> : <MapPin size={14} />}
                                                     <span>I Have Arrived</span>

@@ -498,7 +498,7 @@ export function SalonBookingsPage() {
                                                         ? "bg-emerald-600 text-white border-emerald-600"
                                                         : "bg-amber-50 text-[#D4AF37] border-amber-200"
                                                 }`}>
-                                                    <span className="text-[10px] font-bold uppercase leading-none">Queue</span>
+                                                    <span className="text-[11px] font-bold leading-none">Queue</span>
                                                     <span className="text-xl font-black font-serif leading-tight">
                                                         #{booking.queuePosition || 1}
                                                     </span>
@@ -534,6 +534,14 @@ export function SalonBookingsPage() {
                                                         <span className="font-bold text-gray-900">
                                                             Total: ₹{booking.totalAmount}
                                                         </span>
+                                                        {(booking.staff?.name || booking.staffName) && (
+                                                            <>
+                                                                <span>•</span>
+                                                                <span className="flex items-center gap-1 text-purple-700 font-medium bg-purple-50 px-2 py-0.5 rounded-md">
+                                                                    <Scissors size={11} /> Stylist: {booking.staff?.name || booking.staffName}
+                                                                </span>
+                                                            </>
+                                                        )}
                                                     </div>
 
                                                     {/* Services list */}
@@ -645,6 +653,14 @@ export function SalonBookingsPage() {
                                                 <span>Total Amount: <strong>₹{req.totalAmount}</strong></span>
                                                 <span>•</span>
                                                 <span>Est. Duration: <strong>{req.durationMinutes || 30} mins</strong></span>
+                                                {(req.staff?.name || req.staffName) && (
+                                                    <>
+                                                        <span>•</span>
+                                                        <span className="flex items-center gap-1 text-purple-700 font-medium bg-purple-50 px-2 py-0.5 rounded-md">
+                                                            <Scissors size={11} /> Stylist: {req.staff?.name || req.staffName}
+                                                        </span>
+                                                    </>
+                                                )}
                                             </p>
 
                                             <div className="flex flex-wrap gap-1.5 mt-3">
@@ -732,7 +748,8 @@ export function SalonBookingsPage() {
                                             ? CreditCard
                                             : Banknote;
 
-                                    const stylistName = b.staff?.name || b.staffName || "Not Specified";
+                                    const rawStylist = b.staff?.name || b.staffName;
+                                    const stylistName = rawStylist && rawStylist !== "Stylist Assigned" ? rawStylist : "First Available";
 
                                     return (
                                         <div
@@ -762,7 +779,7 @@ export function SalonBookingsPage() {
 
                                                     <span className="flex items-center gap-1.5 text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-md font-medium">
                                                         <Scissors size={12} />
-                                                        Stylist: {b.staff?.name || b.staffName || "Not Specified"}
+                                                        Stylist: {stylistName}
                                                     </span>
 
                                                     {b.customer?.phonenumber && (

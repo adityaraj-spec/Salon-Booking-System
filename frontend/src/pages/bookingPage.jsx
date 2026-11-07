@@ -443,14 +443,14 @@ export function BookingPage() {
                                 <div className="grid grid-cols-2 gap-3">
                                     <button
                                         onClick={handleDeclineExtras}
-                                        className="py-3 rounded-xl border border-gray-300 text-gray-700 font-bold text-xs uppercase tracking-wider hover:bg-gray-100 transition-colors"
+                                        className="py-3 rounded-xl border border-gray-300 text-gray-700 font-bold text-xs hover:bg-gray-100 transition-colors"
                                     >
                                         Decline
                                     </button>
                                     <button
                                         onClick={handleApproveExtras}
                                         disabled={approvingExtras}
-                                        className="py-3 rounded-xl bg-[#D4AF37] text-white font-bold text-xs uppercase tracking-wider hover:bg-[#B8962E] transition-colors flex items-center justify-center gap-1 shadow-md"
+                                        className="py-3 rounded-xl bg-[#D4AF37] text-white font-bold text-xs hover:bg-[#B8962E] transition-colors flex items-center justify-center gap-1 shadow-md"
                                     >
                                         {approvingExtras ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                                         <span>Accept</span>
@@ -481,7 +481,7 @@ export function BookingPage() {
 
                             {activeBooking.verificationPin && (
                                 <div className="mt-6 max-w-sm mx-auto rounded-2xl border-2 border-dashed border-[#D4AF37] bg-gradient-to-r from-amber-50/90 to-orange-50/60 p-5 shadow-sm">
-                                    <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 bg-amber-200/60 px-2.5 py-0.5 rounded-md inline-block">
+                                    <span className="text-[11px] font-semibold text-amber-800 bg-amber-200/60 px-2.5 py-0.5 rounded-md inline-block">
                                         Check-in Verification PIN
                                     </span>
                                     <p className="text-3xl font-black font-mono tracking-[0.35em] text-[#1a1a1a] my-2">
@@ -494,7 +494,7 @@ export function BookingPage() {
                             <div className="mt-8">
                                 <button
                                     onClick={() => navigate("/bookings")}
-                                    className="text-xs font-bold uppercase tracking-wider text-gray-500 hover:text-black transition-colors"
+                                    className="text-xs font-bold text-gray-500 hover:text-black transition-colors"
                                 >
                                     View In My Bookings
                                 </button>
@@ -505,7 +505,7 @@ export function BookingPage() {
                     {/* STATUS 2: WAITING / ACCEPTED (Customer in active queue) */}
                     {status === "waiting" && (
                         <div className="text-center py-4">
-                            <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-6 border border-emerald-200">
+                            <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-1.5 rounded-full text-xs font-bold mb-6 border border-emerald-200">
                                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                                 Accepted by Salon
                             </div>
@@ -515,7 +515,7 @@ export function BookingPage() {
 
                             {/* Big Queue Position Display */}
                             <div className="bg-gradient-to-br from-[#1a1a1a] to-gray-900 rounded-3xl p-6 text-white shadow-xl mb-6 border border-[#D4AF37]/30">
-                                <p className="text-[11px] font-bold uppercase tracking-widest text-[#D4AF37]">Your Queue Position</p>
+                                <p className="text-xs font-semibold text-[#D4AF37]">Your Queue Position</p>
                                 <p className="text-5xl sm:text-6xl font-black font-serif my-2 tracking-tight text-white">
                                     #{activeBooking.queuePosition || 1}
                                 </p>
@@ -527,7 +527,7 @@ export function BookingPage() {
                             {/* 4-Digit Check-In PIN */}
                             {activeBooking.verificationPin && (
                                 <div className="mb-6 rounded-2xl border border-dashed border-[#D4AF37] bg-amber-50/50 p-5">
-                                    <p className="text-[10px] font-bold uppercase tracking-widest text-amber-700">Check-in Verification PIN</p>
+                                    <p className="text-xs font-semibold text-amber-700">Check-in Verification PIN</p>
                                     <p className="text-3xl font-black tracking-[0.35em] text-[#1a1a1a] my-1">
                                         {activeBooking.verificationPin}
                                     </p>
@@ -539,7 +539,7 @@ export function BookingPage() {
                             <button
                                 onClick={handleCheckIn}
                                 disabled={checkingIn}
-                                className="w-full py-4 rounded-2xl font-bold text-sm uppercase tracking-wider bg-[#D4AF37] text-white hover:bg-[#B8962E] active:scale-[0.99] transition-all shadow-lg flex items-center justify-center gap-2 mb-4"
+                                className="w-full py-4 rounded-2xl font-bold text-sm bg-[#D4AF37] text-white hover:bg-[#B8962E] active:scale-[0.99] transition-all shadow-lg flex items-center justify-center gap-2 mb-4"
                             >
                                 {checkingIn ? <Loader2 className="w-5 h-5 animate-spin" /> : <MapPin className="w-5 h-5" />}
                                 <span>I Have Arrived at the Salon</span>
@@ -547,7 +547,7 @@ export function BookingPage() {
 
                             <button
                                 onClick={() => navigate("/bookings")}
-                                className="text-xs font-bold text-gray-400 hover:text-black uppercase tracking-wider transition-colors"
+                                className="text-xs font-bold text-gray-400 hover:text-black transition-colors"
                             >
                                 Go to My Bookings
                             </button>
@@ -578,7 +578,7 @@ export function BookingPage() {
 
                             <NavLink
                                 to="/bookings"
-                                className="inline-block bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-xs uppercase tracking-wider hover:bg-black transition-colors"
+                                className="inline-block bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-xs hover:bg-black transition-colors"
                             >
                                 Track in My Bookings
                             </NavLink>
@@ -597,7 +597,7 @@ export function BookingPage() {
                             </p>
                             <NavLink
                                 to="/bookings"
-                                className="inline-block bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-xs uppercase tracking-wider hover:bg-black transition-colors"
+                                className="inline-block bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-xs hover:bg-black transition-colors"
                             >
                                 View Booking Details
                             </NavLink>
@@ -616,7 +616,7 @@ export function BookingPage() {
                             </p>
                             <NavLink
                                 to="/home"
-                                className="inline-block bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-xs uppercase tracking-wider hover:bg-black transition-colors"
+                                className="inline-block bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-xs hover:bg-black transition-colors"
                             >
                                 Back to Home
                             </NavLink>
@@ -636,7 +636,7 @@ export function BookingPage() {
                             <p className="text-xs text-gray-400 mb-6">No charges have been made. You can try another salon or request again later.</p>
                             <button
                                 onClick={() => setActiveBooking(null)}
-                                className="bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-xs uppercase tracking-wider hover:bg-black transition-colors"
+                                className="bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-xs hover:bg-black transition-colors"
                             >
                                 Modify Request
                             </button>
@@ -655,7 +655,7 @@ export function BookingPage() {
                             </p>
                             <button
                                 onClick={() => setActiveBooking(null)}
-                                className="bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-xs uppercase tracking-wider hover:bg-black transition-colors"
+                                className="bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-xs hover:bg-black transition-colors"
                             >
                                 Try Again
                             </button>
@@ -690,7 +690,7 @@ export function BookingPage() {
                         <div>
                             <div className="flex items-center gap-3">
                                 <h1 className="text-2xl md:text-3xl font-serif font-bold text-[#1a1a1a]">Request Salon Queue</h1>
-                                <span className={`text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full border ${
+                                <span className={`text-[11px] font-semibold px-3 py-1 rounded-full border ${
                                     canJoinQueue
                                         ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                                         : isPaused
@@ -713,7 +713,7 @@ export function BookingPage() {
                                 <Clock size={24} />
                             </div>
                             <div>
-                                <p className="text-xs font-bold uppercase tracking-wider text-gray-400">Current Workload & Estimated Wait</p>
+                                <p className="text-xs font-semibold text-gray-400">Current Workload & Estimated Wait</p>
                                 <p className="text-xl font-serif font-black text-gray-900 mt-0.5">
                                     ~{queueSummary?.estimatedWaitRangeForNewCustomer?.min || 5} – {queueSummary?.estimatedWaitRangeForNewCustomer?.max || 20} mins wait
                                 </p>
@@ -722,13 +722,13 @@ export function BookingPage() {
 
                         <div className="flex items-center gap-6 border-t md:border-t-0 md:border-l border-gray-100 pt-4 md:pt-0 md:pl-6 w-full md:w-auto">
                             <div>
-                                <p className="text-xs font-bold uppercase tracking-wider text-gray-400">In Line Ahead</p>
+                                <p className="text-xs font-semibold text-gray-400">In Line Ahead</p>
                                 <p className="text-lg font-bold text-gray-900">
                                     {queueSummary?.waitingCount || 0} customer{(queueSummary?.waitingCount || 0) === 1 ? "" : "s"}
                                 </p>
                             </div>
                             <div>
-                                <p className="text-xs font-bold uppercase tracking-wider text-gray-400">Queue Capacity</p>
+                                <p className="text-xs font-semibold text-gray-400">Queue Capacity</p>
                                 <p className="text-lg font-bold text-gray-900">
                                     {queueSummary?.waitingCount || 0} / {queueSummary?.maxCapacity || 10}
                                 </p>
@@ -799,7 +799,7 @@ export function BookingPage() {
 
                                                     {/* Bottom: Price */}
                                                     <div className="mt-2 pt-2 border-t border-gray-100 flex items-center justify-between w-full">
-                                                        <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Price</span>
+                                                        <span className="text-[10px] font-semibold text-gray-400">Price</span>
                                                         <span className={`text-base font-black font-serif transition-colors ${
                                                             isSelected ? "text-[#D4AF37]" : "text-gray-900"
                                                         }`}>
@@ -894,7 +894,7 @@ export function BookingPage() {
 
                                 {selectedStaff && (
                                     <div className="mb-6 pt-4 border-t border-gray-50">
-                                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">Preferred Stylist</p>
+                                        <p className="text-xs font-semibold text-gray-400 mb-2">Preferred Stylist</p>
                                         <div className="flex items-center gap-3">
                                             <div className="w-8 h-8 rounded-full bg-[#1a1a1a] flex items-center justify-center text-white font-bold text-xs border border-[#D4AF37]/20">
                                                 {selectedStaff.name?.charAt(0).toUpperCase()}
@@ -916,7 +916,7 @@ export function BookingPage() {
                                     <button
                                         onClick={handleRequestService}
                                         disabled={!canJoinQueue || submitting || selectedServices.length === 0}
-                                        className={`w-full py-4 rounded-2xl font-bold text-sm uppercase tracking-wider transition-all shadow-lg flex items-center justify-center gap-2 ${
+                                        className={`w-full py-4 rounded-2xl font-bold text-sm transition-all shadow-lg flex items-center justify-center gap-2 ${
                                             canJoinQueue && selectedServices.length > 0 && !submitting
                                                 ? "bg-[#D4AF37] hover:bg-[#B8962E] text-white active:scale-[0.99]"
                                                 : "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"

@@ -174,7 +174,7 @@ export function LandingPage() {
 
                 <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="relative z-10 px-6 max-w-4xl mx-auto flex flex-col items-center pt-8">
                     {/* Brand Eyebrow Badge (L3) */}
-                    <motion.div variants={fadeUpVariants} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/50 backdrop-blur-md border border-[#D4AF37]/50 text-[#ffd166] text-xs sm:text-sm font-semibold tracking-wider uppercase mb-5 shadow-xl">
+                    <motion.div variants={fadeUpVariants} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/50 backdrop-blur-md border border-[#D4AF37]/50 text-[#ffd166] text-xs sm:text-sm font-semibold mb-5 shadow-xl">
                         <Scissors size={15} className="text-[#ffd166]" />
                         <span>SalonNow • Premium Grooming & Salons</span>
                     </motion.div>
@@ -299,7 +299,7 @@ export function LandingPage() {
                                 {/* Active Cities with Salons */}
                                 {availableCities.length > 0 && (
                                     <div>
-                                        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">
+                                        <p className="text-xs font-semibold text-gray-500 mb-2">
                                             Active Hubs (Salons Live)
                                         </p>
                                         <div className="grid grid-cols-2 gap-2">
@@ -337,7 +337,7 @@ export function LandingPage() {
 
                                 {/* Major Destinations */}
                                 <div>
-                                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">
+                                    <p className="text-xs font-semibold text-gray-500 mb-2">
                                         Popular Metro Cities
                                     </p>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -566,7 +566,7 @@ export function LandingPage() {
             <section className="py-20 bg-white px-6 border-t border-gray-100">
                 <div className="max-w-6xl mx-auto">
                     <div className="text-center max-w-2xl mx-auto mb-14">
-                        <span className="text-[#D4AF37] font-bold text-xs uppercase tracking-widest bg-amber-50 px-3 py-1 rounded-full">Discover SalonNow</span>
+                        <span className="text-[#D4AF37] font-bold text-xs bg-amber-50 px-3 py-1 rounded-full">Discover SalonNow</span>
                         <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#1a1a1a] mt-3 mb-3">Online Salon Booking Made Effortless</h2>
                         <p className="text-gray-500 text-sm md:text-base leading-relaxed">
                             Connecting customers with premier salons and wellness providers across India with live slot availability, upfront transparent pricing, and instant confirmations.
