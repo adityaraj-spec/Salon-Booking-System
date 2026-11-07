@@ -1,3 +1,4 @@
+import salonLogo from "/logo.jpg";
 import { motion } from 'framer-motion';
 import { ArrowUp, Instagram, Twitter, Facebook, Mail, Phone } from 'lucide-react';
 
@@ -12,9 +13,10 @@ export function Footer() {
                 <div className="grid md:grid-cols-4 gap-8">
                     {/* Column 1 */}
                     <div className="md:col-span-1">
-                        <h3 className="text-xl font-bold mb-6 text-[#ff9f43] tracking-wide">
-                            SalonNow
-                        </h3>
+                        <div className="flex items-center gap-3 mb-6">
+                            <img src={salonLogo} alt="SalonNow" className="w-10 h-10 rounded-full object-cover border border-[#D4AF37]/40" />
+                            <h3 className="text-xl font-bold text-[#ff9f43] tracking-wide">SalonNow</h3>
+                        </div>
                         <p className="text-sm text-gray-400 font-light leading-loose">
                             SalonNow connects customers with beauty and wellness providers for scheduled and last-minute appointments with guaranteed seats and verified salon quality.
                         </p>

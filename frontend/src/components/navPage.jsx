@@ -7,6 +7,7 @@ import { useUI } from "../context/UIContext";
 import { useNotification } from "../context/NotificationContext";
 import axiosInstance from "../api/axiosConfig";
 import { UpcomingAppointmentBanner } from "./UpcomingAppointmentBanner";
+import salonLogo from "/logo.jpg";
 
 
 export function NavBar() {
@@ -194,9 +195,7 @@ export function NavBar() {
                 <UpcomingAppointmentBanner />
                 <div className="max-w-[1280px] mx-auto px-6 md:px-10 py-4 flex items-center justify-between">
                     <NavLink to="/home" aria-label="SalonNow home" className="flex items-center gap-2.5 group cursor-pointer">
-                        <div className="bg-[#1a1a1a] p-2 rounded-full text-[#D4AF37] group-hover:bg-[#D4AF37] group-hover:text-black transition-all shadow-sm">
-                            <Scissors size={20} className="md:w-5 md:h-5 transition-transform group-hover:rotate-12" />
-                        </div>
+                        <img src={salonLogo} alt="SalonNow" className="w-9 h-9 rounded-full object-cover shadow-sm border border-[#D4AF37]/30 group-hover:scale-105 transition-transform" />
                         <span className={`text-xl md:text-2xl font-serif font-bold tracking-tight transition-colors duration-300 ${isTransparent ? (isDark ? 'text-white' : 'text-gray-900') : 'text-[#1a1a1a]'}`}>
                             Salon<span className="text-[#D4AF37]">Now</span>
                         </span>

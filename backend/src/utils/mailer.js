@@ -479,7 +479,7 @@ const renderEmail = ({ preheader, category, icon = "dot", heading, greeting, par
 <td style="background:${COLORS.header};padding:18px 24px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
 <tr>
-<td><span style="font-size:20px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;">Salon<span style="color:${COLORS.gold};">Now</span></span></td>
+<td style="vertical-align:middle;"><img src="${process.env.FRONTEND_URL || 'https://salon-booking-system-main.vercel.app'}/logo.jpg" alt="SalonNow" width="36" height="36" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:1.5px solid ${COLORS.gold};vertical-align:middle;margin-right:10px;display:inline-block;" /><span style="font-size:20px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;vertical-align:middle;">Salon<span style="color:${COLORS.gold};">Now</span></span></td>
 <td align="right"><span style="font-size:11px;font-weight:700;color:${COLORS.gold};letter-spacing:1px;text-transform:uppercase;">HAIR / BEAUTY / WELLNESS</span></td>
 </tr>
 </table>
@@ -520,7 +520,7 @@ ${support.html}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
 <tr>
 <td align="center" style="padding-bottom:12px;">
-<span style="font-size:16px;font-weight:700;color:${COLORS.text};">Salon<span style="color:${COLORS.gold};">Now</span></span>
+<div style="text-align:center;"><img src="${process.env.FRONTEND_URL || 'https://salon-booking-system-main.vercel.app'}/logo.jpg" alt="SalonNow" width="44" height="44" style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid ${COLORS.gold};display:block;margin:0 auto 8px;" /><span style="font-size:16px;font-weight:700;color:${COLORS.text};">Salon<span style="color:${COLORS.gold};">Now</span></span></div>
 <p style="margin:4px 0 0;font-size:12px;color:${COLORS.muted};font-style:italic;">Look good. Feel better.</p>
 </td>
 </tr>
