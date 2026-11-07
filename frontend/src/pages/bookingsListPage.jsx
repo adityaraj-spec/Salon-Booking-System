@@ -333,15 +333,21 @@ export function MyBookingsPage() {
                                     {/* PART 3: DETAILS & ACTIONS (Right) */}
                                     <div className="lg:w-[45%] bg-gray-50/60 rounded-[28px] p-6 border border-gray-100 flex flex-col justify-between gap-5">
                                         
-                                        {/* PIN CARD FOR QUEUE & CONFIRMED BOOKINGS */}
-                                        {booking.verificationPin && ["waiting", "accepted", "arrived", "ready_to_start", "in_progress", "confirmed"].includes(booking.status) && (
-                                            <div className="rounded-2xl border border-[#D4AF37]/40 bg-amber-50/80 px-4 py-3 flex items-center justify-between">
+                                        {/* 4-DIGIT CHECK-IN PIN CARD */}
+                                        {booking.verificationPin && (
+                                            <div className="rounded-2xl border-2 border-[#D4AF37]/40 bg-gradient-to-r from-amber-50 via-orange-50/40 to-amber-50/60 p-4 flex items-center justify-between shadow-sm">
                                                 <div>
-                                                    <p className="text-[10px] font-bold uppercase tracking-widest text-amber-700">Check-in PIN</p>
-                                                    <p className="text-2xl font-black tracking-[0.25em] text-[#1a1a1a]">{booking.verificationPin}</p>
-                                                    <p className="text-[10px] text-amber-800">Show this code when called</p>
+                                                    <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 bg-amber-200/60 px-2 py-0.5 rounded-md inline-block mb-1">
+                                                        Check-in Verification PIN
+                                                    </span>
+                                                    <p className="text-3xl font-black font-mono tracking-[0.35em] text-[#1a1a1a] my-0.5">
+                                                        {booking.verificationPin}
+                                                    </p>
+                                                    <p className="text-[11px] text-amber-900 font-medium">Show this 4-digit code to your stylist</p>
                                                 </div>
-                                                <KeyRound size={28} className="text-[#D4AF37] opacity-60" />
+                                                <div className="w-12 h-12 rounded-2xl bg-amber-100/80 border border-amber-200 flex items-center justify-center text-[#D4AF37] shrink-0">
+                                                    <KeyRound size={22} />
+                                                </div>
                                             </div>
                                         )}
 

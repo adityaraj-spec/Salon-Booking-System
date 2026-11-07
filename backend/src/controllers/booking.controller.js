@@ -92,7 +92,7 @@ const getUserBookings = asyncHandler(async (req, res) => {
                 select: "name city address images owner",
                 populate: { path: "owner", select: "fullName phonenumber" }
             })
-            .populate("staff", "name")
+            .populate("staff", "name role").populate("services", "name price durationMin")
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(Number(limit)),

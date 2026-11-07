@@ -1,6 +1,7 @@
 import { Payment } from "../models/payment.models.js";
 import { Refund } from "../models/refund.models.js";
 import { Booking } from "../models/booking.models.js";
+import { Salon } from "../models/salon.models.js";
 import { Notification } from "../models/notification.models.js";
 import { getRazorpayKeyId, verifyRazorpaySignature, verifyWebhookSignature } from "../utils/razorpay.js";
 import { razorpayCreateOrder, razorpayRefundPayment } from "../utils/razorpayBreaker.js";
@@ -72,8 +73,11 @@ export const confirmPaymentAndBooking = async ({
 
     // I4: This is the ONLY code path that sets booking.status = "confirmed".
     // It is only reachable after a verified payment has been captured above.
-    booking.status = "confirmed";
+    if (["pending_payment", "pending"].includes(booking.status)) {
+      booking.status = "confirmed";
+    }
     booking.paymentStatus = "paid";
+    booking.paymentMethod = "upi";
     await booking.save({ session });
 
     // Write outbox event in the SAME transaction — I5/I10 durability
@@ -201,12 +205,18 @@ export const confirmPaymentAndBooking = async ({
  * entirely if a non-expired order already exists on the document.
  */
 export const createRazorpayOrder = async ({ bookingId, customerId }) => {
-  const booking = await Booking.findOne({ _id: bookingId, customer: customerId });
+  let booking = await Booking.findOne({ _id: bookingId, customer: customerId });
+  if (!booking) {
+    const salons = await Salon.find({ owner: customerId }).select("_id").lean();
+    if (salons.length > 0) {
+      booking = await Booking.findOne({ _id: bookingId, salon: { $in: salons.map((s) => s._id) } });
+    }
+  }
   if (!booking) {
     throw new ApiError(404, "Booking not found or unauthorized");
   }
 
-  if (booking.paymentStatus === "paid" || booking.status === "confirmed") {
+  if (booking.paymentStatus === "paid") {
     throw new ApiError(400, "Booking is already paid and confirmed.");
   }
 
@@ -239,7 +249,7 @@ export const createRazorpayOrder = async ({ bookingId, customerId }) => {
       receipt: booking._id.toString(),
       notes: {
         bookingId: booking._id.toString(),
-        customerId: customerId.toString(),
+        customerId: (booking.customer || customerId)?.toString?.() || "guest",
       },
     });
   } catch (err) {
@@ -274,7 +284,7 @@ export const createRazorpayOrder = async ({ bookingId, customerId }) => {
     {
       $set: {
         booking: booking._id,
-        customer: customerId,
+        customer: booking.customer || customerId,
         razorpayOrderId: razorpayOrder.id,
         amount: booking.totalAmount,
         currency: "INR",

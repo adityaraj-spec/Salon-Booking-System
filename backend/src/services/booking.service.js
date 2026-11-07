@@ -616,8 +616,8 @@ export const addExtraBookingServices = async ({ bookingId, ownerId, role, servic
   if (!salonIds.length) throw new ApiError(403, "You do not manage any salons.");
 
   return withTransactionRetry(async (session) => {
-    const booking = await Booking.findOne({ _id: bookingId, salon: { $in: salonIds }, status: "in_progress" }).session(session);
-    if (!booking) throw new ApiError(404, "In-progress booking not found or unauthorized.");
+    const booking = await Booking.findOne({ _id: bookingId, salon: { $in: salonIds }, status: { $in: ["waiting", "accepted", "arrived", "ready_to_start", "in_progress"] } }).session(session);
+    if (!booking) throw new ApiError(404, "Active booking not found or unauthorized.");
 
     const normalizedIds = [...new Set((serviceIds || []).map((id) => {
       if (typeof id === "object") return id?._id || id?.serviceId;
@@ -674,7 +674,7 @@ export const completeBooking = async ({ bookingId, ownerId, role, paymentMethod 
 
   const booking = await withTransactionRetry(async (session) => {
     const updated = await Booking.findOneAndUpdate(
-      { _id: bookingId, salon: { $in: salonIds }, status: "in_progress" },
+      { _id: bookingId, salon: { $in: salonIds }, status: { $in: ["waiting", "accepted", "arrived", "ready_to_start", "in_progress"] } },
       { $set: { status: "completed", paymentStatus: "paid", paymentMethod, completedAt: new Date() } },
       { new: true, session }
     );

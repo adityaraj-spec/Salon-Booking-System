@@ -22,8 +22,30 @@ import {
     PlayCircle,
     AlertCircle,
     KeyRound,
-    MapPin
+    MapPin,
+    Calendar,
+    Receipt
 } from "lucide-react";
+
+const loadRazorpay = () =>
+    new Promise((resolve, reject) => {
+        if (window.Razorpay) {
+            resolve(true);
+            return;
+        }
+        const existingScript = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]');
+        if (existingScript) {
+            existingScript.addEventListener("load", () => resolve(true), { once: true });
+            existingScript.addEventListener("error", () => reject(new Error("Unable to load Razorpay payment gateway.")), { once: true });
+            return;
+        }
+        const script = document.createElement("script");
+        script.src = "https://checkout.razorpay.com/v1/checkout.js";
+        script.async = true;
+        script.onload = () => resolve(true);
+        script.onerror = () => reject(new Error("Unable to load Razorpay payment gateway."));
+        document.body.appendChild(script);
+    });
 
 export function SalonBookingsPage() {
     const { showNotification } = useNotification();
@@ -43,8 +65,12 @@ export function SalonBookingsPage() {
     const [paymentMethod, setPaymentMethod] = useState("cash");
     const [paymentLoading, setPaymentLoading] = useState(false);
 
+    // Extra services state
+    const [extraServiceModalBooking, setExtraServiceModalBooking] = useState(null);
+    const [selectedExtraServiceId, setSelectedExtraServiceId] = useState("");
+    const [extraServiceLoading, setExtraServiceLoading] = useState(false);
+
     const [serviceOptions, setServiceOptions] = useState([]);
-    const [selectedServiceByBooking, setSelectedServiceByBooking] = useState({});
     const [actionLoadingId, setActionLoadingId] = useState(null);
 
     const fetchSalonAndQueue = useCallback(async () => {
@@ -99,38 +125,47 @@ export function SalonBookingsPage() {
             showNotification(`New queue request from ${data.customerName || "a customer"}!`, "info");
             fetchSalonAndQueue();
         });
-        socket.on("queue:customer_arrived", (data) => {
-            showNotification(`Customer #${data.queuePosition} has arrived at the salon!`, "info");
-            fetchSalonAndQueue();
-        });
+
         socket.on("queue:request_accepted", handleRealtimeUpdate);
         socket.on("queue:request_rejected", handleRealtimeUpdate);
-        socket.on("queue:request_expired", handleRealtimeUpdate);
         socket.on("queue:service_started", handleRealtimeUpdate);
         socket.on("queue:service_completed", handleRealtimeUpdate);
-        socket.on("queue:updated", handleRealtimeUpdate);
-        socket.on("queue:settings_updated", handleRealtimeUpdate);
+        socket.on("queue:customer_cancelled", handleRealtimeUpdate);
+        socket.on("queue:grace_expired", handleRealtimeUpdate);
 
         return () => {
-            socket.off("queue:request_created", handleRealtimeUpdate);
-            socket.off("queue:customer_arrived", handleRealtimeUpdate);
-            socket.off("queue:request_accepted", handleRealtimeUpdate);
-            socket.off("queue:request_rejected", handleRealtimeUpdate);
-            socket.off("queue:request_expired", handleRealtimeUpdate);
-            socket.off("queue:service_started", handleRealtimeUpdate);
-            socket.off("queue:service_completed", handleRealtimeUpdate);
-            socket.off("queue:updated", handleRealtimeUpdate);
-            socket.off("queue:settings_updated", handleRealtimeUpdate);
+            socket.off("queue:request_created");
+            socket.off("queue:request_accepted");
+            socket.off("queue:request_rejected");
+            socket.off("queue:service_started");
+            socket.off("queue:service_completed");
+            socket.off("queue:customer_cancelled");
+            socket.off("queue:grace_expired");
         };
     }, [socket, fetchSalonAndQueue, showNotification]);
 
-    // Accept queue request
+    // Pause / Resume Queue
+    const handleTogglePause = async () => {
+        if (!salonId) return;
+        const willPause = !queueSummary?.isPaused;
+        try {
+            await axiosInstance.patch(`/queue/salon/${salonId}/settings`, {
+                isPaused: willPause,
+            });
+            showNotification(willPause ? "Queue paused for walk-ins" : "Queue resumed and accepting customers", "info");
+            await fetchSalonAndQueue();
+        } catch (err) {
+            showNotification(err.response?.data?.message || "Failed to toggle queue pause", "error");
+        }
+    };
+
+    // Accept incoming request
     const handleAcceptRequest = async (bookingId) => {
         setActionLoadingId(bookingId);
         try {
             const res = await axiosInstance.post(`/queue/${bookingId}/accept`);
             if (res.data?.success) {
-                showNotification(`Request accepted into queue (Position #${res.data.data.queuePosition})`, "success");
+                showNotification("Customer accepted into the queue!", "success");
                 await fetchSalonAndQueue();
             }
         } catch (err) {
@@ -140,15 +175,15 @@ export function SalonBookingsPage() {
         }
     };
 
-    // Reject queue request
+    // Reject incoming request
     const handleRejectRequest = async (bookingId) => {
         setActionLoadingId(bookingId);
         try {
             const res = await axiosInstance.post(`/queue/${bookingId}/reject`, {
-                reason: "Salon currently at capacity",
+                reason: "Salon is at capacity at this time.",
             });
             if (res.data?.success) {
-                showNotification("Request declined", "info");
+                showNotification("Request declined.", "info");
                 await fetchSalonAndQueue();
             }
         } catch (err) {
@@ -158,29 +193,12 @@ export function SalonBookingsPage() {
         }
     };
 
-    // Toggle Pause / Resume Queue
-    const handleTogglePause = async () => {
-        if (!salonId) return;
-        const currentPaused = Boolean(queueSummary?.isPaused);
-        try {
-            const res = await axiosInstance.patch(`/queue/salon/${salonId}/settings`, {
-                isPaused: !currentPaused,
-            });
-            if (res.data?.success) {
-                showNotification(currentPaused ? "Queue intake resumed" : "Queue intake paused", "success");
-                await fetchSalonAndQueue();
-            }
-        } catch (err) {
-            showNotification("Failed to update queue settings", "error");
-        }
-    };
-
-    // Start Service with PIN verification
-    const handleStartService = async (event, booking) => {
-        event.preventDefault();
-        const pin = String(cardCheckInPins[booking._id] || "").trim();
-        if (!/^\d{4}$/.test(pin)) {
-            showNotification("Please enter customer's 4-digit PIN", "error");
+    // Start service with 4-digit PIN verification
+    const handleStartService = async (e, booking) => {
+        e.preventDefault();
+        const pin = (cardCheckInPins[booking._id] || "").trim();
+        if (!pin || pin.length !== 4) {
+            showNotification("Enter customer's 4-digit check-in PIN", "error");
             return;
         }
 
@@ -199,37 +217,130 @@ export function SalonBookingsPage() {
         }
     };
 
-    // Complete Service and record payment
+    // Complete Service and record payment (Razorpay for UPI, Direct for Cash)
     const handleCompleteService = async () => {
         if (!paymentBooking) return;
         setPaymentLoading(true);
+
         try {
-            const res = await axiosInstance.post(`/queue/${paymentBooking._id}/complete`, { paymentMethod });
-            if (res.data?.success) {
-                showNotification("Payment recorded and service marked completed!", "success");
+            if (paymentMethod === "upi" || paymentMethod === "card") {
+                // Step 1: Create server-priced Razorpay order
+                const orderRes = await axiosInstance.post("/payments/create-order", {
+                    bookingId: paymentBooking._id,
+                });
+                const orderData = orderRes.data?.data;
+                if (!orderData?.orderId) {
+                    throw new Error("Unable to create online payment order.");
+                }
+
+                // Step 2: Dynamically load Razorpay SDK
+                await loadRazorpay();
+
+                // Step 3: Open Razorpay checkout interface
+                await new Promise((resolve, reject) => {
+                    const rzp = new window.Razorpay({
+                        key: orderData.keyId,
+                        amount: Math.round(Number(orderData.amount) * 100),
+                        currency: orderData.currency || "INR",
+                        name: "SalonNow",
+                        description: `Payment for #${paymentBooking._id.slice(-6)}`,
+                        order_id: orderData.orderId,
+                        prefill: {
+                            name: paymentBooking.customer?.fullName || paymentBooking.guestName || "Customer",
+                            email: paymentBooking.customer?.email || "",
+                            contact: paymentBooking.customer?.phonenumber || "",
+                        },
+                        theme: { color: "#D4AF37" },
+                        handler: async (response) => {
+                            try {
+                                // Step 4: Verify signature
+                                await axiosInstance.post("/payments/verify", {
+                                    bookingId: paymentBooking._id,
+                                    razorpayOrderId: response.razorpay_order_id,
+                                    razorpayPaymentId: response.razorpay_payment_id,
+                                    razorpaySignature: response.razorpay_signature,
+                                });
+
+                                // Step 5: Mark complete
+                                await axiosInstance.post(`/queue/${paymentBooking._id}/complete`, {
+                                    paymentMethod,
+                                    razorpayPaymentId: response.razorpay_payment_id,
+                                });
+
+                                showNotification("UPI Payment verified & service completed!", "success");
+                                resolve();
+                            } catch (vErr) {
+                                reject(vErr);
+                            }
+                        },
+                        modal: {
+                            ondismiss: () => {
+                                reject(new Error("Payment was cancelled or closed."));
+                            },
+                        },
+                    });
+
+                    rzp.on("payment.failed", (pErr) => {
+                        reject(new Error(pErr.error?.description || "Payment failed"));
+                    });
+
+                    rzp.open();
+                });
+
                 setPaymentBooking(null);
                 await fetchSalonAndQueue();
+            } else {
+                // Cash settlement
+                const res = await axiosInstance.post(`/queue/${paymentBooking._id}/complete`, { paymentMethod: "cash" });
+                if (res.data?.success) {
+                    showNotification("Cash payment recorded & service completed!", "success");
+                    setPaymentBooking(null);
+                    await fetchSalonAndQueue();
+                }
             }
         } catch (err) {
-            showNotification(err.response?.data?.message || "Failed to complete service", "error");
+            showNotification(err.response?.data?.message || err.message || "Failed to complete service", "error");
         } finally {
             setPaymentLoading(false);
         }
     };
 
-    // Add extra service
-    const handleAddExtra = async (booking) => {
-        const serviceId = String(selectedServiceByBooking[booking._id] || "").trim();
-        if (!serviceId) return;
+    // Direct completion without Razorpay (fallback for physical standee QR)
+    const handleDirectComplete = async () => {
+        if (!paymentBooking) return;
+        setPaymentLoading(true);
         try {
-            const res = await axiosInstance.patch(`/bookings/${booking._id}/services`, { serviceId });
+            const res = await axiosInstance.post(`/queue/${paymentBooking._id}/complete`, { paymentMethod });
             if (res.data?.success) {
-                showNotification("Extra service added to bill", "success");
-                setSelectedServiceByBooking((prev) => ({ ...prev, [booking._id]: "" }));
+                showNotification(`Payment recorded via ${paymentMethod.toUpperCase()} and ticket closed!`, "success");
+                setPaymentBooking(null);
                 await fetchSalonAndQueue();
             }
         } catch (err) {
-            showNotification("Failed to add extra service", "error");
+            showNotification(err.response?.data?.message || "Failed to record payment", "error");
+        } finally {
+            setPaymentLoading(false);
+        }
+    };
+
+    // Add extra service to booking
+    const handleAddExtraServiceSubmit = async () => {
+        if (!extraServiceModalBooking || !selectedExtraServiceId) return;
+        setExtraServiceLoading(true);
+        try {
+            const res = await axiosInstance.patch(`/bookings/${extraServiceModalBooking._id}/services`, {
+                serviceId: selectedExtraServiceId,
+            });
+            if (res.data?.success) {
+                showNotification("Service added successfully and price updated!", "success");
+                setExtraServiceModalBooking(null);
+                setSelectedExtraServiceId("");
+                await fetchSalonAndQueue();
+            }
+        } catch (err) {
+            showNotification(err.response?.data?.message || "Failed to add service", "error");
+        } finally {
+            setExtraServiceLoading(false);
         }
     };
 
@@ -248,31 +359,35 @@ export function SalonBookingsPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-white flex flex-col items-center justify-center">
-                <Loader2 className="w-12 h-12 text-[#D4AF37] animate-spin mb-4" />
-                <p className="text-gray-500 animate-pulse">Loading live queue dashboard...</p>
+            <div className="min-h-screen bg-[#fafafa] flex items-center justify-center p-6">
+                <div className="text-center">
+                    <Loader2 className="w-10 h-10 text-[#D4AF37] animate-spin mx-auto mb-3" />
+                    <p className="text-xs font-bold text-gray-500">Loading salon queue...</p>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-[#fafafa] py-10 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-[1280px] mx-auto space-y-8">
+        <div className="min-h-screen bg-[#fafafa] py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <div className="space-y-6">
 
                 {/* HEADER & QUEUE STATUS BAR */}
-                <div className="bg-white border border-gray-100 rounded-3xl p-6 md:p-8 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div className="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
                         <div className="flex items-center gap-3">
-                            <h1 className="text-2xl md:text-3xl font-serif font-black text-[#1a1a1a]">Live Salon Queue Dashboard</h1>
-                            <span className={`text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full border ${
+                            <h1 className="text-2xl md:text-3xl font-serif font-black text-gray-900">
+                                Live Salon Queue Dashboard
+                            </h1>
+                            <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${
                                 queueSummary?.isPaused
-                                    ? "bg-amber-50 text-amber-700 border-amber-200"
+                                    ? "bg-amber-50 text-amber-800 border-amber-200"
                                     : "bg-emerald-50 text-emerald-700 border-emerald-200"
                             }`}>
                                 {queueSummary?.isPaused ? "Queue Intake Paused" : "Active & Accepting"}
                             </span>
                         </div>
-                        <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1.5">
+                        <p className="text-xs text-gray-500 font-medium mt-1.5">
                             Real-time customer admissions, stylist assignments & PIN check-ins
                         </p>
                     </div>
@@ -282,7 +397,7 @@ export function SalonBookingsPage() {
                         <div className="flex items-center gap-3 bg-gray-50 border border-gray-100 px-4 py-2.5 rounded-2xl">
                             <Users size={18} className="text-[#D4AF37]" />
                             <div className="text-left">
-                                <p className="text-[10px] font-bold uppercase text-gray-400 leading-none">In Queue / Capacity</p>
+                                <p className="text-[11px] font-semibold text-gray-500 leading-none">In Queue / Capacity</p>
                                 <p className="text-sm font-black text-gray-900 mt-0.5">
                                     {queueSummary?.waitingCount || activeQueueList.length} / {queueSummary?.maxCapacity || 10}
                                 </p>
@@ -292,10 +407,10 @@ export function SalonBookingsPage() {
                         {/* Pause / Resume Button */}
                         <button
                             onClick={handleTogglePause}
-                            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all shadow-sm ${
+                            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-bold transition-all shadow-sm ${
                                 queueSummary?.isPaused
                                     ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                                    : "bg-amber-100 hover:bg-amber-200 text-amber-800"
+                                    : "bg-amber-100 hover:bg-amber-200 text-amber-900"
                             }`}
                         >
                             {queueSummary?.isPaused ? <PlayCircle size={16} /> : <PauseCircle size={16} />}
@@ -308,10 +423,10 @@ export function SalonBookingsPage() {
                 <div className="flex items-center gap-3 border-b border-gray-200 pb-2">
                     <button
                         onClick={() => setActiveTab("queue")}
-                        className={`px-5 py-2.5 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${
+                        className={`px-5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 ${
                             activeTab === "queue"
                                 ? "bg-[#1a1a1a] text-white shadow-md"
-                                : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+                                : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                         }`}
                     >
                         <Users size={16} />
@@ -320,10 +435,10 @@ export function SalonBookingsPage() {
 
                     <button
                         onClick={() => setActiveTab("requests")}
-                        className={`px-5 py-2.5 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 relative ${
+                        className={`px-5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 relative ${
                             activeTab === "requests"
                                 ? "bg-[#1a1a1a] text-white shadow-md"
-                                : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+                                : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                         }`}
                     >
                         <Clock size={16} />
@@ -335,10 +450,10 @@ export function SalonBookingsPage() {
 
                     <button
                         onClick={() => setActiveTab("history")}
-                        className={`px-5 py-2.5 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${
+                        className={`px-5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 ${
                             activeTab === "history"
                                 ? "bg-[#1a1a1a] text-white shadow-md"
-                                : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+                                : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                         }`}
                     >
                         <CheckCircle size={16} />
@@ -394,7 +509,7 @@ export function SalonBookingsPage() {
                                                         <h3 className="font-bold text-gray-900 text-base">
                                                             {booking.customer?.fullName || booking.guestName || "Customer"}
                                                         </h3>
-                                                        <span className={`text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full border ${
+                                                        <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${
                                                             isInProgress
                                                                 ? "bg-purple-100 text-purple-700 border-purple-200"
                                                                 : isArrived
@@ -405,7 +520,7 @@ export function SalonBookingsPage() {
                                                         </span>
                                                     </div>
 
-                                                    <div className="flex items-center gap-3 text-xs text-gray-400 mt-1">
+                                                    <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
                                                         {booking.customer?.phonenumber && (
                                                             <span className="flex items-center gap-1 font-mono">
                                                                 <Phone size={12} /> {booking.customer.phonenumber}
@@ -415,15 +530,32 @@ export function SalonBookingsPage() {
                                                         <span className="flex items-center gap-1">
                                                             <Clock size={12} /> ~{booking.estimatedWaitMin || 0}m wait
                                                         </span>
+                                                        <span>•</span>
+                                                        <span className="font-bold text-gray-900">
+                                                            Total: ₹{booking.totalAmount}
+                                                        </span>
                                                     </div>
 
                                                     {/* Services list */}
-                                                    <div className="flex flex-wrap gap-1.5 mt-2.5">
+                                                    <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
                                                         {booking.serviceNames?.map((s, i) => (
-                                                            <span key={i} className="text-[11px] bg-gray-50 border border-gray-100 px-2.5 py-0.5 rounded-lg text-gray-600 font-medium">
+                                                            <span key={i} className="text-[11px] bg-gray-50 border border-gray-200 px-2.5 py-0.5 rounded-lg text-gray-700 font-medium">
                                                                 {s}
                                                             </span>
                                                         ))}
+
+                                                        {/* Add Service Button on Active Card */}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setExtraServiceModalBooking(booking);
+                                                                setSelectedExtraServiceId("");
+                                                            }}
+                                                            className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2.5 py-0.5 rounded-lg transition-colors"
+                                                        >
+                                                            <Plus size={11} />
+                                                            <span>Add Service</span>
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -451,7 +583,7 @@ export function SalonBookingsPage() {
                                                         <button
                                                             type="submit"
                                                             disabled={cardCheckInLoading[booking._id]}
-                                                            className="px-4 py-2 bg-[#D4AF37] hover:bg-[#B8962E] text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 shrink-0 shadow-sm"
+                                                            className="px-4 py-2 bg-[#D4AF37] hover:bg-[#B8962E] text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 shadow-sm"
                                                         >
                                                             {cardCheckInLoading[booking._id] ? (
                                                                 <Loader2 size={14} className="animate-spin" />
@@ -465,7 +597,7 @@ export function SalonBookingsPage() {
                                                     <div className="flex items-center gap-3">
                                                         <button
                                                             onClick={() => setPaymentBooking(booking)}
-                                                            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-sm"
+                                                            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm"
                                                         >
                                                             <CheckCircle size={14} />
                                                             <span>Complete Service (₹{booking.totalAmount})</span>
@@ -504,7 +636,7 @@ export function SalonBookingsPage() {
                                                 <h3 className="font-bold text-gray-900 text-lg">
                                                     {req.customer?.fullName || req.guestName || "Customer"}
                                                 </h3>
-                                                <span className="text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                                                <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
                                                     Pending Review
                                                 </span>
                                             </div>
@@ -528,21 +660,21 @@ export function SalonBookingsPage() {
                                             <button
                                                 disabled={actionLoadingId === req._id}
                                                 onClick={() => handleRejectRequest(req._id)}
-                                                className="flex-1 md:flex-none px-5 py-2.5 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 text-xs font-bold uppercase tracking-wider transition-colors"
+                                                className="flex-1 md:flex-none px-5 py-2.5 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 text-xs font-bold transition-colors"
                                             >
                                                 Decline
                                             </button>
                                             <button
                                                 disabled={actionLoadingId === req._id}
                                                 onClick={() => handleAcceptRequest(req._id)}
-                                                className="flex-1 md:flex-none px-6 py-2.5 rounded-xl bg-[#D4AF37] hover:bg-[#B8962E] text-white text-xs font-bold uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-1.5"
+                                                className="flex-1 md:flex-none px-6 py-2.5 rounded-xl bg-[#D4AF37] hover:bg-[#B8962E] text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-1.5"
                                             >
                                                 {actionLoadingId === req._id ? (
                                                     <Loader2 size={14} className="animate-spin" />
                                                 ) : (
                                                     <CheckCircle size={14} />
                                                 )}
-                                                <span>Accept Into Queue</span>
+                                                <span>Accept into Queue</span>
                                             </button>
                                         </div>
                                     </div>
@@ -553,7 +685,7 @@ export function SalonBookingsPage() {
                 )}
 
                 {/* ─────────────────────────────────────────────────────────────────── */}
-                {/* TAB 3: HISTORY */}
+                {/* TAB 3: COMPLETED & HISTORY */}
                 {/* ─────────────────────────────────────────────────────────────────── */}
                 {activeTab === "history" && (
                     <div className="space-y-4">
@@ -564,22 +696,128 @@ export function SalonBookingsPage() {
                                 <p className="text-xs text-gray-400 mt-1">Completed appointments will be archived here.</p>
                             </div>
                         ) : (
-                            <div className="grid gap-3">
-                                {historicalList.map((b) => (
-                                    <div key={b._id} className="bg-white rounded-2xl p-4 border border-gray-100 flex items-center justify-between text-sm">
-                                        <div>
-                                            <p className="font-bold text-gray-900">{b.customer?.fullName || "Guest Customer"}</p>
-                                            <p className="text-xs text-gray-400">
-                                                {b.serviceNames?.join(", ") || "Salon Visit"} • ₹{b.totalAmount}
-                                            </p>
+                            <div className="grid gap-4">
+                                {historicalList.map((b) => {
+                                    const formattedDate = b.completedAt
+                                        ? new Date(b.completedAt).toLocaleString("en-IN", {
+                                              day: "numeric",
+                                              month: "short",
+                                              year: "numeric",
+                                              hour: "numeric",
+                                              minute: "2-digit",
+                                              hour12: true,
+                                          })
+                                        : b.createdAt
+                                        ? new Date(b.createdAt).toLocaleString("en-IN", {
+                                              day: "numeric",
+                                              month: "short",
+                                              year: "numeric",
+                                              hour: "numeric",
+                                              minute: "2-digit",
+                                              hour12: true,
+                                          })
+                                        : "Recent";
+
+                                    const paymentMethodLabel =
+                                        b.paymentMethod === "upi"
+                                            ? "UPI (Razorpay)"
+                                            : b.paymentMethod === "card"
+                                            ? "Card"
+                                            : "Cash";
+
+                                    const PaymentIcon =
+                                        b.paymentMethod === "upi"
+                                            ? Smartphone
+                                            : b.paymentMethod === "card"
+                                            ? CreditCard
+                                            : Banknote;
+
+                                    const stylistName = b.staff?.name || b.staffName || "Not Specified";
+
+                                    return (
+                                        <div
+                                            key={b._id}
+                                            className="bg-white rounded-3xl p-5 md:p-6 border border-gray-100 shadow-sm hover:border-gray-200 transition-all flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6"
+                                        >
+                                            {/* LEFT: Customer & Appointment Details */}
+                                            <div className="space-y-2 flex-1">
+                                                <div className="flex items-center gap-3">
+                                                    <h3 className="font-bold text-gray-900 text-base md:text-lg">
+                                                        {b.customer?.fullName || b.guestName || "Guest Customer"}
+                                                    </h3>
+                                                    <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
+                                                        b.status === "completed"
+                                                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                                            : "bg-gray-100 text-gray-600 border border-gray-200"
+                                                    }`}>
+                                                        {b.status === "completed" ? "Completed" : b.status}
+                                                    </span>
+                                                </div>
+
+                                                <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500">
+                                                    <span className="flex items-center gap-1.5 text-gray-700 font-medium">
+                                                        <Calendar size={13} className="text-[#D4AF37]" />
+                                                        {formattedDate}
+                                                    </span>
+
+                                                    <span className="flex items-center gap-1.5 text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-md font-medium">
+                                                        <Scissors size={12} />
+                                                        Stylist: {b.staff?.name || b.staffName || "Not Specified"}
+                                                    </span>
+
+                                                    {b.customer?.phonenumber && (
+                                                        <span className="flex items-center gap-1 font-mono text-gray-500">
+                                                            <Phone size={12} /> {b.customer.phonenumber}
+                                                        </span>
+                                                    )}
+
+                                                    
+                                                </div>
+
+                                                {/* Selected Services Tags */}
+                                                <div className="pt-2">
+                                                    <p className="text-[10px] font-semibold text-gray-400 mb-1.5">Services Rendered</p>
+                                                    <div className="flex flex-wrap gap-1.5">
+                                                        {(b.snapshotServices?.length > 0
+                                                            ? b.snapshotServices
+                                                            : b.services?.length > 0
+                                                            ? b.services
+                                                            : (b.serviceNames || []).map((name) => ({ name, price: "" }))
+                                                        ).map((s, idx) => (
+                                                            <span
+                                                                key={idx}
+                                                                className="text-xs bg-gray-50 border border-gray-200/80 px-3 py-1 rounded-full text-gray-700 font-medium flex items-center gap-1.5"
+                                                            >
+                                                                <span>{s.name || s}</span>
+                                                                {s.price ? (
+                                                                    <span className="font-bold text-gray-900 text-[11px]">₹{s.price}</span>
+                                                                ) : null}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* RIGHT: Payment Method & Total Settled Amount */}
+                                            <div className="w-full lg:w-auto flex lg:flex-col items-center lg:items-end justify-between border-t lg:border-t-0 pt-4 lg:pt-0 gap-3">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-200">
+                                                        <PaymentIcon size={13} className="text-[#D4AF37]" />
+                                                        <span>{paymentMethodLabel}</span>
+                                                    </span>
+                                                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                                        Paid
+                                                    </span>
+                                                </div>
+
+                                                <div className="text-right">
+                                                    <p className="text-[10px] font-semibold text-gray-400">Total Bill</p>
+                                                    <p className="text-2xl font-black font-serif text-gray-900">₹{b.totalAmount}</p>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <span className={`text-[10px] font-bold uppercase px-3 py-1 rounded-full ${
-                                            b.status === "completed" ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-500"
-                                        }`}>
-                                            {b.status}
-                                        </span>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         )}
                     </div>
@@ -587,14 +825,14 @@ export function SalonBookingsPage() {
 
             </div>
 
-            {/* PAYMENT & COMPLETION MODAL */}
+            {/* PAYMENT & SETTLEMENT MODAL */}
             {paymentBooking && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="bg-white rounded-3xl max-w-md w-full p-6 md:p-8 shadow-2xl border border-gray-100 animate-in fade-in zoom-in-95">
                         <div className="flex justify-between items-start mb-6">
                             <div>
                                 <h3 className="text-xl font-serif font-bold text-gray-900">Complete & Settle Service</h3>
-                                <p className="text-xs text-gray-400 mt-1">Confirm payment method and close out ticket</p>
+                                <p className="text-xs text-gray-500 mt-1">Select payment method and close out ticket</p>
                             </div>
                             <button onClick={() => setPaymentBooking(null)} className="p-1 rounded-full text-gray-400 hover:text-black">
                                 <X size={20} />
@@ -602,51 +840,197 @@ export function SalonBookingsPage() {
                         </div>
 
                         <div className="mb-6 p-4 bg-gray-50 rounded-2xl border border-gray-100 flex justify-between items-center">
-                            <span className="text-sm text-gray-500">Bill Amount</span>
-                            <span className="text-2xl font-black font-serif text-gray-900">₹{paymentBooking.totalAmount}</span>
+                            <div>
+                                <span className="text-xs text-gray-500 block">Customer</span>
+                                <span className="text-sm font-bold text-gray-900">{paymentBooking.customer?.fullName || paymentBooking.guestName || "Customer"}</span>
+                            </div>
+                            <div className="text-right">
+                                <span className="text-xs text-gray-500 block">Total Bill</span>
+                                <span className="text-2xl font-black font-serif text-gray-900">₹{paymentBooking.totalAmount}</span>
+                            </div>
                         </div>
 
                         <div className="space-y-2 mb-6">
-                            <label className="text-xs font-bold uppercase text-gray-500">Payment Collected Via</label>
+                            <label className="text-xs font-bold text-gray-700">Payment Method</label>
                             <div className="grid grid-cols-3 gap-2">
                                 {[
+                                    { id: "upi", label: "UPI (Razorpay)", icon: Smartphone },
                                     { id: "cash", label: "Cash", icon: Banknote },
-                                    { id: "upi", label: "UPI", icon: Smartphone },
                                     { id: "card", label: "Card", icon: CreditCard },
                                 ].map((m) => (
                                     <button
                                         key={m.id}
                                         type="button"
                                         onClick={() => setPaymentMethod(m.id)}
-                                        className={`p-3 rounded-xl border text-center flex flex-col items-center gap-1 transition-all ${
+                                        className={`p-3 rounded-xl border text-center flex flex-col items-center gap-1.5 transition-all ${
                                             paymentMethod === m.id
-                                                ? "border-[#D4AF37] bg-amber-50/50 text-[#1a1a1a] font-bold"
+                                                ? "border-[#D4AF37] bg-amber-50/70 text-[#1a1a1a] font-bold shadow-sm"
                                                 : "border-gray-200 text-gray-500 hover:bg-gray-50"
                                         }`}
                                     >
-                                        <m.icon size={18} />
-                                        <span className="text-xs">{m.label}</span>
+                                        <m.icon size={18} className={paymentMethod === m.id ? "text-[#D4AF37]" : "text-gray-400"} />
+                                        <span className="text-xs leading-tight">{m.label}</span>
                                     </button>
                                 ))}
                             </div>
+                            {paymentMethod === "upi" && (
+                                <p className="text-[11px] text-amber-800 bg-amber-50/80 p-2.5 rounded-xl border border-amber-200 mt-2">
+                                    Clicking Confirm will launch the <strong>Razorpay UPI interface</strong> for dynamic QR code scan or UPI apps.
+                                </p>
+                            )}
                         </div>
+
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setPaymentBooking(null)}
+                                    className="flex-1 py-3 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    disabled={paymentLoading}
+                                    onClick={handleCompleteService}
+                                    className="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md"
+                                >
+                                    {paymentLoading ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
+                                    <span>{paymentMethod === "upi" ? "Open Razorpay UPI" : "Confirm Payment"}</span>
+                                </button>
+                            </div>
+
+                            {paymentMethod === "upi" && (
+                                <button
+                                    type="button"
+                                    disabled={paymentLoading}
+                                    onClick={handleDirectComplete}
+                                    className="w-full text-center text-[11px] text-gray-500 hover:text-black font-medium underline py-1"
+                                >
+                                    Or mark as paid directly (Scanned physical counter QR standee)
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ADD EXTRA SERVICES MODAL */}
+            {extraServiceModalBooking && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-3xl max-lg w-full p-6 md:p-8 shadow-2xl border border-gray-100 animate-in fade-in zoom-in-95">
+                        <div className="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 className="text-xl font-serif font-bold text-gray-900">Add Service to Ticket</h3>
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Customer: <strong>{extraServiceModalBooking.customer?.fullName || extraServiceModalBooking.guestName || "Customer"}</strong>
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setExtraServiceModalBooking(null)}
+                                className="p-1 rounded-full text-gray-400 hover:text-black"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        {/* Current services on ticket */}
+                        <div className="mb-4 p-3.5 bg-gray-50 rounded-2xl border border-gray-100 text-xs">
+                            <span className="font-semibold text-gray-500 block mb-1">Current Ticket Services:</span>
+                            <div className="flex flex-wrap gap-1">
+                                {extraServiceModalBooking.serviceNames?.map((s, idx) => (
+                                    <span key={idx} className="bg-white border border-gray-200 px-2.5 py-0.5 rounded-md font-medium text-gray-700">
+                                        {s}
+                                    </span>
+                                ))}
+                            </div>
+                            <div className="mt-2 pt-2 border-t border-gray-200 flex justify-between font-bold text-gray-900">
+                                <span>Current Total:</span>
+                                <span>₹{extraServiceModalBooking.totalAmount}</span>
+                            </div>
+                        </div>
+
+                        {/* Salon's available services list */}
+                        <div className="mb-6">
+                            <label className="text-xs font-bold text-gray-700 block mb-2">
+                                Choose an Available Salon Service to Add:
+                            </label>
+                            <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
+                                {serviceOptions.length > 0 ? (
+                                    serviceOptions.map((service) => {
+                                        const isSelected = selectedExtraServiceId === service._id;
+                                        return (
+                                            <button
+                                                key={service._id}
+                                                type="button"
+                                                onClick={() => setSelectedExtraServiceId(service._id)}
+                                                className={`w-full p-3 rounded-2xl border text-left flex items-center justify-between transition-all ${
+                                                    isSelected
+                                                        ? "border-[#D4AF37] bg-amber-50/70 text-gray-900 font-bold shadow-sm ring-1 ring-[#D4AF37]/30"
+                                                        : "border-gray-100 hover:border-gray-200 bg-white"
+                                                }`}
+                                            >
+                                                <div>
+                                                    <span className="text-sm font-semibold block">{service.name}</span>
+                                                    <span className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
+                                                        <Clock size={10} className="text-[#D4AF37]" />
+                                                        ~{service.durationMin || service.duration || 30} mins
+                                                    </span>
+                                                </div>
+                                                <div className="text-right flex items-center gap-2">
+                                                    <span className="text-sm font-bold text-gray-900">+₹{service.price}</span>
+                                                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                                                        isSelected ? "bg-[#D4AF37] border-[#D4AF37] text-white" : "border-gray-300"
+                                                    }`}>
+                                                        {isSelected && <CheckCircle size={10} />}
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        );
+                                    })
+                                ) : (
+                                    <p className="text-xs text-gray-400 py-4 text-center">No other services configured for this salon.</p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Price increment summary */}
+                        {selectedExtraServiceId && (
+                            <div className="mb-6 p-3.5 bg-amber-50 rounded-2xl border border-amber-200 text-xs space-y-1">
+                                {(() => {
+                                    const selectedService = serviceOptions.find((s) => s._id === selectedExtraServiceId);
+                                    const addedPrice = Number(selectedService?.price || 0);
+                                    const newTotal = Number(extraServiceModalBooking.totalAmount || 0) + addedPrice;
+                                    return (
+                                        <div className="flex justify-between items-center text-sm font-bold text-amber-950">
+                                            <span>New Total Bill:</span>
+                                            <span className="text-lg font-black text-amber-900">₹{newTotal}</span>
+                                        </div>
+                                    );
+                                })()}
+                            </div>
+                        )}
 
                         <div className="flex items-center gap-3">
                             <button
                                 type="button"
-                                onClick={() => setPaymentBooking(null)}
-                                className="flex-1 py-3 rounded-xl border border-gray-200 text-xs font-bold uppercase text-gray-600 hover:bg-gray-50"
+                                onClick={() => setExtraServiceModalBooking(null)}
+                                className="flex-1 py-3 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50"
                             >
-                                Back
+                                Cancel
                             </button>
                             <button
                                 type="button"
-                                disabled={paymentLoading}
-                                onClick={handleCompleteService}
-                                className="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase flex items-center justify-center gap-1.5 shadow-md"
+                                disabled={!selectedExtraServiceId || extraServiceLoading}
+                                onClick={handleAddExtraServiceSubmit}
+                                className={`flex-1 py-3 rounded-xl text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md ${
+                                    selectedExtraServiceId && !extraServiceLoading
+                                        ? "bg-[#D4AF37] hover:bg-[#B8962E]"
+                                        : "bg-gray-300 cursor-not-allowed shadow-none"
+                                }`}
                             >
-                                {paymentLoading ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
-                                <span>Confirm Payment</span>
+                                {extraServiceLoading ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+                                <span>Add to Ticket</span>
                             </button>
                         </div>
                     </div>

@@ -320,6 +320,7 @@ export function BookingPage() {
             const response = await axiosInstance.post("/queue/request", {
                 salonId: id,
                 serviceIds,
+                staffId: selectedStaff?._id || undefined,
             });
 
             if (response.data?.success) {
@@ -477,6 +478,19 @@ export function BookingPage() {
                                     ~{activeBooking.estimatedWaitMin || 10} – {activeBooking.estimatedWaitMax || 25} mins
                                 </p>
                             </div>
+
+                            {activeBooking.verificationPin && (
+                                <div className="mt-6 max-w-sm mx-auto rounded-2xl border-2 border-dashed border-[#D4AF37] bg-gradient-to-r from-amber-50/90 to-orange-50/60 p-5 shadow-sm">
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 bg-amber-200/60 px-2.5 py-0.5 rounded-md inline-block">
+                                        Check-in Verification PIN
+                                    </span>
+                                    <p className="text-3xl font-black font-mono tracking-[0.35em] text-[#1a1a1a] my-2">
+                                        {activeBooking.verificationPin}
+                                    </p>
+                                    <p className="text-xs text-amber-900 font-medium">Show this 4-digit code to your stylist upon arrival.</p>
+                                </div>
+                            )}
+
                             <div className="mt-8">
                                 <button
                                     onClick={() => navigate("/bookings")}
@@ -739,7 +753,7 @@ export function BookingPage() {
                                     <span className="bg-[#1a1a1a] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold font-serif">1</span>
                                     <h2 className="text-xl font-serif font-bold text-[#1a1a1a]">Select Desired Services</h2>
                                 </div>
-                                <div className="grid gap-3">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
                                     {services.length > 0 ? (
                                         services.map((service) => {
                                             const isSelected = selectedServices.some((s) => (s._id || s.serviceId) === service._id);
@@ -747,38 +761,56 @@ export function BookingPage() {
                                                 <button
                                                     key={service._id}
                                                     onClick={() => toggleService(service)}
-                                                    className={`cursor-pointer p-5 rounded-2xl border-2 transition-all flex items-center justify-between text-left ${
+                                                    className={`group relative p-4 rounded-2xl border-2 transition-all flex flex-col justify-between text-left min-h-[145px] ${
                                                         isSelected
-                                                            ? "border-[#D4AF37] bg-orange-50/30"
-                                                            : "border-gray-100 bg-white hover:border-gray-200"
+                                                            ? "border-[#D4AF37] bg-gradient-to-b from-amber-50/80 to-orange-50/30 shadow-md ring-1 ring-[#D4AF37]/30 scale-[1.02]"
+                                                            : "border-gray-100 bg-white hover:border-gray-200 hover:shadow-sm"
                                                     }`}
                                                     type="button"
                                                 >
-                                                    <div className="flex-1">
-                                                        <h3 className="font-bold text-gray-900">{service.name}</h3>
-                                                        {service.description && (
-                                                            <p className="text-xs text-gray-500 line-clamp-1 mt-0.5">{service.description}</p>
-                                                        )}
-                                                        <span className="inline-flex items-center gap-1 text-xs text-gray-400 font-medium mt-1">
-                                                            <Clock size={11} className="text-[#D4AF37]" />
-                                                            Est. {service.durationMin || service.duration || 30} mins
+                                                    {/* Top: Duration pill & Radio/Check */}
+                                                    <div className="flex items-center justify-between w-full mb-2">
+                                                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-gray-500 bg-gray-50 group-hover:bg-gray-100 px-2 py-0.5 rounded-md">
+                                                            <Clock size={10} className="text-[#D4AF37]" />
+                                                            {service.durationMin || service.duration || 30}m
                                                         </span>
-                                                    </div>
-                                                    <div className="text-right ml-4">
-                                                        <p className={`font-bold transition-colors ${isSelected ? "text-[#D4AF37]" : "text-gray-900"}`}>
-                                                            ₹{service.price}
-                                                        </p>
-                                                        <div className={`mt-2 w-5 h-5 rounded-full border flex items-center justify-center transition-all ${
-                                                            isSelected ? "bg-[#D4AF37] border-[#D4AF37]" : "border-gray-200"
+                                                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                                                            isSelected
+                                                                ? "bg-[#D4AF37] border-[#D4AF37] text-white shadow-sm"
+                                                                : "border-gray-300 bg-white group-hover:border-gray-400"
                                                         }`}>
-                                                            {isSelected && <Check size={12} className="text-white" />}
+                                                            {isSelected && <Check size={11} strokeWidth={3} />}
                                                         </div>
+                                                    </div>
+
+                                                    {/* Middle: Service Title & Description */}
+                                                    <div className="my-1.5 flex-1">
+                                                        <h3 className={`font-bold text-sm leading-snug transition-colors line-clamp-2 ${
+                                                            isSelected ? "text-gray-900" : "text-gray-800"
+                                                        }`}>
+                                                            {service.name}
+                                                        </h3>
+                                                        {service.description && (
+                                                            <p className="text-[11px] text-gray-400 line-clamp-1 mt-0.5">
+                                                                {service.description}
+                                                            </p>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Bottom: Price */}
+                                                    <div className="mt-2 pt-2 border-t border-gray-100 flex items-center justify-between w-full">
+                                                        <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Price</span>
+                                                        <span className={`text-base font-black font-serif transition-colors ${
+                                                            isSelected ? "text-[#D4AF37]" : "text-gray-900"
+                                                        }`}>
+                                                            ₹{service.price}
+                                                        </span>
                                                     </div>
                                                 </button>
                                             );
                                         })
                                     ) : (
-                                        <div className="text-center py-10 bg-white rounded-2xl border border-dashed border-gray-200 text-gray-400 text-sm">
+                                        <div className="col-span-full text-center py-10 bg-white rounded-2xl border border-dashed border-gray-200 text-gray-400 text-sm">
                                             No active services catalog found for this salon.
                                         </div>
                                     )}

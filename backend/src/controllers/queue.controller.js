@@ -16,7 +16,7 @@ export const getIncomingRequests = asyncHandler(async (req, res) => {
 });
 
 export const requestQueuePosition = asyncHandler(async (req, res) => {
-  const { salonId, serviceIds, guestName, guestPhone, source } = req.body;
+  const { salonId, serviceIds, guestName, guestPhone, source, staffId } = req.body;
   const customerId = req.user?._id;
 
   if (!salonId) {
@@ -30,6 +30,7 @@ export const requestQueuePosition = asyncHandler(async (req, res) => {
     guestPhone,
     serviceIds,
     source,
+    staffId,
   });
 
   return res.status(201).json(new ApiResponse(201, booking, "Queue position requested successfully"));

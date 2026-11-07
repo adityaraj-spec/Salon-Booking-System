@@ -382,6 +382,7 @@ export const requestQueuePosition = async ({
   guestPhone,
   serviceIds,
   source = "online",
+  staffId,
 }) => {
   return await withQueueLock(salonId, async () => {
     const salon = await Salon.findById(salonId);
@@ -448,6 +449,11 @@ export const requestQueuePosition = async ({
     const estimatedWaitMin = currentQueue.summary.estimatedWaitRangeForNewCustomer.min;
     const estimatedWaitMax = currentQueue.summary.estimatedWaitRangeForNewCustomer.max;
 
+    let staffDoc = null;
+    if (staffId && mongoose.isValidObjectId(staffId)) {
+      staffDoc = await Staff.findOne({ _id: staffId, salon: salonId, isActive: true }).select("_id name").lean();
+    }
+
     const verificationPin = await generateQueuePin();
 
     const booking = await Booking.create({
@@ -460,6 +466,8 @@ export const requestQueuePosition = async ({
       services: serviceIds,
       serviceNames: services.map((s) => s.name),
       snapshotServices,
+      staff: staffDoc?._id || undefined,
+      staffName: staffDoc?.name || undefined,
       durationMinutes: totalDuration,
       totalAmount: subtotal,
       amounts: {
