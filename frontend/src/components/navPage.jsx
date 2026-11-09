@@ -210,7 +210,7 @@ export function NavBar() {
                         {(user?.role === "salonOwner" || user?.role === "super_admin") && (
                             <div className="flex items-center gap-6">
                                 {!hasSalon && (
-                                    <NavLink to="/create-salon" className={`${isTransparent ? 'bg-white/15 hover:bg-white/25 text-white border border-white/30' : 'bg-[#1a1a1a] hover:bg-black text-white'} px-5 py-2 rounded-full font-bold text-xs transition-all flex items-center gap-2 backdrop-blur-sm`}>
+                                    <NavLink to="/create-salon" className={`${isTransparent ? 'bg-white/15 hover:bg-white/25 text-white border border-white/30' : 'bg-[#1a1a1a] hover:bg-black text-white'} px-5 py-2 rounded-xl font-bold text-xs transition-all flex items-center gap-2 backdrop-blur-sm`}>
                                         Add your shop
                                     </NavLink>
                                 )}
@@ -417,7 +417,7 @@ export function NavBar() {
                                 <NavLink to="/login" className={`${isTransparent ? (isDark ? 'text-white hover:text-white/80' : 'text-gray-800 hover:text-black') : 'text-gray-800 hover:text-[#e65c00]'} font-bold text-sm transition-colors duration-1000`}>
                                     Login
                                 </NavLink>
-                                <NavLink to="/signup" className={`${isTransparent ? (isDark ? 'bg-white text-black hover:bg-gray-100' : 'bg-gray-900 text-white hover:bg-black') : 'bg-[#1a1a1a] text-white hover:bg-black'} px-6 py-2.5 rounded-full font-bold text-sm transition-colors duration-1000 shadow-md`}>
+                                <NavLink to="/signup" className={`${isTransparent ? (isDark ? 'bg-white text-black hover:bg-gray-100' : 'bg-gray-900 text-white hover:bg-black') : 'bg-[#1a1a1a] text-white hover:bg-black'} px-6 py-2.5 rounded-xl font-bold text-sm transition-colors duration-1000 shadow-md`}>
                                     Sign up
                                 </NavLink>
                             </div>

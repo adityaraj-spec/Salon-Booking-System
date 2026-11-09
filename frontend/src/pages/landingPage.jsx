@@ -200,7 +200,7 @@ export function LandingPage() {
                     <motion.div variants={fadeUpVariants} className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-4 w-full sm:w-auto">
                         <NavLink 
                             to={`/home?city=${encodeURIComponent(resolvedCity)}`} 
-                            className="w-full sm:w-auto px-8 py-4 rounded-full font-bold flex items-center justify-center gap-2 transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1 duration-300 bg-[#ffd166] text-[#1a1a1a] hover:bg-[#ffc633]"
+                            className="w-full sm:w-auto px-8 py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1 duration-300 bg-[#ffd166] text-[#1a1a1a] hover:bg-[#ffc633]"
                         >
                             <span>Find Salons in {resolvedCity}</span>
                             <ArrowRight size={18} />
@@ -210,7 +210,7 @@ export function LandingPage() {
                             type="button"
                             onClick={handleUseLocation}
                             disabled={detectingLocation}
-                            className="w-full sm:w-auto px-7 py-4 rounded-full font-semibold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 border border-white/80 text-white hover:bg-white/15 backdrop-blur-sm flex items-center justify-center gap-2 disabled:opacity-75"
+                            className="w-full sm:w-auto px-7 py-4 rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 border border-white/80 text-white hover:bg-white/15 backdrop-blur-sm flex items-center justify-center gap-2 disabled:opacity-75"
                         >
                             {detectingLocation ? (
                                 <>
@@ -228,7 +228,7 @@ export function LandingPage() {
                         {!user && (
                             <NavLink 
                                 to="/signup" 
-                                className="w-full sm:w-auto px-7 py-4 rounded-full font-semibold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 border border-white/50 hover:border-white bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm flex items-center justify-center text-sm"
+                                className="w-full sm:w-auto px-7 py-4 rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 border border-white/50 hover:border-white bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm flex items-center justify-center text-sm"
                             >
                                 Sign up
                             </NavLink>
