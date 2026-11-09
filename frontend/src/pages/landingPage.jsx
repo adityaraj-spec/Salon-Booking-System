@@ -226,8 +226,11 @@ export function LandingPage() {
                         </button>
 
                         {!user && (
-                            <NavLink to="/signup" className="w-full sm:w-auto px-6 py-4 rounded-xl font-medium transition-all shadow-md hover:shadow-lg transform hover:-translate-y-1 duration-300 text-center text-white/90 hover:text-white hover:underline text-sm">
-                                Create Account
+                            <NavLink 
+                                to="/signup" 
+                                className="w-full sm:w-auto px-7 py-4 rounded-full font-semibold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 border border-white/50 hover:border-white bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm flex items-center justify-center text-sm"
+                            >
+                                Sign up
                             </NavLink>
                         )}
                     </motion.div>
