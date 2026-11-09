@@ -91,9 +91,10 @@ export function LandingPage() {
     const destSliderRef = useRef(null);
 
     const currentHero = heroImages[currentImageIndex];
-    const isDark = currentHero.isDark;
 
-    useEffect(() => { setNavbarTheme(isDark ? 'dark' : 'light'); }, [isDark, setNavbarTheme]);
+    useEffect(() => {
+        setNavbarTheme('dark'); // Force dark/white navigation links over the hero background
+    }, [setNavbarTheme]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -167,8 +168,9 @@ export function LandingPage() {
                         className="absolute inset-0 bg-cover bg-center"
                         style={{ backgroundImage: `url('${currentHero.url}')` }}
                     >
-                        <div className={`absolute inset-0 ${currentHero.isDark ? 'bg-black/60' : 'bg-black/40'}`}></div>
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/25"></div>
+                        {/* Consistent heavy backing tint for guaranteed text contrast */}
+                        <div className="absolute inset-0 bg-black/65"></div>
+                        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70"></div>
                     </motion.div>
                 </AnimatePresence>
 
@@ -180,7 +182,7 @@ export function LandingPage() {
                     </motion.div>
 
                     {/* Dynamic H1 Headline */}
-                    <motion.h1 variants={fadeUpVariants} className="text-4xl sm:text-6xl md:text-7xl font-sans font-bold tracking-tight mb-6 leading-tight drop-shadow-md text-white">
+                    <motion.h1 variants={fadeUpVariants} className="text-3xl sm:text-4xl md:text-5xl font-sans font-bold tracking-tight mb-8 leading-tight drop-shadow-lg text-white !text-white" style={{ color: '#ffffff' }}>
                         Book top salons in{" "}
                         <button
                             type="button"
@@ -189,14 +191,10 @@ export function LandingPage() {
                             title="Change City"
                         >
                             <span>{resolvedCity}</span>
-                            <ChevronDown size={30} className="text-[#ffd166] stroke-[2.5] inline-block -mb-1" />
+                            <ChevronDown size={24} className="text-[#ffd166] stroke-[2.5] inline-block -mb-0.5" />
                         </button>{" "}
                         in 60 seconds
                     </motion.h1>
-
-                    <motion.p variants={fadeUpVariants} className="text-base sm:text-lg md:text-xl mb-8 max-w-2xl font-light text-gray-100 drop-shadow-sm">
-                        Discover and book appointments with verified salons in {resolvedCity}. Guaranteed seat locking, zero wait time, and instant confirmations.
-                    </motion.p>
 
                     {/* CTAs: Primary & Secondary (Use my location) */}
                     <motion.div variants={fadeUpVariants} className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-4 w-full sm:w-auto">
@@ -380,7 +378,7 @@ export function LandingPage() {
                         <div className="bg-[#fef9ec] border border-[#f0e5c0] rounded-2xl p-5 md:p-6 shadow-sm">
                             <div className="flex flex-col sm:flex-row sm:items-baseline justify-between mb-4 gap-2">
                                 <div className="flex items-baseline gap-3">
-                                    <h2 className="text-xl md:text-2xl font-semibold tracking-tight text-[#1a1a1a]">Best Deals for Salons</h2>
+                                    <h2 className="text-xl md:text-2xl font-semibold text-[#1a1a1a]">Best Deals for Salons</h2>
                                     <NavLink to="/home" className="text-xs text-[#8a6500] hover:text-[#1a1a1a] font-semibold bg-white/80 hover:bg-white px-3 py-1 rounded-full transition-all flex items-center gap-1 shadow-2xs">
                                         View all <ChevronRight size={14} />
                                     </NavLink>
@@ -434,7 +432,7 @@ export function LandingPage() {
             {/* ── POPULAR DESTINATIONS ── */}
             <section className="py-10 px-6 bg-white">
                 <div className="max-w-6xl mx-auto">
-                    <h2 className="text-2xl font-semibold tracking-tight text-[#1a1a1a] mb-5">Find Top Salons in Your Favorite Cities</h2>
+                    <h2 className="text-2xl font-semibold text-[#1a1a1a] mb-5">Find Top Salons in Your Favorite Cities</h2>
                     <div className="relative">
                         <button aria-label="Show previous destinations" onClick={() => scroll(destSliderRef, -1)} className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition">
                             <ChevronLeft size={18} className="text-gray-600" />
@@ -473,8 +471,8 @@ export function LandingPage() {
                         <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
                             <div className="flex flex-col sm:flex-row sm:items-baseline justify-between mb-4 gap-2">
                                 <div className="flex items-baseline gap-3">
-                                    <h2 className="text-xl md:text-2xl font-semibold tracking-tight text-[#1a1a1a]">Cheapest Services</h2>
-                                    <NavLink to="/home" className="text-xs text-[#8a6500] hover:text-[#1a1a1a] font-semibold bg-stone-100 hover:bg-stone-200 px-3 py-1 rounded-full transition-all flex items-center gap-1">
+                                    <h2 className="text-xl md:text-2xl font-semibold text-[#1a1a1a]">Cheapest Services</h2>
+                                    <NavLink to="/home" className="text-xs text-[#8a6500] hover:text-[#1a1a1a] font-semibold bg-stone-100 hover:bg-stone-200 px-3 py-1 rounded-lg transition-all flex items-center gap-1">
                                         View all <ChevronRight size={14} />
                                     </NavLink>
                                 </div>
@@ -523,15 +521,15 @@ export function LandingPage() {
             )}
 
             {/* ── WHY CHOOSE US ── */}
-            <section className="py-16 bg-white px-6 border-t border-gray-50">
+            <section className="py-12 md:py-16 bg-white px-6 border-t border-gray-50">
                 <div className="max-w-6xl mx-auto">
-                    <div className="text-center mb-10">
-                        <h2 className="text-3xl md:text-4xl font-sans font-semibold tracking-tight text-[#1a1a1a] mb-4">Why Choose SalonNow?</h2>
-                        <p className="text-gray-500 text-lg">We make salon booking simple, secure, and convenient.</p>
+                    <div className="text-center mb-8">
+                        <h2 className="text-3xl md:text-4xl font-sans font-semibold text-[#1a1a1a] mb-3">Why Choose SalonNow?</h2>
+                        <p className="text-gray-500 text-base md:text-lg max-w-xl mx-auto leading-relaxed">We make salon booking simple, secure, and convenient.</p>
                     </div>
                     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {WHY_CHOOSE.map((card, i) => (
-                            <div key={i} className="bg-[#fafafa] border border-gray-100 p-7 rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col gap-4">
+                            <div key={i} className="bg-[#fafafa] border border-gray-100 p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col gap-4">
                                 <div className={`w-10 h-10 ${card.bg} rounded-xl flex items-center justify-center shrink-0`}>{card.icon}</div>
                                 <div>
                                     <h3 className="text-base font-semibold text-[#1a1a1a] mb-1">{card.title}</h3>
@@ -544,39 +542,38 @@ export function LandingPage() {
             </section>
 
             {/* ── HOW IT WORKS ── */}
-            <section className="py-16 bg-white px-6 border-t border-gray-50">
+            <section className="py-12 md:py-16 bg-white px-6 border-t border-gray-50">
                 <div className="max-w-6xl mx-auto">
-                    <div className="text-center mb-12">
-                        <h2 className="text-3xl md:text-4xl font-sans font-semibold tracking-tight text-[#1a1a1a]">How It Works</h2>
+                    <div className="text-center mb-8">
+                        <h2 className="text-3xl md:text-4xl font-sans font-semibold text-[#1a1a1a]">How It Works</h2>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
                         {[["Browse Salons", "Explore verified salons near you"], ["Choose Service", "Select from a range of services"], ["Book & Pay", "Secure online booking & payment"], ["Enjoy Service", "Visit salon and enjoy your service"]].map(([title, desc], i) => (
                             <div key={i}>
-                                <div className="text-6xl font-sans text-[#ffe0cc] font-bold mb-4">{String(i + 1).padStart(2, '0')}</div>
-                                <h3 className="text-lg font-semibold tracking-tight text-[#1a1a1a] mb-2 font-sans">{title}</h3>
-                                <p className="text-gray-500 text-sm">{desc}</p>
+                                <div className="text-5xl md:text-6xl font-sans text-[#ffe0cc] font-bold mb-3">{String(i + 1).padStart(2, '0')}</div>
+                                <h3 className="text-lg font-semibold text-[#1a1a1a] mb-1.5 font-sans">{title}</h3>
+                                <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
                             </div>
                         ))}
                     </div>
                 </div>
             </section>
 
-
             {/* ── INFORMATIONAL FEATURE SECTION ── */}
-            <section className="py-20 bg-white px-6 border-t border-gray-100">
+            <section className="py-12 md:py-16 bg-white px-6 border-t border-gray-100">
                 <div className="max-w-6xl mx-auto">
-                    <div className="text-center max-w-2xl mx-auto mb-14">
+                    <div className="text-center max-w-2xl mx-auto mb-8">
                         <span className="text-[#D4AF37] font-semibold text-xs bg-amber-50 px-3 py-1 rounded-full">Discover SalonNow</span>
-                        <h2 className="text-2xl md:text-3xl font-sans font-semibold tracking-tight text-[#1a1a1a] mt-3 mb-3">Online Salon Booking Made Effortless</h2>
+                        <h2 className="text-2xl md:text-3xl font-sans font-semibold text-[#1a1a1a] mt-3 mb-2">Online Salon Booking Made Effortless</h2>
                         <p className="text-gray-500 text-sm md:text-base leading-relaxed">
                             Connecting customers with premier salons and wellness providers across India with live slot availability, upfront transparent pricing, and instant confirmations.
                         </p>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-10">
+                    <div className="grid md:grid-cols-2 gap-6 md:gap-8">
                         {/* Left: Why book with us cards */}
                         <div className="space-y-4">
-                            <h3 className="text-xl font-semibold tracking-tight text-[#1a1a1a] mb-2 flex items-center gap-2">
+                            <h3 className="text-xl font-semibold text-[#1a1a1a] mb-2 flex items-center gap-2">
                                 <Sparkles size={20} className="text-[#D4AF37]" /> Why Book with SalonNow?
                             </h3>
                             <div className="grid sm:grid-cols-2 gap-3.5">
@@ -594,7 +591,7 @@ export function LandingPage() {
                             </div>
                             <div className="p-4 bg-amber-50/60 border border-amber-200/50 rounded-2xl flex items-center gap-3 mt-4">
                                 <ShieldCheck size={22} className="text-[#D4AF37] shrink-0" />
-                                <p className="text-xs text-amber-950 font-medium">
+                                <p className="text-xs text-amber-950 font-medium leading-relaxed">
                                     <strong className="font-semibold">100% Quality Assured:</strong> All partnered salons adhere to strict hygiene and professional standards.
                                 </p>
                             </div>
@@ -602,7 +599,7 @@ export function LandingPage() {
 
                         {/* Right: How to book steps */}
                         <div className="bg-[#fafafa] p-6 md:p-8 rounded-2xl border border-gray-100 h-fit">
-                            <h3 className="text-xl font-semibold tracking-tight text-[#1a1a1a] mb-4 font-sans flex items-center gap-2">
+                            <h3 className="text-xl font-semibold text-[#1a1a1a] mb-4 font-sans flex items-center gap-2">
                                 <Clock size={20} className="text-[#D4AF37]" /> 4 Simple Steps to Book
                             </h3>
                             <div className="space-y-4">
@@ -618,14 +615,14 @@ export function LandingPage() {
                                         </span>
                                         <div>
                                             <h4 className="text-sm font-semibold text-[#1a1a1a]">{item.step}</h4>
-                                            <p className="text-xs text-gray-500 mt-0.5">{item.desc}</p>
+                                            <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{item.desc}</p>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                             <div className="mt-6 pt-5 border-t border-gray-200 flex items-center justify-between">
                                 <span className="text-xs text-gray-500">Need immediate booking?</span>
-                                <NavLink to="/home" className="text-xs font-semibold text-[#8a6500] hover:text-[#1a1a1a] bg-stone-100 hover:bg-stone-200 px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1">
+                                <NavLink to="/home" className="text-xs font-semibold text-[#8a6500] hover:text-[#1a1a1a] bg-stone-100 hover:bg-stone-200 px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1">
                                     Find Salons Now <ChevronRight size={14} />
                                 </NavLink>
                             </div>
@@ -635,11 +632,11 @@ export function LandingPage() {
             </section>
 
             {/* ── CTA ── */}
-            <section className="py-20 bg-[#1f1e1d] px-6 text-center">
+            <section className="py-12 md:py-16 bg-[#1f1e1d] px-6 text-center">
                 <div className="max-w-3xl mx-auto flex flex-col items-center">
-                    <h2 className="text-3xl md:text-4xl font-sans font-semibold tracking-tight text-white mb-6">Ready to Get Started?</h2>
-                    <p className="text-gray-300 text-lg mb-8 font-light">Join thousands of satisfied customers who book their beauty appointments with us.</p>
-                    <NavLink to="/home" className="bg-white text-black px-8 py-4 rounded-full font-medium flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors">
+                    <h2 className="text-3xl md:text-4xl font-sans font-semibold text-white mb-4">Ready to Get Started?</h2>
+                    <p className="text-gray-300 text-base md:text-lg mb-6 font-normal max-w-xl leading-relaxed">Join thousands of satisfied customers who book their beauty appointments with us.</p>
+                    <NavLink to="/home" className="bg-white text-black px-6 py-3 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors">
                         Start Booking Now <ArrowRight size={18} />
                     </NavLink>
                 </div>

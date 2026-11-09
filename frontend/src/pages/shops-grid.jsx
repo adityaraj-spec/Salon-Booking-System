@@ -419,7 +419,7 @@ export function Shops() {
                 {/* Grid Heading */}
                 <div className="mt-6 mb-4 flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
                     <div>
-                        <h2 className="text-2xl md:text-3xl font-sans font-semibold tracking-tight text-gray-900">
+                        <h2 className="text-2xl md:text-3xl font-sans font-semibold text-gray-900">
                             Discover salons in <span className="text-[#D4AF37] capitalize">{cityParam || "your city"}</span>
                             {selectedCategory && (
                                 <span className="text-gray-500 font-sans font-normal text-base md:text-lg ml-2">
@@ -462,7 +462,7 @@ export function Shops() {
                                 {/* Modal Header */}
                                 <div className="px-6 pt-6 pb-4 flex items-center justify-between border-b border-gray-50">
                                     <div>
-                                        <h2 className="text-xl font-sans font-semibold tracking-tight text-gray-900">Discovery Settings</h2>
+                                        <h2 className="text-xl font-sans font-semibold text-gray-900">Discovery Settings</h2>
                                         <p className="text-gray-400 text-xs font-medium mt-1">Refine your search</p>
                                     </div>
                                     <button
@@ -674,7 +674,7 @@ export function Shops() {
                             {[...Array(12)].map((_, i) => <SalonCardSkeleton key={i} />)}
                         </div>
                     ) : error ? (
-                        <div className="text-center py-20">
+                        <div className="text-center py-10 md:py-12 px-6">
                             <p className="text-red-500 mb-4">{error}</p>
                             <button onClick={() => fetchSalons()} className="bg-amber-50 text-[#D4AF37] px-4 py-2 rounded-lg font-semibold hover:bg-amber-100 transition-colors">Try Again</button>
                         </div>
@@ -683,7 +683,7 @@ export function Shops() {
                             <div className="w-20 h-20 mx-auto mb-6 rounded-xl bg-amber-500/10 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37] shadow-inner">
                                 <MapPinOff size={36} strokeWidth={1.8} />
                             </div>
-                            <h3 className="text-2xl md:text-3xl font-sans font-semibold tracking-tight text-gray-900 mb-3">
+                            <h3 className="text-2xl md:text-3xl font-sans font-semibold text-gray-900 mb-3">
                                 {cityParam ? `No Salons Found in ${cityParam}` : "No Salons Found"}
                             </h3>
                             <p className="text-gray-500 text-sm md:text-base max-w-md mx-auto leading-relaxed mb-6">
@@ -773,7 +773,7 @@ export function Shops() {
                                                 </div>
                                                 {salon.rating >= 4.5 && <span className="ml-1.5 bg-amber-50 text-amber-900 border border-amber-200/80 text-[10px] font-semibold px-2 py-0.5 rounded-full tracking-normal">Top Rated</span>}
                                             </div>
-                                            <h3 className="text-[1.15rem] font-semibold text-gray-900 tracking-tight leading-snug mb-1.5 cursor-pointer hover:text-[#D4AF37] transition-colors" onClick={() => navigate(`/shop/${salon._id}`)}>
+                                            <h3 className="text-[1.15rem] font-semibold text-gray-900 leading-snug mb-1.5 cursor-pointer hover:text-[#D4AF37] transition-colors" onClick={() => navigate(`/shop/${salon._id}`)}>
                                                 {salon.name}
                                             </h3>
                                             <div className="mb-4 flex flex-col gap-1 text-stone-500 text-xs leading-relaxed">

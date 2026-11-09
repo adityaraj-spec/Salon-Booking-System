@@ -201,9 +201,9 @@ export function ProfilePage() {
                                 <div>
                                     <div className="flex items-center gap-2">
                                         <Sparkles size={20} className="text-[#D4AF37]" />
-                                        <h3 className="text-xl md:text-2xl font-sans font-semibold tracking-tight text-[#1a1a1a]">Loyalty Points & Rewards</h3>
+                                        <h3 className="text-xl md:text-2xl font-sans font-semibold text-[#1a1a1a]">Loyalty Points & Rewards</h3>
                                     </div>
-                                    <p className="text-xs md:text-sm text-gray-500 mt-1">
+                                    <p className="text-xs md:text-sm text-gray-500 mt-1 leading-relaxed">
                                         Earn 1 point per ₹10 spent on completed bookings. Redeem at checkout for instant discounts.
                                     </p>
                                 </div>
@@ -308,10 +308,10 @@ export function ProfilePage() {
                                                             {isEarn ? <ArrowDownLeft size={16} /> : <ArrowUpRight size={16} />}
                                                         </div>
                                                         <div>
-                                                            <p className="text-sm font-bold text-gray-900 leading-tight">
+                                                            <p className="text-sm font-semibold text-gray-900 leading-tight">
                                                                 {tx.description || (isEarn ? "Points Earned" : "Points Redeemed")}
                                                             </p>
-                                                            <p className="text-xs text-gray-400 mt-0.5">
+                                                            <p className="text-xs text-gray-400 mt-0.5 leading-normal">
                                                                 {new Date(tx.createdAt || Date.now()).toLocaleDateString(undefined, {
                                                                     month: 'short',
                                                                     day: 'numeric',
@@ -342,7 +342,7 @@ export function ProfilePage() {
                                     <div className="text-center py-10 bg-gray-50/70 border border-dashed border-gray-200 rounded-xl text-gray-400">
                                         <Coins size={32} className="mx-auto mb-2 text-gray-300" />
                                         <p className="text-sm font-medium">No loyalty transactions yet.</p>
-                                        <p className="text-xs text-gray-400 mt-1">Book and complete appointments to start stacking rewards!</p>
+                                        <p className="text-xs text-gray-400 mt-1 leading-relaxed">Book and complete appointments to start stacking rewards!</p>
                                     </div>
                                 )}
                             </div>

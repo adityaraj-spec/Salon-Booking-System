@@ -61,7 +61,7 @@ function StaffSection({ staff, salonId, navigate, user, formatLabel }) {
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h3 className="text-2xl font-sans font-semibold tracking-tight text-[#1a1a1a]">Meet Our Team</h3>
+                    <h3 className="text-2xl font-sans font-semibold text-[#1a1a1a]">Meet Our Team</h3>
                     <p className="text-sm text-gray-500 mt-1">Book directly with your preferred stylist</p>
                 </div>
                 {/* Desktop scroll arrows */}
@@ -328,7 +328,7 @@ function TransformationGallerySection({ photos = [] }) {
                 <div>
                     <div className="flex items-center gap-2">
                         <Sparkles size={18} className="text-[#D4AF37]" />
-                        <h3 className="text-2xl font-sans font-semibold tracking-tight text-[#1a1a1a]">Transformation Gallery</h3>
+                        <h3 className="text-2xl font-sans font-semibold text-[#1a1a1a]">Transformation Gallery</h3>
                     </div>
                     <p className="text-sm text-gray-500 mt-1">
                         {displayPhotos.length > 0
@@ -762,7 +762,7 @@ export function Shop() {
         return (
             <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center">
                 <div className="bg-red-50 p-8 rounded-2xl max-w-md">
-                    <h2 className="text-2xl font-sans font-semibold tracking-tight text-red-600 mb-4">Oops!</h2>
+                    <h2 className="text-2xl font-sans font-semibold text-red-600 mb-4">Oops!</h2>
                     <p className="text-gray-600 mb-8">{error || "Salon not found."}</p>
                     <NavLink to="/home" className="inline-flex items-center gap-2 text-stone-700 font-semibold bg-stone-100 hover:bg-stone-200 px-5 py-2.5 rounded-lg transition-all">
                         <ArrowLeft size={18} /> Back to Salons
@@ -815,7 +815,7 @@ export function Shop() {
                             <Clock size={28} />
                         </div>
                         <div>
-                            <h4 className="text-xl font-sans font-semibold tracking-tight text-red-600">Currently Offline</h4>
+                            <h4 className="text-xl font-sans font-semibold text-red-600">Currently Offline</h4>
                             <p className="text-red-400 text-sm font-medium">This salon is not accepting immediate bookings right now.</p>
                         </div>
                     </div>
@@ -1106,7 +1106,7 @@ export function Shop() {
                 {/* LEFT CONTENT */}
                 <div className="lg:w-[72%] xl:w-[75%] space-y-8 order-last lg:order-first">
                     <div className="pb-4 border-b border-gray-100">
-                        <h2 className="text-2xl md:text-3xl font-sans font-semibold tracking-tight text-[#1a1a1a] mb-4">
+                        <h2 className="text-2xl md:text-3xl font-sans font-semibold text-[#1a1a1a] mb-4">
                             Premium Experience in {salon.city}
                         </h2>
                         <div className="flex flex-wrap gap-6 text-gray-500 font-medium">
@@ -1126,7 +1126,7 @@ export function Shop() {
                     </div>
 
                     <div className="pb-4 border-b border-gray-100">
-                        <h3 className="text-2xl font-sans font-semibold tracking-tight text-[#1a1a1a] mb-4">Location & Contact</h3>
+                        <h3 className="text-2xl font-sans font-semibold text-[#1a1a1a] mb-4">Location & Contact</h3>
                         <div className="grid md:grid-cols-1 gap-6">
                             <div className="flex flex-col md:flex-row gap-6">
                                 <div className="flex-1 flex gap-4 items-start bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
@@ -1156,7 +1156,7 @@ export function Shop() {
                     {services.length > 0 && (
                         <div className="py-6 border-b border-gray-100">
                             <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-2xl font-sans font-semibold tracking-tight text-[#1a1a1a]">Our Services</h3>
+                                <h3 className="text-2xl font-sans font-semibold text-[#1a1a1a]">Our Services</h3>
                                 <span className="ui-badge bg-gray-50 px-3 py-1 rounded-full">
                                     {services.length} {services.length === 1 ? 'Service' : 'Services'}
                                 </span>
@@ -1250,8 +1250,8 @@ export function Shop() {
                     </div>
 
                     <div className="pt-8 border-t border-gray-100">
-                        <h3 className="text-2xl font-sans font-semibold tracking-tight text-[#1a1a1a] mb-4">About the Studio</h3>
-                        <p className="text-gray-600 leading-relaxed text-base whitespace-pre-line">
+                        <h3 className="text-2xl font-sans font-semibold text-[#1a1a1a] mb-4">About the Studio</h3>
+                        <p className="text-gray-600 leading-relaxed text-base whitespace-pre-line max-w-3xl">
                             {getCleanDescription(salon.description)}
                         </p>
                     </div>
@@ -1260,8 +1260,8 @@ export function Shop() {
                     <div className="pt-12 border-t border-gray-100 pb-16">
                         {/* Reviews Header: Score + Breakdown Bars (Sprint 3.2) */}
                         <div className="mb-10">
-                            <h3 className="text-2xl md:text-3xl font-sans font-semibold tracking-tight text-[#1a1a1a] mb-6">Customer Reviews</h3>
-                            <div className="flex flex-col sm:flex-row gap-6 sm:gap-10 bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+                            <h3 className="text-2xl md:text-3xl font-sans font-semibold text-[#1a1a1a] mb-6">Customer Reviews</h3>
+                            <div className="flex flex-col sm:flex-row gap-6 bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
 
                                 {/* Left: Overall Score */}
                                 <div className="flex flex-col items-center justify-center text-center sm:border-r sm:border-gray-100 sm:pr-10 shrink-0">
@@ -1382,7 +1382,7 @@ export function Shop() {
                                     </div>
                                 ))
                             ) : (
-                                <div className="text-center py-20 bg-white rounded-2xl border border-gray-50 shadow-sm">
+                                <div className="text-center py-10 md:py-12 px-6 bg-white rounded-2xl border border-gray-50 shadow-sm">
                                     <p className="text-gray-400">No reviews yet. Be the first to share your experience!</p>
                                 </div>
                             )}
@@ -1391,8 +1391,8 @@ export function Shop() {
                         {/* REVIEW FORM */}
                         {user ? (
                             user.role !== "salonOwner" ? (
-                                <div className="bg-white border border-gray-100 rounded-2xl p-8 mb-12 shadow-sm">
-                                    <h4 className="text-lg font-semibold tracking-tight text-[#1a1a1a] mb-6">Write a Review</h4>
+                                <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-8 shadow-sm">
+                                    <h4 className="text-lg font-semibold text-[#1a1a1a] mb-6">Write a Review</h4>
                                     <form onSubmit={handleReviewSubmit} className="space-y-6">
                                         <div>
                                             <p className="ui-label mb-3">Select Rating</p>
@@ -1455,7 +1455,7 @@ export function Shop() {
                         <div className="flex justify-between items-end mb-6">
                             <div>
                                 <span className="text-gray-500 text-xs font-semibold">Starting from</span>
-                                <p className="text-3xl font-sans font-extrabold tracking-tight text-gray-900 mt-0.5">
+                                <p className="text-3xl font-sans font-extrabold text-gray-900 mt-0.5">
                                     {services.length > 0 ? `₹${Math.min(...services.map(s => s.price))}` : "₹—"}
                                 </p>
                             </div>
@@ -1566,7 +1566,7 @@ export function Shop() {
             <div id="salon-location-section" className="mt-16 pt-16 border-t border-gray-100">
                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                     <div>
-                        <h3 className="text-2xl md:text-3xl font-sans font-semibold tracking-tight text-[#1a1a1a] mb-2">Salon Location</h3>
+                        <h3 className="text-2xl md:text-3xl font-sans font-semibold text-[#1a1a1a] mb-2">Salon Location</h3>
                     </div>
                     <button 
                         onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(salon.address + ' ' + salon.city)}`, '_blank')}

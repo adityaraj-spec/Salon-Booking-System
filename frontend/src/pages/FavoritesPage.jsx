@@ -55,11 +55,11 @@ export function FavoritesPage() {
 
     if (!user) {
         return (
-            <div className="w-full min-h-screen bg-white flex flex-col items-center justify-center pt-24 text-center">
+            <div className="w-full min-h-screen bg-white flex flex-col items-center justify-center pt-20 pb-12 text-center">
                 <Heart className="w-16 h-16 text-gray-200 mb-4" />
-                <h2 className="text-2xl font-sans font-semibold tracking-tight text-gray-900 mb-2">Please Login</h2>
-                <p className="text-gray-500 mb-6">You need to log in to view your favorite salons.</p>
-                <button onClick={() => navigate("/login")} className="bg-[#1a1a1a] text-white px-8 py-3 rounded-xl font-bold text-xs hover:bg-black transition-colors">
+                <h2 className="text-2xl font-sans font-semibold text-gray-900 mb-2">Please Login</h2>
+                <p className="text-gray-500 mb-6 leading-relaxed">You need to log in to view your favorite salons.</p>
+                <button onClick={() => navigate("/login")} className="bg-[#1a1a1a] text-white px-6 py-2.5 rounded-xl font-bold text-xs hover:bg-black transition-colors">
                     Login Now
                 </button>
             </div>
@@ -68,14 +68,14 @@ export function FavoritesPage() {
 
     return (
         <div className="w-full min-h-screen bg-[#fafafa]">
-            <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-32 pb-12">
+            <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-20 md:pt-24 pb-12">
             
-                <div className="mb-10 text-center">
-                    <h1 className="text-4xl md:text-5xl font-sans font-bold tracking-tight text-gray-900 mb-4 flex items-center justify-center gap-3">
+                <div className="mb-8 text-center">
+                    <h1 className="text-4xl md:text-5xl font-sans font-bold tracking-tight text-gray-900 mb-3 flex items-center justify-center gap-3">
                         <Heart className="text-[#D4AF37] fill-[#D4AF37] w-10 h-10" />
                         My Favorites
                     </h1>
-                    <p className="text-gray-500 max-w-2xl mx-auto">
+                    <p className="text-gray-500 max-w-2xl mx-auto leading-relaxed">
                         Your curated list of preferred salons and styling destinations.
                     </p>
                 </div>
@@ -85,22 +85,22 @@ export function FavoritesPage() {
                         {[...Array(8)].map((_, i) => <SalonCardSkeleton key={i} />)}
                     </div>
                 ) : error ? (
-                    <div className="text-center py-20">
-                        <p className="text-red-500 mb-4">{error}</p>
+                    <div className="text-center py-12">
+                        <p className="text-red-500 mb-4 leading-relaxed">{error}</p>
                         <button onClick={fetchFavorites} className="bg-amber-50 text-[#D4AF37] px-4 py-2 rounded-lg font-semibold hover:bg-amber-100 transition-colors">
                             Try Again
                         </button>
                     </div>
                 ) : salons.length === 0 ? (
-                    <div className="text-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm max-w-2xl mx-auto">
-                        <div className="bg-gray-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <Heart className="text-gray-300 w-10 h-10" />
+                    <div className="text-center py-10 md:py-12 px-6 bg-white rounded-2xl border border-gray-100 shadow-sm max-w-2xl mx-auto">
+                        <div className="bg-gray-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Heart className="text-gray-300 w-8 h-8" />
                         </div>
-                        <h3 className="text-2xl font-sans font-semibold tracking-tight text-gray-900 mb-3">No Favorites Yet</h3>
-                        <p className="text-gray-500 mb-8 max-w-md mx-auto">You haven't added any salons to your favorites list. Start exploring and click the heart icon to save them here!</p>
+                        <h3 className="text-2xl font-sans font-semibold text-gray-900 mb-2">No Favorites Yet</h3>
+                        <p className="text-gray-500 mb-6 max-w-md mx-auto leading-relaxed text-sm">You haven't added any salons to your favorites list. Start exploring and click the heart icon to save them here!</p>
                         <button
                             onClick={() => navigate('/home')}
-                            className="bg-[#D4AF37] text-white px-8 py-3 rounded-xl font-bold text-xs hover:bg-[#B8962E] transition-colors shadow-lg shadow-[#D4AF37]/20 flex items-center gap-2 mx-auto"
+                            className="bg-[#D4AF37] text-white px-6 py-2.5 rounded-xl font-bold text-xs hover:bg-[#B8962E] transition-colors shadow-lg shadow-[#D4AF37]/20 flex items-center gap-2 mx-auto"
                         >
                             <Search size={16} />
                             Discover Salons

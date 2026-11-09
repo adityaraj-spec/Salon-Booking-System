@@ -72,92 +72,94 @@
 }
 
 /* ── GLOBAL BASE TYPOGRAPHY & FOUNDATION ── */
-:root {
-  color-scheme: light;
-}
+@layer base {
+  :root {
+    color-scheme: light;
+  }
 
-body {
-  font-family: var(--font-sans);
-  color: var(--color-charcoal);
-  background-color: var(--color-canvas);
-  letter-spacing: -0.012em;
-  line-height: 1.55;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+  body {
+    font-family: var(--font-sans);
+    color: var(--color-charcoal);
+    background-color: var(--color-canvas);
+    letter-spacing: normal;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
-/* Explicitly enforce unified clean sans-serif typography everywhere */
-h1, h2, h3, h4, h5, h6,
-.font-serif, .font-sans, .font-display {
-  font-family: var(--font-sans) !important;
-}
+  /* Explicitly enforce unified clean sans-serif typography everywhere */
+  h1, h2, h3, h4, h5, h6,
+  .font-serif, .font-sans, .font-display {
+    font-family: var(--font-sans) !important;
+  }
 
-h1 {
-  letter-spacing: -0.025em;
-  line-height: 1.2;
-  font-weight: 700;
-  color: var(--color-charcoal);
-}
+  h1 {
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    font-weight: 700;
+    color: var(--color-charcoal);
+  }
 
-h2 {
-  letter-spacing: -0.02em;
-  line-height: 1.25;
-  font-weight: 600;
-  color: var(--color-charcoal);
-}
+  h2 {
+    letter-spacing: normal;
+    line-height: 1.25;
+    font-weight: 600;
+    color: var(--color-charcoal);
+  }
 
-h3 {
-  letter-spacing: -0.018em;
-  line-height: 1.3;
-  font-weight: 600;
-  color: var(--color-charcoal);
-}
+  h3 {
+    letter-spacing: normal;
+    line-height: 1.3;
+    font-weight: 600;
+    color: var(--color-charcoal);
+  }
 
-h4, h5, h6 {
-  letter-spacing: -0.015em;
-  line-height: 1.35;
-  font-weight: 600;
-  color: var(--color-charcoal);
-}
+  h4, h5, h6 {
+    letter-spacing: normal;
+    line-height: 1.35;
+    font-weight: 600;
+    color: var(--color-charcoal);
+  }
 
-/* Base form controls: Standardize on rounded-lg (8px/10px) */
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="tel"],
-input[type="number"],
-input[type="search"],
-select,
-textarea {
-  border-radius: 0.5rem; /* rounded-lg (8px) */
-}
+  /* Base form controls: Standardize on rounded-lg (8px/10px) */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="search"],
+  select,
+  textarea {
+    border-radius: 0.5rem; /* rounded-lg (8px) */
+  }
 
-/* Subtle Interactive Focus Rings */
-button:focus-visible,
-a:focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible {
-  outline: 2px solid var(--color-brand);
-  outline-offset: 2px;
-}
+  /* Subtle Interactive Focus Rings */
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+  }
 
-input::placeholder,
-textarea::placeholder {
-  color: var(--color-charcoal-subtle);
-  font-weight: 400;
-}
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-charcoal-subtle);
+    font-weight: 400;
+  }
 
-/* Cursor Consistency */
-button,
-a,
-select,
-[role="button"],
-input[type="submit"],
-input[type="button"],
-input[type="checkbox"],
-input[type="radio"] {
-  cursor: pointer;
+  /* Cursor Consistency */
+  button,
+  a,
+  select,
+  [role="button"],
+  input[type="submit"],
+  input[type="button"],
+  input[type="checkbox"],
+  input[type="radio"] {
+    cursor: pointer;
+  }
 }
 
 /* ── LUXURY CONSUMER UI UTILITY COMPONENTS ── */

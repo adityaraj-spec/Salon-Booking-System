@@ -17,7 +17,7 @@ export function Footer() {
                             <img src={salonLogo} alt="SalonNow" className="w-10 h-10 rounded-full object-cover border border-[#D4AF37]/40" />
                             <h3 className="text-xl font-semibold text-[#ff9f43] tracking-wide">SalonNow</h3>
                         </div>
-                        <p className="text-sm text-gray-400 font-light leading-loose">
+                        <p className="text-sm text-gray-400 font-normal leading-relaxed">
                             SalonNow connects customers with beauty and wellness providers for scheduled and last-minute appointments with guaranteed seats and verified salon quality.
                         </p>
                     </div>

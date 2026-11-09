@@ -215,30 +215,30 @@ export function MyBookingsPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#fafafa] py-12 md:py-16">
+        <div className="min-h-screen bg-[#fafafa] pt-20 md:pt-24 pb-12">
             <div className="max-w-[1280px] mx-auto px-6 md:px-10">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div>
                         <h1 className="text-3xl md:text-4xl font-sans font-bold tracking-tight text-[#1a1a1a]">My Appointments & Queue</h1>
-                        <p className="text-sm text-gray-500 mt-1">Track your live salon queues and view previous visits</p>
+                        <p className="text-sm text-gray-500 mt-1 leading-relaxed">Track your live salon queues and view previous visits</p>
                     </div>
                 </div>
 
                 {cancelSuccess && (
-                    <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-2">
+                    <div className="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-2">
                         <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
-                        <span className="text-sm font-medium">{cancelSuccess}</span>
+                        <span className="text-sm font-medium leading-normal">{cancelSuccess}</span>
                     </div>
                 )}
 
                 {bookings.length === 0 ? (
-                    <div className="bg-white rounded-2xl p-20 text-center border border-stone-200/50 shadow-sm">
-                        <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-300">
-                            <Calendar size={40} />
+                    <div className="bg-white rounded-2xl py-10 md:py-12 px-6 text-center border border-stone-200/50 shadow-sm">
+                        <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
+                            <Calendar size={32} />
                         </div>
-                        <h3 className="text-xl font-sans font-semibold tracking-tight text-gray-900 mb-2">No bookings yet</h3>
-                        <p className="text-gray-500 mb-8 max-w-sm mx-auto">Ready for your next salon experience? Browse our collection of top-rated parlors.</p>
-                        <a href="/home" className="inline-block bg-[#1a1a1a] text-white px-8 py-3 rounded-xl font-bold text-sm hover:bg-black transition-colors">
+                        <h3 className="text-xl font-sans font-semibold text-gray-900 mb-2">No bookings yet</h3>
+                        <p className="text-gray-500 mb-6 max-w-sm mx-auto text-sm leading-relaxed">Ready for your next salon experience? Browse our collection of top-rated parlors.</p>
+                        <a href="/home" className="inline-block bg-[#1a1a1a] text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-black transition-colors">
                             Explore Salons
                         </a>
                     </div>
@@ -249,7 +249,7 @@ export function MyBookingsPage() {
                             const badge = getStatusBadge(booking.status, booking.queuePosition);
 
                             return (
-                                <div key={booking._id} className="relative bg-white rounded-[36px] p-6 lg:p-8 shadow-sm border border-stone-200/50 flex flex-col lg:flex-row gap-6 lg:gap-8 hover:shadow-md transition-all duration-300">
+                                <div key={booking._id} className="relative bg-white rounded-2xl p-6 lg:p-8 shadow-sm border border-stone-200/50 flex flex-col lg:flex-row gap-6 lg:gap-8 hover:shadow-md transition-all duration-300">
 
                                     {/* Status Badge - Top Right */}
                                     <div className="absolute top-6 right-6 md:top-8 md:right-8 z-10">
@@ -260,7 +260,7 @@ export function MyBookingsPage() {
                                     </div>
 
                                     {/* PART 1: IMAGE (Left) */}
-                                    <div className="w-full lg:w-52 h-48 lg:h-auto rounded-[28px] overflow-hidden shrink-0 shadow-sm border border-stone-200/50 relative group">
+                                    <div className="w-full lg:w-52 h-48 lg:h-auto rounded-xl overflow-hidden shrink-0 shadow-sm border border-stone-200/50 relative group">
                                         <img
                                             src={booking.salon?.images?.[0] || salonPlaceholder}
                                             alt={booking.salon?.name}
@@ -272,7 +272,7 @@ export function MyBookingsPage() {
                                     {/* PART 2: SALON INFO & QUEUE/TIME STATS (Middle) */}
                                     <div className="flex-1 flex flex-col justify-center py-1">
                                         <div className="space-y-3">
-                                            <h3 className="text-xl md:text-2xl font-sans font-semibold tracking-tight text-[#1a1a1a]">
+                                            <h3 className="text-xl md:text-2xl font-sans font-semibold text-[#1a1a1a]">
                                                 {booking.salon?.name || "Style Station"}
                                             </h3>
                                             <div className="flex items-start gap-2.5 text-gray-500 bg-gray-50/70 w-fit px-3.5 py-2 rounded-xl border border-stone-200/50 max-w-sm">

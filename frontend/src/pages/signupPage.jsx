@@ -60,8 +60,8 @@ export function SignUpPage() {
 
                     {/* Titles */}
                     <div className="text-center mb-4">
-                        <h2 className="text-3xl font-sans font-semibold tracking-tight text-[#1a1a1a] mb-2">Create Account</h2>
-                        <p className="text-gray-500 text-sm">Join us to book your beauty appointments</p>
+                        <h2 className="text-3xl font-sans font-semibold text-[#1a1a1a] mb-2">Create Account</h2>
+                        <p className="text-gray-500 text-sm leading-relaxed">Join us to book your beauty appointments</p>
                     </div>
 
                     {error && (

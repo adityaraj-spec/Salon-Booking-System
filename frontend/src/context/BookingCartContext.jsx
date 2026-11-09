@@ -216,7 +216,7 @@ export const BookingCartProvider = ({ children }) => {
                         <div className="w-12 h-12 rounded-xl bg-amber-50 text-[#D4AF37] flex items-center justify-center font-bold text-xl mb-4">
                             ⚠️
                         </div>
-                        <h3 className="font-sans font-semibold text-xl text-[#1a1a1a] tracking-tight mb-2">
+                        <h3 className="font-sans font-semibold text-xl text-[#1a1a1a] mb-2">
                             Replace Cart Items?
                         </h3>
                         <p className="text-sm text-gray-600 mb-6 leading-relaxed">

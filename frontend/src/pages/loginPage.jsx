@@ -81,8 +81,8 @@ export function LoginPage() {
 
                     {/* Titles */}
                     <div className="text-center mb-4">
-                        <h2 className="text-3xl font-sans font-semibold tracking-tight text-[#1a1a1a] mb-2">Welcome Back</h2>
-                        <p className="text-gray-500 text-sm">Login to your account to continue</p>
+                        <h2 className="text-3xl font-sans font-semibold text-[#1a1a1a] mb-2">Welcome Back</h2>
+                        <p className="text-gray-500 text-sm leading-relaxed">Login to your account to continue</p>
                     </div>
 
                     {error && (

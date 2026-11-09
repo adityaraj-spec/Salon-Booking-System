@@ -184,7 +184,7 @@ export function NavBar() {
 
     const isLandingPage = location.pathname === '/';
     const isTransparent = isLandingPage && !scrolled;
-    const isDark = navbarTheme === 'dark';
+    const isDark = isTransparent || navbarTheme === 'dark';
 
     return (
         <>
@@ -210,11 +210,11 @@ export function NavBar() {
                         {(user?.role === "salonOwner" || user?.role === "super_admin") && (
                             <div className="flex items-center gap-6">
                                 {!hasSalon && (
-                                    <NavLink to="/create-salon" className="bg-[#1a1a1a] hover:bg-black text-white px-5 py-2 rounded-xl font-bold text-xs transition-colors flex items-center gap-2">
+                                    <NavLink to="/create-salon" className={`${isTransparent ? 'bg-white/15 hover:bg-white/25 text-white border border-white/30' : 'bg-[#1a1a1a] hover:bg-black text-white'} px-5 py-2 rounded-xl font-bold text-xs transition-all flex items-center gap-2 backdrop-blur-sm`}>
                                         Add your shop
                                     </NavLink>
                                 )}
-                                <NavLink to="/salon/dashboard" className="text-[#1a1a1a] font-semibold text-sm hover:text-[#D4AF37] transition-colors">
+                                <NavLink to="/salon/dashboard" className={`${isTransparent ? 'text-white hover:text-[#ffd166]' : 'text-[#1a1a1a] hover:text-[#D4AF37]'} font-semibold text-sm transition-colors`}>
                                     Requests
                                 </NavLink>
 
@@ -242,7 +242,7 @@ export function NavBar() {
                                     {isNotificationsOpen && (
                                         <div className="absolute right-[-24px] md:right-0 mt-3 w-[calc(100vw-32px)] sm:w-80 md:w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[60] animate-in fade-in zoom-in-95 duration-200 origin-top-right">
                                             <div className="p-5 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
-                                                <h3 className="font-semibold text-gray-900 tracking-tight">Notifications</h3>
+                                                <h3 className="font-semibold text-gray-900">Notifications</h3>
                                                 {unreadCount > 0 && (
                                                     <button
                                                         type="button"
@@ -277,7 +277,7 @@ export function NavBar() {
                                                                     <p className={`text-sm ${!notif.isRead ? 'font-bold text-gray-900' : 'text-gray-600'}`}>
                                                                         {notif.title}
                                                                     </p>
-                                                                    <p className="text-xs text-gray-500 line-clamp-2 mt-0.5">{notif.message}</p>
+                                                                    <p className="text-xs text-gray-500 line-clamp-2 mt-0.5 leading-relaxed">{notif.message}</p>
                                                                     <p className="text-[10px] text-gray-400 mt-2 font-medium">
                                                                         {new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {new Date(notif.createdAt).toLocaleDateString()}
                                                                     </p>
@@ -432,7 +432,7 @@ export function NavBar() {
                                     aria-label={`Notifications${unreadCount ? `, ${unreadCount} unread` : ''}`}
                                     aria-expanded={isNotificationsOpen}
                                     onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-                                    className="p-1.5 text-gray-500 hover:text-[#D4AF37] transition-all relative"
+                                    className={`p-1.5 ${isTransparent ? 'text-white/80 hover:text-white' : 'text-gray-500 hover:text-[#D4AF37]'} transition-all relative`}
                                 >
                                     <Bell size={22} />
                                     {unreadCount > 0 && (
@@ -445,7 +445,7 @@ export function NavBar() {
                                 {isNotificationsOpen && (
                                     <div className="fixed inset-x-4 top-20 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[130] animate-in fade-in slide-in-from-top-2 duration-200">
                                         <div className="p-4 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
-                                            <h3 className="font-semibold text-gray-900 text-sm tracking-tight">Notifications</h3>
+                                            <h3 className="font-semibold text-gray-900 text-sm">Notifications</h3>
                                             {unreadCount > 0 && (
                                                 <button onClick={markAllAsRead} disabled={notificationsBusy} className="text-[11px] font-semibold text-[#D4AF37] px-2 py-0.5 rounded-lg hover:bg-amber-50 disabled:opacity-50 transition-all">
                                                     Mark all as read
@@ -494,7 +494,7 @@ export function NavBar() {
                             aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
                             aria-expanded={isMobileMenuOpen}
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            className="text-gray-900 focus:outline-none p-1"
+                            className={`${isTransparent ? 'text-white' : 'text-gray-900'} focus:outline-none p-1 transition-colors`}
                         >
                             {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
                         </button>

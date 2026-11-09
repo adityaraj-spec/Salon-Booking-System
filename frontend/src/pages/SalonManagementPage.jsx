@@ -521,7 +521,7 @@ export function SalonManagementPage() {
                 {tab === "settings" && (
                     <div className="bg-white rounded-2xl p-6 md:p-10 border border-gray-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="mb-6">
-                            <h2 className="text-2xl font-sans font-semibold tracking-tight text-gray-900 mb-2">Salon Settings</h2>
+                            <h2 className="text-2xl font-sans font-semibold text-gray-900 mb-2">Salon Settings</h2>
                             <p className="text-gray-500 text-sm">Manage your salon's basic information, location, and operational schedule.</p>
                         </div>
                         <form onSubmit={handleUpdateSalonSettings} className="space-y-6 max-w-3xl">
@@ -662,7 +662,7 @@ export function SalonManagementPage() {
                     <div className="bg-white rounded-2xl p-6 md:p-10 border border-gray-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-6">
                             <div>
-                                <h2 className="text-2xl font-sans font-semibold tracking-tight text-gray-900 mb-2">Photo Gallery</h2>
+                                <h2 className="text-2xl font-sans font-semibold text-gray-900 mb-2">Photo Gallery</h2>
                                 <p className="text-gray-500 text-sm">Upload high-quality images to showcase your space to potential clients.</p>
                             </div>
                         </div>
@@ -716,7 +716,7 @@ export function SalonManagementPage() {
                     {/* Form Section */}
                     <div className="lg:col-span-4">
                         <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm sticky top-32">
-                            <h2 className="text-xl font-sans font-semibold tracking-tight text-gray-900 mb-4 flex items-center gap-2">
+                            <h2 className="text-xl font-sans font-semibold text-gray-900 mb-4 flex items-center gap-2">
                                 <Plus size={20} className="text-[#D4AF37]" />
                                 {tab === "services" ? "Add New Service" : "Add Team Member"}
                             </h2>
@@ -891,8 +891,8 @@ export function SalonManagementPage() {
                                          ))}
                                      </div>
                                  ) : (
-                                     <div className="bg-white rounded-2xl p-16 text-center border border-gray-100 shadow-sm border-dashed">
-                                         <Scissors className="mx-auto text-gray-200 mb-4" size={40} />
+                                     <div className="bg-white rounded-2xl py-10 md:py-12 px-6 text-center border border-gray-100 shadow-sm border-dashed">
+                                         <Scissors className="mx-auto text-gray-200 mb-3" size={32} />
                                          <p className="text-gray-500 font-medium italic">No services listed yet.</p>
                                      </div>
                                  )
@@ -959,8 +959,8 @@ export function SalonManagementPage() {
                                          ))}
                                      </div>
                                  ) : (
-                                     <div className="bg-white rounded-2xl p-16 text-center border border-gray-100 shadow-sm border-dashed">
-                                         <Users className="mx-auto text-gray-200 mb-4" size={40} />
+                                     <div className="bg-white rounded-2xl py-10 md:py-12 px-6 text-center border border-gray-100 shadow-sm border-dashed">
+                                         <Users className="mx-auto text-gray-200 mb-3" size={32} />
                                          <p className="text-gray-500 font-medium italic">Your team is empty.</p>
                                      </div>
                                  )

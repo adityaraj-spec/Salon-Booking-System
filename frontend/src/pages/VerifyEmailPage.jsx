@@ -176,7 +176,7 @@ export function VerifyEmailPage() {
                                 </div>
                             )}
                         </div>
-                        <h2 className="text-3xl font-sans font-semibold tracking-tight text-[#1a1a1a] mb-2">
+                        <h2 className="text-3xl font-sans font-semibold text-[#1a1a1a] mb-2">
                             {success ? "Verified!" : "Check Your Email"}
                         </h2>
                         {!success && (
@@ -324,7 +324,7 @@ export function VerifyEmailPage() {
                         <MailCheck size={36} className="text-[#D4AF37]" />
                     </div>
 
-                    <h2 className="text-3xl font-sans font-semibold tracking-tight text-white mb-4">
+                    <h2 className="text-3xl font-sans font-semibold text-white mb-4">
                         Almost <span className="text-[#D4AF37]">There!</span>
                     </h2>
                     <p className="text-gray-400 text-sm leading-relaxed max-w-xs mx-auto mb-8">

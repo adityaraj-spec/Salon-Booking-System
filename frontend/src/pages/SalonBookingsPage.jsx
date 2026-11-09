@@ -459,7 +459,7 @@ export function SalonBookingsPage() {
 
                     <button
                         onClick={() => setActiveTab("history")}
-                        className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all duration-200 ease-out hover:scale-[1.01] active:scale-[0.98] flex items-center gap-2 ${
+                        className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ease-out hover:scale-[1.01] active:scale-[0.98] flex items-center gap-2 ${
                             activeTab === "history"
                                 ? "bg-[#1a1a1a] text-white shadow-md"
                                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
@@ -476,10 +476,10 @@ export function SalonBookingsPage() {
                 {activeTab === "queue" && (
                     <div className="space-y-4">
                         {activeQueueList.length === 0 ? (
-                            <div className="bg-white rounded-2xl p-16 text-center border border-gray-100 shadow-sm">
-                                <Users size={40} className="text-gray-300 mx-auto mb-4" />
-                                <h3 className="text-lg font-sans font-bold text-gray-900">Queue is Currently Empty</h3>
-                                <p className="text-xs text-gray-400 mt-1">New customers requesting service will appear here once accepted.</p>
+                            <div className="bg-white rounded-2xl py-10 md:py-12 px-6 text-center border border-gray-100 shadow-sm">
+                                <Users size={32} className="text-gray-300 mx-auto mb-3" />
+                                <h3 className="text-lg font-sans font-semibold text-gray-900">Queue is Currently Empty</h3>
+                                <p className="text-xs text-gray-400 mt-1 leading-relaxed">New customers requesting service will appear here once accepted.</p>
                             </div>
                         ) : (
                             <div className="grid gap-4">
@@ -515,7 +515,7 @@ export function SalonBookingsPage() {
 
                                                 <div>
                                                     <div className="flex items-center gap-2.5">
-                                                        <h3 className="font-semibold text-gray-900 text-base tracking-tight">
+                                                        <h3 className="font-semibold text-gray-900 text-base">
                                                             {booking.customer?.fullName || booking.guestName || "Customer"}
                                                         </h3>
                                                         <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1 rounded-full border shadow-soft-xs ${
@@ -637,10 +637,10 @@ export function SalonBookingsPage() {
                 {activeTab === "requests" && (
                     <div className="space-y-4">
                         {incomingRequests.length === 0 ? (
-                            <div className="bg-white rounded-2xl p-16 text-center border border-gray-100 shadow-sm">
-                                <Clock size={40} className="text-gray-300 mx-auto mb-4" />
-                                <h3 className="text-lg font-sans font-bold text-gray-900">No Pending Requests</h3>
-                                <p className="text-xs text-gray-400 mt-1">When customers request queue entry, they will appear here for review.</p>
+                            <div className="bg-white rounded-2xl py-10 md:py-12 px-6 text-center border border-gray-100 shadow-sm">
+                                <Clock size={32} className="text-gray-300 mx-auto mb-3" />
+                                <h3 className="text-lg font-sans font-semibold text-gray-900">No Pending Requests</h3>
+                                <p className="text-xs text-gray-400 mt-1 leading-relaxed">When customers request queue entry, they will appear here for review.</p>
                             </div>
                         ) : (
                             <div className="grid gap-4">
@@ -651,7 +651,7 @@ export function SalonBookingsPage() {
                                     >
                                         <div>
                                             <div className="flex items-center gap-3">
-                                                <h3 className="font-bold text-gray-900 text-lg">
+                                                <h3 className="font-semibold text-gray-900 text-lg">
                                                     {req.customer?.fullName || req.guestName || "Customer"}
                                                 </h3>
                                                 <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 shadow-soft-xs">
@@ -717,10 +717,10 @@ export function SalonBookingsPage() {
                 {activeTab === "history" && (
                     <div className="space-y-4">
                         {historicalList.length === 0 ? (
-                            <div className="bg-white rounded-2xl p-16 text-center border border-gray-100 shadow-sm">
-                                <CheckCircle size={40} className="text-gray-300 mx-auto mb-4" />
-                                <h3 className="text-lg font-sans font-semibold tracking-tight text-gray-900">No Historical Records</h3>
-                                <p className="text-xs text-gray-400 mt-1">Completed appointments will be archived here.</p>
+                            <div className="bg-white rounded-2xl py-10 md:py-12 px-6 text-center border border-gray-100 shadow-sm">
+                                <CheckCircle size={32} className="text-gray-300 mx-auto mb-3" />
+                                <h3 className="text-lg font-sans font-semibold text-gray-900">No Historical Records</h3>
+                                <p className="text-xs text-gray-400 mt-1 leading-relaxed">Completed appointments will be archived here.</p>
                             </div>
                         ) : (
                             <div className="grid gap-4">
@@ -769,7 +769,7 @@ export function SalonBookingsPage() {
                                             {/* LEFT: Customer & Appointment Details */}
                                             <div className="space-y-2 flex-1">
                                                 <div className="flex items-center gap-3">
-                                                    <h3 className="font-semibold text-gray-900 text-base md:text-lg tracking-tight">
+                                                    <h3 className="font-semibold text-gray-900 text-base md:text-lg">
                                                         {b.customer?.fullName || b.guestName || "Guest Customer"}
                                                     </h3>
                                                     <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1 rounded-full border shadow-soft-xs ${
