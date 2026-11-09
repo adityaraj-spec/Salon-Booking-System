@@ -63,10 +63,10 @@ export function BookingPage() {
 
     // Initialize selected services from cart if matching this salon
     useEffect(() => {
-        if (cartSalonId === id && cartItems.length > 0) {
+        if (cartSalonId === id && cartItems.length > 0 && selectedServices.length === 0) {
             setSelectedServices(cartItems);
         }
-    }, [id, cartItems, cartSalonId]);
+    }, [id, cartSalonId]);
 
     // Auto-select staff from URL query param once staff list is loaded
     useEffect(() => {
@@ -283,14 +283,13 @@ export function BookingPage() {
     }, [socket, activeBooking, id, fetchSalonData]);
 
     const toggleService = (service) => {
-        setSelectedServices((prev) => {
-            const exists = prev.find((s) => (s._id || s.serviceId) === (service._id || service.serviceId));
-            const next = exists
-                ? prev.filter((s) => (s._id || s.serviceId) !== (service._id || service.serviceId))
-                : [...prev, service];
-            setCartServices(salon || id, next);
-            return next;
-        });
+        const targetId = service._id || service.serviceId;
+        const exists = selectedServices.some((s) => (s._id || s.serviceId) === targetId);
+        const next = exists
+            ? selectedServices.filter((s) => (s._id || s.serviceId) !== targetId)
+            : [...selectedServices, service];
+        setSelectedServices(next);
+        setCartServices(salon || id, next);
     };
 
     const combinedDurationMin = useMemo(() => {
