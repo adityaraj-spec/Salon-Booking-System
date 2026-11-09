@@ -232,7 +232,7 @@ export function MyBookingsPage() {
                 )}
 
                 {bookings.length === 0 ? (
-                    <div className="bg-white rounded-2xl py-10 md:py-12 px-6 text-center border border-stone-200/50 shadow-sm">
+                    <div className="bg-white rounded-xl py-10 md:py-12 px-6 text-center border border-stone-200/50 shadow-sm">
                         <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
                             <Calendar size={32} />
                         </div>
@@ -249,7 +249,7 @@ export function MyBookingsPage() {
                             const badge = getStatusBadge(booking.status, booking.queuePosition);
 
                             return (
-                                <div key={booking._id} className="relative bg-white rounded-2xl p-6 lg:p-8 shadow-sm border border-stone-200/50 flex flex-col lg:flex-row gap-6 lg:gap-8 hover:shadow-md transition-all duration-300">
+                                <div key={booking._id} className="relative bg-white rounded-xl p-6 lg:p-8 shadow-sm border border-stone-200/50 flex flex-col lg:flex-row gap-6 lg:gap-8 hover:shadow-md transition-all duration-300">
 
                                     {/* Status Badge - Top Right */}
                                     <div className="absolute top-6 right-6 md:top-8 md:right-8 z-10">
@@ -331,7 +331,7 @@ export function MyBookingsPage() {
                                     </div>
 
                                     {/* PART 3: DETAILS & ACTIONS (Right) */}
-                                    <div className="lg:w-[45%] bg-gray-50/60 rounded-[28px] p-6 border border-stone-200/50 flex flex-col justify-between gap-5">
+                                    <div className="lg:w-[45%] bg-gray-50/60 rounded-xl p-6 border border-stone-200/50 flex flex-col justify-between gap-5">
                                         
                                         {/* 4-DIGIT CHECK-IN PIN CARD */}
                                         {booking.verificationPin && (
@@ -426,7 +426,7 @@ export function MyBookingsPage() {
             {/* Cancellation Modal */}
             {cancelModalBooking && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-2xl max-w-md w-full p-6 md:p-8 shadow-2xl border border-stone-200/50">
+                    <div className="bg-white rounded-xl max-w-md w-full p-6 md:p-8 shadow-2xl border border-stone-200/50">
                         <div className="flex justify-between items-start mb-4">
                             <h3 className="text-xl font-sans font-bold text-gray-900">Cancel Request</h3>
                             <button

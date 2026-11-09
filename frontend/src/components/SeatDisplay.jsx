@@ -38,7 +38,7 @@ export function SeatDisplay({
                                 setSelectedSeat(seatNumber);
                                 onSeatSelect?.(seatNumber);
                             }}
-                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ease-out select-none ${
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ease-out select-none ${
                                 isSelected
                                     ? "border border-[#D4AF37] bg-[#1a1a1a] text-white shadow-soft-sm scale-[1.02] ring-2 ring-[#D4AF37]/25"
                                     : isFree

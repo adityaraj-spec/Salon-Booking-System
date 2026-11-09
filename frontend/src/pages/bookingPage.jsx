@@ -405,7 +405,7 @@ export function BookingPage() {
 
         return (
             <div className="min-h-screen bg-[#fafafa] py-12 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center">
-                <div className="w-full max-w-xl bg-white border border-stone-200/50 rounded-2xl p-8 shadow-xl relative overflow-hidden">
+                <div className="w-full max-w-xl bg-white border border-stone-200/50 rounded-xl p-8 shadow-xl relative overflow-hidden">
                     {turnSoonAlert && (
                         <div className="mb-6 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-xl p-4 text-xs sm:text-sm font-bold flex items-center gap-3 shadow-lg animate-pulse">
                             <Sparkles className="w-6 h-6 flex-shrink-0" />
@@ -420,7 +420,7 @@ export function BookingPage() {
                     )}
                     {proposedExtras && (
                         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-                            <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-[#D4AF37]/30">
+                            <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl border border-[#D4AF37]/30">
                                 <div className="w-12 h-12 rounded-full bg-amber-100 text-[#D4AF37] flex items-center justify-center mb-4 mx-auto">
                                     <Scissors className="w-6 h-6" />
                                 </div>
@@ -514,7 +514,7 @@ export function BookingPage() {
                             <p className="text-gray-500 text-sm mb-6">Head towards <strong>{salon?.name}</strong>.</p>
 
                             {/* Big Queue Position Display */}
-                            <div className="bg-gradient-to-br from-[#1a1a1a] to-gray-900 rounded-2xl p-6 text-white shadow-xl mb-6 border border-[#D4AF37]/30">
+                            <div className="bg-gradient-to-br from-[#1a1a1a] to-gray-900 rounded-xl p-6 text-white shadow-xl mb-6 border border-[#D4AF37]/30">
                                 <p className="text-xs font-semibold text-[#D4AF37]">Your Queue Position</p>
                                 <p className="text-5xl sm:text-6xl font-black font-sans my-2 tracking-tight text-white">
                                     #{activeBooking.queuePosition || 1}
@@ -684,7 +684,7 @@ export function BookingPage() {
 
                     {/* Header */}
                     <div className="flex items-center gap-4 mb-8">
-                        <NavLink to={`/shop/${id}`} className="p-2.5 bg-white border border-stone-200/50 hover:bg-gray-50 rounded-full transition-colors shadow-sm">
+                        <NavLink to={`/shop/${id}`} className="p-2.5 bg-white border border-stone-200/50 hover:bg-gray-50 rounded-xl transition-colors shadow-sm">
                             <ArrowLeft size={20} className="text-gray-700" />
                         </NavLink>
                         <div>
@@ -707,9 +707,9 @@ export function BookingPage() {
                     </div>
 
                     {/* LIVE SALON QUEUE STATUS BANNER */}
-                    <div className="mb-10 bg-white border border-stone-200/50 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <div className="mb-10 bg-white border border-stone-200/50 rounded-xl p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-[#D4AF37] shrink-0">
+                            <div className="w-12 h-12 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-[#D4AF37] shrink-0">
                                 <Clock size={24} />
                             </div>
                             <div>
@@ -737,7 +737,7 @@ export function BookingPage() {
                     </div>
 
                     {requestError && (
-                        <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-2">
+                        <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-2">
                             <AlertCircle size={16} className="shrink-0" />
                             <span>{requestError}</span>
                         </div>
@@ -862,7 +862,7 @@ export function BookingPage() {
 
                         {/* RIGHT COLUMN: QUEUE REQUEST SUMMARY */}
                         <div className="lg:col-span-1">
-                            <div className="bg-white border border-stone-200/50 rounded-2xl p-6 md:p-8 sticky top-24 shadow-sm">
+                            <div className="bg-white border border-stone-200/50 rounded-xl p-6 md:p-8 sticky top-24 shadow-sm">
                                 <h2 className="text-lg font-sans font-semibold text-[#1a1a1a] mb-6 border-b border-gray-50 pb-4">
                                     Request Summary
                                 </h2>

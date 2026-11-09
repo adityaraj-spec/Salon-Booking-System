@@ -342,7 +342,7 @@ export function SalonManagementPage() {
                 </header>
                 {/* Header & Multi-Salon Selector */}
                 {/* Header & Multi-Salon Selector - Redesigned 3-Column Layout */}
-                <div className="bg-white rounded-2xl p-6 lg:p-10 shadow-sm border border-gray-100 mb-8 relative overflow-hidden flex flex-col lg:flex-row gap-8 lg:gap-12">
+                <div className="bg-white rounded-xl p-6 lg:p-10 shadow-sm border border-gray-100 mb-8 relative overflow-hidden flex flex-col lg:flex-row gap-8 lg:gap-12">
                     {/* Background decoration */}
                     <div className="absolute top-0 right-0 w-80 h-80 bg-[#D4AF37]/5 rounded-full -mr-40 -mt-20 blur-3xl"></div>
                     
@@ -438,7 +438,7 @@ export function SalonManagementPage() {
                     </div>
 
                     {/* COLUMN 3: STATS & ACTIONS (Right) */}
-                    <div className="lg:w-[38%] bg-gray-50/50 rounded-2xl p-6 lg:p-8 border border-gray-100 flex flex-col justify-center gap-6 relative z-10">
+                    <div className="lg:w-[38%] bg-gray-50/50 rounded-xl p-6 lg:p-8 border border-gray-100 flex flex-col justify-center gap-6 relative z-10">
                         <div className="grid grid-cols-2 gap-4">
                             {/* Service Menu Stat */}
                             <div className="bg-white p-4 lg:p-5 rounded-xl shadow-sm border border-gray-50 flex items-center gap-4 hover:shadow-md transition-shadow">
@@ -519,7 +519,7 @@ export function SalonManagementPage() {
                 </div>
                 
                 {tab === "settings" && (
-                    <div className="bg-white rounded-2xl p-6 md:p-10 border border-gray-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="bg-white rounded-xl p-6 md:p-10 border border-gray-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="mb-6">
                             <h2 className="text-2xl font-sans font-semibold text-gray-900 mb-2">Salon Settings</h2>
                             <p className="text-gray-500 text-sm">Manage your salon's basic information, location, and operational schedule.</p>
@@ -659,7 +659,7 @@ export function SalonManagementPage() {
                 )}
 
                 {tab === "gallery" && (
-                    <div className="bg-white rounded-2xl p-6 md:p-10 border border-gray-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="bg-white rounded-xl p-6 md:p-10 border border-gray-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-6">
                             <div>
                                 <h2 className="text-2xl font-sans font-semibold text-gray-900 mb-2">Photo Gallery</h2>
@@ -688,7 +688,7 @@ export function SalonManagementPage() {
                                     type="submit"
                                     disabled={isSubmitting}
                                     onClick={(e) => e.stopPropagation()}
-                                    className="salon-action-button salon-action-button--dark px-8 rounded-full"
+                                    className="salon-action-button salon-action-button--dark px-8 rounded-xl"
                                 >
                                     {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : "Upload Images"}
                                 </button>
@@ -698,7 +698,7 @@ export function SalonManagementPage() {
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             {activeSalon?.images?.length > 0 ? (
                                 activeSalon.images.map((img, idx) => (
-                                    <div key={idx} className="aspect-square rounded-2xl overflow-hidden shadow-sm border border-gray-100 group relative">
+                                    <div key={idx} className="aspect-square rounded-xl overflow-hidden shadow-sm border border-gray-100 group relative">
                                         <img src={img} alt={`Gallery Image ${idx + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                     </div>
                                 ))
@@ -891,7 +891,7 @@ export function SalonManagementPage() {
                                          ))}
                                      </div>
                                  ) : (
-                                     <div className="bg-white rounded-2xl py-10 md:py-12 px-6 text-center border border-gray-100 shadow-sm border-dashed">
+                                     <div className="bg-white rounded-xl py-10 md:py-12 px-6 text-center border border-gray-100 shadow-sm border-dashed">
                                          <Scissors className="mx-auto text-gray-200 mb-3" size={32} />
                                          <p className="text-gray-500 font-medium italic">No services listed yet.</p>
                                      </div>
@@ -923,7 +923,7 @@ export function SalonManagementPage() {
                                                  ) : (
                                                      <div className="flex items-start justify-between">
                                                          <div className="flex gap-4">
-                                                             <div className="w-14 h-14 rounded-2xl bg-gray-900 flex items-center justify-center text-[#D4AF37] border-2 border-[#D4AF37]/20">
+                                                             <div className="w-14 h-14 rounded-xl bg-gray-900 flex items-center justify-center text-[#D4AF37] border-2 border-[#D4AF37]/20">
                                                                  <Users size={24} />
                                                              </div>
                                                              <div>
@@ -959,7 +959,7 @@ export function SalonManagementPage() {
                                          ))}
                                      </div>
                                  ) : (
-                                     <div className="bg-white rounded-2xl py-10 md:py-12 px-6 text-center border border-gray-100 shadow-sm border-dashed">
+                                     <div className="bg-white rounded-xl py-10 md:py-12 px-6 text-center border border-gray-100 shadow-sm border-dashed">
                                          <Users className="mx-auto text-gray-200 mb-3" size={32} />
                                          <p className="text-gray-500 font-medium italic">Your team is empty.</p>
                                      </div>

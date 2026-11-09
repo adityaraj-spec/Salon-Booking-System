@@ -251,7 +251,7 @@ export function LandingPage() {
                             initial={{ scale: 0.95, y: 15 }}
                             animate={{ scale: 1, y: 0 }}
                             exit={{ scale: 0.95, y: 15 }}
-                            className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-100 max-h-[85vh] flex flex-col"
+                            className="bg-white rounded-xl max-w-lg w-full p-6 shadow-2xl border border-gray-100 max-h-[85vh] flex flex-col"
                             onClick={(e) => e.stopPropagation()}
                         >
                             <div className="flex items-center justify-between pb-4 border-b border-gray-100">
@@ -378,18 +378,18 @@ export function LandingPage() {
             {(loading || featuredSalons.length > 0) && (
                 <section className="py-10 px-6">
                     <div className="max-w-6xl mx-auto">
-                        <div className="bg-[#fef9ec] border border-[#f0e5c0] rounded-2xl p-5 md:p-6 shadow-sm">
+                        <div className="bg-[#fef9ec] border border-[#f0e5c0] rounded-xl p-5 md:p-6 shadow-sm">
                             <div className="flex flex-col sm:flex-row sm:items-baseline justify-between mb-4 gap-2">
                                 <div className="flex items-baseline gap-3">
                                     <h2 className="text-xl md:text-2xl font-semibold text-[#1a1a1a]">Best Deals for Salons</h2>
-                                    <NavLink to="/home" className="text-xs text-[#8a6500] hover:text-[#1a1a1a] font-semibold bg-white/80 hover:bg-white px-3 py-1 rounded-full transition-all flex items-center gap-1 shadow-2xs">
+                                    <NavLink to="/home" className="text-xs text-[#8a6500] hover:text-[#1a1a1a] font-semibold bg-white/80 hover:bg-white px-3 py-1 rounded-lg transition-all flex items-center gap-1 shadow-2xs">
                                         View all <ChevronRight size={14} />
                                     </NavLink>
                                 </div>
                                 <span className="text-xs text-gray-500 font-medium hidden sm:inline">Handpicked premium discounts</span>
                             </div>
                             <div className="relative">
-                                <button aria-label="Show previous featured salons" onClick={() => scroll(featuredSliderRef, -1)} className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition">
+                                <button aria-label="Show previous featured salons" onClick={() => scroll(featuredSliderRef, -1)} className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-gray-200 rounded-xl shadow-md flex items-center justify-center hover:bg-gray-50 transition">
                                     <ChevronLeft size={18} className="text-gray-600" />
                                 </button>
                                 <div ref={featuredSliderRef} className="flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2 px-1" style={{ scrollbarWidth: 'none' }}>
@@ -397,7 +397,7 @@ export function LandingPage() {
                                         [...Array(6)].map((_, i) => <MiniSalonCardSkeleton key={i} />)
                                     ) : (
                                         featuredSalons.map((salon) => (
-                                            <div key={salon._id} className="min-w-[250px] w-[250px] flex-shrink-0 bg-white border border-gray-200 rounded-2xl overflow-hidden flex flex-col hover:shadow-lg transition group snap-start cursor-pointer" onClick={() => navigate(`/shop/${salon._id}`)}>
+                                            <div key={salon._id} className="min-w-[250px] w-[250px] flex-shrink-0 bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition group snap-start cursor-pointer" onClick={() => navigate(`/shop/${salon._id}`)}>
                                                 <div className="relative h-40 w-full overflow-hidden flex-shrink-0">
                                                     <img src={salon.images?.[0] || salonPlaceholder} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={salon.name} />
                                                     <button aria-label={`${userFavorites.includes(salon._id) ? 'Remove' : 'Save'} ${salon.name} from favorites`} aria-pressed={userFavorites.includes(salon._id)} className={`absolute top-2.5 right-2.5 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm transition-all hover:scale-110 ${userFavorites.includes(salon._id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`} onClick={(e) => handleToggleFavorite(e, salon._id)}>
@@ -423,7 +423,7 @@ export function LandingPage() {
                                         ))
                                     )}
                                 </div>
-                                <button aria-label="Show next featured salons" onClick={() => scroll(featuredSliderRef, 1)} className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition">
+                                <button aria-label="Show next featured salons" onClick={() => scroll(featuredSliderRef, 1)} className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-gray-200 rounded-xl shadow-md flex items-center justify-center hover:bg-gray-50 transition">
                                     <ChevronRight size={18} className="text-gray-600" />
                                 </button>
                             </div>
@@ -437,7 +437,7 @@ export function LandingPage() {
                 <div className="max-w-6xl mx-auto">
                     <h2 className="text-2xl font-semibold text-[#1a1a1a] mb-5">Find Top Salons in Your Favorite Cities</h2>
                     <div className="relative">
-                        <button aria-label="Show previous destinations" onClick={() => scroll(destSliderRef, -1)} className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition">
+                        <button aria-label="Show previous destinations" onClick={() => scroll(destSliderRef, -1)} className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-gray-200 rounded-xl shadow-md flex items-center justify-center hover:bg-gray-50 transition">
                             <ChevronLeft size={18} className="text-gray-600" />
                         </button>
                         <div ref={destSliderRef} className="flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2 px-1" style={{ scrollbarWidth: 'none' }}>
@@ -445,7 +445,7 @@ export function LandingPage() {
                                 <NavLink
                                     key={dest.city}
                                     to={`/home?city=${dest.city}`}
-                                    className="min-w-[180px] w-[180px] flex-shrink-0 rounded-2xl overflow-hidden relative group snap-start cursor-pointer"
+                                    className="min-w-[180px] w-[180px] flex-shrink-0 rounded-xl overflow-hidden relative group snap-start cursor-pointer"
                                 >
                                     <div className="h-52 w-full overflow-hidden">
                                         <img src={dest.img} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt={dest.city} />
@@ -460,7 +460,7 @@ export function LandingPage() {
                                 </NavLink>
                             ))}
                         </div>
-                        <button aria-label="Show next destinations" onClick={() => scroll(destSliderRef, 1)} className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition">
+                        <button aria-label="Show next destinations" onClick={() => scroll(destSliderRef, 1)} className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-gray-200 rounded-xl shadow-md flex items-center justify-center hover:bg-gray-50 transition">
                             <ChevronRight size={18} className="text-gray-600" />
                         </button>
                     </div>
@@ -471,7 +471,7 @@ export function LandingPage() {
             {(loading || cheapestServices.length > 0) && (
                 <section className="py-10 px-6">
                     <div className="max-w-6xl mx-auto">
-                        <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+                        <div className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
                             <div className="flex flex-col sm:flex-row sm:items-baseline justify-between mb-4 gap-2">
                                 <div className="flex items-baseline gap-3">
                                     <h2 className="text-xl md:text-2xl font-semibold text-[#1a1a1a]">Cheapest Services</h2>
@@ -482,7 +482,7 @@ export function LandingPage() {
                                 <span className="text-xs text-gray-400 font-medium hidden sm:inline">Best verified prices across salons</span>
                             </div>
                             <div className="relative">
-                                <button aria-label="Show previous services" onClick={() => scroll(cheapSliderRef, -1)} className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition">
+                                <button aria-label="Show previous services" onClick={() => scroll(cheapSliderRef, -1)} className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-gray-200 rounded-xl shadow-md flex items-center justify-center hover:bg-gray-50 transition">
                                     <ChevronLeft size={18} className="text-gray-600" />
                                 </button>
                                 <div ref={cheapSliderRef} className="flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2 px-1" style={{ scrollbarWidth: 'none' }}>
@@ -490,7 +490,7 @@ export function LandingPage() {
                                         [...Array(6)].map((_, i) => <MiniSalonCardSkeleton key={i} />)
                                     ) : (
                                         cheapestServices.map((service) => (
-                                            <div key={service._id} className="min-w-[210px] w-[210px] flex-shrink-0 bg-white border border-gray-100 rounded-2xl overflow-hidden flex flex-col hover:shadow-md transition group snap-start cursor-pointer" onClick={() => service.salon?._id && navigate(`/shop/${service.salon._id}`)}>
+                                            <div key={service._id} className="min-w-[210px] w-[210px] flex-shrink-0 bg-white border border-gray-100 rounded-xl overflow-hidden flex flex-col hover:shadow-md transition group snap-start cursor-pointer" onClick={() => service.salon?._id && navigate(`/shop/${service.salon._id}`)}>
                                                 <div className="relative h-36 w-full overflow-hidden flex-shrink-0">
                                                     <img src={service.salon?.images?.[0] || salonPlaceholder} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={service.name} />
                                                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/75 to-transparent px-3 py-2">
@@ -503,7 +503,7 @@ export function LandingPage() {
                                                     <div className="flex items-center justify-between mt-auto pt-2">
                                                         <span className="text-xs text-gray-500">₹<span className="text-base font-bold text-[#1a1a1a]">{service.price}</span></span>
                                                         <button 
-                                                            className="min-h-[40px] px-4 py-2 border border-[#D4AF37] bg-white text-[#D4AF37] hover:bg-[#D4AF37] hover:text-white text-xs font-bold rounded-full transition-all shadow-sm active:scale-95 flex items-center justify-center shrink-0" 
+                                                            className="min-h-[40px] px-4 py-2 border border-[#D4AF37] bg-white text-[#D4AF37] hover:bg-[#D4AF37] hover:text-white text-xs font-bold rounded-xl transition-all shadow-sm active:scale-95 flex items-center justify-center shrink-0" 
                                                             onClick={(e) => { e.stopPropagation(); service.salon?._id && navigate(`/shop/${service.salon._id}`); }}
                                                         >
                                                             Book Now
@@ -514,7 +514,7 @@ export function LandingPage() {
                                         ))
                                     )}
                                 </div>
-                                <button aria-label="Show next services" onClick={() => scroll(cheapSliderRef, 1)} className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition">
+                                <button aria-label="Show next services" onClick={() => scroll(cheapSliderRef, 1)} className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-gray-200 rounded-xl shadow-md flex items-center justify-center hover:bg-gray-50 transition">
                                     <ChevronRight size={18} className="text-gray-600" />
                                 </button>
                             </div>
@@ -532,7 +532,7 @@ export function LandingPage() {
                     </div>
                     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {WHY_CHOOSE.map((card, i) => (
-                            <div key={i} className="bg-[#fafafa] border border-gray-100 p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col gap-4">
+                            <div key={i} className="bg-[#fafafa] border border-gray-100 p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col gap-4">
                                 <div className={`w-10 h-10 ${card.bg} rounded-xl flex items-center justify-center shrink-0`}>{card.icon}</div>
                                 <div>
                                     <h3 className="text-base font-semibold text-[#1a1a1a] mb-1">{card.title}</h3>
@@ -586,13 +586,13 @@ export function LandingPage() {
                                     { title: "Flexible Payment", desc: "Pay securely online via UPI/cards or directly at the salon." },
                                     { title: "Real-Time Slots", desc: "Live seat availability ensures zero waiting and guaranteed appointments." },
                                 ].map((item, i) => (
-                                    <div key={i} className="p-4 bg-[#fafafa] border border-gray-100 rounded-2xl flex flex-col gap-1 hover:border-[#D4AF37]/30 transition-all">
+                                    <div key={i} className="p-4 bg-[#fafafa] border border-gray-100 rounded-xl flex flex-col gap-1 hover:border-[#D4AF37]/30 transition-all">
                                         <h4 className="font-semibold text-[#1a1a1a] text-sm">{item.title}</h4>
                                         <p className="text-gray-500 text-xs leading-relaxed">{item.desc}</p>
                                     </div>
                                 ))}
                             </div>
-                            <div className="p-4 bg-amber-50/60 border border-amber-200/50 rounded-2xl flex items-center gap-3 mt-4">
+                            <div className="p-4 bg-amber-50/60 border border-amber-200/50 rounded-xl flex items-center gap-3 mt-4">
                                 <ShieldCheck size={22} className="text-[#D4AF37] shrink-0" />
                                 <p className="text-xs text-amber-950 font-medium leading-relaxed">
                                     <strong className="font-semibold">100% Quality Assured:</strong> All partnered salons adhere to strict hygiene and professional standards.
@@ -601,7 +601,7 @@ export function LandingPage() {
                         </div>
 
                         {/* Right: How to book steps */}
-                        <div className="bg-[#fafafa] p-6 md:p-8 rounded-2xl border border-gray-100 h-fit">
+                        <div className="bg-[#fafafa] p-6 md:p-8 rounded-xl border border-gray-100 h-fit">
                             <h3 className="text-xl font-semibold text-[#1a1a1a] mb-4 font-sans flex items-center gap-2">
                                 <Clock size={20} className="text-[#D4AF37]" /> 4 Simple Steps to Book
                             </h3>

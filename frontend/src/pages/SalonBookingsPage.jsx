@@ -381,7 +381,7 @@ export function SalonBookingsPage() {
             <div className="space-y-6">
 
                 {/* HEADER & QUEUE STATUS BAR */}
-                <div className="bg-white rounded-2xl p-6 md:p-8 border border-stone-200/50 shadow-soft-md flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="bg-white rounded-xl p-6 md:p-8 border border-stone-200/50 shadow-soft-md flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
                         <div className="flex items-center gap-3">
                             <h1 className="text-2xl md:text-3xl font-sans font-bold tracking-tight text-gray-900">
@@ -476,7 +476,7 @@ export function SalonBookingsPage() {
                 {activeTab === "queue" && (
                     <div className="space-y-4">
                         {activeQueueList.length === 0 ? (
-                            <div className="bg-white rounded-2xl py-10 md:py-12 px-6 text-center border border-gray-100 shadow-sm">
+                            <div className="bg-white rounded-xl py-10 md:py-12 px-6 text-center border border-gray-100 shadow-sm">
                                 <Users size={32} className="text-gray-300 mx-auto mb-3" />
                                 <h3 className="text-lg font-sans font-semibold text-gray-900">Queue is Currently Empty</h3>
                                 <p className="text-xs text-gray-400 mt-1 leading-relaxed">New customers requesting service will appear here once accepted.</p>
@@ -490,7 +490,7 @@ export function SalonBookingsPage() {
                                     return (
                                         <div
                                             key={booking._id}
-                                            className={`bg-white rounded-2xl p-6 md:p-8 border transition-all duration-200 shadow-soft-sm hover:shadow-soft-md hover:scale-[1.006] flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 ${
+                                            className={`bg-white rounded-xl p-6 md:p-8 border transition-all duration-200 shadow-soft-sm hover:shadow-soft-md hover:scale-[1.006] flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 ${
                                                 isInProgress
                                                     ? "border-purple-200/80 bg-purple-50/15"
                                                     : isArrived
@@ -637,7 +637,7 @@ export function SalonBookingsPage() {
                 {activeTab === "requests" && (
                     <div className="space-y-4">
                         {incomingRequests.length === 0 ? (
-                            <div className="bg-white rounded-2xl py-10 md:py-12 px-6 text-center border border-gray-100 shadow-sm">
+                            <div className="bg-white rounded-xl py-10 md:py-12 px-6 text-center border border-gray-100 shadow-sm">
                                 <Clock size={32} className="text-gray-300 mx-auto mb-3" />
                                 <h3 className="text-lg font-sans font-semibold text-gray-900">No Pending Requests</h3>
                                 <p className="text-xs text-gray-400 mt-1 leading-relaxed">When customers request queue entry, they will appear here for review.</p>
@@ -647,7 +647,7 @@ export function SalonBookingsPage() {
                                 {incomingRequests.map((req) => (
                                     <div
                                         key={req._id}
-                                        className="bg-white rounded-2xl p-6 md:p-8 border border-amber-200/70 bg-gradient-to-r from-amber-50/30 via-white to-white shadow-soft-sm hover:shadow-soft-md hover:scale-[1.006] transition-all duration-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
+                                        className="bg-white rounded-xl p-6 md:p-8 border border-amber-200/70 bg-gradient-to-r from-amber-50/30 via-white to-white shadow-soft-sm hover:shadow-soft-md hover:scale-[1.006] transition-all duration-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
                                     >
                                         <div>
                                             <div className="flex items-center gap-3">
@@ -717,7 +717,7 @@ export function SalonBookingsPage() {
                 {activeTab === "history" && (
                     <div className="space-y-4">
                         {historicalList.length === 0 ? (
-                            <div className="bg-white rounded-2xl py-10 md:py-12 px-6 text-center border border-gray-100 shadow-sm">
+                            <div className="bg-white rounded-xl py-10 md:py-12 px-6 text-center border border-gray-100 shadow-sm">
                                 <CheckCircle size={32} className="text-gray-300 mx-auto mb-3" />
                                 <h3 className="text-lg font-sans font-semibold text-gray-900">No Historical Records</h3>
                                 <p className="text-xs text-gray-400 mt-1 leading-relaxed">Completed appointments will be archived here.</p>
@@ -764,7 +764,7 @@ export function SalonBookingsPage() {
                                     return (
                                         <div
                                             key={b._id}
-                                            className="bg-white rounded-2xl p-6 md:p-8 border border-stone-200/50 shadow-soft-sm hover:shadow-soft-md hover:scale-[1.006] transition-all duration-200 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6"
+                                            className="bg-white rounded-xl p-6 md:p-8 border border-stone-200/50 shadow-soft-sm hover:shadow-soft-md hover:scale-[1.006] transition-all duration-200 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6"
                                         >
                                             {/* LEFT: Customer & Appointment Details */}
                                             <div className="space-y-2 flex-1">
@@ -856,7 +856,7 @@ export function SalonBookingsPage() {
             {/* PAYMENT & SETTLEMENT MODAL */}
             {paymentBooking && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/40 backdrop-blur-md p-4">
-                    <div className="bg-white rounded-2xl max-w-md w-full p-6 md:p-8 shadow-soft-xl border border-stone-200/50 animate-in fade-in zoom-in-95">
+                    <div className="bg-white rounded-xl max-w-md w-full p-6 md:p-8 shadow-soft-xl border border-stone-200/50 animate-in fade-in zoom-in-95">
                         <div className="flex justify-between items-start mb-6">
                             <div>
                                 <h3 className="text-xl font-sans font-bold text-gray-900">Complete & Settle Service</h3>
@@ -946,7 +946,7 @@ export function SalonBookingsPage() {
             {/* ADD EXTRA SERVICES MODAL */}
             {extraServiceModalBooking && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-2xl max-lg w-full p-6 md:p-8 shadow-soft-xl border border-stone-200/50 animate-in fade-in zoom-in-95">
+                    <div className="bg-white rounded-xl max-lg w-full p-6 md:p-8 shadow-soft-xl border border-stone-200/50 animate-in fade-in zoom-in-95">
                         <div className="flex justify-between items-start mb-4">
                             <div>
                                 <h3 className="text-xl font-sans font-bold text-gray-900">Add Service to Ticket</h3>

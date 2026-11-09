@@ -75,11 +75,11 @@ export function RoleSelectionPage() {
                     <button
                         onClick={() => handleRoleSelect("customer")}
                         disabled={loading !== null}
-                        className={`group relative bg-white p-10 rounded-2xl shadow-sm border-2 transition-all duration-300 text-left flex flex-col h-full ${
+                        className={`group relative bg-white p-10 rounded-xl shadow-sm border-2 transition-all duration-300 text-left flex flex-col h-full ${
                             loading === "customer" ? "border-[#D4AF37] scale-95" : "border-transparent hover:border-[#D4AF37] hover:shadow-xl hover:-translate-y-1"
                         }`}
                     >
-                        <div className="bg-amber-50 text-[#D4AF37] p-4 rounded-2xl w-fit mb-6 group-hover:bg-[#D4AF37] group-hover:text-[#1a1a1a] transition-colors duration-300">
+                        <div className="bg-amber-50 text-[#D4AF37] p-4 rounded-xl w-fit mb-6 group-hover:bg-[#D4AF37] group-hover:text-[#1a1a1a] transition-colors duration-300">
                             <User size={32} />
                         </div>
                         <h3 className="text-2xl font-bold text-[#1a1a1a] mb-3">I'm a Customer</h3>
@@ -94,11 +94,11 @@ export function RoleSelectionPage() {
                     <button
                         onClick={() => handleRoleSelect("salonOwner")}
                         disabled={loading !== null}
-                        className={`group relative bg-white p-10 rounded-2xl shadow-sm border-2 transition-all duration-300 text-left flex flex-col h-full ${
+                        className={`group relative bg-white p-10 rounded-xl shadow-sm border-2 transition-all duration-300 text-left flex flex-col h-full ${
                             loading === "salonOwner" ? "border-[#D4AF37] scale-95" : "border-transparent hover:border-[#D4AF37] hover:shadow-xl hover:-translate-y-1"
                         }`}
                     >
-                        <div className="bg-orange-50 text-orange-600 p-4 rounded-2xl w-fit mb-6 group-hover:bg-orange-600 group-hover:text-white transition-colors duration-300">
+                        <div className="bg-orange-50 text-orange-600 p-4 rounded-xl w-fit mb-6 group-hover:bg-orange-600 group-hover:text-white transition-colors duration-300">
                             <Store size={32} />
                         </div>
                         <h3 className="text-2xl font-bold text-[#1a1a1a] mb-3">I'm a Salon Owner</h3>

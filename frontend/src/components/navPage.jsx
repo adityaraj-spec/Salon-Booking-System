@@ -240,7 +240,7 @@ export function NavBar() {
                                     </button>
 
                                     {isNotificationsOpen && (
-                                        <div className="absolute right-[-24px] md:right-0 mt-3 w-[calc(100vw-32px)] sm:w-80 md:w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[60] animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+                                        <div className="absolute right-[-24px] md:right-0 mt-3 w-[calc(100vw-32px)] sm:w-80 md:w-96 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-[60] animate-in fade-in zoom-in-95 duration-200 origin-top-right">
                                             <div className="p-5 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
                                                 <h3 className="font-semibold text-gray-900">Notifications</h3>
                                                 {unreadCount > 0 && (
@@ -267,7 +267,7 @@ export function NavBar() {
                                                                 }}
                                                                 className={`w-full text-left p-4 hover:bg-gray-50 transition-colors cursor-pointer flex gap-4 ${!notif.isRead ? 'bg-[#D4AF37]/5' : ''}`}
                                                             >
-                                                                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${notif.type.includes('confirmed') ? 'bg-emerald-50 text-emerald-600' :
+                                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${notif.type.includes('confirmed') ? 'bg-emerald-50 text-emerald-600' :
                                                                         notif.type.includes('rejected') ? 'bg-red-50 text-red-600' :
                                                                             'bg-amber-50 text-[#D4AF37]'
                                                                     }`}>
@@ -443,7 +443,7 @@ export function NavBar() {
                                 </button>
                                 
                                 {isNotificationsOpen && (
-                                    <div className="fixed inset-x-4 top-20 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[130] animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <div className="fixed inset-x-4 top-20 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-[130] animate-in fade-in slide-in-from-top-2 duration-200">
                                         <div className="p-4 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
                                             <h3 className="font-semibold text-gray-900 text-sm">Notifications</h3>
                                             {unreadCount > 0 && (
@@ -571,7 +571,7 @@ export function NavBar() {
                                     const token = localStorage.getItem('authToken');
                                     window.open(`${import.meta.env.VITE_ADMIN_URL}?token=${token}`, '_blank');
                                 }}
-                                className="w-full flex items-center justify-start gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
+                                className="w-full flex items-center justify-start gap-4 px-4 py-3.5 rounded-xl font-bold text-sm text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
                             >
                                 <LayoutDashboard size={18} className="shrink-0" />
                                 Admin dashboard
@@ -616,7 +616,7 @@ export function NavBar() {
                         <>
                             <NavLink
                                 to="/profile"
-                                className="flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
+                                className="flex items-center gap-4 px-4 py-3.5 rounded-xl font-bold text-sm text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
                                 <User size={18} className="shrink-0" />
@@ -627,7 +627,7 @@ export function NavBar() {
                                     setIsMobileMenuOpen(false);
                                     logout();
                                 }}
-                                className="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm text-red-600 hover:bg-red-50 transition-all"
+                                className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl font-bold text-sm text-red-600 hover:bg-red-50 transition-all"
                             >
                                 <LogOut size={18} />
                                 Logout
@@ -637,14 +637,14 @@ export function NavBar() {
                         <div className="space-y-3 px-2 pt-2">
                             <NavLink
                                 to="/login"
-                                className="block w-full text-center border-2 border-gray-100 py-3.5 rounded-2xl font-bold text-xs hover:border-[#1a1a1a] transition-all"
+                                className="block w-full text-center border-2 border-gray-100 py-3.5 rounded-xl font-bold text-xs hover:border-[#1a1a1a] transition-all"
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
                                 Login
                             </NavLink>
                             <NavLink
                                 to="/signup"
-                                className="block w-full text-center bg-[#1a1a1a] text-white py-3.5 rounded-2xl font-bold text-xs shadow-lg shadow-black/10 active:scale-[0.98] transition-all"
+                                className="block w-full text-center bg-[#1a1a1a] text-white py-3.5 rounded-xl font-bold text-xs shadow-lg shadow-black/10 active:scale-[0.98] transition-all"
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
                                 Sign Up

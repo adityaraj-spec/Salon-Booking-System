@@ -54,8 +54,8 @@ export function MiniSalonCardSkeleton() {
 // ── Destination Skeleton — for landing page city sliders ──────────────────────
 export function DestinationCardSkeleton() {
     return (
-        <div className="min-w-[180px] w-[180px] flex-shrink-0 rounded-2xl overflow-hidden">
-            <Skeleton className="h-52 w-full rounded-2xl" />
+        <div className="min-w-[180px] w-[180px] flex-shrink-0 rounded-xl overflow-hidden">
+            <Skeleton className="h-52 w-full rounded-xl" />
         </div>
     );
 }
@@ -95,7 +95,7 @@ export function ShopDetailSkeleton() {
                     </div>
                     {/* Booking panel */}
                     <div className="space-y-4">
-                        <Skeleton className="h-48 w-full rounded-2xl" />
+                        <Skeleton className="h-48 w-full rounded-xl" />
                         <Skeleton className="h-12 w-full rounded-full" />
                     </div>
                 </div>
@@ -107,7 +107,7 @@ export function ShopDetailSkeleton() {
 // ── Booking Card Skeleton — my bookings list ──────────────────────────────────
 export function BookingCardSkeleton() {
     return (
-        <div className="w-full bg-white border border-gray-100 rounded-2xl p-5 flex gap-4">
+        <div className="w-full bg-white border border-gray-100 rounded-xl p-5 flex gap-4">
             {/* Left image */}
             <Skeleton className="h-24 w-24 flex-shrink-0 rounded-xl" />
             {/* Content */}
@@ -163,7 +163,7 @@ export function TableRowSkeleton({ cols = 5 }) {
 
 export function TableSkeleton({ rows = 6, cols = 5 }) {
     return (
-        <div className="w-full bg-white border border-gray-100 rounded-2xl overflow-hidden">
+        <div className="w-full bg-white border border-gray-100 rounded-xl overflow-hidden">
             {/* Header */}
             <div className="flex gap-4 items-center px-4 py-3.5 bg-gray-50 border-b border-gray-100">
                 {[...Array(cols)].map((_, i) => (

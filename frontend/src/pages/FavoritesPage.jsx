@@ -92,7 +92,7 @@ export function FavoritesPage() {
                         </button>
                     </div>
                 ) : salons.length === 0 ? (
-                    <div className="text-center py-10 md:py-12 px-6 bg-white rounded-2xl border border-gray-100 shadow-sm max-w-2xl mx-auto">
+                    <div className="text-center py-10 md:py-12 px-6 bg-white rounded-xl border border-gray-100 shadow-sm max-w-2xl mx-auto">
                         <div className="bg-gray-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                             <Heart className="text-gray-300 w-8 h-8" />
                         </div>
@@ -111,7 +111,7 @@ export function FavoritesPage() {
                         {salons.map((salon) => (
                             <div
                                 key={salon._id}
-                                className="w-full bg-white border border-gray-100 rounded-2xl overflow-hidden flex flex-col transition-all hover:shadow-xl hover:shadow-[#D4AF37]/5 hover:-translate-y-1 group"
+                                className="w-full bg-white border border-gray-100 rounded-xl overflow-hidden flex flex-col transition-all hover:shadow-xl hover:shadow-[#D4AF37]/5 hover:-translate-y-1 group"
                             >
                                 {/* Image Section */}
                                 <div

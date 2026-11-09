@@ -33,7 +33,7 @@ export function SalonMap({ salons = [], center = [77.2090, 28.6139], zoom = 12 }
         const bbox = `${longitude - delta}%2C${latitude - delta}%2C${longitude + delta}%2C${latitude + delta}`;
         const query = encodeURIComponent([salons[0]?.address, salons[0]?.city, salons[0]?.state, salons[0]?.pincode].filter(Boolean).join(", "));
         return (
-            <div className="w-full h-full min-h-[240px] rounded-2xl overflow-hidden border border-gray-100 bg-gray-50">
+            <div className="w-full h-full min-h-[240px] rounded-xl overflow-hidden border border-gray-100 bg-gray-50">
                 <iframe
                     title="Salon location map"
                     src={`https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${latitude}%2C${longitude}`}
@@ -46,7 +46,7 @@ export function SalonMap({ salons = [], center = [77.2090, 28.6139], zoom = 12 }
     }
 
     return (
-        <div className="w-full h-full min-h-[400px] rounded-2xl overflow-hidden shadow-inner border border-gray-100">
+        <div className="w-full h-full min-h-[400px] rounded-xl overflow-hidden shadow-inner border border-gray-100">
             <Map
                 {...viewState}
                 onMove={evt => setViewState(evt.viewState)}

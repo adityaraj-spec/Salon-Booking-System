@@ -78,7 +78,7 @@ export function CreateSalonPage() {
     return (
         <div className="font-sans pb-20 w-full">
             {/* Header */}
-            <div className="bg-white border-b border-gray-100 py-6 px-6 sticky top-0 z-10 shadow-sm rounded-t-[32px] md:rounded-none">
+            <div className="bg-white border-b border-gray-100 py-6 px-6 sticky top-0 z-10 shadow-sm rounded-t-xl md:rounded-none">
                 <div className="max-w-[1280px] mx-auto px-6 md:px-10 flex justify-between items-center">
                     <div className="flex items-center space-x-2">
                         <div className="bg-[#1a1a1a] p-1.5 rounded-full text-white">
@@ -111,7 +111,7 @@ export function CreateSalonPage() {
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Basic Info Section */}
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
                         <h3 className="text-lg font-semibold text-gray-800 flex items-center">
                             <Store className="mr-2 text-[#D4AF37]" size={20} />
                             Basic Information
@@ -169,7 +169,7 @@ export function CreateSalonPage() {
                     </div>
 
                     {/* Location Section */}
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
                         <h3 className="text-lg font-semibold text-gray-800 flex items-center">
                             <MapPin className="mr-2 text-[#D4AF37]" size={20} />
                             Location & Address
@@ -256,7 +256,7 @@ export function CreateSalonPage() {
                     </div>
 
                     {/* Hours Section */}
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
                         <h3 className="text-lg font-semibold text-gray-800 flex items-center">
                             <Clock className="mr-2 text-[#D4AF37]" size={20} />
                             Operating Hours
@@ -285,7 +285,7 @@ export function CreateSalonPage() {
                     </div>
 
                     {/* Images Section */}
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
                         <div className="flex justify-between items-center">
                             <h3 className="text-lg font-semibold text-gray-800 flex items-center">
                                 <Camera className="mr-2 text-[#D4AF37]" size={20} />
@@ -305,7 +305,7 @@ export function CreateSalonPage() {
                             />
                             <label
                                 htmlFor="salon-images"
-                                className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-200 rounded-2xl cursor-pointer hover:border-[#D4AF37] hover:bg-gray-50 transition-all group"
+                                className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-[#D4AF37] hover:bg-gray-50 transition-all group"
                             >
                                 <div className="bg-gray-100 p-3 rounded-full text-gray-400 group-hover:bg-[#D4AF37]/10 group-hover:text-[#D4AF37] transition-colors mb-2">
                                     <Plus size={24} />
@@ -318,7 +318,7 @@ export function CreateSalonPage() {
                         {previews.length > 0 && (
                             <div className="grid grid-cols-3 gap-4 mt-6">
                                 {previews.map((url, index) => (
-                                    <div key={index} className="relative group rounded-2xl overflow-hidden aspect-video border border-gray-100 shadow-sm">
+                                    <div key={index} className="relative group rounded-xl overflow-hidden aspect-video border border-gray-100 shadow-sm">
                                         <img src={url} alt={`Preview ${index}`} className="w-full h-full object-cover" />
                                         <button
                                             type="button"

@@ -87,10 +87,13 @@ export default {
       },
 
       borderRadius: {
+        "sm": "0.25rem", // 4px
+        "md": "0.375rem", // 6px
+        "lg": "0.5rem", // 8px
         "xl": "0.625rem", // 10px
-        "2xl": "1rem", // 16px
-        "3xl": "1.25rem", // 20px
-        "4xl": "1.5rem", // 24px
+        "2xl": "0.75rem", // 12px
+        "3xl": "0.875rem", // 14px
+        "4xl": "1rem", // 16px
         pill: "9999px",
       },
 

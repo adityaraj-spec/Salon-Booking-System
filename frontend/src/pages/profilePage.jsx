@@ -68,7 +68,7 @@ export function ProfilePage() {
     return (
         <main className="flex-1 pb-12">
             <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-20 md:pt-24 pb-8">
-                <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+                <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
                     {/* Header/Cover */}
                     <div className="h-32 bg-[#1a1a1a] flex items-end px-6 md:px-12 relative">
                         <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#D4AF37] border-4 border-white translate-y-10 md:translate-y-12 flex items-center justify-center text-white text-2xl md:text-3xl font-bold z-0">
@@ -287,7 +287,7 @@ export function ProfilePage() {
                                 </div>
 
                                 {loyaltyLoading ? (
-                                    <div className="flex items-center justify-center py-10 bg-gray-50 rounded-2xl">
+                                    <div className="flex items-center justify-center py-10 bg-gray-50 rounded-xl">
                                         <Loader2 size={24} className="animate-spin text-[#D4AF37]" />
                                     </div>
                                 ) : (loyaltyData?.transactions && loyaltyData.transactions.length > 0) ? (

@@ -65,7 +65,7 @@ export function SeatMatrix({ salonId, date, onDateChange, durationMinutes = 30, 
     };
     const slots = Array.isArray(availability.slots) ? availability.slots : [];
     return (
-        <div className={`rounded-2xl border border-stone-200/50 bg-white shadow-soft-sm ${compact ? "p-5" : "p-6"}`}>
+        <div className={`rounded-xl border border-stone-200/50 bg-white shadow-soft-sm ${compact ? "p-5" : "p-6"}`}>
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <div>
                     <div className="flex items-center gap-2">
