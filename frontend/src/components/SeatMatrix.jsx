@@ -65,12 +65,12 @@ export function SeatMatrix({ salonId, date, onDateChange, durationMinutes = 30, 
     };
     const slots = Array.isArray(availability.slots) ? availability.slots : [];
     return (
-        <div className={`rounded-[24px] border border-gray-100 bg-white shadow-sm ${compact ? "p-5" : "p-6"}`}>
+        <div className={`rounded-[24px] border border-stone-200/50 bg-white shadow-soft-sm ${compact ? "p-5" : "p-6"}`}>
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <div>
                     <div className="flex items-center gap-2">
                         <CalendarDays size={18} className="text-[#D4AF37]" />
-                        <h3 className="text-lg font-serif font-bold text-[#1a1a1a]">Live seat matrix</h3>
+                        <h3 className="text-lg font-sans font-semibold text-[#1a1a1a]">Live seat matrix</h3>
                     </div>
                     <p className="text-xs text-gray-500 mt-1">Select an available slot to continue booking.</p>
                 </div>
@@ -111,7 +111,7 @@ export function SeatMatrix({ salonId, date, onDateChange, durationMinutes = 30, 
                             type="button"
                             disabled={!available}
                             onClick={() => onSlotSelect?.(slot, selectedDate)}
-                            className={`rounded-xl border px-3 py-3 text-left transition-all ${available ? "border-gray-200 hover:border-[#D4AF37] hover:bg-amber-50/50" : "cursor-not-allowed border-gray-100 bg-gray-50 text-gray-300"}`}
+                            className={`rounded-2xl border px-3.5 py-3 text-left transition-all duration-200 ease-out hover:scale-[1.02] active:scale-[0.98] ${available ? "border-stone-200/80 hover:border-[#D4AF37] hover:bg-amber-50/40 shadow-soft-xs hover:shadow-soft-sm" : "cursor-not-allowed border-stone-100 bg-stone-50/60 text-stone-300 opacity-60"}`}
                         >
                             <span className="block text-sm font-bold">{label}</span>
                             <span className={`text-[11px] font-semibold ${available ? "text-emerald-600" : "text-gray-400"}`}>

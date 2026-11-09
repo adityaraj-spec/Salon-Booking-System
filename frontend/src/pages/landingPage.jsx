@@ -180,7 +180,7 @@ export function LandingPage() {
                     </motion.div>
 
                     {/* Dynamic H1 Headline */}
-                    <motion.h1 variants={fadeUpVariants} className="text-4xl sm:text-6xl md:text-7xl font-serif font-bold mb-6 leading-tight drop-shadow-md text-white">
+                    <motion.h1 variants={fadeUpVariants} className="text-4xl sm:text-6xl md:text-7xl font-sans font-bold tracking-tight mb-6 leading-tight drop-shadow-md text-white">
                         Book top salons in{" "}
                         <button
                             type="button"
@@ -255,7 +255,7 @@ export function LandingPage() {
                         >
                             <div className="flex items-center justify-between pb-4 border-b border-gray-100">
                                 <div>
-                                    <h3 className="font-serif font-bold text-xl text-[#1a1a1a]">Select Your City</h3>
+                                    <h3 className="font-sans font-bold text-xl text-[#1a1a1a]">Select Your City</h3>
                                     <p className="text-xs text-gray-500 mt-0.5">Explore premier salons in your area</p>
                                 </div>
                                 <button
@@ -380,8 +380,8 @@ export function LandingPage() {
                         <div className="bg-[#fef9ec] border border-[#f0e5c0] rounded-2xl p-5 md:p-6 shadow-sm">
                             <div className="flex flex-col sm:flex-row sm:items-baseline justify-between mb-4 gap-2">
                                 <div className="flex items-baseline gap-3">
-                                    <h2 className="text-xl md:text-2xl font-bold text-[#1a1a1a]">Best Deals for Salons</h2>
-                                    <NavLink to="/home" className="text-[#D4AF37] hover:text-[#b89528] font-bold text-xs flex items-center gap-0.5 hover:underline">
+                                    <h2 className="text-xl md:text-2xl font-semibold tracking-tight text-[#1a1a1a]">Best Deals for Salons</h2>
+                                    <NavLink to="/home" className="text-xs text-[#8a6500] hover:text-[#1a1a1a] font-semibold bg-white/80 hover:bg-white px-3 py-1 rounded-full transition-all flex items-center gap-1 shadow-2xs">
                                         View all <ChevronRight size={14} />
                                     </NavLink>
                                 </div>
@@ -396,7 +396,7 @@ export function LandingPage() {
                                         [...Array(6)].map((_, i) => <MiniSalonCardSkeleton key={i} />)
                                     ) : (
                                         featuredSalons.map((salon) => (
-                                            <div key={salon._id} className="min-w-[250px] w-[250px] flex-shrink-0 bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition group snap-start cursor-pointer" onClick={() => navigate(`/shop/${salon._id}`)}>
+                                            <div key={salon._id} className="min-w-[250px] w-[250px] flex-shrink-0 bg-white border border-gray-200 rounded-2xl overflow-hidden flex flex-col hover:shadow-lg transition group snap-start cursor-pointer" onClick={() => navigate(`/shop/${salon._id}`)}>
                                                 <div className="relative h-40 w-full overflow-hidden flex-shrink-0">
                                                     <img src={salon.images?.[0] || salonPlaceholder} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={salon.name} />
                                                     <button aria-label={`${userFavorites.includes(salon._id) ? 'Remove' : 'Save'} ${salon.name} from favorites`} aria-pressed={userFavorites.includes(salon._id)} className={`absolute top-2.5 right-2.5 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm transition-all hover:scale-110 ${userFavorites.includes(salon._id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`} onClick={(e) => handleToggleFavorite(e, salon._id)}>
@@ -408,12 +408,12 @@ export function LandingPage() {
                                                         <span className="text-[10px] text-gray-500">Salon</span>
                                                         <div className="flex gap-0.5">{[...Array(5)].map((_, i) => <Star key={i} size={10} className="fill-[#febb02] text-[#febb02]" />)}</div>
                                                     </div>
-                                                    <h3 className="text-sm font-bold text-[#1a1a1a] mb-1 line-clamp-1 hover:text-[#8a6500] transition-colors">{salon.name}</h3>
+                                                    <h3 className="text-sm font-semibold text-[#1a1a1a] mb-1 line-clamp-1 hover:text-[#8a6500] transition-colors">{salon.name}</h3>
                                                     <span className="text-xs text-[#8a6500] flex items-center gap-1 mb-2"><MapPin size={11} className="shrink-0" />{salon.city ? `${salon.city}, India` : "Location not set"}</span>
                                                     <div className="mt-auto flex items-center justify-between">
                                                         <div className="flex items-center gap-1.5">
-                                                            <div className="bg-[#1a1a1a] text-[#D4AF37] px-1.5 py-1 font-bold rounded-t-md rounded-br-md rounded-bl-sm min-w-[28px] text-xs text-center">{salon.rating || "New"}</div>
-                                                            <span className="text-[10px] font-bold text-[#1a1a1a]">{salon.rating > 4 ? "Excellent" : salon.rating > 3 ? "Very Good" : "Good"}</span>
+                                                            <div className="bg-[#1a1a1a] text-[#D4AF37] px-2 py-1 font-bold rounded-xl min-w-[28px] text-xs text-center">{salon.rating || "New"}</div>
+                                                            <span className="text-[10px] font-semibold text-[#1a1a1a]">{salon.rating > 4 ? "Excellent" : salon.rating > 3 ? "Very Good" : "Good"}</span>
                                                         </div>
                                                         <span className="text-[10px] text-gray-400">{salon.reviews?.length || 0} reviews</span>
                                                     </div>
@@ -434,7 +434,7 @@ export function LandingPage() {
             {/* ── POPULAR DESTINATIONS ── */}
             <section className="py-10 px-6 bg-white">
                 <div className="max-w-6xl mx-auto">
-                    <h2 className="text-2xl font-bold text-[#1a1a1a] mb-5">Find Top Salons in Your Favorite Cities</h2>
+                    <h2 className="text-2xl font-semibold tracking-tight text-[#1a1a1a] mb-5">Find Top Salons in Your Favorite Cities</h2>
                     <div className="relative">
                         <button aria-label="Show previous destinations" onClick={() => scroll(destSliderRef, -1)} className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition">
                             <ChevronLeft size={18} className="text-gray-600" />
@@ -473,8 +473,8 @@ export function LandingPage() {
                         <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
                             <div className="flex flex-col sm:flex-row sm:items-baseline justify-between mb-4 gap-2">
                                 <div className="flex items-baseline gap-3">
-                                    <h2 className="text-xl md:text-2xl font-bold text-[#1a1a1a]">Cheapest Services</h2>
-                                    <NavLink to="/home" className="text-[#D4AF37] hover:text-[#b89528] font-bold text-xs flex items-center gap-0.5 hover:underline">
+                                    <h2 className="text-xl md:text-2xl font-semibold tracking-tight text-[#1a1a1a]">Cheapest Services</h2>
+                                    <NavLink to="/home" className="text-xs text-[#8a6500] hover:text-[#1a1a1a] font-semibold bg-stone-100 hover:bg-stone-200 px-3 py-1 rounded-full transition-all flex items-center gap-1">
                                         View all <ChevronRight size={14} />
                                     </NavLink>
                                 </div>
@@ -526,7 +526,7 @@ export function LandingPage() {
             <section className="py-16 bg-white px-6 border-t border-gray-50">
                 <div className="max-w-6xl mx-auto">
                     <div className="text-center mb-10">
-                        <h2 className="text-4xl font-serif font-bold text-[#1a1a1a] mb-4">Why Choose SalonNow?</h2>
+                        <h2 className="text-3xl md:text-4xl font-sans font-semibold tracking-tight text-[#1a1a1a] mb-4">Why Choose SalonNow?</h2>
                         <p className="text-gray-500 text-lg">We make salon booking simple, secure, and convenient.</p>
                     </div>
                     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -534,7 +534,7 @@ export function LandingPage() {
                             <div key={i} className="bg-[#fafafa] border border-gray-100 p-7 rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col gap-4">
                                 <div className={`w-10 h-10 ${card.bg} rounded-xl flex items-center justify-center shrink-0`}>{card.icon}</div>
                                 <div>
-                                    <h3 className="text-base font-bold text-[#1a1a1a] mb-1">{card.title}</h3>
+                                    <h3 className="text-base font-semibold text-[#1a1a1a] mb-1">{card.title}</h3>
                                     <p className="text-gray-500 leading-relaxed text-sm">{card.desc}</p>
                                 </div>
                             </div>
@@ -547,13 +547,13 @@ export function LandingPage() {
             <section className="py-16 bg-white px-6 border-t border-gray-50">
                 <div className="max-w-6xl mx-auto">
                     <div className="text-center mb-12">
-                        <h2 className="text-4xl font-serif font-bold text-[#1a1a1a]">How It Works</h2>
+                        <h2 className="text-3xl md:text-4xl font-sans font-semibold tracking-tight text-[#1a1a1a]">How It Works</h2>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
                         {[["Browse Salons", "Explore verified salons near you"], ["Choose Service", "Select from a range of services"], ["Book & Pay", "Secure online booking & payment"], ["Enjoy Service", "Visit salon and enjoy your service"]].map(([title, desc], i) => (
                             <div key={i}>
-                                <div className="text-6xl font-serif text-[#ffe0cc] font-bold mb-4">{String(i + 1).padStart(2, '0')}</div>
-                                <h3 className="text-lg font-bold text-[#1a1a1a] mb-2 font-serif">{title}</h3>
+                                <div className="text-6xl font-sans text-[#ffe0cc] font-bold mb-4">{String(i + 1).padStart(2, '0')}</div>
+                                <h3 className="text-lg font-semibold tracking-tight text-[#1a1a1a] mb-2 font-sans">{title}</h3>
                                 <p className="text-gray-500 text-sm">{desc}</p>
                             </div>
                         ))}
@@ -566,8 +566,8 @@ export function LandingPage() {
             <section className="py-20 bg-white px-6 border-t border-gray-100">
                 <div className="max-w-6xl mx-auto">
                     <div className="text-center max-w-2xl mx-auto mb-14">
-                        <span className="text-[#D4AF37] font-bold text-xs bg-amber-50 px-3 py-1 rounded-full">Discover SalonNow</span>
-                        <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#1a1a1a] mt-3 mb-3">Online Salon Booking Made Effortless</h2>
+                        <span className="text-[#D4AF37] font-semibold text-xs bg-amber-50 px-3 py-1 rounded-full">Discover SalonNow</span>
+                        <h2 className="text-2xl md:text-3xl font-sans font-semibold tracking-tight text-[#1a1a1a] mt-3 mb-3">Online Salon Booking Made Effortless</h2>
                         <p className="text-gray-500 text-sm md:text-base leading-relaxed">
                             Connecting customers with premier salons and wellness providers across India with live slot availability, upfront transparent pricing, and instant confirmations.
                         </p>
@@ -576,7 +576,7 @@ export function LandingPage() {
                     <div className="grid md:grid-cols-2 gap-10">
                         {/* Left: Why book with us cards */}
                         <div className="space-y-4">
-                            <h3 className="text-xl font-bold text-[#1a1a1a] mb-2 flex items-center gap-2">
+                            <h3 className="text-xl font-semibold tracking-tight text-[#1a1a1a] mb-2 flex items-center gap-2">
                                 <Sparkles size={20} className="text-[#D4AF37]" /> Why Book with SalonNow?
                             </h3>
                             <div className="grid sm:grid-cols-2 gap-3.5">
@@ -587,7 +587,7 @@ export function LandingPage() {
                                     { title: "Real-Time Slots", desc: "Live seat availability ensures zero waiting and guaranteed appointments." },
                                 ].map((item, i) => (
                                     <div key={i} className="p-4 bg-[#fafafa] border border-gray-100 rounded-2xl flex flex-col gap-1 hover:border-[#D4AF37]/30 transition-all">
-                                        <h4 className="font-bold text-[#1a1a1a] text-sm">{item.title}</h4>
+                                        <h4 className="font-semibold text-[#1a1a1a] text-sm">{item.title}</h4>
                                         <p className="text-gray-500 text-xs leading-relaxed">{item.desc}</p>
                                     </div>
                                 ))}
@@ -595,14 +595,14 @@ export function LandingPage() {
                             <div className="p-4 bg-amber-50/60 border border-amber-200/50 rounded-2xl flex items-center gap-3 mt-4">
                                 <ShieldCheck size={22} className="text-[#D4AF37] shrink-0" />
                                 <p className="text-xs text-amber-950 font-medium">
-                                    <strong className="font-bold">100% Quality Assured:</strong> All partnered salons adhere to strict hygiene and professional standards.
+                                    <strong className="font-semibold">100% Quality Assured:</strong> All partnered salons adhere to strict hygiene and professional standards.
                                 </p>
                             </div>
                         </div>
 
                         {/* Right: How to book steps */}
                         <div className="bg-[#fafafa] p-6 md:p-8 rounded-3xl border border-gray-100 h-fit">
-                            <h3 className="text-xl font-bold text-[#1a1a1a] mb-4 font-serif flex items-center gap-2">
+                            <h3 className="text-xl font-semibold tracking-tight text-[#1a1a1a] mb-4 font-sans flex items-center gap-2">
                                 <Clock size={20} className="text-[#D4AF37]" /> 4 Simple Steps to Book
                             </h3>
                             <div className="space-y-4">
@@ -617,7 +617,7 @@ export function LandingPage() {
                                             {i + 1}
                                         </span>
                                         <div>
-                                            <h4 className="text-sm font-bold text-[#1a1a1a]">{item.step}</h4>
+                                            <h4 className="text-sm font-semibold text-[#1a1a1a]">{item.step}</h4>
                                             <p className="text-xs text-gray-500 mt-0.5">{item.desc}</p>
                                         </div>
                                     </div>
@@ -625,7 +625,7 @@ export function LandingPage() {
                             </div>
                             <div className="mt-6 pt-5 border-t border-gray-200 flex items-center justify-between">
                                 <span className="text-xs text-gray-500">Need immediate booking?</span>
-                                <NavLink to="/home" className="text-xs font-bold text-[#8a6500] hover:underline flex items-center gap-1">
+                                <NavLink to="/home" className="text-xs font-semibold text-[#8a6500] hover:text-[#1a1a1a] bg-stone-100 hover:bg-stone-200 px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1">
                                     Find Salons Now <ChevronRight size={14} />
                                 </NavLink>
                             </div>
@@ -637,7 +637,7 @@ export function LandingPage() {
             {/* ── CTA ── */}
             <section className="py-20 bg-[#1f1e1d] px-6 text-center">
                 <div className="max-w-3xl mx-auto flex flex-col items-center">
-                    <h2 className="text-4xl md:text-5xl font-serif font-bold text-white mb-6">Ready to Get Started?</h2>
+                    <h2 className="text-3xl md:text-4xl font-sans font-semibold tracking-tight text-white mb-6">Ready to Get Started?</h2>
                     <p className="text-gray-300 text-lg mb-8 font-light">Join thousands of satisfied customers who book their beauty appointments with us.</p>
                     <NavLink to="/home" className="bg-white text-black px-8 py-4 rounded-full font-medium flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors">
                         Start Booking Now <ArrowRight size={18} />

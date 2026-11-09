@@ -61,7 +61,7 @@ function StaffSection({ staff, salonId, navigate, user, formatLabel }) {
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h3 className="text-2xl font-serif font-bold text-[#1a1a1a]">Meet Our Team</h3>
+                    <h3 className="text-2xl font-sans font-semibold tracking-tight text-[#1a1a1a]">Meet Our Team</h3>
                     <p className="text-sm text-gray-500 mt-1">Book directly with your preferred stylist</p>
                 </div>
                 {/* Desktop scroll arrows */}
@@ -112,7 +112,7 @@ function StaffSection({ staff, salonId, navigate, user, formatLabel }) {
                                         className="w-20 h-20 rounded-full object-cover border-2 border-gray-100 group-hover:border-[#D4AF37]/40 transition-all"
                                     />
                                 ) : (
-                                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#1a1a1a] to-[#3a3a3a] flex items-center justify-center text-white font-serif font-bold text-2xl border-2 border-[#D4AF37]/20 group-hover:border-[#D4AF37]/50 transition-all shadow-lg">
+                                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#1a1a1a] to-[#3a3a3a] flex items-center justify-center text-white font-sans font-bold text-2xl border-2 border-[#D4AF37]/20 group-hover:border-[#D4AF37]/50 transition-all shadow-lg">
                                         {initials}
                                     </div>
                                 )}
@@ -121,7 +121,7 @@ function StaffSection({ staff, salonId, navigate, user, formatLabel }) {
                             </div>
 
                             {/* Name */}
-                            <h4 className="font-bold text-[#1a1a1a] text-sm leading-tight mb-1 truncate w-full">
+                            <h4 className="font-semibold text-[#1a1a1a] text-sm leading-tight mb-1 truncate w-full">
                                 {member.name}
                             </h4>
 
@@ -293,7 +293,7 @@ function BeforeAfterCard({ item }) {
                         )}
                     </div>
                     {item.title && (
-                        <h4 className="text-sm font-bold text-gray-900 mt-1 line-clamp-1">
+                        <h4 className="text-sm font-semibold text-gray-900 mt-1 line-clamp-1">
                             {item.title}
                         </h4>
                     )}
@@ -328,7 +328,7 @@ function TransformationGallerySection({ photos = [] }) {
                 <div>
                     <div className="flex items-center gap-2">
                         <Sparkles size={18} className="text-[#D4AF37]" />
-                        <h3 className="text-2xl font-serif font-bold text-[#1a1a1a]">Transformation Gallery</h3>
+                        <h3 className="text-2xl font-sans font-semibold tracking-tight text-[#1a1a1a]">Transformation Gallery</h3>
                     </div>
                     <p className="text-sm text-gray-500 mt-1">
                         {displayPhotos.length > 0
@@ -762,9 +762,9 @@ export function Shop() {
         return (
             <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center">
                 <div className="bg-red-50 p-8 rounded-3xl max-w-md">
-                    <h2 className="text-2xl font-serif font-bold text-red-600 mb-4 text-[#1a1a1a]">Oops!</h2>
+                    <h2 className="text-2xl font-sans font-semibold tracking-tight text-red-600 mb-4">Oops!</h2>
                     <p className="text-gray-600 mb-8">{error || "Salon not found."}</p>
-                    <NavLink to="/home" className="inline-flex items-center gap-2 text-[#D4AF37] font-bold hover:underline">
+                    <NavLink to="/home" className="inline-flex items-center gap-2 text-stone-700 font-semibold bg-stone-100 hover:bg-stone-200 px-5 py-2.5 rounded-full transition-all">
                         <ArrowLeft size={18} /> Back to Salons
                     </NavLink>
                 </div>
@@ -791,7 +791,7 @@ export function Shop() {
     return (
         <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-20 pb-6 md:pt-24">
             <div className="flex items-center justify-between mb-6">
-                <NavLink to="/home" className="inline-flex items-center gap-2 text-gray-500 hover:text-[#D4AF37] transition-colors text-sm font-medium">
+                <NavLink to="/home" className="inline-flex items-center gap-2 text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 px-4 py-2 rounded-full transition-all text-xs font-semibold">
                     <ArrowLeft size={16} /> Back to Discover
                 </NavLink>
 
@@ -815,7 +815,7 @@ export function Shop() {
                             <Clock size={28} />
                         </div>
                         <div>
-                            <h4 className="text-xl font-serif font-black text-red-600">Currently Offline</h4>
+                            <h4 className="text-xl font-sans font-semibold tracking-tight text-red-600">Currently Offline</h4>
                             <p className="text-red-400 text-sm font-medium">This salon is not accepting immediate bookings right now.</p>
                         </div>
                     </div>
@@ -830,11 +830,11 @@ export function Shop() {
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
                 <div>
                     <div className="flex items-center gap-2 mb-2">
-                        <span className="ui-badge bg-orange-50 px-2 py-1 rounded flex items-center gap-1">
+                        <span className="ui-badge bg-orange-50 px-2.5 py-1 rounded-full flex items-center gap-1">
                             <Sparkles size={12} /> {salon.rating > 4.5 ? "Top Rated Salon" : "Verified Salon"}
                         </span>
                     </div>
-                    <h1 className="text-3xl md:text-5xl font-serif font-bold text-[#1a1a1a] leading-tight">
+                    <h1 className="text-3xl md:text-5xl font-sans font-bold tracking-tight text-[#1a1a1a] leading-tight">
                         {salon.name}
                     </h1>
                     <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-gray-500">
@@ -1106,7 +1106,7 @@ export function Shop() {
                 {/* LEFT CONTENT */}
                 <div className="lg:w-[72%] xl:w-[75%] space-y-8 order-last lg:order-first">
                     <div className="pb-4 border-b border-gray-100">
-                        <h2 className="text-2xl md:text-3xl font-serif font-bold text-[#1a1a1a] mb-4">
+                        <h2 className="text-2xl md:text-3xl font-sans font-semibold tracking-tight text-[#1a1a1a] mb-4">
                             Premium Experience in {salon.city}
                         </h2>
                         <div className="flex flex-wrap gap-6 text-gray-500 font-medium">
@@ -1126,7 +1126,7 @@ export function Shop() {
                     </div>
 
                     <div className="pb-4 border-b border-gray-100">
-                        <h3 className="text-2xl font-serif font-bold text-[#1a1a1a] mb-4">Location & Contact</h3>
+                        <h3 className="text-2xl font-sans font-semibold tracking-tight text-[#1a1a1a] mb-4">Location & Contact</h3>
                         <div className="grid md:grid-cols-1 gap-6">
                             <div className="flex flex-col md:flex-row gap-6">
                                 <div className="flex-1 flex gap-4 items-start bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
@@ -1156,7 +1156,7 @@ export function Shop() {
                     {services.length > 0 && (
                         <div className="py-6 border-b border-gray-100">
                             <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-2xl font-serif font-bold text-[#1a1a1a]">Our Services</h3>
+                                <h3 className="text-2xl font-sans font-semibold tracking-tight text-[#1a1a1a]">Our Services</h3>
                                 <span className="ui-badge bg-gray-50 px-3 py-1 rounded-full">
                                     {services.length} {services.length === 1 ? 'Service' : 'Services'}
                                 </span>
@@ -1177,7 +1177,7 @@ export function Shop() {
                                             <div className="min-w-0 flex-1 pr-3">
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <Scissors size={15} className="text-[#D4AF37] shrink-0" />
-                                                    <h4 className="font-bold text-[#1a1a1a] text-sm truncate">{formatServiceName(service.name)}</h4>
+                                                    <h4 className="font-semibold text-[#1a1a1a] text-sm truncate">{formatServiceName(service.name)}</h4>
                                                 </div>
                                                 <p className="ui-subtext line-clamp-1 mb-2">{service.description || "Description unavailable"}</p>
                                                 <div className="flex items-center gap-2 text-xs text-gray-500">
@@ -1188,7 +1188,7 @@ export function Shop() {
                                                 </div>
                                             </div>
                                             <div className="text-right shrink-0 flex flex-col justify-center items-end min-h-[50px]">
-                                                <p className="text-base font-serif font-bold text-[#1a1a1a] leading-none mb-2">₹{service.price}</p>
+                                                <p className="text-base font-sans font-bold text-[#1a1a1a] leading-none mb-2">₹{service.price}</p>
                                                 <button
                                                     type="button"
                                                     onClick={() => handleToggleService(service)}
@@ -1236,21 +1236,21 @@ export function Shop() {
                         <div className="flex gap-5">
                             <div className="p-3 bg-orange-50 rounded-2xl text-[#e65c00] h-fit"><ShieldCheck size={28} /></div>
                             <div>
-                                <h3 className="font-bold text-[#1a1a1a] mb-1">Verified Professional Salon</h3>
+                                <h3 className="font-semibold text-[#1a1a1a] mb-1">Verified Professional Salon</h3>
                                 <p className="text-sm text-gray-500 leading-relaxed">This salon has passed our strict quality and hygiene checks.</p>
                             </div>
                         </div>
                         <div className="flex gap-5">
                             <div className="p-3 bg-amber-50 rounded-2xl text-[#D4AF37] h-fit"><Users size={28} /></div>
                             <div>
-                                <h3 className="font-bold text-[#1a1a1a] mb-1">Expert Stylists</h3>
+                                <h3 className="font-semibold text-[#1a1a1a] mb-1">Expert Stylists</h3>
                                 <p className="text-sm text-gray-500 leading-relaxed">Book with specialists having industry-leading expertise.</p>
                             </div>
                         </div>
                     </div>
 
                     <div className="pt-8 border-t border-gray-100">
-                        <h3 className="text-2xl font-serif font-bold text-[#1a1a1a] mb-4">About the Studio</h3>
+                        <h3 className="text-2xl font-sans font-semibold tracking-tight text-[#1a1a1a] mb-4">About the Studio</h3>
                         <p className="text-gray-600 leading-relaxed text-base whitespace-pre-line">
                             {getCleanDescription(salon.description)}
                         </p>
@@ -1260,12 +1260,12 @@ export function Shop() {
                     <div className="pt-12 border-t border-gray-100 pb-16">
                         {/* Reviews Header: Score + Breakdown Bars (Sprint 3.2) */}
                         <div className="mb-10">
-                            <h3 className="text-2xl md:text-3xl font-serif font-bold text-[#1a1a1a] mb-6">Customer Reviews</h3>
+                            <h3 className="text-2xl md:text-3xl font-sans font-semibold tracking-tight text-[#1a1a1a] mb-6">Customer Reviews</h3>
                             <div className="flex flex-col sm:flex-row gap-6 sm:gap-10 bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
 
                                 {/* Left: Overall Score */}
                                 <div className="flex flex-col items-center justify-center text-center sm:border-r sm:border-gray-100 sm:pr-10 shrink-0">
-                                    <span className="text-6xl font-serif font-black text-[#1a1a1a] leading-none">
+                                    <span className="text-6xl font-sans font-black text-[#1a1a1a] leading-none">
                                         {salon.rating > 0 ? salon.rating.toFixed(1) : "—"}
                                     </span>
                                     <div className="flex items-center gap-0.5 mt-2">
@@ -1323,7 +1323,7 @@ export function Shop() {
                                             </div>
                                             <div className={rev.user?.fullName ? "flex-1" : "flex-1 text-gray-400 italic"}>
                                                 <div className="flex items-center justify-between mb-1">
-                                                    <h4 className="font-bold text-sm text-[#1a1a1a]">{rev.user?.fullName || "Anonymous"}</h4>
+                                                    <h4 className="font-semibold text-sm text-[#1a1a1a]">{rev.user?.fullName || "Anonymous"}</h4>
                                                     <div className="flex items-center gap-2">
                                                         <span className="text-xs text-gray-400 font-medium">{new Date(rev.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                                                         
@@ -1392,7 +1392,7 @@ export function Shop() {
                         {user ? (
                             user.role !== "salonOwner" ? (
                                 <div className="bg-white border border-gray-100 rounded-[32px] p-8 mb-12 shadow-sm">
-                                    <h4 className="text-lg font-bold text-[#1a1a1a] mb-6">Write a Review</h4>
+                                    <h4 className="text-lg font-semibold tracking-tight text-[#1a1a1a] mb-6">Write a Review</h4>
                                     <form onSubmit={handleReviewSubmit} className="space-y-6">
                                         <div>
                                             <p className="ui-label mb-3">Select Rating</p>
@@ -1439,7 +1439,7 @@ export function Shop() {
                         ) : (
                             <div className="bg-gray-50/50 border border-dashed border-gray-200 rounded-[32px] p-10 text-center mb-12">
                                 <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                                <h4 className="text-lg font-bold text-gray-900">Want to share your experience?</h4>
+                                <h4 className="text-lg font-semibold text-gray-900">Want to share your experience?</h4>
                                 <p className="text-gray-500 text-sm mb-6">Please log in to leave a rating and review for this salon.</p>
                                 <NavLink to="/login" className="inline-block bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-sm hover:bg-black transition-colors">Login to Review</NavLink>
                             </div>
@@ -1451,11 +1451,11 @@ export function Shop() {
 
                 {/* RIGHT BOOKING CARD */}
                 <div className="lg:w-[28%] xl:w-[25%] relative order-first lg:order-last">
-                    <div className="border border-gray-100 rounded-[32px] shadow-xl shadow-black/5 p-6 md:p-8 lg:sticky lg:top-32 bg-white">
+                    <div className="border border-stone-200/50 rounded-3xl shadow-soft-lg p-6 md:p-8 lg:sticky lg:top-32 bg-white">
                         <div className="flex justify-between items-end mb-6">
                             <div>
                                 <span className="text-gray-500 text-xs font-semibold">Starting from</span>
-                                <p className="text-3xl font-serif font-bold text-[#1a1a1a] mt-0.5">
+                                <p className="text-3xl font-sans font-extrabold tracking-tight text-gray-900 mt-0.5">
                                     {services.length > 0 ? `₹${Math.min(...services.map(s => s.price))}` : "₹—"}
                                 </p>
                             </div>
@@ -1566,7 +1566,7 @@ export function Shop() {
             <div id="salon-location-section" className="mt-16 pt-16 border-t border-gray-100">
                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                     <div>
-                        <h3 className="text-3xl font-serif font-bold text-[#1a1a1a] mb-2">Salon Location</h3>
+                        <h3 className="text-2xl md:text-3xl font-sans font-semibold tracking-tight text-[#1a1a1a] mb-2">Salon Location</h3>
                     </div>
                     <button 
                         onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(salon.address + ' ' + salon.city)}`, '_blank')}
@@ -1600,7 +1600,7 @@ export function Shop() {
                                         <ShoppingBag size={16} />
                                     </div>
                                     <div>
-                                        <h4 className="font-serif font-bold text-base text-[#1a1a1a] leading-tight">Selected Services</h4>
+                                        <h4 className="font-sans font-semibold text-base text-[#1a1a1a] leading-tight">Selected Services</h4>
                                         <p className="text-xs text-gray-500">{totalCount} {totalCount === 1 ? 'service' : 'services'} in booking cart</p>
                                     </div>
                                 </div>
@@ -1628,7 +1628,7 @@ export function Shop() {
                                 {cartItems.map((item) => (
                                     <div key={item._id} className="pt-3 first:pt-0 flex items-center justify-between gap-3">
                                         <div className="min-w-0 flex-1">
-                                            <h5 className="font-bold text-sm text-[#1a1a1a] truncate">{formatServiceName(item.name)}</h5>
+                                            <h5 className="font-semibold text-sm text-[#1a1a1a] truncate">{formatServiceName(item.name)}</h5>
                                             <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
                                                 <span className="flex items-center gap-1 text-gray-600">
                                                     <Clock size={11} className="text-[#D4AF37]" />
@@ -1655,7 +1655,7 @@ export function Shop() {
                                 <div>
                                     <span className="text-xs text-gray-500 block leading-none mb-1">Total Estimated</span>
                                     <div className="flex items-baseline gap-2">
-                                        <span className="font-serif font-bold text-2xl text-[#1a1a1a]">₹{totalPrice}</span>
+                                        <span className="font-sans font-bold text-2xl text-[#1a1a1a]">₹{totalPrice}</span>
                                         <span className="text-xs text-gray-500 font-medium">({totalDurationMin} min)</span>
                                     </div>
                                 </div>

@@ -102,7 +102,7 @@ export function ProfilePage() {
                                     </div>
                                 ) : (
                                     <>
-                                        <h1 className="text-2xl md:text-3xl font-serif font-bold text-[#1a1a1a]">{user.fullName || "User"}</h1>
+                                        <h1 className="text-2xl md:text-3xl font-sans font-bold tracking-tight text-[#1a1a1a]">{user.fullName || "User"}</h1>
                                         <p className="text-gray-400 font-medium text-sm">@{user.username}</p>
                                     </>
                                 )}
@@ -114,7 +114,7 @@ export function ProfilePage() {
 
                         <div className="grid md:grid-cols-2 gap-8">
                             <div className="space-y-4">
-                                <h3 className="text-sm font-bold text-gray-400 border-b border-gray-50 pb-2">Information</h3>
+                                <h3 className="text-sm font-semibold text-gray-400 border-b border-gray-50 pb-2">Information</h3>
                                 
                                 <div className="flex items-center gap-4 group opacity-60">
                                     <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400">
@@ -171,7 +171,7 @@ export function ProfilePage() {
                             </div>
 
                             <div className="space-y-4">
-                                <h3 className="text-sm font-bold text-gray-400 border-b border-gray-50 pb-2">Account Security</h3>
+                                <h3 className="text-sm font-semibold text-gray-400 border-b border-gray-50 pb-2">Account Security</h3>
                                 
                                 <div className="flex items-center gap-4 group">
                                     <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-[#1a1a1a] group-hover:text-white transition-all">
@@ -201,7 +201,7 @@ export function ProfilePage() {
                                 <div>
                                     <div className="flex items-center gap-2">
                                         <Sparkles size={20} className="text-[#D4AF37]" />
-                                        <h3 className="text-xl md:text-2xl font-serif font-bold text-[#1a1a1a]">Loyalty Points & Rewards</h3>
+                                        <h3 className="text-xl md:text-2xl font-sans font-semibold tracking-tight text-[#1a1a1a]">Loyalty Points & Rewards</h3>
                                     </div>
                                     <p className="text-xs md:text-sm text-gray-500 mt-1">
                                         Earn 1 point per ₹10 spent on completed bookings. Redeem at checkout for instant discounts.
@@ -211,7 +211,7 @@ export function ProfilePage() {
                                     <div className="flex items-center gap-2 bg-amber-50/80 border border-amber-200/70 rounded-2xl px-4 py-2 self-start md:self-auto">
                                         <Gift size={16} className="text-[#D4AF37]" />
                                         <div className="text-left">
-                                            <p className="text-[11px] font-bold text-amber-800">Your Referral Code</p>
+                                            <p className="text-[11px] font-semibold text-amber-800">Your Referral Code</p>
                                             <p className="text-xs font-mono font-bold text-gray-900 tracking-wider">
                                                 {loyaltyData?.referralCode || user?.referralCode}
                                             </p>
@@ -220,7 +220,7 @@ export function ProfilePage() {
                                             type="button"
                                             onClick={copyReferralCode}
                                             aria-label="Copy referral code"
-                                            className="ml-2 p-1.5 hover:bg-amber-100 rounded-lg text-amber-800 transition-colors"
+                                            className="ml-2 p-1.5 hover:bg-amber-100 rounded-xl text-amber-800 transition-colors"
                                         >
                                             {copiedReferral ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
                                         </button>
@@ -236,7 +236,7 @@ export function ProfilePage() {
                                         <Coins size={18} className="text-[#D4AF37]" />
                                     </div>
                                     <div className="my-3">
-                                        <p className="text-3xl font-serif font-bold text-white">
+                                        <p className="text-3xl font-sans font-bold text-white">
                                             {loyaltyLoading ? "..." : (loyaltyData?.loyaltyPoints ?? user.loyaltyPoints ?? 0)}
                                         </p>
                                         <p className="text-xs text-[#D4AF37] font-medium mt-0.5">Loyalty Points</p>
@@ -252,7 +252,7 @@ export function ProfilePage() {
                                         <Award size={18} className="text-emerald-600" />
                                     </div>
                                     <div className="my-3">
-                                        <p className="text-3xl font-serif font-bold text-emerald-600">
+                                        <p className="text-3xl font-sans font-bold text-emerald-600">
                                             ₹{loyaltyLoading ? "..." : (((loyaltyData?.loyaltyPoints ?? user.loyaltyPoints ?? 0) * 0.50).toFixed(2))}
                                         </p>
                                         <p className="text-xs text-gray-400 font-medium mt-0.5">Available to redeem</p>
@@ -268,7 +268,7 @@ export function ProfilePage() {
                                         <Sparkles size={18} className="text-orange-500" />
                                     </div>
                                     <div className="my-3">
-                                        <p className="text-2xl font-serif font-bold text-gray-900">
+                                        <p className="text-2xl font-sans font-bold text-gray-900">
                                             1 pt / ₹10
                                         </p>
                                         <p className="text-xs text-gray-400 font-medium mt-0.5">On every completed visit</p>
@@ -283,7 +283,7 @@ export function ProfilePage() {
                             <div>
                                 <div className="flex items-center gap-2 mb-4">
                                     <History size={16} className="text-gray-400" />
-                                    <h4 className="text-sm font-bold text-gray-800">Points Ledger & History</h4>
+                                    <h4 className="text-sm font-semibold text-gray-800">Points Ledger & History</h4>
                                 </div>
 
                                 {loyaltyLoading ? (

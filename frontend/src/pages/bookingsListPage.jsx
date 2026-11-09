@@ -63,7 +63,7 @@ const getStatusBadge = (status, queuePosition) => {
         case "expired":
             return {
                 label: "Timed Out",
-                className: "bg-gray-100 text-gray-500 border-gray-200",
+                className: "bg-gray-100 text-gray-500 border-stone-200/70",
                 dot: "bg-gray-400",
             };
         case "confirmed":
@@ -75,7 +75,7 @@ const getStatusBadge = (status, queuePosition) => {
         default:
             return {
                 label: status,
-                className: "bg-gray-50 text-gray-700 border-gray-200",
+                className: "bg-gray-50 text-gray-700 border-stone-200/70",
                 dot: "bg-gray-400",
             };
     }
@@ -219,7 +219,7 @@ export function MyBookingsPage() {
             <div className="max-w-[1280px] mx-auto px-6 md:px-10">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
                     <div>
-                        <h1 className="text-3xl md:text-4xl font-serif font-black text-[#1a1a1a]">My Appointments & Queue</h1>
+                        <h1 className="text-3xl md:text-4xl font-sans font-bold tracking-tight text-[#1a1a1a]">My Appointments & Queue</h1>
                         <p className="text-sm text-gray-500 mt-1">Track your live salon queues and view previous visits</p>
                     </div>
                 </div>
@@ -232,11 +232,11 @@ export function MyBookingsPage() {
                 )}
 
                 {bookings.length === 0 ? (
-                    <div className="bg-white rounded-3xl p-20 text-center border border-gray-100 shadow-sm">
+                    <div className="bg-white rounded-3xl p-20 text-center border border-stone-200/50 shadow-sm">
                         <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-300">
                             <Calendar size={40} />
                         </div>
-                        <h3 className="text-xl font-serif font-bold text-gray-900 mb-2">No bookings yet</h3>
+                        <h3 className="text-xl font-sans font-semibold tracking-tight text-gray-900 mb-2">No bookings yet</h3>
                         <p className="text-gray-500 mb-8 max-w-sm mx-auto">Ready for your next salon experience? Browse our collection of top-rated parlors.</p>
                         <a href="/home" className="inline-block bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-sm hover:bg-black transition-colors">
                             Explore Salons
@@ -249,7 +249,7 @@ export function MyBookingsPage() {
                             const badge = getStatusBadge(booking.status, booking.queuePosition);
 
                             return (
-                                <div key={booking._id} className="relative bg-white rounded-[36px] p-6 lg:p-8 shadow-sm border border-gray-100 flex flex-col lg:flex-row gap-6 lg:gap-8 hover:shadow-md transition-all duration-300">
+                                <div key={booking._id} className="relative bg-white rounded-[36px] p-6 lg:p-8 shadow-sm border border-stone-200/50 flex flex-col lg:flex-row gap-6 lg:gap-8 hover:shadow-md transition-all duration-300">
 
                                     {/* Status Badge - Top Right */}
                                     <div className="absolute top-6 right-6 md:top-8 md:right-8 z-10">
@@ -260,7 +260,7 @@ export function MyBookingsPage() {
                                     </div>
 
                                     {/* PART 1: IMAGE (Left) */}
-                                    <div className="w-full lg:w-52 h-48 lg:h-auto rounded-[28px] overflow-hidden shrink-0 shadow-sm border border-gray-100 relative group">
+                                    <div className="w-full lg:w-52 h-48 lg:h-auto rounded-[28px] overflow-hidden shrink-0 shadow-sm border border-stone-200/50 relative group">
                                         <img
                                             src={booking.salon?.images?.[0] || salonPlaceholder}
                                             alt={booking.salon?.name}
@@ -272,10 +272,10 @@ export function MyBookingsPage() {
                                     {/* PART 2: SALON INFO & QUEUE/TIME STATS (Middle) */}
                                     <div className="flex-1 flex flex-col justify-center py-1">
                                         <div className="space-y-3">
-                                            <h3 className="text-2xl font-serif font-black text-[#1a1a1a]">
+                                            <h3 className="text-xl md:text-2xl font-sans font-semibold tracking-tight text-[#1a1a1a]">
                                                 {booking.salon?.name || "Style Station"}
                                             </h3>
-                                            <div className="flex items-start gap-2.5 text-gray-500 bg-gray-50/70 w-fit px-3.5 py-2 rounded-xl border border-gray-100 max-w-sm">
+                                            <div className="flex items-start gap-2.5 text-gray-500 bg-gray-50/70 w-fit px-3.5 py-2 rounded-xl border border-stone-200/50 max-w-sm">
                                                 <MapPin size={16} className="text-[#D4AF37] shrink-0 mt-0.5" />
                                                 <div className="flex flex-col">
                                                     <span className="text-xs text-gray-700 leading-snug">{booking.salon?.address || "No address provided"}</span>
@@ -292,7 +292,7 @@ export function MyBookingsPage() {
                                                         <Users size={18} className="text-[#D4AF37]" />
                                                         <div className="flex flex-col">
                                                             <p className="text-[11px] font-semibold text-gray-400">Position</p>
-                                                            <p className="text-sm font-black text-gray-900">
+                                                            <p className="text-sm font-bold text-gray-900">
                                                                 {booking.queuePosition ? `#${booking.queuePosition}` : "Pending"}
                                                             </p>
                                                         </div>
@@ -309,14 +309,14 @@ export function MyBookingsPage() {
                                                 </>
                                             ) : (
                                                 <>
-                                                    <div className="flex items-center gap-3 bg-gray-50 px-4 py-2.5 rounded-2xl border border-gray-100">
+                                                    <div className="flex items-center gap-3 bg-gray-50 px-4 py-2.5 rounded-2xl border border-stone-200/50">
                                                         <Clock size={18} className="text-[#D4AF37]" />
                                                         <div className="flex flex-col">
                                                             <p className="text-[11px] font-semibold text-gray-400">Time</p>
                                                             <p className="text-sm font-bold text-gray-800">{booking.time}</p>
                                                         </div>
                                                     </div>
-                                                    <div className="flex items-center gap-3 bg-gray-50 px-4 py-2.5 rounded-2xl border border-gray-100">
+                                                    <div className="flex items-center gap-3 bg-gray-50 px-4 py-2.5 rounded-2xl border border-stone-200/50">
                                                         <Calendar size={18} className="text-[#D4AF37]" />
                                                         <div className="flex flex-col">
                                                             <p className="text-[11px] font-semibold text-gray-400">Date</p>
@@ -331,7 +331,7 @@ export function MyBookingsPage() {
                                     </div>
 
                                     {/* PART 3: DETAILS & ACTIONS (Right) */}
-                                    <div className="lg:w-[45%] bg-gray-50/60 rounded-[28px] p-6 border border-gray-100 flex flex-col justify-between gap-5">
+                                    <div className="lg:w-[45%] bg-gray-50/60 rounded-[28px] p-6 border border-stone-200/50 flex flex-col justify-between gap-5">
                                         
                                         {/* 4-DIGIT CHECK-IN PIN CARD */}
                                         {booking.verificationPin && (
@@ -340,7 +340,7 @@ export function MyBookingsPage() {
                                                     <span className="text-[11px] font-semibold text-amber-800 bg-amber-200/60 px-2.5 py-0.5 rounded-md inline-block mb-1">
                                                         Check-in Verification PIN
                                                     </span>
-                                                    <p className="text-3xl font-black font-mono tracking-[0.35em] text-[#1a1a1a] my-0.5">
+                                                    <p className="text-3xl font-black font-mono tracking-pin text-[#1a1a1a] my-0.5">
                                                         {booking.verificationPin}
                                                     </p>
                                                     <p className="text-[11px] text-amber-900 font-medium">Show this 4-digit code to your stylist</p>
@@ -357,7 +357,7 @@ export function MyBookingsPage() {
                                             <div className="flex flex-wrap gap-1.5 mb-3">
                                                 {booking.serviceNames?.length > 0 ? (
                                                     booking.serviceNames.map((s, i) => (
-                                                        <span key={i} className="text-xs bg-white border border-gray-200/70 px-3 py-1 rounded-full font-medium text-gray-700">
+                                                        <span key={i} className="text-xs bg-white border border-stone-200/70/70 px-3 py-1 rounded-full font-medium text-gray-700">
                                                             {s}
                                                         </span>
                                                     ))
@@ -366,9 +366,9 @@ export function MyBookingsPage() {
                                                 )}
                                             </div>
 
-                                            <div className="flex justify-between items-center pt-3 border-t border-gray-200/60 text-sm">
+                                            <div className="flex justify-between items-center pt-3 border-t border-stone-200/70/60 text-sm">
                                                 <span className="text-gray-500">Total Payable</span>
-                                                <span className="font-black font-serif text-lg text-gray-900">₹{booking.totalAmount || 0}</span>
+                                                <span className="font-bold font-sans text-lg text-gray-900">₹{booking.totalAmount || 0}</span>
                                             </div>
                                         </div>
 
@@ -426,9 +426,9 @@ export function MyBookingsPage() {
             {/* Cancellation Modal */}
             {cancelModalBooking && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-3xl max-w-md w-full p-6 md:p-8 shadow-2xl border border-gray-100">
+                    <div className="bg-white rounded-3xl max-w-md w-full p-6 md:p-8 shadow-2xl border border-stone-200/50">
                         <div className="flex justify-between items-start mb-4">
-                            <h3 className="text-xl font-serif font-bold text-gray-900">Cancel Request</h3>
+                            <h3 className="text-xl font-sans font-bold text-gray-900">Cancel Request</h3>
                             <button
                                 onClick={() => setCancelModalBooking(null)}
                                 className="p-1 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
@@ -450,7 +450,7 @@ export function MyBookingsPage() {
                                 value={cancelReason}
                                 onChange={(e) => setCancelReason(e.target.value)}
                                 placeholder="e.g. Change of plans..."
-                                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#D4AF37]"
+                                className="w-full px-4 py-2.5 rounded-xl border border-stone-200/70 text-sm focus:outline-none focus:border-[#D4AF37]"
                             />
                         </div>
 
@@ -462,7 +462,7 @@ export function MyBookingsPage() {
                             <button
                                 type="button"
                                 onClick={() => setCancelModalBooking(null)}
-                                className="px-5 py-2.5 rounded-xl border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors"
+                                className="px-5 py-2.5 rounded-xl border border-stone-200/70 text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors"
                             >
                                 Keep My Place
                             </button>

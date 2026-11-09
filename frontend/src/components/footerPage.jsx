@@ -15,7 +15,7 @@ export function Footer() {
                     <div className="md:col-span-1">
                         <div className="flex items-center gap-3 mb-6">
                             <img src={salonLogo} alt="SalonNow" className="w-10 h-10 rounded-full object-cover border border-[#D4AF37]/40" />
-                            <h3 className="text-xl font-bold text-[#ff9f43] tracking-wide">SalonNow</h3>
+                            <h3 className="text-xl font-semibold text-[#ff9f43] tracking-wide">SalonNow</h3>
                         </div>
                         <p className="text-sm text-gray-400 font-light leading-loose">
                             SalonNow connects customers with beauty and wellness providers for scheduled and last-minute appointments with guaranteed seats and verified salon quality.
@@ -24,7 +24,7 @@ export function Footer() {
 
                     {/* Column 2 */}
                     <div>
-                        <h3 className="text-xl font-bold mb-6 text-white">Our Links</h3>
+                        <h3 className="text-xl font-semibold mb-6 text-white">Our Links</h3>
                         <ul className="space-y-4">
                             <li><a href="#" className="text-sm text-gray-400 hover:text-[#ff9f43] transition-colors">About Us</a></li>
                             <li><a href="#" className="text-sm text-gray-400 hover:text-[#ff9f43] transition-colors">Services</a></li>
@@ -34,7 +34,7 @@ export function Footer() {
                     </div>
 
                     <div>
-                        <h3 className="text-xl font-bold mb-6 text-white">Connect With Us</h3>
+                        <h3 className="text-xl font-semibold mb-6 text-white">Connect With Us</h3>
                         <div className="flex items-center gap-4 mb-8">
                             <a aria-label="SalonNow on Instagram" href="https://www.instagram.com/aaditya_raj_2310?igsh=enRtZmpvN3RnZTV4" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center text-gray-400 hover:text-[#ff9f43] hover:bg-black transition-all border border-gray-800">
                                 <Instagram size={20} />
@@ -61,7 +61,7 @@ export function Footer() {
 
                     {/* Column 4 */}
                     <div>
-                        <h3 className="text-xl font-bold mb-6 text-white">Our Gallery</h3>
+                        <h3 className="text-xl font-semibold mb-6 text-white">Our Gallery</h3>
                         <div className="grid grid-cols-2 gap-2.5">
                             <img src="https://images.unsplash.com/photo-1599351431202-1e0f0137899a?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" alt="Studio ambiance 1" className="w-full h-20 aspect-square object-cover rounded-xl shadow-sm hover:scale-105 transition-transform duration-300 border border-gray-800" />
                             <img src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" alt="Studio ambiance 2" className="w-full h-20 aspect-square object-cover rounded-xl shadow-sm hover:scale-105 transition-transform duration-300 border border-gray-800" />

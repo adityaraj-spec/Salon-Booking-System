@@ -73,6 +73,14 @@ export function SalonBookingsPage() {
     const [serviceOptions, setServiceOptions] = useState([]);
     const [actionLoadingId, setActionLoadingId] = useState(null);
 
+    const getDisplayStylist = (item) => {
+        const raw = item?.staff?.name || item?.staffName;
+        if (!raw || typeof raw !== "string" || raw.toLowerCase().trim() === "stylist assigned" || raw.toLowerCase().trim() === "not specified") {
+            return null;
+        }
+        return raw;
+    };
+
     const fetchSalonAndQueue = useCallback(async () => {
         try {
             const bookingsRes = await axiosInstance.get("/bookings/salon-bookings");
@@ -359,7 +367,7 @@ export function SalonBookingsPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-[#fafafa] flex items-center justify-center p-6">
+            <div className="min-h-screen bg-[#FBFBFA] flex items-center justify-center p-6">
                 <div className="text-center">
                     <Loader2 className="w-10 h-10 text-[#D4AF37] animate-spin mx-auto mb-3" />
                     <p className="text-xs font-bold text-gray-500">Loading salon queue...</p>
@@ -373,32 +381,33 @@ export function SalonBookingsPage() {
             <div className="space-y-6">
 
                 {/* HEADER & QUEUE STATUS BAR */}
-                <div className="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="bg-white rounded-3xl p-6 md:p-8 border border-stone-200/50 shadow-soft-md flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
                         <div className="flex items-center gap-3">
-                            <h1 className="text-2xl md:text-3xl font-serif font-black text-gray-900">
+                            <h1 className="text-2xl md:text-3xl font-sans font-bold tracking-tight text-gray-900">
                                 Live Salon Queue Dashboard
                             </h1>
-                            <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${
+                            <span className={`inline-flex items-center gap-2 text-xs font-semibold px-3.5 py-1.5 rounded-full border shadow-soft-xs ${
                                 queueSummary?.isPaused
-                                    ? "bg-amber-50 text-amber-800 border-amber-200"
-                                    : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                    ? "bg-amber-50 text-amber-800 border-amber-200/80"
+                                    : "bg-emerald-50 text-emerald-800 border-emerald-200/80"
                             }`}>
-                                {queueSummary?.isPaused ? "Queue Intake Paused" : "Active & Accepting"}
+                                <span className={`w-2 h-2 rounded-full ${queueSummary?.isPaused ? "bg-amber-500" : "bg-emerald-500 animate-pulse"}`} />
+                                <span>{queueSummary?.isPaused ? "Queue Intake Paused" : "Active & Accepting"}</span>
                             </span>
                         </div>
-                        <p className="text-xs text-gray-500 font-medium mt-1.5">
+                        <p className="text-xs text-stone-500 font-medium mt-1.5 leading-relaxed">
                             Real-time customer admissions, stylist assignments & PIN check-ins
                         </p>
                     </div>
 
                     <div className="flex items-center gap-4 flex-wrap">
                         {/* Queue Stats Chips */}
-                        <div className="flex items-center gap-3 bg-gray-50 border border-gray-100 px-4 py-2.5 rounded-2xl">
+                        <div className="flex items-center gap-3 bg-stone-50/80 border border-stone-200/50 px-4 py-2.5 rounded-2xl shadow-soft-xs">
                             <Users size={18} className="text-[#D4AF37]" />
                             <div className="text-left">
                                 <p className="text-[11px] font-semibold text-gray-500 leading-none">In Queue / Capacity</p>
-                                <p className="text-sm font-black text-gray-900 mt-0.5">
+                                <p className="text-sm font-bold text-gray-900 mt-0.5">
                                     {queueSummary?.waitingCount || activeQueueList.length} / {queueSummary?.maxCapacity || 10}
                                 </p>
                             </div>
@@ -407,7 +416,7 @@ export function SalonBookingsPage() {
                         {/* Pause / Resume Button */}
                         <button
                             onClick={handleTogglePause}
-                            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-bold transition-all shadow-sm ${
+                            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-bold transition-all duration-200 ease-out hover:scale-[1.02] active:scale-[0.98] shadow-soft-xs ${
                                 queueSummary?.isPaused
                                     ? "bg-emerald-600 hover:bg-emerald-700 text-white"
                                     : "bg-amber-100 hover:bg-amber-200 text-amber-900"
@@ -420,10 +429,10 @@ export function SalonBookingsPage() {
                 </div>
 
                 {/* TABS NAVIGATION */}
-                <div className="flex items-center gap-3 border-b border-gray-200 pb-2">
+                <div className="flex items-center gap-3 border-b border-stone-200/50 pb-2.5">
                     <button
                         onClick={() => setActiveTab("queue")}
-                        className={`px-5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 ${
+                        className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all duration-200 ease-out hover:scale-[1.01] active:scale-[0.98] flex items-center gap-2 ${
                             activeTab === "queue"
                                 ? "bg-[#1a1a1a] text-white shadow-md"
                                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
@@ -435,7 +444,7 @@ export function SalonBookingsPage() {
 
                     <button
                         onClick={() => setActiveTab("requests")}
-                        className={`px-5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 relative ${
+                        className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all duration-200 ease-out hover:scale-[1.01] active:scale-[0.98] flex items-center gap-2 relative ${
                             activeTab === "requests"
                                 ? "bg-[#1a1a1a] text-white shadow-md"
                                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
@@ -450,7 +459,7 @@ export function SalonBookingsPage() {
 
                     <button
                         onClick={() => setActiveTab("history")}
-                        className={`px-5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 ${
+                        className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all duration-200 ease-out hover:scale-[1.01] active:scale-[0.98] flex items-center gap-2 ${
                             activeTab === "history"
                                 ? "bg-[#1a1a1a] text-white shadow-md"
                                 : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
@@ -469,7 +478,7 @@ export function SalonBookingsPage() {
                         {activeQueueList.length === 0 ? (
                             <div className="bg-white rounded-3xl p-16 text-center border border-gray-100 shadow-sm">
                                 <Users size={40} className="text-gray-300 mx-auto mb-4" />
-                                <h3 className="text-lg font-serif font-bold text-gray-900">Queue is Currently Empty</h3>
+                                <h3 className="text-lg font-sans font-bold text-gray-900">Queue is Currently Empty</h3>
                                 <p className="text-xs text-gray-400 mt-1">New customers requesting service will appear here once accepted.</p>
                             </div>
                         ) : (
@@ -481,12 +490,12 @@ export function SalonBookingsPage() {
                                     return (
                                         <div
                                             key={booking._id}
-                                            className={`bg-white rounded-3xl p-6 border transition-all shadow-sm flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 ${
+                                            className={`bg-white rounded-3xl p-6 md:p-8 border transition-all duration-200 shadow-soft-sm hover:shadow-soft-md hover:scale-[1.006] flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 ${
                                                 isInProgress
-                                                    ? "border-purple-200 bg-purple-50/20"
+                                                    ? "border-purple-200/80 bg-purple-50/15"
                                                     : isArrived
-                                                    ? "border-emerald-200 bg-emerald-50/10"
-                                                    : "border-gray-100"
+                                                    ? "border-emerald-200/80 bg-emerald-50/15"
+                                                    : "border-stone-200/60"
                                             }`}
                                         >
                                             {/* LEFT: Queue Position Badge & Customer Info */}
@@ -499,24 +508,25 @@ export function SalonBookingsPage() {
                                                         : "bg-amber-50 text-[#D4AF37] border-amber-200"
                                                 }`}>
                                                     <span className="text-[11px] font-bold leading-none">Queue</span>
-                                                    <span className="text-xl font-black font-serif leading-tight">
+                                                    <span className="text-xl font-black font-sans leading-tight">
                                                         #{booking.queuePosition || 1}
                                                     </span>
                                                 </div>
 
                                                 <div>
                                                     <div className="flex items-center gap-2.5">
-                                                        <h3 className="font-bold text-gray-900 text-base">
+                                                        <h3 className="font-semibold text-gray-900 text-base tracking-tight">
                                                             {booking.customer?.fullName || booking.guestName || "Customer"}
                                                         </h3>
-                                                        <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${
+                                                        <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1 rounded-full border shadow-soft-xs ${
                                                             isInProgress
-                                                                ? "bg-purple-100 text-purple-700 border-purple-200"
+                                                                ? "bg-purple-50 text-purple-700 border-purple-200/80"
                                                                 : isArrived
-                                                                ? "bg-emerald-100 text-emerald-800 border-emerald-200"
-                                                                : "bg-blue-50 text-blue-700 border-blue-200"
+                                                                ? "bg-emerald-50 text-emerald-800 border-emerald-200/80"
+                                                                : "bg-blue-50 text-blue-700 border-blue-200/80"
                                                         }`}>
-                                                            {isInProgress ? "In Service" : isArrived ? "Arrived & Waiting" : "En Route / Waiting"}
+                                                            <span className={`w-1.5 h-1.5 rounded-full ${isInProgress ? "bg-purple-500 animate-pulse" : isArrived ? "bg-emerald-500 animate-pulse" : "bg-blue-500"}`} />
+                                                            <span>{isInProgress ? "In Service" : isArrived ? "Arrived & Waiting" : "En Route / Waiting"}</span>
                                                         </span>
                                                     </div>
 
@@ -534,11 +544,11 @@ export function SalonBookingsPage() {
                                                         <span className="font-bold text-gray-900">
                                                             Total: ₹{booking.totalAmount}
                                                         </span>
-                                                        {(booking.staff?.name || booking.staffName) && (
+                                                        {getDisplayStylist(booking) && (
                                                             <>
                                                                 <span>•</span>
                                                                 <span className="flex items-center gap-1 text-purple-700 font-medium bg-purple-50 px-2 py-0.5 rounded-md">
-                                                                    <Scissors size={11} /> Stylist: {booking.staff?.name || booking.staffName}
+                                                                    <Scissors size={11} /> Stylist: {getDisplayStylist(booking)}
                                                                 </span>
                                                             </>
                                                         )}
@@ -586,12 +596,12 @@ export function SalonBookingsPage() {
                                                                     [booking._id]: e.target.value.replace(/\D/g, ""),
                                                                 }))
                                                             }
-                                                            className="w-28 px-3 py-2 text-center font-mono font-bold text-sm tracking-widest border border-gray-200 rounded-xl focus:outline-none focus:border-[#D4AF37]"
+                                                            className="w-28 px-3 py-2 text-center font-mono font-bold text-sm tracking-pin border border-stone-200/80 rounded-xl focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all"
                                                         />
                                                         <button
                                                             type="submit"
                                                             disabled={cardCheckInLoading[booking._id]}
-                                                            className="px-4 py-2 bg-[#D4AF37] hover:bg-[#B8962E] text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 shadow-sm"
+                                                            className="px-4 py-2 bg-[#D4AF37] hover:bg-[#B8962E] text-white rounded-pill text-xs font-bold transition-all duration-200 ease-out hover:scale-[1.02] active:scale-[0.98] hover:shadow-glow-gold flex items-center gap-1.5 shrink-0 shadow-soft-sm"
                                                         >
                                                             {cardCheckInLoading[booking._id] ? (
                                                                 <Loader2 size={14} className="animate-spin" />
@@ -605,7 +615,7 @@ export function SalonBookingsPage() {
                                                     <div className="flex items-center gap-3">
                                                         <button
                                                             onClick={() => setPaymentBooking(booking)}
-                                                            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm"
+                                                            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-pill text-xs font-bold transition-all duration-200 ease-out hover:scale-[1.02] active:scale-[0.98] flex items-center gap-1.5 shadow-soft-sm"
                                                         >
                                                             <CheckCircle size={14} />
                                                             <span>Complete Service (₹{booking.totalAmount})</span>
@@ -629,7 +639,7 @@ export function SalonBookingsPage() {
                         {incomingRequests.length === 0 ? (
                             <div className="bg-white rounded-3xl p-16 text-center border border-gray-100 shadow-sm">
                                 <Clock size={40} className="text-gray-300 mx-auto mb-4" />
-                                <h3 className="text-lg font-serif font-bold text-gray-900">No Pending Requests</h3>
+                                <h3 className="text-lg font-sans font-bold text-gray-900">No Pending Requests</h3>
                                 <p className="text-xs text-gray-400 mt-1">When customers request queue entry, they will appear here for review.</p>
                             </div>
                         ) : (
@@ -637,15 +647,16 @@ export function SalonBookingsPage() {
                                 {incomingRequests.map((req) => (
                                     <div
                                         key={req._id}
-                                        className="bg-white rounded-3xl p-6 border border-amber-200/80 bg-amber-50/20 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
+                                        className="bg-white rounded-3xl p-6 md:p-8 border border-amber-200/70 bg-gradient-to-r from-amber-50/30 via-white to-white shadow-soft-sm hover:shadow-soft-md hover:scale-[1.006] transition-all duration-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
                                     >
                                         <div>
                                             <div className="flex items-center gap-3">
                                                 <h3 className="font-bold text-gray-900 text-lg">
                                                     {req.customer?.fullName || req.guestName || "Customer"}
                                                 </h3>
-                                                <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
-                                                    Pending Review
+                                                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 shadow-soft-xs">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                                                    <span>Pending Review</span>
                                                 </span>
                                             </div>
 
@@ -653,11 +664,11 @@ export function SalonBookingsPage() {
                                                 <span>Total Amount: <strong>₹{req.totalAmount}</strong></span>
                                                 <span>•</span>
                                                 <span>Est. Duration: <strong>{req.durationMinutes || 30} mins</strong></span>
-                                                {(req.staff?.name || req.staffName) && (
+                                                {getDisplayStylist(req) && (
                                                     <>
                                                         <span>•</span>
                                                         <span className="flex items-center gap-1 text-purple-700 font-medium bg-purple-50 px-2 py-0.5 rounded-md">
-                                                            <Scissors size={11} /> Stylist: {req.staff?.name || req.staffName}
+                                                            <Scissors size={11} /> Stylist: {getDisplayStylist(req)}
                                                         </span>
                                                     </>
                                                 )}
@@ -676,14 +687,14 @@ export function SalonBookingsPage() {
                                             <button
                                                 disabled={actionLoadingId === req._id}
                                                 onClick={() => handleRejectRequest(req._id)}
-                                                className="flex-1 md:flex-none px-5 py-2.5 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 text-xs font-bold transition-colors"
+                                                className="flex-1 md:flex-none px-5 py-2.5 rounded-pill border border-red-200/80 text-red-600 hover:bg-red-50 text-xs font-bold transition-all duration-200 ease-out hover:scale-[1.02] active:scale-[0.98]"
                                             >
                                                 Decline
                                             </button>
                                             <button
                                                 disabled={actionLoadingId === req._id}
                                                 onClick={() => handleAcceptRequest(req._id)}
-                                                className="flex-1 md:flex-none px-6 py-2.5 rounded-xl bg-[#D4AF37] hover:bg-[#B8962E] text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-1.5"
+                                                className="flex-1 md:flex-none px-6 py-2.5 rounded-pill bg-[#D4AF37] hover:bg-[#B8962E] text-white text-xs font-bold transition-all duration-200 ease-out hover:scale-[1.02] active:scale-[0.98] hover:shadow-glow-gold flex items-center justify-center gap-1.5 shadow-soft-sm"
                                             >
                                                 {actionLoadingId === req._id ? (
                                                     <Loader2 size={14} className="animate-spin" />
@@ -708,7 +719,7 @@ export function SalonBookingsPage() {
                         {historicalList.length === 0 ? (
                             <div className="bg-white rounded-3xl p-16 text-center border border-gray-100 shadow-sm">
                                 <CheckCircle size={40} className="text-gray-300 mx-auto mb-4" />
-                                <h3 className="text-lg font-serif font-bold text-gray-900">No Historical Records</h3>
+                                <h3 className="text-lg font-sans font-semibold tracking-tight text-gray-900">No Historical Records</h3>
                                 <p className="text-xs text-gray-400 mt-1">Completed appointments will be archived here.</p>
                             </div>
                         ) : (
@@ -748,26 +759,26 @@ export function SalonBookingsPage() {
                                             ? CreditCard
                                             : Banknote;
 
-                                    const rawStylist = b.staff?.name || b.staffName;
-                                    const stylistName = rawStylist && rawStylist !== "Stylist Assigned" ? rawStylist : "First Available";
+                                    const stylistName = getDisplayStylist(b) || "First Available";
 
                                     return (
                                         <div
                                             key={b._id}
-                                            className="bg-white rounded-3xl p-5 md:p-6 border border-gray-100 shadow-sm hover:border-gray-200 transition-all flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6"
+                                            className="bg-white rounded-3xl p-6 md:p-8 border border-stone-200/50 shadow-soft-sm hover:shadow-soft-md hover:scale-[1.006] transition-all duration-200 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6"
                                         >
                                             {/* LEFT: Customer & Appointment Details */}
                                             <div className="space-y-2 flex-1">
                                                 <div className="flex items-center gap-3">
-                                                    <h3 className="font-bold text-gray-900 text-base md:text-lg">
+                                                    <h3 className="font-semibold text-gray-900 text-base md:text-lg tracking-tight">
                                                         {b.customer?.fullName || b.guestName || "Guest Customer"}
                                                     </h3>
-                                                    <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
+                                                    <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1 rounded-full border shadow-soft-xs ${
                                                         b.status === "completed"
-                                                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                                                            : "bg-gray-100 text-gray-600 border border-gray-200"
+                                                            ? "bg-emerald-50 text-emerald-800 border-emerald-200/80"
+                                                            : "bg-stone-100 text-stone-600 border-stone-200"
                                                     }`}>
-                                                        {b.status === "completed" ? "Completed" : b.status}
+                                                        <span className={`w-1.5 h-1.5 rounded-full ${b.status === "completed" ? "bg-emerald-500" : "bg-stone-400"}`} />
+                                                        <span>{b.status === "completed" ? "Completed" : b.status}</span>
                                                     </span>
                                                 </div>
 
@@ -829,7 +840,7 @@ export function SalonBookingsPage() {
 
                                                 <div className="text-right">
                                                     <p className="text-[10px] font-semibold text-gray-400">Total Bill</p>
-                                                    <p className="text-2xl font-black font-serif text-gray-900">₹{b.totalAmount}</p>
+                                                    <p className="text-2xl font-black font-sans text-gray-900">₹{b.totalAmount}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -844,11 +855,11 @@ export function SalonBookingsPage() {
 
             {/* PAYMENT & SETTLEMENT MODAL */}
             {paymentBooking && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-3xl max-w-md w-full p-6 md:p-8 shadow-2xl border border-gray-100 animate-in fade-in zoom-in-95">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/40 backdrop-blur-md p-4">
+                    <div className="bg-white rounded-3xl max-w-md w-full p-6 md:p-8 shadow-soft-xl border border-stone-200/50 animate-in fade-in zoom-in-95">
                         <div className="flex justify-between items-start mb-6">
                             <div>
-                                <h3 className="text-xl font-serif font-bold text-gray-900">Complete & Settle Service</h3>
+                                <h3 className="text-xl font-sans font-bold text-gray-900">Complete & Settle Service</h3>
                                 <p className="text-xs text-gray-500 mt-1">Select payment method and close out ticket</p>
                             </div>
                             <button onClick={() => setPaymentBooking(null)} className="p-1 rounded-full text-gray-400 hover:text-black">
@@ -863,7 +874,7 @@ export function SalonBookingsPage() {
                             </div>
                             <div className="text-right">
                                 <span className="text-xs text-gray-500 block">Total Bill</span>
-                                <span className="text-2xl font-black font-serif text-gray-900">₹{paymentBooking.totalAmount}</span>
+                                <span className="text-2xl font-black font-sans text-gray-900">₹{paymentBooking.totalAmount}</span>
                             </div>
                         </div>
 
@@ -935,10 +946,10 @@ export function SalonBookingsPage() {
             {/* ADD EXTRA SERVICES MODAL */}
             {extraServiceModalBooking && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-3xl max-lg w-full p-6 md:p-8 shadow-2xl border border-gray-100 animate-in fade-in zoom-in-95">
+                    <div className="bg-white rounded-3xl max-lg w-full p-6 md:p-8 shadow-soft-xl border border-stone-200/50 animate-in fade-in zoom-in-95">
                         <div className="flex justify-between items-start mb-4">
                             <div>
-                                <h3 className="text-xl font-serif font-bold text-gray-900">Add Service to Ticket</h3>
+                                <h3 className="text-xl font-sans font-bold text-gray-900">Add Service to Ticket</h3>
                                 <p className="text-xs text-gray-500 mt-1">
                                     Customer: <strong>{extraServiceModalBooking.customer?.fullName || extraServiceModalBooking.guestName || "Customer"}</strong>
                                 </p>

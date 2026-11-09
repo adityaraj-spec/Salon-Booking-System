@@ -57,7 +57,7 @@ export function FavoritesPage() {
         return (
             <div className="w-full min-h-screen bg-white flex flex-col items-center justify-center pt-24 text-center">
                 <Heart className="w-16 h-16 text-gray-200 mb-4" />
-                <h2 className="text-2xl font-serif font-bold text-gray-900 mb-2">Please Login</h2>
+                <h2 className="text-2xl font-sans font-semibold tracking-tight text-gray-900 mb-2">Please Login</h2>
                 <p className="text-gray-500 mb-6">You need to log in to view your favorite salons.</p>
                 <button onClick={() => navigate("/login")} className="bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-xs hover:bg-black transition-colors">
                     Login Now
@@ -71,7 +71,7 @@ export function FavoritesPage() {
             <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-32 pb-12">
             
                 <div className="mb-10 text-center">
-                    <h1 className="text-4xl md:text-5xl font-serif font-bold text-gray-900 mb-4 flex items-center justify-center gap-3">
+                    <h1 className="text-4xl md:text-5xl font-sans font-bold tracking-tight text-gray-900 mb-4 flex items-center justify-center gap-3">
                         <Heart className="text-[#D4AF37] fill-[#D4AF37] w-10 h-10" />
                         My Favorites
                     </h1>
@@ -87,7 +87,7 @@ export function FavoritesPage() {
                 ) : error ? (
                     <div className="text-center py-20">
                         <p className="text-red-500 mb-4">{error}</p>
-                        <button onClick={fetchFavorites} className="text-[#D4AF37] font-bold border-b-2 border-[#D4AF37] hover:text-[#B48F27] transition-colors">
+                        <button onClick={fetchFavorites} className="bg-amber-50 text-[#D4AF37] px-4 py-2 rounded-full font-semibold hover:bg-amber-100 transition-colors">
                             Try Again
                         </button>
                     </div>
@@ -96,7 +96,7 @@ export function FavoritesPage() {
                         <div className="bg-gray-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
                             <Heart className="text-gray-300 w-10 h-10" />
                         </div>
-                        <h3 className="text-2xl font-serif font-bold text-gray-900 mb-3">No Favorites Yet</h3>
+                        <h3 className="text-2xl font-sans font-semibold tracking-tight text-gray-900 mb-3">No Favorites Yet</h3>
                         <p className="text-gray-500 mb-8 max-w-md mx-auto">You haven't added any salons to your favorites list. Start exploring and click the heart icon to save them here!</p>
                         <button
                             onClick={() => navigate('/home')}
@@ -136,7 +136,7 @@ export function FavoritesPage() {
                                 <div className="p-5 flex flex-col flex-1">
                                     {/* Salon Type & Stars */}
                                     <div className="flex items-center gap-1 mb-2">
-                                        <span className="text-[11px] font-semibold text-[#D4AF37] bg-[#D4AF37]/10 px-2 py-0.5 rounded-md">Salon</span>
+                                        <span className="text-[11px] font-semibold text-[#D4AF37] bg-[#D4AF37]/10 px-2.5 py-0.5 rounded-full">Salon</span>
                                         <div className="flex gap-0.5 ml-2">
                                             {[...Array(5)].map((_, i) => (
                                                 <Star key={i} size={11} className="fill-[#D4AF37] text-[#D4AF37]" />
@@ -146,7 +146,7 @@ export function FavoritesPage() {
 
                                     {/* Name */}
                                     <h3
-                                        className="text-lg font-bold text-gray-900 leading-tight mb-2 cursor-pointer hover:text-[#D4AF37] transition-colors line-clamp-1"
+                                        className="text-lg font-semibold text-gray-900 leading-tight mb-2 cursor-pointer hover:text-[#D4AF37] transition-colors line-clamp-1"
                                         onClick={() => navigate(`/shop/${salon._id}`)}
                                     >
                                         {salon.name}
@@ -168,7 +168,7 @@ export function FavoritesPage() {
                                     <div className="mt-auto flex items-end justify-between">
                                         {/* Left: Rating block */}
                                         <div className="flex items-center gap-2.5">
-                                            <div className="bg-[#1a1a1a] text-white px-2.5 py-1.5 font-bold flex items-center justify-center rounded-lg text-sm shadow-sm ring-1 ring-gray-900/5">
+                                            <div className="bg-[#1a1a1a] text-white px-2.5 py-1.5 font-bold flex items-center justify-center rounded-xl text-sm shadow-sm ring-1 ring-gray-900/5">
                                                 {salon.rating || "New"}
                                             </div>
                                             <div className="flex flex-col">
@@ -186,7 +186,7 @@ export function FavoritesPage() {
                                             <div className="text-[11px] font-semibold text-gray-400 mb-1">
                                                 Timing
                                             </div>
-                                            <div className="text-xs font-medium text-gray-600 bg-gray-50 px-2 py-1 rounded-md">
+                                            <div className="text-xs font-medium text-gray-600 bg-gray-50 px-2 py-1 rounded-lg">
                                                 {salon.openingHours || "09:00"} - {salon.closingHours || "21:00"}
                                             </div>
                                         </div>

@@ -158,7 +158,7 @@ export function VerifyEmailPage() {
                         <div className="bg-[#1a1a1a] p-2 rounded-full text-white">
                             <Scissors size={24} />
                         </div>
-                        <h1 className="text-2xl font-serif font-bold text-black tracking-wide">
+                        <h1 className="text-2xl font-sans font-bold text-black tracking-wide">
                             Salon<span className="text-[#D4AF37]">Now</span>
                         </h1>
                     </div>
@@ -176,7 +176,7 @@ export function VerifyEmailPage() {
                                 </div>
                             )}
                         </div>
-                        <h2 className="text-3xl font-serif font-bold text-[#1a1a1a] mb-2">
+                        <h2 className="text-3xl font-sans font-semibold tracking-tight text-[#1a1a1a] mb-2">
                             {success ? "Verified!" : "Check Your Email"}
                         </h2>
                         {!success && (
@@ -189,7 +189,7 @@ export function VerifyEmailPage() {
 
                     {/* Error message */}
                     {error && (
-                        <div className="bg-red-50 border border-red-200 text-red-600 p-3 rounded-lg text-sm mb-5 text-center">
+                        <div className="bg-red-50 border border-red-200 text-red-600 p-3.5 rounded-xl text-sm mb-5 text-center">
                             {error}
                         </div>
                     )}
@@ -272,10 +272,10 @@ export function VerifyEmailPage() {
                                         type="button"
                                         onClick={handleResend}
                                         disabled={resendLoading}
-                                        className="inline-flex items-center gap-2 text-sm font-medium 
-                                                   text-[#D4AF37] hover:text-[#b8942e] 
+                                        className="inline-flex items-center gap-2 text-sm font-semibold 
+                                                   text-[#D4AF37] hover:text-[#b8942e] px-3.5 py-1.5 rounded-full hover:bg-amber-50/50
                                                    disabled:text-gray-400 disabled:cursor-not-allowed
-                                                   transition-colors"
+                                                   transition-all"
                                     >
                                         <RefreshCw
                                             size={14}
@@ -290,7 +290,7 @@ export function VerifyEmailPage() {
                             <div className="text-center pt-2">
                                 <Link
                                     to="/signup"
-                                    className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                                    className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded-full hover:bg-gray-100 font-medium transition-all"
                                 >
                                     <ArrowLeft size={12} />
                                     Back to Sign Up
@@ -324,7 +324,7 @@ export function VerifyEmailPage() {
                         <MailCheck size={36} className="text-[#D4AF37]" />
                     </div>
 
-                    <h2 className="text-3xl font-serif font-bold text-white mb-4">
+                    <h2 className="text-3xl font-sans font-semibold tracking-tight text-white mb-4">
                         Almost <span className="text-[#D4AF37]">There!</span>
                     </h2>
                     <p className="text-gray-400 text-sm leading-relaxed max-w-xs mx-auto mb-8">

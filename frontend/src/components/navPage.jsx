@@ -190,13 +190,13 @@ export function NavBar() {
         <>
             <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${isTransparent
                     ? 'bg-transparent border-transparent'
-                    : 'bg-white/90 backdrop-blur-xl border-b border-gray-100/50 shadow-sm'
+                    : 'backdrop-blur-md bg-[#FBFBFA]/85 border-b border-[#E7E5E4]/50 shadow-soft-xs'
                 }`}>
                 <UpcomingAppointmentBanner />
                 <div className="max-w-[1280px] mx-auto px-6 md:px-10 py-4 flex items-center justify-between">
                     <NavLink to="/home" aria-label="SalonNow home" className="flex items-center gap-2.5 group cursor-pointer">
                         <img src={salonLogo} alt="SalonNow" className="w-9 h-9 rounded-full object-cover shadow-sm border border-[#D4AF37]/30 group-hover:scale-105 transition-transform" />
-                        <span className={`text-xl md:text-2xl font-serif font-bold tracking-tight transition-colors duration-300 ${isTransparent ? (isDark ? 'text-white' : 'text-gray-900') : 'text-[#1a1a1a]'}`}>
+                        <span className={`text-xl md:text-2xl font-sans font-bold tracking-tight transition-colors duration-300 ${isTransparent ? (isDark ? 'text-white' : 'text-gray-900') : 'text-[#1a1a1a]'}`}>
                             Salon<span className="text-[#D4AF37]">Now</span>
                         </span>
                     </NavLink>
@@ -242,13 +242,13 @@ export function NavBar() {
                                     {isNotificationsOpen && (
                                         <div className="absolute right-[-24px] md:right-0 mt-3 w-[calc(100vw-32px)] sm:w-80 md:w-96 bg-white rounded-[32px] shadow-2xl border border-gray-100 overflow-hidden z-[60] animate-in fade-in zoom-in-95 duration-200 origin-top-right">
                                             <div className="p-5 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
-                                                <h3 className="font-bold text-gray-900">Notifications</h3>
+                                                <h3 className="font-semibold text-gray-900 tracking-tight">Notifications</h3>
                                                 {unreadCount > 0 && (
                                                     <button
                                                         type="button"
                                                         onClick={markAllAsRead}
                                                         disabled={notificationsBusy}
-                                                        className="text-[10px] font-bold text-[#D4AF37] hover:text-black transition-colors"
+                                                        className="text-[11px] font-semibold text-[#D4AF37] hover:text-black px-2.5 py-1 rounded-full hover:bg-amber-50 transition-all"
                                                     >
                                                         Mark all as read
                                                     </button>
@@ -295,7 +295,7 @@ export function NavBar() {
                                             </div>
                                             {notifications.length > 0 && (
                                                 <div className="p-3 bg-gray-50/50 border-t border-gray-50 text-center">
-                                                    <button className="text-[10px] font-bold text-gray-400 hover:text-gray-900">
+                                                    <button className="text-xs font-semibold text-stone-500 hover:text-stone-900 px-3 py-1.5 rounded-full hover:bg-stone-100 transition-all">
                                                         View all activity
                                                     </button>
                                                 </div>
@@ -334,7 +334,7 @@ export function NavBar() {
 
                                             <NavLink
                                                 to="/profile"
-                                                className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-colors"
+                                                className="flex items-center gap-3 mx-1.5 px-3.5 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
                                                 onClick={() => setIsMenuOpen(false)}
                                             >
                                                 <User size={18} />
@@ -345,7 +345,7 @@ export function NavBar() {
                                                 <>
                                                     <NavLink
                                                         to="/bookings"
-                                                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-colors"
+                                                        className="flex items-center gap-3 mx-1.5 px-3.5 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
                                                         onClick={() => setIsMenuOpen(false)}
                                                     >
                                                         <Calendar size={18} />
@@ -354,7 +354,7 @@ export function NavBar() {
 
                                                     <NavLink
                                                         to="/favorites"
-                                                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-colors"
+                                                        className="flex items-center gap-3 mx-1.5 px-3.5 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
                                                         onClick={() => setIsMenuOpen(false)}
                                                     >
                                                         <Heart size={18} />
@@ -365,7 +365,7 @@ export function NavBar() {
 
                                             <NavLink
                                                 to="/settings"
-                                                className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-colors"
+                                                className="flex items-center gap-3 mx-1.5 px-3.5 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
                                                 onClick={() => setIsMenuOpen(false)}
                                             >
                                                 <Settings size={18} />
@@ -380,14 +380,14 @@ export function NavBar() {
                                                             const token = localStorage.getItem('authToken');
                                                             window.open(`${import.meta.env.VITE_ADMIN_URL}?token=${token}`, '_blank');
                                                         }}
-                                                        className="w-full flex items-center justify-start gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-colors"
+                                                        className="w-[calc(100%-12px)] flex items-center justify-start gap-3 mx-1.5 px-3.5 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
                                                     >
                                                         <LayoutDashboard size={18} />
                                                         Owner Dashboard
                                                     </button>
                                                     <NavLink
                                                         to="/salon/manage"
-                                                        className="w-full flex items-center justify-start gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-colors"
+                                                        className="w-[calc(100%-12px)] flex items-center justify-start gap-3 mx-1.5 px-3.5 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
                                                         onClick={() => setIsMenuOpen(false)}
                                                     >
                                                         <Scissors size={18} />
@@ -403,7 +403,7 @@ export function NavBar() {
                                                     setIsMenuOpen(false);
                                                     logout();
                                                 }}
-                                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                                                className="w-[calc(100%-12px)] flex items-center gap-3 mx-1.5 px-3.5 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-all"
                                             >
                                                 <LogOut size={18} />
                                                 Logout
@@ -445,9 +445,9 @@ export function NavBar() {
                                 {isNotificationsOpen && (
                                     <div className="fixed inset-x-4 top-20 bg-white rounded-[32px] shadow-2xl border border-gray-100 overflow-hidden z-[130] animate-in fade-in slide-in-from-top-2 duration-200">
                                         <div className="p-4 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
-                                            <h3 className="font-bold text-gray-900 text-sm">Notifications</h3>
+                                            <h3 className="font-semibold text-gray-900 text-sm tracking-tight">Notifications</h3>
                                             {unreadCount > 0 && (
-                                                    <button onClick={markAllAsRead} disabled={notificationsBusy} className="text-[10px] font-bold text-[#D4AF37] disabled:opacity-50">
+                                                <button onClick={markAllAsRead} disabled={notificationsBusy} className="text-[11px] font-semibold text-[#D4AF37] px-2 py-0.5 rounded-full hover:bg-amber-50 disabled:opacity-50 transition-all">
                                                     Mark all as read
                                                 </button>
                                             )}
@@ -517,7 +517,7 @@ export function NavBar() {
                         <div className="bg-[#1a1a1a] p-1.5 rounded-full text-white shadow-sm">
                             <Scissors size={16} />
                         </div>
-                        <span className="text-lg font-serif font-bold tracking-tight text-gray-900">
+                        <span className="text-lg font-sans font-bold tracking-tight text-gray-900">
                             Salon<span className="text-[#D4AF37]">Now</span>
                         </span>
                     </div>

@@ -50,8 +50,8 @@ const styles = {
   },
   card: {
     backgroundColor: "#ffffff",
-    padding: "32px",
-    borderRadius: "12px",
+    padding: "36px",
+    borderRadius: "24px",
     boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
     textAlign: "center",
     maxWidth: "480px",
@@ -60,19 +60,21 @@ const styles = {
   heading: {
     color: "#e53e3e",
     marginBottom: "12px",
+    fontWeight: "600",
+    letterSpacing: "-0.025em",
   },
   message: {
     color: "#4a5568",
     marginBottom: "24px",
-    lineHeight: "1.5",
+    lineHeight: "1.6",
   },
   button: {
-    backgroundColor: "#3182ce",
+    backgroundColor: "#1a1a1a",
     color: "#ffffff",
-    padding: "10px 24px",
-    borderRadius: "6px",
+    padding: "12px 28px",
+    borderRadius: "9999px",
     border: "none",
-    fontWeight: "bold",
+    fontWeight: "600",
     cursor: "pointer",
   },
 };

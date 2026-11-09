@@ -84,13 +84,13 @@ export function CreateSalonPage() {
                         <div className="bg-[#1a1a1a] p-1.5 rounded-full text-white">
                             <Scissors size={20} />
                         </div>
-                        <h1 className="text-xl font-serif font-bold text-black tracking-wide">
+                        <h1 className="text-xl font-sans font-bold text-black tracking-wide">
                             Salon<span className="text-[#D4AF37]">Now</span>
                         </h1>
                     </div>
                     <button 
                         onClick={() => navigate("/role-selection")}
-                        className="text-gray-500 hover:text-black text-sm font-medium transition-colors"
+                        className="text-gray-600 hover:text-black text-sm font-medium px-3.5 py-1.5 rounded-full hover:bg-gray-100 transition-all"
                     >
                         Back
                     </button>
@@ -99,7 +99,7 @@ export function CreateSalonPage() {
 
             <div className="max-w-[1280px] mx-auto px-6 md:px-10 mt-8">
                 <div className="mb-6">
-                    <h2 className="text-4xl font-serif font-bold text-[#1a1a1a] mb-3">Register Your Salon</h2>
+                    <h2 className="text-4xl font-sans font-semibold tracking-tight text-[#1a1a1a] mb-3">Register Your Salon</h2>
                     <p className="text-gray-500">Tell us about your business to get started.</p>
                 </div>
 
@@ -112,7 +112,7 @@ export function CreateSalonPage() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Basic Info Section */}
                     <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-4">
-                        <h3 className="text-lg font-bold text-gray-800 flex items-center">
+                        <h3 className="text-lg font-semibold text-gray-800 flex items-center">
                             <Store className="mr-2 text-[#D4AF37]" size={20} />
                             Basic Information
                         </h3>
@@ -170,7 +170,7 @@ export function CreateSalonPage() {
 
                     {/* Location Section */}
                     <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-4">
-                        <h3 className="text-lg font-bold text-gray-800 flex items-center">
+                        <h3 className="text-lg font-semibold text-gray-800 flex items-center">
                             <MapPin className="mr-2 text-[#D4AF37]" size={20} />
                             Location & Address
                         </h3>
@@ -257,7 +257,7 @@ export function CreateSalonPage() {
 
                     {/* Hours Section */}
                     <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-4">
-                        <h3 className="text-lg font-bold text-gray-800 flex items-center">
+                        <h3 className="text-lg font-semibold text-gray-800 flex items-center">
                             <Clock className="mr-2 text-[#D4AF37]" size={20} />
                             Operating Hours
                         </h3>
@@ -287,7 +287,7 @@ export function CreateSalonPage() {
                     {/* Images Section */}
                     <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-4">
                         <div className="flex justify-between items-center">
-                            <h3 className="text-lg font-bold text-gray-800 flex items-center">
+                            <h3 className="text-lg font-semibold text-gray-800 flex items-center">
                                 <Camera className="mr-2 text-[#D4AF37]" size={20} />
                                 Salon Images
                             </h3>

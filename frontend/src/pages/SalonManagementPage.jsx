@@ -337,7 +337,7 @@ export function SalonManagementPage() {
         <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-20 md:pt-24 pb-8 font-sans">
             <div>
                 <header className="mb-6">
-                    <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Manage your salon</h1>
+                    <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900">Manage your salon</h1>
                     <p className="text-gray-500 mt-2">Update your salon details, services, staff, and gallery.</p>
                 </header>
                 {/* Header & Multi-Salon Selector */}
@@ -369,7 +369,7 @@ export function SalonManagementPage() {
                                 <div className="relative inline-block group">
                                     <button 
                                         onClick={() => setIsSalonSelectorOpen(!isSalonSelectorOpen)}
-                                        className="flex items-center gap-3 text-3xl md:text-5xl font-serif font-black text-gray-900 group"
+                                        className="flex items-center gap-3 text-3xl md:text-5xl font-sans font-bold tracking-tight text-gray-900 group"
                                     >
                                         {activeSalon?.name || "Salon Name"}
                                         <ChevronDown size={32} className={`text-[#D4AF37] transition-transform duration-300 ${isSalonSelectorOpen ? 'rotate-180' : ''}`} />
@@ -447,7 +447,7 @@ export function SalonManagementPage() {
                                 </div>
                                 <div>
                                     <p className="ui-label mb-1 leading-none">Services</p>
-                                    <h4 className="text-xl lg:text-2xl font-serif font-black text-gray-900">{services.length}</h4>
+                                    <h4 className="text-xl lg:text-2xl font-sans font-bold text-gray-900">{services.length}</h4>
                                 </div>
                             </div>
 
@@ -458,7 +458,7 @@ export function SalonManagementPage() {
                                 </div>
                                 <div>
                                     <p className="ui-label mb-1 leading-none">Stylists</p>
-                                    <h4 className="text-xl lg:text-2xl font-serif font-black text-gray-900">{staff.length}</h4>
+                                    <h4 className="text-xl lg:text-2xl font-sans font-bold text-gray-900">{staff.length}</h4>
                                 </div>
                             </div>
 
@@ -469,7 +469,7 @@ export function SalonManagementPage() {
                                 </div>
                                 <div>
                                     <p className="ui-label mb-1 leading-none">Status</p>
-                                    <h4 className="text-xl lg:text-2xl font-serif font-black text-gray-900">Good</h4>
+                                    <h4 className="text-xl lg:text-2xl font-sans font-semibold text-gray-900">Good</h4>
                                 </div>
                             </div>
 
@@ -521,7 +521,7 @@ export function SalonManagementPage() {
                 {tab === "settings" && (
                     <div className="bg-white rounded-[40px] p-6 md:p-10 border border-gray-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="mb-6">
-                            <h2 className="text-2xl font-serif font-bold text-gray-900 mb-2">Salon Settings</h2>
+                            <h2 className="text-2xl font-sans font-semibold tracking-tight text-gray-900 mb-2">Salon Settings</h2>
                             <p className="text-gray-500 text-sm">Manage your salon's basic information, location, and operational schedule.</p>
                         </div>
                         <form onSubmit={handleUpdateSalonSettings} className="space-y-6 max-w-3xl">
@@ -662,7 +662,7 @@ export function SalonManagementPage() {
                     <div className="bg-white rounded-[40px] p-6 md:p-10 border border-gray-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-6">
                             <div>
-                                <h2 className="text-2xl font-serif font-bold text-gray-900 mb-2">Photo Gallery</h2>
+                                <h2 className="text-2xl font-sans font-semibold tracking-tight text-gray-900 mb-2">Photo Gallery</h2>
                                 <p className="text-gray-500 text-sm">Upload high-quality images to showcase your space to potential clients.</p>
                             </div>
                         </div>
@@ -680,7 +680,7 @@ export function SalonManagementPage() {
                                 <div className="w-16 h-16 mx-auto bg-white rounded-full flex items-center justify-center text-[#D4AF37] shadow-sm mb-4">
                                     <Upload size={24} />
                                 </div>
-                                <h4 className="text-lg font-bold text-gray-900 mb-1">Click to browse images</h4>
+                                <h4 className="text-lg font-semibold text-gray-900 mb-1">Click to browse images</h4>
                                 <p className="text-sm text-gray-500 mb-6">PNG, JPG up to 5MB each. You selected {newGalleryImages.length} files.</p>
                             </label>
                             {newGalleryImages.length > 0 && (
@@ -716,7 +716,7 @@ export function SalonManagementPage() {
                     {/* Form Section */}
                     <div className="lg:col-span-4">
                         <div className="bg-white rounded-[28px] p-6 border border-gray-100 shadow-sm sticky top-32">
-                            <h2 className="text-xl font-serif font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            <h2 className="text-xl font-sans font-semibold tracking-tight text-gray-900 mb-4 flex items-center gap-2">
                                 <Plus size={20} className="text-[#D4AF37]" />
                                 {tab === "services" ? "Add New Service" : "Add Team Member"}
                             </h2>
@@ -873,7 +873,7 @@ export function SalonManagementPage() {
                                                                      </button>
                                                                  </div>
                                                              </div>
-                                                             <h3 className="text-lg font-bold text-gray-900 mb-2">{formatLabel(s.name, "Service")}</h3>
+                                                             <h3 className="text-lg font-semibold text-gray-900 mb-2">{formatLabel(s.name, "Service")}</h3>
                                                              <p className="ui-subtext line-clamp-3 mb-4">{s.description || "Indulge in our premium signature treatment designed for excellence."}</p>
                                                              <div className="flex items-center justify-between pt-4 border-t border-gray-50">
                                                                  <div className="flex items-center gap-1.5 text-lg font-black text-gray-900">
@@ -927,7 +927,7 @@ export function SalonManagementPage() {
                                                                  <Users size={24} />
                                                              </div>
                                                              <div>
-                                                                 <h3 className="font-bold text-gray-900 text-lg">{m.name}</h3>
+                                                                 <h3 className="font-semibold text-gray-900 text-lg">{m.name}</h3>
                                                                  <p className="ui-meta mt-1">{formatLabel(m.role, "Stylist")}</p>
                                                                  <div className="flex flex-wrap gap-1 mt-3">
                                                                      {m.skills?.map((skill, index) => (

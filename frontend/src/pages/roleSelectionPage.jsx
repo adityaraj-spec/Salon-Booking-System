@@ -60,13 +60,13 @@ export function RoleSelectionPage() {
                     <div className="bg-[#1a1a1a] p-2 rounded-full text-white">
                         <Scissors size={24} />
                     </div>
-                    <h1 className="text-3xl font-serif font-bold text-black tracking-wide">
+                    <h1 className="text-3xl font-sans font-bold text-black tracking-wide">
                         Salon<span className="text-[#D4AF37]">Now</span>
                     </h1>
                 </div>
 
                 <div className="text-center mb-12">
-                    <h2 className="text-4xl font-serif font-bold text-[#1a1a1a] mb-4">How will you use SalonNow?</h2>
+                    <h2 className="text-4xl font-sans font-bold text-[#1a1a1a] mb-4">How will you use SalonNow?</h2>
                     <p className="text-gray-600 text-lg">Choose the account type that best fits your needs.</p>
                 </div>
 

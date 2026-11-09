@@ -38,15 +38,16 @@ export function SeatDisplay({
                                 setSelectedSeat(seatNumber);
                                 onSeatSelect?.(seatNumber);
                             }}
-                            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ease-out select-none ${
                                 isSelected
-                                    ? "border border-[#1a1a1a] bg-[#1a1a1a] text-white"
+                                    ? "border border-[#D4AF37] bg-[#1a1a1a] text-white shadow-soft-sm scale-[1.02] ring-2 ring-[#D4AF37]/25"
                                     : isFree
-                                        ? "border border-emerald-300 bg-emerald-50 text-emerald-700 hover:border-emerald-500"
-                                        : "cursor-not-allowed border border-gray-200 bg-gray-100 text-gray-400"
+                                        ? "border border-emerald-300/80 bg-emerald-50 text-emerald-800 hover:bg-emerald-100/70 hover:border-emerald-400 hover:scale-[1.02] active:scale-[0.98] shadow-soft-xs"
+                                        : "cursor-not-allowed border border-rose-200/50 bg-rose-50/40 text-rose-400 opacity-60"
                             }`}
                         >
-                            Seat {seatNumber}
+                            <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? "bg-[#D4AF37]" : isFree ? "bg-emerald-500 animate-pulse" : "bg-rose-400"}`} />
+                            <span>Seat {seatNumber}</span>
                         </button>
                     );
                 })}

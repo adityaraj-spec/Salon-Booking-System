@@ -245,10 +245,10 @@ export function Shops() {
     };
 
     return (
-        <div className="w-full min-h-screen bg-white">
+        <div className="w-full min-h-screen bg-[#FBFBFA]">
             <div className="max-w-[1280px] mx-auto px-6 md:px-10">
                 <div className="text-center pt-20 pb-8 md:pt-24 md:pb-12">
-                    <h1 className="text-4xl md:text-6xl font-serif text-gray-900 mb-4 leading-tight">
+                    <h1 className="text-4xl md:text-6xl font-sans font-bold tracking-tight text-gray-900 mb-4 leading-tight">
                         Discover Your <br className="hidden md:block" />
                         <span className="text-[#D4AF37]">Perfect Salon</span>
                     </h1>
@@ -258,7 +258,7 @@ export function Shops() {
 
                     {/* Search Bar & Unified Filter Trigger */}
                     <div className="flex items-center justify-center gap-3 md:gap-4 max-w-3xl mx-auto w-full px-4 md:px-0">
-                        <form onSubmit={handleSearch} className="flex items-center justify-between gap-1 flex-1 bg-white p-1 md:p-1.5 rounded-full shadow-sm border border-gray-100 ring-4 ring-[#1A1A1A]/5">
+                        <form onSubmit={handleSearch} className="flex items-center justify-between gap-1 flex-1 bg-white/95 backdrop-blur-md p-1 md:p-1.5 rounded-full shadow-soft-sm border border-stone-200/60 ring-2 ring-stone-900/5">
                             <div className="flex items-center flex-1 px-3 md:px-5 gap-2">
                                 <MapPin className="text-[#D4AF37] w-4 h-4 shrink-0" />
                                 <input
@@ -419,7 +419,7 @@ export function Shops() {
                 {/* Grid Heading */}
                 <div className="mt-6 mb-4 flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
                     <div>
-                        <h2 className="text-2xl md:text-3xl font-serif font-bold text-gray-900">
+                        <h2 className="text-2xl md:text-3xl font-sans font-semibold tracking-tight text-gray-900">
                             Discover salons in <span className="text-[#D4AF37] capitalize">{cityParam || "your city"}</span>
                             {selectedCategory && (
                                 <span className="text-gray-500 font-sans font-normal text-base md:text-lg ml-2">
@@ -433,7 +433,7 @@ export function Shops() {
                         <button
                             type="button"
                             onClick={() => handleCategoryToggle("all")}
-                            className="text-xs text-[#D4AF37] hover:text-[#b89528] font-bold self-start sm:self-auto hover:underline flex items-center gap-1"
+                            className="text-xs text-[#D4AF37] hover:text-[#b89528] font-semibold bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-full self-start sm:self-auto transition-all flex items-center gap-1"
                         >
                             <span>Clear category filter</span>
                             <X size={12} />
@@ -462,8 +462,8 @@ export function Shops() {
                                 {/* Modal Header */}
                                 <div className="px-6 pt-6 pb-4 flex items-center justify-between border-b border-gray-50">
                                     <div>
-                                        <h2 className="text-xl font-serif font-bold text-gray-900">Discovery Settings</h2>
-                                        <p className="text-gray-400 text-xs font-bold mt-1">Refine your search</p>
+                                        <h2 className="text-xl font-sans font-semibold tracking-tight text-gray-900">Discovery Settings</h2>
+                                        <p className="text-gray-400 text-xs font-medium mt-1">Refine your search</p>
                                     </div>
                                     <button
                                         onClick={() => setIsSortModalOpen(false)}
@@ -478,7 +478,7 @@ export function Shops() {
                                     <div className="space-y-4">
                                         <div className="flex items-center gap-2 px-1">
                                             <MapPin size={14} className="text-[#D4AF37]" />
-                                            <h3 className="text-[11px] font-bold text-gray-900 leading-tight">Discovery Location</h3>
+                                            <h3 className="text-[11px] font-semibold text-gray-900 leading-tight">Discovery Location</h3>
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-3">
@@ -583,7 +583,7 @@ export function Shops() {
                                     <div className="space-y-4 pt-4 border-t border-gray-50">
                                         <div className="flex items-center gap-2 px-1">
                                             <SlidersHorizontal size={14} className="text-[#D4AF37]" />
-                                            <h3 className="text-[11px] font-bold text-gray-900 leading-tight">Service Preferences</h3>
+                                            <h3 className="text-[11px] font-semibold text-gray-900 leading-tight">Service Preferences</h3>
                                         </div>
 
                                         <div className="grid grid-cols-1 gap-2">
@@ -631,7 +631,7 @@ export function Shops() {
                                     <div className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 mb-4">
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-xl bg-[#D4AF37] flex items-center justify-center shadow-lg shadow-[#D4AF37]/20">
-                                                <span className="text-lg font-serif font-black text-white">{salons.length}</span>
+                                                <span className="text-lg font-sans font-black text-white">{salons.length}</span>
                                             </div>
                                             <div>
                                                 <p className="text-[10px] text-[#D4AF37] font-bold leading-none mb-0.5">Total</p>
@@ -676,14 +676,14 @@ export function Shops() {
                     ) : error ? (
                         <div className="text-center py-20">
                             <p className="text-red-500 mb-4">{error}</p>
-                            <button onClick={() => fetchSalons()} className="text-[#D4AF37] font-bold border-b-2 border-[#D4AF37] hover:text-[#B48F27] transition-colors">Try Again</button>
+                            <button onClick={() => fetchSalons()} className="bg-amber-50 text-[#D4AF37] px-4 py-2 rounded-full font-semibold hover:bg-amber-100 transition-colors">Try Again</button>
                         </div>
                     ) : salons.length === 0 ? (
                         <div className="max-w-2xl mx-auto my-12 p-8 md:p-12 text-center bg-gradient-to-b from-gray-50/80 to-white border border-gray-100 rounded-3xl shadow-sm">
                             <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-amber-500/10 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37] shadow-inner">
                                 <MapPinOff size={36} strokeWidth={1.8} />
                             </div>
-                            <h3 className="text-2xl md:text-3xl font-serif font-bold text-gray-900 mb-3">
+                            <h3 className="text-2xl md:text-3xl font-sans font-semibold tracking-tight text-gray-900 mb-3">
                                 {cityParam ? `No Salons Found in ${cityParam}` : "No Salons Found"}
                             </h3>
                             <p className="text-gray-500 text-sm md:text-base max-w-md mx-auto leading-relaxed mb-6">
@@ -751,7 +751,7 @@ export function Shops() {
                         <>
                             <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-10">
                                 {salons.map((salon) => (
-                                    <div key={salon._id} className="w-full bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col transition hover:shadow-md group">
+                                    <div key={salon._id} className="w-full bg-white border border-stone-200/50 rounded-2xl overflow-hidden flex flex-col shadow-soft-sm hover:shadow-soft-lg hover:-translate-y-1 hover:scale-[1.008] transition-all duration-200 group">
                                         <div className="relative h-56 w-full overflow-hidden flex-shrink-0 cursor-pointer" onClick={() => navigate(`/shop/${salon._id}`)}>
                                             <img
                                                 src={salon.images && salon.images.length > 0 ? salon.images[0] : salonPlaceholder}
@@ -765,26 +765,26 @@ export function Shops() {
                                                 <Heart size={16} strokeWidth={userFavorites.includes(salon._id) ? 1.5 : 2} className={userFavorites.includes(salon._id) ? "fill-red-500" : ""} />
                                             </button>
                                         </div>
-                                        <div className="p-4 flex flex-col flex-1">
+                                        <div className="p-5 md:p-6 flex flex-col flex-1">
                                             <div className="flex items-center gap-1 mb-2">
                                                 <span className="text-xs text-gray-500">Salon</span>
                                                 <div className="flex gap-0.5">
                                                     {[...Array(5)].map((_, i) => <Star key={i} size={11} className="fill-[#febb02] text-[#febb02]" />)}
                                                 </div>
-                                                {salon.rating >= 4.5 && <span className="ml-1 bg-[#D4AF37] text-[#1a1a1a] text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wide">Top Rated</span>}
+                                                {salon.rating >= 4.5 && <span className="ml-1.5 bg-amber-50 text-amber-900 border border-amber-200/80 text-[10px] font-semibold px-2 py-0.5 rounded-full tracking-normal">Top Rated</span>}
                                             </div>
-                                            <h3 className="text-[1.1rem] font-bold text-[#1a1a1a] leading-tight mb-1 cursor-pointer hover:text-[#8a6500] transition-colors" onClick={() => navigate(`/shop/${salon._id}`)}>
+                                            <h3 className="text-[1.15rem] font-semibold text-gray-900 tracking-tight leading-snug mb-1.5 cursor-pointer hover:text-[#D4AF37] transition-colors" onClick={() => navigate(`/shop/${salon._id}`)}>
                                                 {salon.name}
                                             </h3>
-                                            <div className="mb-4 flex flex-col gap-1">
+                                            <div className="mb-4 flex flex-col gap-1 text-stone-500 text-xs leading-relaxed">
                                                 <span className="text-sm text-[#8a6500] flex items-center gap-1"><MapPin size={13} className="shrink-0" />{salon.city ? `${salon.city}, India` : "Location not set"}</span>
                                                 <span className="text-sm text-gray-500 flex items-center gap-1"><Phone size={13} className="shrink-0" />{salon.contactNumber || salon.owner?.phonenumber || "+91 Unavailable"}</span>
                                             </div>
                                             <div className="mt-auto flex items-end justify-between gap-2">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="bg-[#1a1a1a] text-[#D4AF37] px-2 py-2 font-bold flex items-center justify-center rounded-t-md rounded-br-md rounded-bl-sm min-w-[32px] text-sm">{salon.rating || "New"}</div>
+                                                    <div className="bg-[#1a1a1a] text-[#D4AF37] px-2.5 py-1.5 font-bold flex items-center justify-center rounded-xl min-w-[32px] text-sm">{salon.rating || "New"}</div>
                                                     <div className="flex flex-col">
-                                                        <span className="text-xs font-bold text-[#1a1a1a] leading-none mb-1">{salon.rating > 4 ? "Excellent" : (salon.rating > 3 ? "Very Good" : "Good")}</span>
+                                                        <span className="text-xs font-semibold text-[#1a1a1a] leading-none mb-1">{salon.rating > 4 ? "Excellent" : (salon.rating > 3 ? "Very Good" : "Good")}</span>
                                                         <span className="text-[11px] text-gray-500 leading-none">{salon.reviews?.length || "0"} reviews</span>
                                                     </div>
                                                 </div>
@@ -799,9 +799,10 @@ export function Shops() {
                                                             Timing <span className="font-bold text-gray-800">{salon.openingHours || "09:00"} - {salon.closingHours || "21:00"}</span>
                                                         </div>
                                                     )}
-                                                    <div className="text-xs text-gray-500">
-                                                        <span className="text-lg font-bold text-[#1a1a1a]">
-                                                            {Math.max(0, Number(salon.availableSeats) || 0)}/{Math.max(1, Number(salon.maxConcurrentStaff) || Number(salon.totalSeats) || 5)}
+                                                    <div className="mt-1">
+                                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/80 shadow-soft-xs">
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                                            <span>{Math.max(0, Number(salon.availableSeats) || 0)}/{Math.max(1, Number(salon.maxConcurrentStaff) || Number(salon.totalSeats) || 5)} seats free</span>
                                                         </span>
                                                     </div>
                                                 </div>

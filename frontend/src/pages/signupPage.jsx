@@ -55,17 +55,17 @@ export function SignUpPage() {
                         <div className="bg-[#1a1a1a] p-2 rounded-full text-white">
                             <Scissors size={24} />
                         </div>
-                        <h1 className="text-2xl font-serif font-bold text-black tracking-wide">Salon<span className="text-[#D4AF37]">Now</span></h1>
+                        <h1 className="text-2xl font-sans font-bold text-black tracking-wide">Salon<span className="text-[#D4AF37]">Now</span></h1>
                     </div>
 
                     {/* Titles */}
                     <div className="text-center mb-4">
-                        <h2 className="text-3xl font-serif font-bold text-[#1a1a1a] mb-2">Create Account</h2>
+                        <h2 className="text-3xl font-sans font-semibold tracking-tight text-[#1a1a1a] mb-2">Create Account</h2>
                         <p className="text-gray-500 text-sm">Join us to book your beauty appointments</p>
                     </div>
 
                     {error && (
-                        <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4">
+                        <div className="bg-red-50 text-red-600 p-3 rounded-xl text-sm mb-4">
                             {error}
                         </div>
                     )}
@@ -83,7 +83,7 @@ export function SignUpPage() {
                                 type="text"
                                 placeholder="Enter your full name"
                                 required
-                                className="w-full border border-gray-200 rounded-lg p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
+                                className="w-full border border-gray-200 rounded-xl p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
                             />
                         </div>
 
@@ -95,7 +95,7 @@ export function SignUpPage() {
                                 type="text"
                                 placeholder="Enter your username"
                                 required
-                                className="w-full border border-gray-200 rounded-lg p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
+                                className="w-full border border-gray-200 rounded-xl p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
                             />
                         </div>
 
@@ -107,7 +107,7 @@ export function SignUpPage() {
                                 type="email"
                                 placeholder="Enter your email"
                                 required
-                                className="w-full border border-gray-200 rounded-lg p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
+                                className="w-full border border-gray-200 rounded-xl p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
                             />
                         </div>
 
@@ -118,7 +118,7 @@ export function SignUpPage() {
                                 name="phonenumber"
                                 type="text"
                                 placeholder="Enter your phone number"
-                                className="w-full border border-gray-200 rounded-lg p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
+                                className="w-full border border-gray-200 rounded-xl p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
                             />
                         </div>
 
@@ -131,7 +131,7 @@ export function SignUpPage() {
                                     type={showPassword ? "text" : "password"}
                                     placeholder="Create a strong password"
                                     required
-                                    className="w-full border border-gray-200 rounded-lg p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors pr-10"
+                                    className="w-full border border-gray-200 rounded-xl p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors pr-10"
                                 />
                                 <button
                                     type="button"
@@ -151,7 +151,7 @@ export function SignUpPage() {
                                     name="confirmPassword"
                                     type={showConfirmPassword ? "text" : "password"}
                                     placeholder="Re-enter your password"
-                                    className="w-full border border-gray-200 rounded-lg p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors pr-10"
+                                    className="w-full border border-gray-200 rounded-xl p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors pr-10"
                                 />
                                 <button
                                     type="button"
@@ -174,6 +174,10 @@ export function SignUpPage() {
 
                         <div className="text-center mt-6 text-sm text-gray-500">
                             Already have an account? <Link to="/login" className="text-[#e65c00] hover:text-[#cc5200] font-medium transition-colors">Login</Link>
+                        </div>
+
+                        <div className="text-center mt-6 text-xs text-gray-400">
+                            <Link to="/" className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-all font-medium">&larr; Back to Home</Link>
                         </div>
                     </form>
                 </div>

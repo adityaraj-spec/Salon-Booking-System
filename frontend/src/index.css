@@ -1,109 +1,146 @@
 @import "tailwindcss";
 
-
+/* ── SALONNOW DESIGN SYSTEM: LUXURY CONSUMER UI ── */
 @theme {
-  --font-serif: 'Playfair Display', Georgia, Cambria, 'Times New Roman', Times, serif;
-  --font-sans: 'Poppins', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* Unified Clean Sans-Serif Typography Stack */
+  --font-sans: 'Inter', 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: 'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: 'Inter', 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Base Warm Neutrals (Preserved) */
+  --color-canvas: #FBFBFA;
+  --color-canvas-subtle: #F5F3EF;
+  --color-canvas-muted: #EFECE6;
+  --color-surface: #FFFFFF;
+  --color-surface-warm: #F7F6F3;
+  --color-surface-hover: #F9F8F5;
+
+  /* Deep Charcoal Typography */
+  --color-charcoal: #1C1917;
+  --color-charcoal-secondary: #44403C;
+  --color-charcoal-muted: #78716C;
+  --color-charcoal-subtle: #A8A29E;
+
+  /* Soft Ambient Borders */
+  --color-border-subtle: #E7E5E4;
+  --color-border-muted: #D6D3D1;
+
+  /* Warm Bronze / Gold Brand Palette (Preserved) */
+  --color-brand: #D4AF37;
+  --color-brand-500: #D4AF37;
+  --color-brand-600: #B8962E;
+  --color-brand-700: #997A1E;
+  --color-brand-light: #FDF9EB;
+
+  /* Semantic Status Colors */
+  --color-status-available-bg: #ECFDF5;
+  --color-status-available-border: #A7F3D0;
+  --color-status-available-text: #047857;
+  --color-status-available-dot: #10B981;
+
+  --color-status-occupied-bg: #FFF1F2;
+  --color-status-occupied-border: #FECDD3;
+  --color-status-occupied-text: #BE123C;
+  --color-status-occupied-dot: #F43F5E;
+
+  --color-status-pending-bg: #FFFBEB;
+  --color-status-pending-border: #FDE68A;
+  --color-status-pending-text: #B45309;
+  --color-status-pending-dot: #F59E0B;
+
+  /* Diffuse Multi-Layered Soft Shadows */
+  --shadow-soft-xs: 0 1px 2px 0 rgba(28, 25, 23, 0.04);
+  --shadow-soft-sm: 0 2px 4px 0 rgba(28, 25, 23, 0.04), 0 1px 2px -1px rgba(28, 25, 23, 0.06);
+  --shadow-soft-md: 0 6px 18px -2px rgba(28, 25, 23, 0.06), 0 2px 6px -1px rgba(28, 25, 23, 0.04);
+  --shadow-soft-lg: 0 14px 30px -4px rgba(28, 25, 23, 0.08), 0 4px 10px -2px rgba(28, 25, 23, 0.04);
+  --shadow-soft-xl: 0 22px 44px -6px rgba(28, 25, 23, 0.10), 0 8px 16px -4px rgba(28, 25, 23, 0.05);
+  --shadow-glow-gold: 0 0 24px -4px rgba(212, 175, 55, 0.35);
+
+  /* Micro-Typography Tracking */
+  --tracking-tighter: -0.035em;
+  --tracking-tight: -0.02em;
+  --tracking-pin: 0.35em;
+}
+
+/* ── GLOBAL BASE TYPOGRAPHY & FOUNDATION ── */
+:root {
+  color-scheme: light;
 }
 
 body {
-  font-family: 'Poppins', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  color: #1a1a1a;
-  background-color: #ffffff;
-  letter-spacing: -0.01em;
-  line-height: 1.5;
+  font-family: var(--font-sans);
+  color: var(--color-charcoal);
+  background-color: var(--color-canvas);
+  letter-spacing: -0.012em;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+/* Explicitly enforce unified clean sans-serif typography everywhere */
+h1, h2, h3, h4, h5, h6,
+.font-serif, .font-sans, .font-display {
+  font-family: var(--font-sans) !important;
+}
+
+h1 {
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  font-weight: 700;
+  color: var(--color-charcoal);
+}
+
+h2 {
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  font-weight: 600;
+  color: var(--color-charcoal);
+}
+
+h3 {
+  letter-spacing: -0.018em;
+  line-height: 1.3;
+  font-weight: 600;
+  color: var(--color-charcoal);
+}
+
+h4, h5, h6 {
+  letter-spacing: -0.015em;
+  line-height: 1.35;
+  font-weight: 600;
+  color: var(--color-charcoal);
+}
+
+/* Base form controls: Standardize on rounded-xl (12px) */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="number"],
+input[type="search"],
+select,
+textarea {
+  border-radius: 0.75rem; /* rounded-xl (12px) */
+}
+
+/* Subtle Interactive Focus Rings */
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 3px solid #8a6500;
-  outline-offset: 3px;
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: #9ca3af;
+  color: var(--color-charcoal-subtle);
   font-weight: 400;
 }
 
-@layer components {
-
-  .subtext-style-target,
-  .ui-subtext,
-  .ui-meta,
-  .ui-label,
-  .ui-badge {
-    color: #444b58;
-    font-size: 0.875rem;
-    font-weight: 500 !important;
-    line-height: 1.5;
-    letter-spacing: normal;
-    text-transform: none;
-  }
-
-  .salon-action-button {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50;
-  }
-
-  .salon-action-button--primary {
-    @apply bg-[#D4AF37] text-white hover:bg-[#B8962E];
-  }
-
-  .salon-action-button--dark {
-    @apply bg-[#1A1A1A] text-white hover:bg-black;
-  }
-
-  .salon-action-button--secondary {
-    @apply border border-gray-200 bg-white text-gray-700 hover:border-[#D4AF37] hover:text-[#8a6500];
-  }
-
-  .salon-action-button--success {
-    @apply bg-emerald-600 text-white hover:bg-emerald-700;
-  }
-
-  .salon-action-button--danger {
-    @apply border border-red-200 bg-white text-red-600 hover:bg-red-50;
-  }
-}
-
-h1,
-h2,
-.font-serif {
-  font-family: 'Playfair Display', Georgia, Cambria, 'Times New Roman', Times, serif;
-}
-
-h3,
-h4,
-h5,
-h6 {
-  font-family: 'Poppins', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  letter-spacing: -0.025em;
-  line-height: 1.15;
-}
-
-/* Project Slider */
-.project-slider-track {
-  transform: translateX(calc(var(--active) * -100%));
-}
-
-@media (min-width: 768px) {
-  .project-slider-track {
-    transform: translateX(calc(var(--active) * -33.333333% + 33.333333%));
-  }
-}
-
-/* Force pointer cursor on all interactable elements */
+/* Cursor Consistency */
 button,
 a,
 select,
@@ -112,23 +149,152 @@ input[type="submit"],
 input[type="button"],
 input[type="checkbox"],
 input[type="radio"] {
-  cursor: pointer !important;
+  cursor: pointer;
 }
 
-/* ── Skeleton Loading System ── */
+/* ── LUXURY CONSUMER UI UTILITY COMPONENTS ── */
+@layer components {
+
+  /* Tactile Elevated Cards */
+  .salon-card {
+    background-color: var(--color-surface);
+    border: 1px solid rgba(231, 229, 228, 0.5);
+    border-radius: 1.5rem; /* rounded-3xl */
+    box-shadow: var(--shadow-soft-sm);
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .salon-card-interactive {
+    background-color: var(--color-surface);
+    border: 1px solid rgba(231, 229, 228, 0.5);
+    border-radius: 1.5rem;
+    box-shadow: var(--shadow-soft-sm);
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .salon-card-interactive:hover {
+    border-color: rgba(214, 211, 209, 0.8);
+    box-shadow: var(--shadow-soft-lg);
+    transform: translateY(-2px) scale(1.008);
+  }
+
+  /* Frosted Glass Surface */
+  .glass-surface {
+    background: rgba(251, 251, 250, 0.82);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(231, 229, 228, 0.5);
+  }
+
+  /* Buttons with Tactile Micro-Interactions */
+  .salon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 9999px; /* rounded-pill */
+    padding: 0.75rem 1.35rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
+  }
+
+  .salon-btn:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  .salon-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+
+  .salon-btn-primary {
+    background-color: var(--color-brand);
+    color: #FFFFFF;
+    box-shadow: 0 4px 14px -2px rgba(212, 175, 55, 0.35);
+  }
+
+  .salon-btn-primary:hover:not(:disabled) {
+    background-color: var(--color-brand-600);
+    box-shadow: var(--shadow-glow-gold);
+    transform: scale(1.01);
+  }
+
+  .salon-btn-secondary {
+    background-color: var(--color-surface);
+    color: var(--color-charcoal);
+    border: 1px solid var(--color-border-subtle);
+    box-shadow: var(--shadow-soft-xs);
+  }
+
+  .salon-btn-secondary:hover:not(:disabled) {
+    background-color: var(--color-surface-hover);
+    border-color: var(--color-border-muted);
+  }
+
+  .salon-btn-dark {
+    background-color: var(--color-charcoal);
+    color: #FFFFFF;
+    box-shadow: 0 4px 14px -2px rgba(28, 25, 23, 0.25);
+  }
+
+  .salon-btn-dark:hover:not(:disabled) {
+    background-color: #000000;
+    transform: scale(1.01);
+  }
+
+  /* Rounded Status Capsule Pills with Pulsing Dots */
+  .salon-capsule {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.3rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem; /* 12px */
+    font-weight: 600;
+    line-height: 1;
+    border: 1px solid transparent;
+  }
+
+  .salon-capsule-available {
+    background-color: var(--color-status-available-bg);
+    border-color: var(--color-status-available-border);
+    color: var(--color-status-available-text);
+  }
+
+  .salon-capsule-occupied {
+    background-color: var(--color-status-occupied-bg);
+    border-color: var(--color-status-occupied-border);
+    color: var(--color-status-occupied-text);
+  }
+
+  .salon-capsule-pending {
+    background-color: var(--color-status-pending-bg);
+    border-color: var(--color-status-pending-border);
+    color: var(--color-status-pending-text);
+  }
+
+  /* Subtle pulsing animation */
+  .pulse-dot {
+    animation: pulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+
+/* ── SKELETON SHIMMER ── */
 @keyframes shimmer {
   0% {
     background-position: -400px 0;
   }
-
   100% {
     background-position: 400px 0;
   }
 }
 
 .skeleton {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, #F5F3EF 25%, #EFECE6 50%, #F5F3EF 75%);
   background-size: 800px 100%;
   animation: shimmer 1.5s infinite linear;
-  border-radius: 8px;
+  border-radius: 12px;
 }
