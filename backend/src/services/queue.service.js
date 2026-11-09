@@ -604,12 +604,16 @@ export const acceptQueueRequest = async ({ bookingId, ownerId, role }) => {
 
     // ── Email: booking confirmation with queue PIN ────────────────────────────
     if (refreshed.customer?.email) {
-      const serviceNames = (refreshed.services || []).map((s) => s.name || "Service");
+      const serviceNames = (refreshed.snapshotServices && refreshed.snapshotServices.length > 0)
+        ? refreshed.snapshotServices.map((s) => s.name || s.serviceName).filter(Boolean)
+        : (refreshed.serviceNames && refreshed.serviceNames.length > 0)
+          ? refreshed.serviceNames
+          : ["Service"];
       sendBookingConfirmationEmail(
         refreshed.customer.email,
         refreshed.customer.fullName || refreshed.guestName || "Customer",
         refreshed.salon?.name || "Salon",
-        new Date().toISOString(),
+        (refreshed.startTime || refreshed.requestedAt || new Date()).toISOString(),
         refreshed._id.toString(),
         serviceNames,
         refreshed.totalAmount || 0,
@@ -874,8 +878,21 @@ export const completeQueueService = async ({ bookingId, ownerId, role, paymentMe
     if (refreshed.customer?.email) {
       const salonPopulated = await Salon.findById(refreshed.salon).select("name").lean();
       const salonName = salonPopulated?.name || "Salon";
-      const serviceNames = (refreshed.services || []).map((s) => ({ name: s.name || "Service", price: s.price || 0 }));
-      const bookingTime = refreshed.scheduledDate || refreshed.completedAt || new Date();
+      const allServices = (refreshed.snapshotServices && refreshed.snapshotServices.length > 0)
+        ? [...refreshed.snapshotServices, ...(refreshed.extraServices || [])]
+        : (refreshed.serviceNames && refreshed.serviceNames.length > 0)
+          ? refreshed.serviceNames.map((name) => ({ name, price: (refreshed.totalAmount || 0) / refreshed.serviceNames.length }))
+          : [];
+
+      const receiptItems = allServices.length > 0
+        ? allServices.map((s) => ({
+            name: s.name || s.serviceName || "Service",
+            price: Number(s.price || 0),
+          }))
+        : [{ name: "Salon Service", price: Number(refreshed.totalAmount || 0) }];
+
+      const serviceNamesList = receiptItems.map((s) => s.name);
+      const bookingTime = refreshed.scheduledDate || refreshed.startTime || refreshed.completedAt || new Date();
 
       sendFinalReceiptEmail(
         refreshed.customer.email,
@@ -883,7 +900,7 @@ export const completeQueueService = async ({ bookingId, ownerId, role, paymentMe
         salonName,
         bookingTime,
         refreshed._id.toString(),
-        serviceNames,
+        receiptItems,
         refreshed.totalAmount || 0,
         paymentMethod,
       ).catch((err) => logger.warn({ err: err?.message }, "[QueueService] Failed to send final receipt email"));
@@ -894,9 +911,9 @@ export const completeQueueService = async ({ bookingId, ownerId, role, paymentMe
         salonName,
         bookingTime,
         refreshed._id.toString(),
-        serviceNames.map((s) => s.name),
+        serviceNamesList,
         refreshed.totalAmount || 0,
-        refreshed.completedAt,
+        refreshed.completedAt || new Date(),
       ).catch((err) => logger.warn({ err: err?.message }, "[QueueService] Failed to send service-completed email"));
     }
 

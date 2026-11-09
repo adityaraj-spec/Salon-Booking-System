@@ -261,9 +261,7 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
             ? booking.snapshotServices.map((service) => service.name || service.serviceName).filter(Boolean)
             : booking.serviceNames || [];
         const completedAmount = booking.amounts?.total > 0 ? booking.amounts.total : booking.totalAmount;
-        const bookingTime = booking.startTime
-            ? booking.startTime.toISOString()
-            : `${booking.date || ""} at ${booking.time || ""}`;
+        const bookingTime = booking.startTime ? booking.startTime.toISOString() : ((booking.date && booking.time) ? `${booking.date} at ${booking.time}` : (booking.requestedAt || booking.createdAt || new Date()).toISOString());
         sendServiceCompletedEmail(
             booking.customer.email,
             booking.customer.fullName || "Customer",

@@ -238,8 +238,16 @@ const hasValue = (value) => value !== null && value !== undefined && String(valu
 
 const displayServices = (services) => {
     if (Array.isArray(services)) {
-        const items = services.map((service) => displayValue(service, "")).filter(Boolean);
+        const items = services.map((service) => {
+            if (typeof service === "object" && service !== null) {
+                return displayValue(service.name || service.serviceName, "");
+            }
+            return displayValue(service, "");
+        }).filter(Boolean);
         return items.length ? items.join(", ") : "Salon services";
+    }
+    if (typeof services === "object" && services !== null) {
+        return displayValue(services.name || services.serviceName, "Salon services");
     }
     return displayValue(services, "Salon services");
 };
@@ -304,9 +312,16 @@ const formatDateTime = (value) => {
     if (value instanceof Date && !Number.isNaN(value.getTime())) return formatDateObject(value);
 
     const source = String(value).trim();
-    const normalized = source.replace(/\s+at\s+/i, " ").replace(/\s+/g, " ");
+    if (!source || source.toLowerCase() === "at" || source === "undefined at undefined" || source === "at undefined" || source === "undefined") {
+        return "";
+    }
+    const normalized = source.replace(/\s+at\s+/i, " ").replace(/\s+/g, " ").trim();
+    if (!normalized || normalized.toLowerCase() === "at") return "";
+
     const parsed = new Date(normalized);
-    if (Number.isNaN(parsed.getTime()) || !/\d{4}/.test(normalized)) return source;
+    if (Number.isNaN(parsed.getTime()) || !/\d{4}/.test(normalized)) {
+        return source.replace(/^at\s*$/i, "").trim();
+    }
     return formatDateObject(parsed);
 };
 
@@ -333,7 +348,7 @@ const renderDetailCard = (rows = []) => {
     return {
         html: `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background:${COLORS.warm};border:1px solid ${COLORS.border};border-radius:8px;overflow:hidden;margin:24px 0;">
             ${safeRows.map((row, index) => `<tr${index < safeRows.length - 1 ? ` style="border-bottom:1px solid ${COLORS.border};"` : ""}>
-                <td style="padding:14px 16px;color:${COLORS.muted};font-size:12px;font-weight:500;line-height:1.45;letter-spacing:1px;text-transform:uppercase;vertical-align:top;width:40\%;">${renderIcon(row.icon, COLORS.gold, 16)}<span style="vertical-align:middle;">${escapeHtml(row.label)}</span></td>
+                <td style="padding:14px 16px;color:${COLORS.muted};font-size:12px;font-weight:500;line-height:1.45;font-weight:600;vertical-align:top;width:40%;">${renderIcon(row.icon, COLORS.gold, 16)}<span style="vertical-align:middle;">${escapeHtml(row.label)}</span></td>
                 <td style="padding:14px 16px;color:${row.emphasis ? COLORS.text : COLORS.body};font-size:${row.emphasis ? "16px" : "14px"};font-weight:${row.emphasis ? "700" : "600"};line-height:1.5;text-align:right;word-break:break-word;">${escapeHtml(row.value)}</td>
             </tr>`).join("")}
         </table>`,
@@ -368,16 +383,16 @@ const renderBookingPanel = ({
     return {
         html: `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background:#ffffff;border:1px solid ${COLORS.border};border-radius:8px;overflow:hidden;margin:24px 0;">
           ${(hasBookingReference || formattedActionTime) ? `<tr style="background:${COLORS.warm};border-bottom:1px solid ${COLORS.border};"><td style="padding:14px 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr>
-            ${hasBookingReference ? `<td valign="top"><p style="margin:0 0 4px;color:${COLORS.muted};font-size:11px;font-weight:500;letter-spacing:1px;text-transform:uppercase;">${renderIcon("receipt", COLORS.gold, 16)}<span style="vertical-align:middle;">Booking reference</span></p><p style="margin:0;color:${COLORS.text};font-size:15px;font-weight:700;word-break:break-word;">${escapeHtml(displayValue(bookingReference))}</p></td>` : ""}
-            ${formattedActionTime ? `<td align="${hasBookingReference ? "right" : "left"}" valign="top" style="${hasBookingReference ? "padding-left:12px;" : ""}"><p style="margin:0 0 4px;color:${COLORS.muted};font-size:11px;font-weight:500;letter-spacing:1px;text-transform:uppercase;">${renderIcon("clock", COLORS.gold, 14)}<span style="vertical-align:middle;">${escapeHtml(actionLabel)}</span></p><p style="margin:0;color:${COLORS.text};font-size:13px;font-weight:600;">${escapeHtml(formattedActionTime)}</p></td>` : ""}
+            ${hasBookingReference ? `<td valign="top"><p style="margin:0 0 4px;color:${COLORS.muted};font-size:12px;font-weight:600;">${renderIcon("receipt", COLORS.gold, 16)}<span style="vertical-align:middle;">Booking Reference</span></p><p style="margin:0;color:${COLORS.text};font-size:15px;font-weight:700;word-break:break-word;">${escapeHtml(displayValue(bookingReference))}</p></td>` : ""}
+            ${formattedActionTime ? `<td align="${hasBookingReference ? "right" : "left"}" valign="top" style="${hasBookingReference ? "padding-left:12px;" : ""}"><p style="margin:0 0 4px;color:${COLORS.muted};font-size:12px;font-weight:600;">${renderIcon("clock", COLORS.gold, 14)}<span style="vertical-align:middle;">${escapeHtml(actionLabel)}</span></p><p style="margin:0;color:${COLORS.text};font-size:13px;font-weight:600;">${escapeHtml(formattedActionTime)}</p></td>` : ""}
           </tr></table></td></tr>` : ""}
           <tr><td style="padding:20px 16px 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr>
             <td width="48" valign="top"><span style="display:inline-block;width:40px;height:40px;border-radius:50%;background:${COLORS.header};color:#ffffff;font-size:15px;line-height:40px;text-align:center;font-weight:700;">${escapeHtml(getInitials(safeSalonName))}</span></td>
             <td valign="top" style="padding-left:12px;"><p style="margin:0;color:${COLORS.text};font-size:16px;font-weight:700;line-height:1.35;">${escapeHtml(safeSalonName)}</p>${hasValue(salonAddress) ? `<p style="margin:4px 0 0;color:${COLORS.muted};font-size:12px;line-height:1.5;">${renderIcon("store", COLORS.muted, 14)}<span style="vertical-align:middle;">${escapeHtml(displayValue(salonAddress))}</span></p>` : ""}</td>
             ${bookingStatus ? `<td align="right" valign="top" style="padding-left:8px;"><span style="display:inline-block;padding:4px 10px;border:1px solid ${statusColor};border-radius:20px;color:${statusColor};font-size:11px;font-weight:700;">${escapeHtml(bookingStatus)}</span></td>` : ""}
           </tr></table></td></tr>
-          ${hasCustomer ? `<tr><td style="padding:14px 16px;border-top:1px solid ${COLORS.border};"><p style="margin:0 0 4px;color:${COLORS.muted};font-size:11px;font-weight:500;letter-spacing:1px;text-transform:uppercase;">${renderIcon("person", COLORS.gold, 16)}<span style="vertical-align:middle;">Customer</span></p><p style="margin:0;color:${COLORS.text};font-size:14px;font-weight:700;word-break:break-word;">${escapeHtml(displayValue(customerName))}</p></td></tr>` : ""}
-          ${hasAppointmentDetails ? `<tr><td style="padding:16px;border-top:1px solid ${COLORS.border};"><p style="margin:0 0 12px;color:${COLORS.text};font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Appointment details</p><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr>
+          ${hasCustomer ? `<tr><td style="padding:14px 16px;border-top:1px solid ${COLORS.border};"><p style="margin:0 0 4px;color:${COLORS.muted};font-size:12px;font-weight:600;">${renderIcon("person", COLORS.gold, 16)}<span style="vertical-align:middle;">Customer</span></p><p style="margin:0;color:${COLORS.text};font-size:14px;font-weight:700;word-break:break-word;">${escapeHtml(displayValue(customerName))}</p></td></tr>` : ""}
+          ${hasAppointmentDetails ? `<tr><td style="padding:16px;border-top:1px solid ${COLORS.border};"><p style="margin:0 0 12px;color:${COLORS.text};font-size:13px;font-weight:700;">Appointment Details</p><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr>
             ${appointmentValue ? `<td class="sn-stack-cell" width="50%" valign="top" style="padding-right:12px;${serviceText || hasValue(stylist) ? `border-right:1px solid ${COLORS.border};` : ""}"><p style="margin:0 0 6px;color:${COLORS.muted};font-size:12px;font-weight:500;">${renderIcon("calendar", COLORS.gold, 16)}<span style="vertical-align:middle;">Appointment Slot</span></p><p style="margin:0;color:${COLORS.body};font-size:14px;font-weight:600;line-height:1.55;word-break:break-word;">${escapeHtml(appointmentValue)}</p></td>` : ""}
             ${(serviceText || hasValue(stylist)) ? `<td class="sn-stack-cell" valign="top" style="padding-left:${appointmentValue ? "12px" : "0"};"><p style="margin:0 0 6px;color:${COLORS.muted};font-size:12px;font-weight:500;">${renderIcon("scissors", COLORS.gold, 16)}<span style="vertical-align:middle;">Service</span></p>${serviceText ? `<p style="margin:0;color:${COLORS.body};font-size:14px;font-weight:600;line-height:1.55;word-break:break-word;">${escapeHtml(serviceText)}</p>` : ""}${hasValue(stylist) ? `<p style="margin:6px 0 0;color:${COLORS.muted};font-size:12px;line-height:1.5;">Stylist: <span style="color:${COLORS.body};font-weight:600;">${escapeHtml(displayValue(stylist))}</span></p>` : ""}</td>` : ""}
           </tr></table></td></tr>` : ""}
@@ -445,9 +460,9 @@ const renderEmail = ({ preheader, category, icon = "dot", heading, greeting, par
     const safeCta = cta ? { label: displayValue(cta.label, "Open SalonNow"), href: safeHref(cta.href) } : null;
     const detailCard = renderDetailCard(rows);
     const support = renderSupportLine();
-    const noticeHtml = safeNotice ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:24px 0;"><tr><td style="border-left:4px solid ${safeNotice.color};background:${COLORS.warm};padding:14px 16px;border-radius:0 8px 8px 0;"><p style="margin:0 0 4px;color:${safeNotice.color};font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">${escapeHtml(safeNotice.label)}</p><p style="margin:0;color:${COLORS.body};font-size:14px;line-height:1.6;">${escapeHtml(safeNotice.text)}</p></td></tr></table>` : "";
-    const codeHtml = safeCode ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:24px 0;"><tr><td align="center" style="background:${COLORS.warm};border:1px dashed ${accent};border-radius:8px;padding:20px 12px;"><p style="margin:0 0 8px;color:${COLORS.muted};font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Your verification code</p><p style="margin:0;color:${COLORS.text};font-size:32px;font-weight:700;letter-spacing:8px;line-height:1.2;">${escapeHtml(safeCode)}</p></td></tr></table>` : "";
-    const verificationPinHtml = safeVerificationPin ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:20px 0;"><tr><td align="center" style="background-color:#f3f4f6;border-radius:8px;padding:16px;text-align:center;"><p style="margin:0;font-size:14px;color:#4b5563;">YOUR CHECK-IN PIN</p><h2 style="margin:8px 0 0 0;font-size:32px;letter-spacing:6px;color:#111827;line-height:1.2;">${escapeHtml(safeVerificationPin)}</h2></td></tr></table>` : "";
+    const noticeHtml = safeNotice ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:24px 0;"><tr><td style="border-left:4px solid ${safeNotice.color};background:${COLORS.warm};padding:14px 16px;border-radius:0 8px 8px 0;"><p style="margin:0 0 4px;color:${safeNotice.color};font-size:12px;font-weight:700;">${escapeHtml(safeNotice.label)}</p><p style="margin:0;color:${COLORS.body};font-size:14px;line-height:1.6;">${escapeHtml(safeNotice.text)}</p></td></tr></table>` : "";
+    const codeHtml = safeCode ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:24px 0;"><tr><td align="center" style="background:${COLORS.warm};border:1px dashed ${accent};border-radius:8px;padding:20px 12px;"><p style="margin:0 0 8px;color:${COLORS.muted};font-size:12px;font-weight:600;">Your Verification Code</p><p style="margin:0;color:${COLORS.text};font-size:32px;font-weight:700;letter-spacing:8px;line-height:1.2;">${escapeHtml(safeCode)}</p></td></tr></table>` : "";
+    const verificationPinHtml = safeVerificationPin ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:20px 0;"><tr><td align="center" style="background-color:#f3f4f6;border-radius:8px;padding:16px;text-align:center;"><p style="margin:0;font-size:14px;color:#4b5563;">Your Check-In PIN</p><h2 style="margin:8px 0 0 0;font-size:32px;letter-spacing:6px;color:#111827;line-height:1.2;">${escapeHtml(safeVerificationPin)}</h2></td></tr></table>` : "";
     const ctaHtml = safeCta ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:28px 0 12px;"><tr><td align="center"><a href="${escapeHtml(safeCta.href)}" style="display:inline-block;padding:14px 28px;background:${accent};color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;border-radius:6px;box-shadow:0 2px 4px rgba(0,0,0,0.1);">${escapeHtml(safeCta.label)}</a></td></tr></table>` : "";
 
     const bookingHtml = booking ? booking.html : "";
@@ -480,7 +495,7 @@ const renderEmail = ({ preheader, category, icon = "dot", heading, greeting, par
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
 <tr>
 <td style="vertical-align:middle;"><img src="${process.env.FRONTEND_URL || 'https://salon-booking-system-main.vercel.app'}/logo.jpg" alt="SalonNow" width="36" height="36" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:1.5px solid ${COLORS.gold};vertical-align:middle;margin-right:10px;display:inline-block;" /><span style="font-size:20px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;vertical-align:middle;">Salon<span style="color:${COLORS.gold};">Now</span></span></td>
-<td align="right"><span style="font-size:11px;font-weight:700;color:${COLORS.gold};letter-spacing:1px;text-transform:uppercase;">HAIR / BEAUTY / WELLNESS</span></td>
+<td align="right"><span style="font-size:11px;font-weight:700;color:${COLORS.gold};">Hair · Beauty · Wellness</span></td>
 </tr>
 </table>
 </td>
@@ -494,7 +509,7 @@ const renderEmail = ({ preheader, category, icon = "dot", heading, greeting, par
 <table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:16px;">
 <tr>
 <td width="28" valign="middle">${renderIcon(iconName, accent, 20, true)}</td>
-<td style="padding-left:6px;font-size:11px;font-weight:700;color:${COLORS.muted};letter-spacing:1px;text-transform:uppercase;">${escapeHtml(safeCategory)}</td>
+<td style="padding-left:6px;font-size:11px;font-weight:700;color:${COLORS.muted};">${escapeHtml(safeCategory)}</td>
 </tr>
 </table>
 <h1 style="margin:0 0 16px;font-size:26px;font-weight:700;line-height:1.3;color:${COLORS.text};">${escapeHtml(safeHeading)}</h1>
@@ -660,9 +675,9 @@ export const finalReceipt = (
         label: item.name || "Service",
         value: `₹${Number(item.price || 0).toFixed(2)}`,
     }));
-    detailRows.unshift({ label: "Payment status", value: "PAID", emphasis: true });
-    detailRows.push({ label: "Payment method", value: String(paymentMethod || "").toUpperCase() });
-    detailRows.push({ label: "Total paid", value: `₹${Number(amount || 0).toFixed(2)}`, emphasis: true });
+    detailRows.unshift({ label: "Payment Status", value: "Paid", emphasis: true });
+    detailRows.push({ label: "Payment Method", value: String(paymentMethod || "UPI").toUpperCase() === "UPI" ? "UPI" : (paymentMethod ? paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1).toLowerCase() : "UPI") });
+    detailRows.push({ label: "Total Paid", value: `₹${Number(amount || 0).toFixed(2)}`, emphasis: true });
     const booking = renderBookingPanel({
         bookingReference,
         bookingTime,

@@ -254,9 +254,7 @@ const updateOwnerBookingStatus = asyncHandler(async (req, res) => {
 
     // Route to the correct email template based on the new booking status
     if (booking.customer?.email) {
-        const bookingTime = booking.startTime
-            ? booking.startTime.toISOString()
-            : `${booking.date || ""} at ${booking.time || ""}`;
+        const bookingTime = booking.startTime ? booking.startTime.toISOString() : ((booking.date && booking.time) ? `${booking.date} at ${booking.time}` : (booking.requestedAt || booking.createdAt || new Date()).toISOString());
         const bookingRef = booking._id.toString();
         const customerEmail = booking.customer.email;
         const customerName = booking.customer.fullName;

@@ -66,7 +66,7 @@ const createBooking = asyncHandler(async (req, res) => {
         req.user.email,
         req.user.fullName,
         bookingSalon?.name || "Salon",
-        booking.startTime || `${booking.date} at ${booking.time}`,
+        booking.startTime ? booking.startTime.toISOString() : ((booking.date && booking.time) ? `${booking.date} at ${booking.time}` : (booking.requestedAt || booking.createdAt || new Date()).toISOString()),
         booking._id.toString(),
         booking.serviceNames || [],
         booking.totalAmount,
@@ -216,9 +216,7 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
     const customerEmail = booking.customer?.email?.trim().toLowerCase();
     const customerName = booking.customer?.fullName || "Customer";
     const salonDisplayName = booking.salon.name;
-    const bookingTime = booking.startTime
-        ? booking.startTime.toISOString()
-        : `${booking.date || ""} at ${booking.time || ""}`;
+    const bookingTime = booking.startTime ? booking.startTime.toISOString() : ((booking.date && booking.time) ? `${booking.date} at ${booking.time}` : (booking.requestedAt || booking.createdAt || new Date()).toISOString());
     const bookingRef = booking._id.toString();
 
     if (statusChanged && (status === "cancelled" || status === "rejected") && customerEmail) {
@@ -326,7 +324,7 @@ const initiateBookingHandler = asyncHandler(async (req, res) => {
         req.user.email,
         req.user.fullName,
         salon?.name || "Salon",
-        booking.startTime || `${booking.date} at ${booking.time}`,
+        booking.startTime ? booking.startTime.toISOString() : ((booking.date && booking.time) ? `${booking.date} at ${booking.time}` : (booking.requestedAt || booking.createdAt || new Date()).toISOString()),
         booking._id.toString(),
         booking.serviceNames || [],
         booking.totalAmount,
@@ -373,7 +371,7 @@ const completeBookingHandler = asyncHandler(async (req, res) => {
             booking.customer.email,
             booking.customer.fullName,
             booking.salon?.name || "Salon",
-            booking.startTime || `${booking.date} at ${booking.time}`,
+            booking.startTime ? booking.startTime.toISOString() : ((booking.date && booking.time) ? `${booking.date} at ${booking.time}` : (booking.requestedAt || booking.createdAt || new Date()).toISOString()),
             booking._id.toString(),
             items,
             booking.totalAmount,
