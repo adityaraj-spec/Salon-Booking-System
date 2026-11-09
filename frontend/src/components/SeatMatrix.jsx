@@ -65,7 +65,7 @@ export function SeatMatrix({ salonId, date, onDateChange, durationMinutes = 30, 
     };
     const slots = Array.isArray(availability.slots) ? availability.slots : [];
     return (
-        <div className={`rounded-[24px] border border-stone-200/50 bg-white shadow-soft-sm ${compact ? "p-5" : "p-6"}`}>
+        <div className={`rounded-2xl border border-stone-200/50 bg-white shadow-soft-sm ${compact ? "p-5" : "p-6"}`}>
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <div>
                     <div className="flex items-center gap-2">
@@ -80,7 +80,7 @@ export function SeatMatrix({ salonId, date, onDateChange, durationMinutes = 30, 
                     min={today}
                     value={selectedDate}
                     onChange={(event) => changeDate(event.target.value)}
-                    className="rounded-xl border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:border-[#D4AF37]"
+                    className="rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:border-[#D4AF37]"
                 />
             </div>
             <div className="flex gap-2 mb-5">
@@ -89,7 +89,7 @@ export function SeatMatrix({ salonId, date, onDateChange, durationMinutes = 30, 
                         key={option.value}
                         type="button"
                         onClick={() => changeDate(option.value)}
-                        className={`rounded-full px-4 py-2 text-xs font-bold transition-colors ${selectedDate === option.value ? "bg-[#1a1a1a] text-white" : "bg-gray-50 text-gray-600 hover:bg-amber-50"}`}
+                        className={`rounded-lg px-4 py-2 text-xs font-bold transition-colors ${selectedDate === option.value ? "bg-[#1a1a1a] text-white" : "bg-gray-50 text-gray-600 hover:bg-amber-50"}`}
                     >
                         {option.label}
                     </button>
@@ -97,7 +97,7 @@ export function SeatMatrix({ salonId, date, onDateChange, durationMinutes = 30, 
             </div>
             <div className="relative grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {loading && (
-                    <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white/70">
+                    <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-white/70">
                         <Loader2 size={22} className="animate-spin text-[#D4AF37]" />
                     </div>
                 )}
@@ -111,7 +111,7 @@ export function SeatMatrix({ salonId, date, onDateChange, durationMinutes = 30, 
                             type="button"
                             disabled={!available}
                             onClick={() => onSlotSelect?.(slot, selectedDate)}
-                            className={`rounded-2xl border px-3.5 py-3 text-left transition-all duration-200 ease-out hover:scale-[1.02] active:scale-[0.98] ${available ? "border-stone-200/80 hover:border-[#D4AF37] hover:bg-amber-50/40 shadow-soft-xs hover:shadow-soft-sm" : "cursor-not-allowed border-stone-100 bg-stone-50/60 text-stone-300 opacity-60"}`}
+                            className={`rounded-xl border px-3.5 py-3 text-left transition-all duration-200 ease-out hover:scale-[1.02] active:scale-[0.98] ${available ? "border-stone-200/80 hover:border-[#D4AF37] hover:bg-amber-50/40 shadow-soft-xs hover:shadow-soft-sm" : "cursor-not-allowed border-stone-100 bg-stone-50/60 text-stone-300 opacity-60"}`}
                         >
                             <span className="block text-sm font-bold">{label}</span>
                             <span className={`text-[11px] font-semibold ${available ? "text-emerald-600" : "text-gray-400"}`}>

@@ -232,13 +232,13 @@ export function MyBookingsPage() {
                 )}
 
                 {bookings.length === 0 ? (
-                    <div className="bg-white rounded-3xl p-20 text-center border border-stone-200/50 shadow-sm">
+                    <div className="bg-white rounded-2xl p-20 text-center border border-stone-200/50 shadow-sm">
                         <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-300">
                             <Calendar size={40} />
                         </div>
                         <h3 className="text-xl font-sans font-semibold tracking-tight text-gray-900 mb-2">No bookings yet</h3>
                         <p className="text-gray-500 mb-8 max-w-sm mx-auto">Ready for your next salon experience? Browse our collection of top-rated parlors.</p>
-                        <a href="/home" className="inline-block bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-sm hover:bg-black transition-colors">
+                        <a href="/home" className="inline-block bg-[#1a1a1a] text-white px-8 py-3 rounded-xl font-bold text-sm hover:bg-black transition-colors">
                             Explore Salons
                         </a>
                     </div>
@@ -288,7 +288,7 @@ export function MyBookingsPage() {
                                         <div className="mt-5 grid grid-cols-2 gap-3 max-w-md">
                                             {isQueue ? (
                                                 <>
-                                                    <div className="flex items-center gap-3 bg-amber-50/50 px-4 py-2.5 rounded-2xl border border-amber-100/60">
+                                                    <div className="flex items-center gap-3 bg-amber-50/50 px-4 py-2.5 rounded-xl border border-amber-100/60">
                                                         <Users size={18} className="text-[#D4AF37]" />
                                                         <div className="flex flex-col">
                                                             <p className="text-[11px] font-semibold text-gray-400">Position</p>
@@ -297,7 +297,7 @@ export function MyBookingsPage() {
                                                             </p>
                                                         </div>
                                                     </div>
-                                                    <div className="flex items-center gap-3 bg-amber-50/50 px-4 py-2.5 rounded-2xl border border-amber-100/60">
+                                                    <div className="flex items-center gap-3 bg-amber-50/50 px-4 py-2.5 rounded-xl border border-amber-100/60">
                                                         <Clock size={18} className="text-[#D4AF37]" />
                                                         <div className="flex flex-col">
                                                             <p className="text-[11px] font-semibold text-gray-400">Est. Wait</p>
@@ -309,14 +309,14 @@ export function MyBookingsPage() {
                                                 </>
                                             ) : (
                                                 <>
-                                                    <div className="flex items-center gap-3 bg-gray-50 px-4 py-2.5 rounded-2xl border border-stone-200/50">
+                                                    <div className="flex items-center gap-3 bg-gray-50 px-4 py-2.5 rounded-xl border border-stone-200/50">
                                                         <Clock size={18} className="text-[#D4AF37]" />
                                                         <div className="flex flex-col">
                                                             <p className="text-[11px] font-semibold text-gray-400">Time</p>
                                                             <p className="text-sm font-bold text-gray-800">{booking.time}</p>
                                                         </div>
                                                     </div>
-                                                    <div className="flex items-center gap-3 bg-gray-50 px-4 py-2.5 rounded-2xl border border-stone-200/50">
+                                                    <div className="flex items-center gap-3 bg-gray-50 px-4 py-2.5 rounded-xl border border-stone-200/50">
                                                         <Calendar size={18} className="text-[#D4AF37]" />
                                                         <div className="flex flex-col">
                                                             <p className="text-[11px] font-semibold text-gray-400">Date</p>
@@ -335,7 +335,7 @@ export function MyBookingsPage() {
                                         
                                         {/* 4-DIGIT CHECK-IN PIN CARD */}
                                         {booking.verificationPin && (
-                                            <div className="rounded-2xl border-2 border-[#D4AF37]/40 bg-gradient-to-r from-amber-50 via-orange-50/40 to-amber-50/60 p-4 flex items-center justify-between shadow-sm">
+                                            <div className="rounded-xl border-2 border-[#D4AF37]/40 bg-gradient-to-r from-amber-50 via-orange-50/40 to-amber-50/60 p-4 flex items-center justify-between shadow-sm">
                                                 <div>
                                                     <span className="text-[11px] font-semibold text-amber-800 bg-amber-200/60 px-2.5 py-0.5 rounded-md inline-block mb-1">
                                                         Check-in Verification PIN
@@ -345,7 +345,7 @@ export function MyBookingsPage() {
                                                     </p>
                                                     <p className="text-[11px] text-amber-900 font-medium">Show this 4-digit code to your stylist</p>
                                                 </div>
-                                                <div className="w-12 h-12 rounded-2xl bg-amber-100/80 border border-amber-200 flex items-center justify-center text-[#D4AF37] shrink-0">
+                                                <div className="w-12 h-12 rounded-xl bg-amber-100/80 border border-amber-200 flex items-center justify-center text-[#D4AF37] shrink-0">
                                                     <KeyRound size={22} />
                                                 </div>
                                             </div>
@@ -357,7 +357,7 @@ export function MyBookingsPage() {
                                             <div className="flex flex-wrap gap-1.5 mb-3">
                                                 {booking.serviceNames?.length > 0 ? (
                                                     booking.serviceNames.map((s, i) => (
-                                                        <span key={i} className="text-xs bg-white border border-stone-200/70/70 px-3 py-1 rounded-full font-medium text-gray-700">
+                                                        <span key={i} className="text-xs bg-white border border-stone-200/70/70 px-3 py-1 rounded-lg font-medium text-gray-700">
                                                             {s}
                                                         </span>
                                                     ))
@@ -426,7 +426,7 @@ export function MyBookingsPage() {
             {/* Cancellation Modal */}
             {cancelModalBooking && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-3xl max-w-md w-full p-6 md:p-8 shadow-2xl border border-stone-200/50">
+                    <div className="bg-white rounded-2xl max-w-md w-full p-6 md:p-8 shadow-2xl border border-stone-200/50">
                         <div className="flex justify-between items-start mb-4">
                             <h3 className="text-xl font-sans font-bold text-gray-900">Cancel Request</h3>
                             <button
@@ -450,7 +450,7 @@ export function MyBookingsPage() {
                                 value={cancelReason}
                                 onChange={(e) => setCancelReason(e.target.value)}
                                 placeholder="e.g. Change of plans..."
-                                className="w-full px-4 py-2.5 rounded-xl border border-stone-200/70 text-sm focus:outline-none focus:border-[#D4AF37]"
+                                className="w-full px-4 py-2.5 rounded-lg border border-stone-200/70 text-sm focus:outline-none focus:border-[#D4AF37]"
                             />
                         </div>
 

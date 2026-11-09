@@ -228,7 +228,7 @@ export function LandingPage() {
                         </button>
 
                         {!user && (
-                            <NavLink to="/signup" className="w-full sm:w-auto px-6 py-4 rounded-full font-medium transition-all shadow-md hover:shadow-lg transform hover:-translate-y-1 duration-300 text-center text-white/90 hover:text-white hover:underline text-sm">
+                            <NavLink to="/signup" className="w-full sm:w-auto px-6 py-4 rounded-xl font-medium transition-all shadow-md hover:shadow-lg transform hover:-translate-y-1 duration-300 text-center text-white/90 hover:text-white hover:underline text-sm">
                                 Create Account
                             </NavLink>
                         )}
@@ -250,7 +250,7 @@ export function LandingPage() {
                             initial={{ scale: 0.95, y: 15 }}
                             animate={{ scale: 1, y: 0 }}
                             exit={{ scale: 0.95, y: 15 }}
-                            className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-gray-100 max-h-[85vh] flex flex-col"
+                            className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-100 max-h-[85vh] flex flex-col"
                             onClick={(e) => e.stopPropagation()}
                         >
                             <div className="flex items-center justify-between pb-4 border-b border-gray-100">
@@ -601,7 +601,7 @@ export function LandingPage() {
                         </div>
 
                         {/* Right: How to book steps */}
-                        <div className="bg-[#fafafa] p-6 md:p-8 rounded-3xl border border-gray-100 h-fit">
+                        <div className="bg-[#fafafa] p-6 md:p-8 rounded-2xl border border-gray-100 h-fit">
                             <h3 className="text-xl font-semibold tracking-tight text-[#1a1a1a] mb-4 font-sans flex items-center gap-2">
                                 <Clock size={20} className="text-[#D4AF37]" /> 4 Simple Steps to Book
                             </h3>

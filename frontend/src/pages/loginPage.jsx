@@ -86,7 +86,7 @@ export function LoginPage() {
                     </div>
 
                     {error && (
-                        <div className="bg-red-50 text-red-600 p-3.5 rounded-xl text-sm mb-4">
+                        <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4">
                             {error}
                         </div>
                     )}
@@ -100,7 +100,7 @@ export function LoginPage() {
                                 type="email"
                                 required
                                 placeholder="Enter your email"
-                                className="w-full border border-gray-200 rounded-xl p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
+                                className="w-full border border-gray-200 rounded-lg p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
                             />
                         </div>
 
@@ -113,7 +113,7 @@ export function LoginPage() {
                                     type={showPassword ? "text" : "password"}
                                     required
                                     placeholder="Enter your password"
-                                    className="w-full border border-gray-200 rounded-xl p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors pr-10"
+                                    className="w-full border border-gray-200 rounded-lg p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors pr-10"
                                 />
                                 <button
                                     type="button"
@@ -136,7 +136,7 @@ export function LoginPage() {
                         <button 
                             type="submit" 
                             disabled={loading}
-                            className="w-full bg-[#1a1a1a] hover:bg-black text-white font-medium py-3.5 rounded-full transition-colors mt-2 disabled:opacity-50"
+                            className="w-full bg-[#1a1a1a] hover:bg-black text-white font-medium py-3.5 rounded-xl transition-colors mt-2 disabled:opacity-50"
                         >
                             {loading ? "Logging in..." : "Login"}
                         </button>
@@ -146,7 +146,7 @@ export function LoginPage() {
                         </div>
 
                         <div className="text-center mt-8 text-xs text-gray-400">
-                            <Link to="/" className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-all font-medium">&larr; Back to Home</Link>
+                            <Link to="/" className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-all font-medium">&larr; Back to Home</Link>
                         </div>
                     </form>
                 </div>

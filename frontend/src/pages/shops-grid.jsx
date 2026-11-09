@@ -388,7 +388,7 @@ export function Shops() {
                                         key={cat.id}
                                         type="button"
                                         onClick={() => handleCategoryToggle(cat.id)}
-                                        className={`group shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs md:text-sm font-semibold transition-all active:scale-95 border ${
+                                        className={`group shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs md:text-sm font-semibold transition-all active:scale-95 border ${
                                             isActive
                                                 ? 'bg-[#1a1a1a] text-white border-[#1a1a1a] shadow-md ring-2 ring-[#D4AF37]/40'
                                                 : 'bg-gray-50/80 hover:bg-gray-100 border-gray-200/70 text-gray-700 hover:text-black'
@@ -433,7 +433,7 @@ export function Shops() {
                         <button
                             type="button"
                             onClick={() => handleCategoryToggle("all")}
-                            className="text-xs text-[#D4AF37] hover:text-[#b89528] font-semibold bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-full self-start sm:self-auto transition-all flex items-center gap-1"
+                            className="text-xs text-[#D4AF37] hover:text-[#b89528] font-semibold bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-lg self-start sm:self-auto transition-all flex items-center gap-1"
                         >
                             <span>Clear category filter</span>
                             <X size={12} />
@@ -456,7 +456,7 @@ export function Shops() {
                                 animate={{ scale: 1, y: 0, opacity: 1 }}
                                 exit={{ scale: 0.9, y: 20, opacity: 0 }}
                                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                                className="bg-white w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl relative"
+                                className="bg-white w-full max-w-md rounded-2xl overflow-hidden shadow-2xl relative"
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 {/* Modal Header */}
@@ -495,7 +495,7 @@ export function Shops() {
                                                             setIsStateListOpen(true);
                                                         }}
                                                         onFocus={() => setIsStateListOpen(true)}
-                                                        className="w-full bg-white border border-gray-100 px-4 py-3 rounded-xl text-sm font-medium focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] outline-none transition-all pr-10"
+                                                        className="w-full bg-white border border-gray-100 px-4 py-3 rounded-lg text-sm font-medium focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] outline-none transition-all pr-10"
                                                     />
                                                     <Search size={12} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300" />
                                                 </div>
@@ -544,7 +544,7 @@ export function Shops() {
                                                             setIsCityListOpen(true);
                                                         }}
                                                         onFocus={() => setIsCityListOpen(true)}
-                                                        className="w-full bg-white border border-gray-100 px-4 py-3 rounded-xl text-sm font-medium focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] outline-none transition-all pr-10 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                                                        className="w-full bg-white border border-gray-100 px-4 py-3 rounded-lg text-sm font-medium focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] outline-none transition-all pr-10 disabled:bg-gray-50 disabled:cursor-not-allowed"
                                                     />
                                                     <Map size={12} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300" />
                                                 </div>
@@ -590,7 +590,7 @@ export function Shops() {
                                             {/* Top Rated Toggle */}
                                             <button
                                                 onClick={() => setPreferTopRated(!preferTopRated)}
-                                                className={`w-full px-5 py-3.5 rounded-2xl text-sm font-bold transition-all flex items-center justify-between border ${preferTopRated
+                                                className={`w-full px-5 py-3.5 rounded-xl text-sm font-bold transition-all flex items-center justify-between border ${preferTopRated
                                                     ? 'bg-[#1a1a1a] text-white border-[#1a1a1a] shadow-lg'
                                                     : 'bg-white text-gray-600 border-gray-100 hover:bg-gray-50'
                                                     }`}
@@ -608,7 +608,7 @@ export function Shops() {
                                             {/* Price Sort Toggle */}
                                             <button
                                                 onClick={() => setSortBy(sortBy === "price" ? "rating" : "price")}
-                                                className={`w-full px-5 py-3.5 rounded-2xl text-sm font-bold transition-all flex items-center justify-between border ${sortBy === "price"
+                                                className={`w-full px-5 py-3.5 rounded-xl text-sm font-bold transition-all flex items-center justify-between border ${sortBy === "price"
                                                     ? 'bg-[#1a1a1a] text-white border-[#1a1a1a] shadow-lg'
                                                     : 'bg-white text-gray-600 border-gray-100 hover:bg-gray-50'
                                                     }`}
@@ -628,7 +628,7 @@ export function Shops() {
 
                                 {/* Bottom Section */}
                                 <div className="p-6 bg-gray-50/50 border-t border-gray-100">
-                                    <div className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 mb-4">
+                                    <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-100 mb-4">
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-xl bg-[#D4AF37] flex items-center justify-center shadow-lg shadow-[#D4AF37]/20">
                                                 <span className="text-lg font-sans font-black text-white">{salons.length}</span>
@@ -657,7 +657,7 @@ export function Shops() {
                                             setCityQuery(citySearch);
                                             setIsSortModalOpen(false);
                                         }}
-                                        className="w-full bg-[#1a1a1a] text-white py-4 rounded-2xl font-bold text-xs shadow-xl hover:bg-black active:scale-[0.98] transition-all"
+                                        className="w-full bg-[#1a1a1a] text-white py-3.5 rounded-xl font-bold text-xs shadow-xl hover:bg-black active:scale-[0.98] transition-all"
                                     >
                                         Apply Settings
                                     </button>
@@ -676,11 +676,11 @@ export function Shops() {
                     ) : error ? (
                         <div className="text-center py-20">
                             <p className="text-red-500 mb-4">{error}</p>
-                            <button onClick={() => fetchSalons()} className="bg-amber-50 text-[#D4AF37] px-4 py-2 rounded-full font-semibold hover:bg-amber-100 transition-colors">Try Again</button>
+                            <button onClick={() => fetchSalons()} className="bg-amber-50 text-[#D4AF37] px-4 py-2 rounded-lg font-semibold hover:bg-amber-100 transition-colors">Try Again</button>
                         </div>
                     ) : salons.length === 0 ? (
-                        <div className="max-w-2xl mx-auto my-12 p-8 md:p-12 text-center bg-gradient-to-b from-gray-50/80 to-white border border-gray-100 rounded-3xl shadow-sm">
-                            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-amber-500/10 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37] shadow-inner">
+                        <div className="max-w-2xl mx-auto my-12 p-8 md:p-12 text-center bg-gradient-to-b from-gray-50/80 to-white border border-gray-100 rounded-2xl shadow-sm">
+                            <div className="w-20 h-20 mx-auto mb-6 rounded-xl bg-amber-500/10 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37] shadow-inner">
                                 <MapPinOff size={36} strokeWidth={1.8} />
                             </div>
                             <h3 className="text-2xl md:text-3xl font-sans font-semibold tracking-tight text-gray-900 mb-3">
@@ -699,7 +699,7 @@ export function Shops() {
                                         setSelectedCategory("all");
                                         setSearchParams({});
                                     }}
-                                    className="px-5 py-2.5 rounded-full bg-[#1A1A1A] text-white hover:bg-black font-bold text-xs sm:text-sm flex items-center gap-2 shadow-sm transition-all active:scale-95"
+                                    className="px-5 py-2.5 rounded-xl bg-[#1A1A1A] text-white hover:bg-black font-bold text-xs sm:text-sm flex items-center gap-2 shadow-sm transition-all active:scale-95"
                                 >
                                     <RotateCcw size={15} />
                                     <span>Clear Filters</span>
@@ -708,7 +708,7 @@ export function Shops() {
                                     type="button"
                                     onClick={handleUseMyLocation}
                                     disabled={detectingLocation}
-                                    className="px-5 py-2.5 rounded-full bg-[#D4AF37] text-white hover:bg-[#b8962e] font-bold text-xs sm:text-sm flex items-center gap-2 shadow-sm transition-all active:scale-95 disabled:opacity-50"
+                                    className="px-5 py-2.5 rounded-xl bg-[#D4AF37] text-white hover:bg-[#b8962e] font-bold text-xs sm:text-sm flex items-center gap-2 shadow-sm transition-all active:scale-95 disabled:opacity-50"
                                 >
                                     {detectingLocation ? (
                                         <Loader2 size={15} className="animate-spin" />
@@ -739,7 +739,7 @@ export function Shops() {
                                                     return next;
                                                 });
                                             }}
-                                            className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-gray-200 text-gray-700 hover:border-[#D4AF37] hover:text-[#8a6500] hover:bg-amber-50/50 transition-all shadow-xs"
+                                            className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white border border-gray-200 text-gray-700 hover:border-[#D4AF37] hover:text-[#8a6500] hover:bg-amber-50/50 transition-all shadow-xs"
                                         >
                                             {city}
                                         </button>

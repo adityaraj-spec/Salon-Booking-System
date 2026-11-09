@@ -101,7 +101,7 @@ function StaffSection({ staff, salonId, navigate, user, formatLabel }) {
                     return (
                         <div
                             key={member._id}
-                            className="group shrink-0 w-[200px] bg-white border border-gray-100 rounded-3xl p-5 flex flex-col items-center text-center shadow-sm hover:shadow-md hover:border-[#D4AF37]/30 transition-all duration-300"
+                            className="group shrink-0 w-[200px] bg-white border border-gray-100 rounded-2xl p-5 flex flex-col items-center text-center shadow-sm hover:shadow-md hover:border-[#D4AF37]/30 transition-all duration-300"
                         >
                             {/* Photo / Avatar */}
                             <div className="relative mb-4">
@@ -139,7 +139,7 @@ function StaffSection({ staff, salonId, navigate, user, formatLabel }) {
                             ) : member.skills && member.skills.length > 0 ? (
                                 <div className="flex flex-wrap gap-1 justify-center mb-4">
                                     {member.skills.slice(0, 2).map((sk) => (
-                                        <span key={sk} className="text-[10px] bg-amber-50 text-amber-700 border border-amber-100 px-2 py-0.5 rounded-full font-medium capitalize">
+                                        <span key={sk} className="text-[10px] bg-amber-50 text-amber-700 border border-amber-100 px-2 py-0.5 rounded-lg font-medium capitalize">
                                             {sk}
                                         </span>
                                     ))}
@@ -208,7 +208,7 @@ function BeforeAfterCard({ item }) {
     const handlePointerUp = () => setIsInteracting(false);
 
     return (
-        <div className="shrink-0 w-[290px] sm:w-[330px] bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col">
+        <div className="shrink-0 w-[290px] sm:w-[330px] bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col">
             {/* Interactive Image Split Container */}
             <div
                 ref={containerRef}
@@ -761,10 +761,10 @@ export function Shop() {
     if (error || !salon) {
         return (
             <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center">
-                <div className="bg-red-50 p-8 rounded-3xl max-w-md">
+                <div className="bg-red-50 p-8 rounded-2xl max-w-md">
                     <h2 className="text-2xl font-sans font-semibold tracking-tight text-red-600 mb-4">Oops!</h2>
                     <p className="text-gray-600 mb-8">{error || "Salon not found."}</p>
-                    <NavLink to="/home" className="inline-flex items-center gap-2 text-stone-700 font-semibold bg-stone-100 hover:bg-stone-200 px-5 py-2.5 rounded-full transition-all">
+                    <NavLink to="/home" className="inline-flex items-center gap-2 text-stone-700 font-semibold bg-stone-100 hover:bg-stone-200 px-5 py-2.5 rounded-lg transition-all">
                         <ArrowLeft size={18} /> Back to Salons
                     </NavLink>
                 </div>
@@ -791,7 +791,7 @@ export function Shop() {
     return (
         <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-20 pb-6 md:pt-24">
             <div className="flex items-center justify-between mb-6">
-                <NavLink to="/home" className="inline-flex items-center gap-2 text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 px-4 py-2 rounded-full transition-all text-xs font-semibold">
+                <NavLink to="/home" className="inline-flex items-center gap-2 text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 px-4 py-2 rounded-lg transition-all text-xs font-semibold">
                     <ArrowLeft size={16} /> Back to Discover
                 </NavLink>
 
@@ -799,7 +799,7 @@ export function Shop() {
                 {user?._id === salon?.owner && (
                     <NavLink 
                         to="/salon/manage" 
-                        className="inline-flex items-center gap-2.5 px-5 py-2.5 bg-[#1a1a1a] text-white rounded-full text-xs font-bold hover:bg-black transition-all shadow-xl shadow-black/10 hover:scale-105"
+                        className="inline-flex items-center gap-2.5 px-5 py-2.5 bg-[#1a1a1a] text-white rounded-xl text-xs font-bold hover:bg-black transition-all shadow-xl shadow-black/10 hover:scale-105"
                     >
                         <Settings size={14} className="text-[#D4AF37]" />
                         Manage This Salon
@@ -809,7 +809,7 @@ export function Shop() {
 
             {/* Salon Closed Banner */}
             {salon.isOpen === false && (
-                <div className="mb-10 bg-red-50 border border-red-100 p-6 rounded-[32px] flex flex-col md:flex-row items-center justify-between gap-6 animate-in slide-in-from-top-4 duration-500">
+                <div className="mb-10 bg-red-50 border border-red-100 p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 animate-in slide-in-from-top-4 duration-500">
                     <div className="flex items-center gap-4 text-center md:text-left">
                         <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-red-500 shadow-sm shadow-red-100">
                             <Clock size={28} />
@@ -863,7 +863,7 @@ export function Shop() {
                     <button 
                         onClick={handleToggleFavorite}
                         aria-label="Save to favorites"
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-full border transition-all text-xs font-bold shadow-sm active:scale-95 ${
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all text-xs font-bold shadow-sm active:scale-95 ${
                             isFavorite 
                                 ? 'border-rose-200 bg-rose-50 text-rose-600' 
                                 : 'border-gray-200 bg-white hover:bg-gray-50 text-gray-700 hover:text-rose-500'
@@ -875,7 +875,7 @@ export function Shop() {
                     <button 
                         onClick={handleShare}
                         aria-label="Share salon"
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 hover:text-[#8a6500] transition-all text-xs font-bold shadow-sm active:scale-95"
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 hover:text-[#8a6500] transition-all text-xs font-bold shadow-sm active:scale-95"
                     >
                         {copied ? <Check size={16} className="text-emerald-600" /> : <Share2 size={16} />}
                         <span>{copied ? "Link Copied!" : "Share"}</span>
@@ -1129,7 +1129,7 @@ export function Shop() {
                         <h3 className="text-2xl font-sans font-semibold tracking-tight text-[#1a1a1a] mb-4">Location & Contact</h3>
                         <div className="grid md:grid-cols-1 gap-6">
                             <div className="flex flex-col md:flex-row gap-6">
-                                <div className="flex-1 flex gap-4 items-start bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                                <div className="flex-1 flex gap-4 items-start bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                                     <div className="p-3 bg-gray-50 rounded-xl text-[#D4AF37]"><MapPin size={24} /></div>
                                     <div className="min-w-0">
                                     <p className="ui-subtext text-lg mb-1 truncate">{salon.city}</p>
@@ -1137,7 +1137,7 @@ export function Shop() {
                                     </div>
                                 </div>
                                 {salon.owner && (
-                                    <div className="flex-1 flex gap-4 items-start bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                                    <div className="flex-1 flex gap-4 items-start bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                                         <div className="p-3 bg-gray-50 rounded-xl text-[#D4AF37]"><Phone size={24} /></div>
                                         <div className="min-w-0">
                                             <p className="text-[#1a1a1a] font-bold text-lg mb-1">Contact Salon</p>
@@ -1261,7 +1261,7 @@ export function Shop() {
                         {/* Reviews Header: Score + Breakdown Bars (Sprint 3.2) */}
                         <div className="mb-10">
                             <h3 className="text-2xl md:text-3xl font-sans font-semibold tracking-tight text-[#1a1a1a] mb-6">Customer Reviews</h3>
-                            <div className="flex flex-col sm:flex-row gap-6 sm:gap-10 bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
+                            <div className="flex flex-col sm:flex-row gap-6 sm:gap-10 bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
 
                                 {/* Left: Overall Score */}
                                 <div className="flex flex-col items-center justify-center text-center sm:border-r sm:border-gray-100 sm:pr-10 shrink-0">
@@ -1382,7 +1382,7 @@ export function Shop() {
                                     </div>
                                 ))
                             ) : (
-                                <div className="text-center py-20 bg-white rounded-3xl border border-gray-50 shadow-sm">
+                                <div className="text-center py-20 bg-white rounded-2xl border border-gray-50 shadow-sm">
                                     <p className="text-gray-400">No reviews yet. Be the first to share your experience!</p>
                                 </div>
                             )}
@@ -1391,7 +1391,7 @@ export function Shop() {
                         {/* REVIEW FORM */}
                         {user ? (
                             user.role !== "salonOwner" ? (
-                                <div className="bg-white border border-gray-100 rounded-[32px] p-8 mb-12 shadow-sm">
+                                <div className="bg-white border border-gray-100 rounded-2xl p-8 mb-12 shadow-sm">
                                     <h4 className="text-lg font-semibold tracking-tight text-[#1a1a1a] mb-6">Write a Review</h4>
                                     <form onSubmit={handleReviewSubmit} className="space-y-6">
                                         <div>
@@ -1432,12 +1432,12 @@ export function Shop() {
                                     </form>
                                 </div>
                             ) : (
-                                <div className="bg-white/50 border border-gray-100 rounded-[32px] p-8 mb-12 text-center">
+                                <div className="bg-white/50 border border-gray-100 rounded-2xl p-8 mb-12 text-center">
                                     <p className="text-gray-500 font-medium italic">Reviews are reserved for customers. Thank you for maintaining the platform's integrity!</p>
                                 </div>
                             )
                         ) : (
-                            <div className="bg-gray-50/50 border border-dashed border-gray-200 rounded-[32px] p-10 text-center mb-12">
+                            <div className="bg-gray-50/50 border border-dashed border-gray-200 rounded-2xl p-10 text-center mb-12">
                                 <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                                 <h4 className="text-lg font-semibold text-gray-900">Want to share your experience?</h4>
                                 <p className="text-gray-500 text-sm mb-6">Please log in to leave a rating and review for this salon.</p>
@@ -1451,7 +1451,7 @@ export function Shop() {
 
                 {/* RIGHT BOOKING CARD */}
                 <div className="lg:w-[28%] xl:w-[25%] relative order-first lg:order-last">
-                    <div className="border border-stone-200/50 rounded-3xl shadow-soft-lg p-6 md:p-8 lg:sticky lg:top-32 bg-white">
+                    <div className="border border-stone-200/50 rounded-2xl shadow-soft-lg p-6 md:p-8 lg:sticky lg:top-32 bg-white">
                         <div className="flex justify-between items-end mb-6">
                             <div>
                                 <span className="text-gray-500 text-xs font-semibold">Starting from</span>
@@ -1575,7 +1575,7 @@ export function Shop() {
                         Get Directions
                     </button>
                 </div>
-                <div className="h-[500px] w-full rounded-[32px] overflow-hidden border border-gray-100 shadow-lg ring-1 ring-gray-50 relative">
+                <div className="h-[500px] w-full rounded-2xl overflow-hidden border border-gray-100 shadow-lg ring-1 ring-gray-50 relative">
                     <SalonMap salons={[salon]} zoom={15} />
                 </div>
             </div>
@@ -1593,7 +1593,7 @@ export function Shop() {
 
                     {/* Expandable Drawer */}
                     {isDrawerOpen && (
-                        <div className="fixed bottom-24 left-4 right-4 max-w-xl mx-auto z-50 bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col animate-slide-up max-h-[70vh]">
+                        <div className="fixed bottom-24 left-4 right-4 max-w-xl mx-auto z-50 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col animate-slide-up max-h-[70vh]">
                             <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/80">
                                 <div className="flex items-center gap-2.5">
                                     <div className="w-8 h-8 rounded-lg bg-[#D4AF37]/20 text-[#D4AF37] flex items-center justify-center font-bold">

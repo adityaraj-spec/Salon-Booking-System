@@ -113,7 +113,7 @@ export function UpcomingAppointmentBanner() {
                 <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-auto">
                     <Link
                         to="/bookings"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#D4AF37] text-black font-bold text-xs hover:bg-[#b8962e] transition-colors shadow-sm"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#D4AF37] text-black font-bold text-xs hover:bg-[#b8962e] transition-colors shadow-sm"
                     >
                         <span>View Details</span>
                         <ChevronRight size={14} />

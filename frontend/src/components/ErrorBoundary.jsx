@@ -50,8 +50,8 @@ const styles = {
   },
   card: {
     backgroundColor: "#ffffff",
-    padding: "36px",
-    borderRadius: "24px",
+    padding: "32px",
+    borderRadius: "16px",
     boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
     textAlign: "center",
     maxWidth: "480px",
@@ -71,8 +71,8 @@ const styles = {
   button: {
     backgroundColor: "#1a1a1a",
     color: "#ffffff",
-    padding: "12px 28px",
-    borderRadius: "9999px",
+    padding: "10px 24px",
+    borderRadius: "10px",
     border: "none",
     fontWeight: "600",
     cursor: "pointer",

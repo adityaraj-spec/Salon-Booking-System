@@ -57,6 +57,14 @@
   --shadow-soft-xl: 0 22px 44px -6px rgba(28, 25, 23, 0.10), 0 8px 16px -4px rgba(28, 25, 23, 0.05);
   --shadow-glow-gold: 0 0 24px -4px rgba(212, 175, 55, 0.35);
 
+  /* Refined Corner Radii Hierarchy */
+  --radius-lg: 0.5rem; /* 8px */
+  --radius-xl: 0.625rem; /* 10px */
+  --radius-2xl: 1rem; /* 16px */
+  --radius-3xl: 1.25rem; /* 20px */
+  --radius-4xl: 1.5rem; /* 24px */
+  --radius-pill: 9999px;
+
   /* Micro-Typography Tracking */
   --tracking-tighter: -0.035em;
   --tracking-tight: -0.02em;
@@ -112,7 +120,7 @@ h4, h5, h6 {
   color: var(--color-charcoal);
 }
 
-/* Base form controls: Standardize on rounded-xl (12px) */
+/* Base form controls: Standardize on rounded-lg (8px/10px) */
 input[type="text"],
 input[type="email"],
 input[type="password"],
@@ -121,7 +129,7 @@ input[type="number"],
 input[type="search"],
 select,
 textarea {
-  border-radius: 0.75rem; /* rounded-xl (12px) */
+  border-radius: 0.5rem; /* rounded-lg (8px) */
 }
 
 /* Subtle Interactive Focus Rings */
@@ -159,7 +167,7 @@ input[type="radio"] {
   .salon-card {
     background-color: var(--color-surface);
     border: 1px solid rgba(231, 229, 228, 0.5);
-    border-radius: 1.5rem; /* rounded-3xl */
+    border-radius: 1rem; /* rounded-2xl (16px) */
     box-shadow: var(--shadow-soft-sm);
     transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   }
@@ -167,7 +175,7 @@ input[type="radio"] {
   .salon-card-interactive {
     background-color: var(--color-surface);
     border: 1px solid rgba(231, 229, 228, 0.5);
-    border-radius: 1.5rem;
+    border-radius: 1rem;
     box-shadow: var(--shadow-soft-sm);
     transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   }
@@ -192,7 +200,7 @@ input[type="radio"] {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    border-radius: 9999px; /* rounded-pill */
+    border-radius: 0.625rem; /* rounded-xl (10px structured soft corners) */
     padding: 0.75rem 1.35rem;
     font-size: 0.875rem;
     font-weight: 600;

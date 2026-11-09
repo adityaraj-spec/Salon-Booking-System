@@ -59,7 +59,7 @@ export function FavoritesPage() {
                 <Heart className="w-16 h-16 text-gray-200 mb-4" />
                 <h2 className="text-2xl font-sans font-semibold tracking-tight text-gray-900 mb-2">Please Login</h2>
                 <p className="text-gray-500 mb-6">You need to log in to view your favorite salons.</p>
-                <button onClick={() => navigate("/login")} className="bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-xs hover:bg-black transition-colors">
+                <button onClick={() => navigate("/login")} className="bg-[#1a1a1a] text-white px-8 py-3 rounded-xl font-bold text-xs hover:bg-black transition-colors">
                     Login Now
                 </button>
             </div>
@@ -87,12 +87,12 @@ export function FavoritesPage() {
                 ) : error ? (
                     <div className="text-center py-20">
                         <p className="text-red-500 mb-4">{error}</p>
-                        <button onClick={fetchFavorites} className="bg-amber-50 text-[#D4AF37] px-4 py-2 rounded-full font-semibold hover:bg-amber-100 transition-colors">
+                        <button onClick={fetchFavorites} className="bg-amber-50 text-[#D4AF37] px-4 py-2 rounded-lg font-semibold hover:bg-amber-100 transition-colors">
                             Try Again
                         </button>
                     </div>
                 ) : salons.length === 0 ? (
-                    <div className="text-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm max-w-2xl mx-auto">
+                    <div className="text-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm max-w-2xl mx-auto">
                         <div className="bg-gray-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
                             <Heart className="text-gray-300 w-10 h-10" />
                         </div>
@@ -100,7 +100,7 @@ export function FavoritesPage() {
                         <p className="text-gray-500 mb-8 max-w-md mx-auto">You haven't added any salons to your favorites list. Start exploring and click the heart icon to save them here!</p>
                         <button
                             onClick={() => navigate('/home')}
-                            className="bg-[#D4AF37] text-white px-8 py-3 rounded-full font-bold text-xs hover:bg-[#B8962E] transition-colors shadow-lg shadow-[#D4AF37]/20 flex items-center gap-2 mx-auto"
+                            className="bg-[#D4AF37] text-white px-8 py-3 rounded-xl font-bold text-xs hover:bg-[#B8962E] transition-colors shadow-lg shadow-[#D4AF37]/20 flex items-center gap-2 mx-auto"
                         >
                             <Search size={16} />
                             Discover Salons
@@ -136,7 +136,7 @@ export function FavoritesPage() {
                                 <div className="p-5 flex flex-col flex-1">
                                     {/* Salon Type & Stars */}
                                     <div className="flex items-center gap-1 mb-2">
-                                        <span className="text-[11px] font-semibold text-[#D4AF37] bg-[#D4AF37]/10 px-2.5 py-0.5 rounded-full">Salon</span>
+                                        <span className="text-[11px] font-semibold text-[#D4AF37] bg-[#D4AF37]/10 px-2.5 py-0.5 rounded-lg">Salon</span>
                                         <div className="flex gap-0.5 ml-2">
                                             {[...Array(5)].map((_, i) => (
                                                 <Star key={i} size={11} className="fill-[#D4AF37] text-[#D4AF37]" />

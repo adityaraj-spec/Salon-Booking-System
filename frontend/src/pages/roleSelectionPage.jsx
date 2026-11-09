@@ -75,7 +75,7 @@ export function RoleSelectionPage() {
                     <button
                         onClick={() => handleRoleSelect("customer")}
                         disabled={loading !== null}
-                        className={`group relative bg-white p-10 rounded-3xl shadow-sm border-2 transition-all duration-300 text-left flex flex-col h-full ${
+                        className={`group relative bg-white p-10 rounded-2xl shadow-sm border-2 transition-all duration-300 text-left flex flex-col h-full ${
                             loading === "customer" ? "border-[#D4AF37] scale-95" : "border-transparent hover:border-[#D4AF37] hover:shadow-xl hover:-translate-y-1"
                         }`}
                     >
@@ -94,7 +94,7 @@ export function RoleSelectionPage() {
                     <button
                         onClick={() => handleRoleSelect("salonOwner")}
                         disabled={loading !== null}
-                        className={`group relative bg-white p-10 rounded-3xl shadow-sm border-2 transition-all duration-300 text-left flex flex-col h-full ${
+                        className={`group relative bg-white p-10 rounded-2xl shadow-sm border-2 transition-all duration-300 text-left flex flex-col h-full ${
                             loading === "salonOwner" ? "border-[#D4AF37] scale-95" : "border-transparent hover:border-[#D4AF37] hover:shadow-xl hover:-translate-y-1"
                         }`}
                     >

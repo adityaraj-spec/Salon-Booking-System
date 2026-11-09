@@ -342,12 +342,12 @@ export function SalonManagementPage() {
                 </header>
                 {/* Header & Multi-Salon Selector */}
                 {/* Header & Multi-Salon Selector - Redesigned 3-Column Layout */}
-                <div className="bg-white rounded-[40px] p-6 lg:p-10 shadow-sm border border-gray-100 mb-8 relative overflow-hidden flex flex-col lg:flex-row gap-8 lg:gap-12">
+                <div className="bg-white rounded-2xl p-6 lg:p-10 shadow-sm border border-gray-100 mb-8 relative overflow-hidden flex flex-col lg:flex-row gap-8 lg:gap-12">
                     {/* Background decoration */}
                     <div className="absolute top-0 right-0 w-80 h-80 bg-[#D4AF37]/5 rounded-full -mr-40 -mt-20 blur-3xl"></div>
                     
                     {/* COLUMN 1: Visual (Image) */}
-                    <div className="w-full lg:w-72 h-72 lg:h-auto rounded-[32px] overflow-hidden shrink-0 shadow-lg border border-white relative group">
+                    <div className="w-full lg:w-72 h-72 lg:h-auto rounded-xl overflow-hidden shrink-0 shadow-lg border border-white relative group">
                         {activeSalon?.images?.[0] ? (
                             <img 
                                 src={activeSalon.images[0]} 
@@ -377,7 +377,7 @@ export function SalonManagementPage() {
                                     <span className="block h-1.5 w-16 bg-[#D4AF37] mt-3 rounded-full group-hover:w-32 transition-all duration-500"></span>
                                     
                                     {isSalonSelectorOpen && (
-                                        <div className="absolute top-full left-0 mt-4 w-72 bg-white rounded-3xl shadow-2xl border border-gray-100 p-3 z-50 animate-in fade-in zoom-in slide-in-from-top-1 px-4">
+                                        <div className="absolute top-full left-0 mt-4 w-72 bg-white rounded-xl shadow-2xl border border-gray-100 p-3 z-50 animate-in fade-in zoom-in slide-in-from-top-1 px-4">
                                             <p className="ui-label p-3 border-b border-gray-50 mb-2">My Salons</p>
                                             <div className="space-y-1 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
                                                 {salons.map(s => (
@@ -387,7 +387,7 @@ export function SalonManagementPage() {
                                                             setActiveSalon(s);
                                                             setIsSalonSelectorOpen(false);
                                                         }}
-                                                        className={`w-full text-left p-3 rounded-2xl flex items-center justify-between transition-all ${activeSalon?._id === s._id ? 'bg-[#D4AF37]/10 text-gray-900' : 'hover:bg-gray-50 text-gray-500'}`}
+                                                        className={`w-full text-left p-3 rounded-lg flex items-center justify-between transition-all ${activeSalon?._id === s._id ? 'bg-[#D4AF37]/10 text-gray-900' : 'hover:bg-gray-50 text-gray-500'}`}
                                                     >
                                                         <span className="font-bold text-sm">{s.name}</span>
                                                         {activeSalon?._id === s._id && <Star size={12} className="fill-[#D4AF37] text-[#D4AF37]" />}
@@ -396,7 +396,7 @@ export function SalonManagementPage() {
                                             </div>
                                             <NavLink 
                                                 to="/create-salon"
-                                                className="mt-3 flex items-center gap-2 p-3 text-[#D4AF37] text-sm font-normal hover:bg-gray-50 rounded-2xl transition-all"
+                                                className="mt-3 flex items-center gap-2 p-3 text-[#D4AF37] text-sm font-normal hover:bg-gray-50 rounded-lg transition-all"
                                             >
                                                 <PlusCircle size={16} />
                                                 Add New Salon
@@ -406,7 +406,7 @@ export function SalonManagementPage() {
                                 </div>
                             </div>
 
-                            <div className="flex items-start gap-4 text-gray-500 bg-gray-50/80 w-fit px-5 py-3.5 rounded-3xl border border-gray-100 shadow-sm max-w-sm lg:max-w-md">
+                            <div className="flex items-start gap-4 text-gray-500 bg-gray-50/80 w-fit px-5 py-3.5 rounded-xl border border-gray-100 shadow-sm max-w-sm lg:max-w-md">
                                 <MapPin size={22} className="text-[#D4AF37] shrink-0 mt-0.5" />
                                 <div className="flex flex-col">
                                     <span className="ui-subtext text-sm md:text-base">{activeSalon?.address || "No address provided"}</span>
@@ -415,7 +415,7 @@ export function SalonManagementPage() {
                             </div>
 
                             <div className="flex flex-wrap items-center gap-6">
-                                <div className="bg-gray-50 p-2.5 rounded-2xl flex items-center gap-3 border border-gray-100 shadow-sm">
+                                <div className="bg-gray-50 p-2.5 rounded-xl flex items-center gap-3 border border-gray-100 shadow-sm">
                                     <span className={`text-sm font-normal pl-2 ${activeSalon?.isOpen ? 'text-emerald-500' : 'text-red-400'}`}>
                                         {activeSalon?.isOpen ? 'Live Now' : 'Offline'}
                                     </span>
@@ -438,11 +438,11 @@ export function SalonManagementPage() {
                     </div>
 
                     {/* COLUMN 3: STATS & ACTIONS (Right) */}
-                    <div className="lg:w-[38%] bg-gray-50/50 rounded-[40px] p-6 lg:p-8 border border-gray-100 flex flex-col justify-center gap-6 relative z-10">
+                    <div className="lg:w-[38%] bg-gray-50/50 rounded-2xl p-6 lg:p-8 border border-gray-100 flex flex-col justify-center gap-6 relative z-10">
                         <div className="grid grid-cols-2 gap-4">
                             {/* Service Menu Stat */}
-                            <div className="bg-white p-4 lg:p-5 rounded-3xl shadow-sm border border-gray-50 flex items-center gap-4 hover:shadow-md transition-shadow">
-                                <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-500 shadow-sm border border-amber-100/50 shrink-0">
+                            <div className="bg-white p-4 lg:p-5 rounded-xl shadow-sm border border-gray-50 flex items-center gap-4 hover:shadow-md transition-shadow">
+                                <div className="w-12 h-12 bg-amber-50 rounded-lg flex items-center justify-center text-amber-500 shadow-sm border border-amber-100/50 shrink-0">
                                     <Scissors size={24} />
                                 </div>
                                 <div>
@@ -452,8 +452,8 @@ export function SalonManagementPage() {
                             </div>
 
                             {/* Staff Stat */}
-                            <div className="bg-white p-4 lg:p-5 rounded-3xl shadow-sm border border-gray-50 flex items-center gap-4 hover:shadow-md transition-shadow">
-                                <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-500 shadow-sm border border-emerald-100/50 shrink-0">
+                            <div className="bg-white p-4 lg:p-5 rounded-xl shadow-sm border border-gray-50 flex items-center gap-4 hover:shadow-md transition-shadow">
+                                <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center text-emerald-500 shadow-sm border border-emerald-100/50 shrink-0">
                                     <Users size={24} />
                                 </div>
                                 <div>
@@ -463,8 +463,8 @@ export function SalonManagementPage() {
                             </div>
 
                             {/* Performance Stat */}
-                            <div className="bg-white p-4 lg:p-5 rounded-3xl shadow-sm border border-gray-50 flex items-center gap-4 hover:shadow-md transition-shadow">
-                                <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-[#D4AF37] shadow-sm border border-amber-100/50 shrink-0">
+                            <div className="bg-white p-4 lg:p-5 rounded-xl shadow-sm border border-gray-50 flex items-center gap-4 hover:shadow-md transition-shadow">
+                                <div className="w-12 h-12 bg-amber-50 rounded-lg flex items-center justify-center text-[#D4AF37] shadow-sm border border-amber-100/50 shrink-0">
                                     <TrendingUp size={24} />
                                 </div>
                                 <div>
@@ -476,7 +476,7 @@ export function SalonManagementPage() {
                             {/* View Bookings Button (Integrated into grid) */}
                             <NavLink 
                                 to="/salon/dashboard"
-                                className="bg-[#1A1A1A] hover:bg-black text-white p-4 lg:p-5 rounded-3xl shadow-xl shadow-black/10 flex flex-col items-center justify-center gap-2 group transition-all"
+                                className="bg-[#1A1A1A] hover:bg-black text-white p-4 lg:p-5 rounded-xl shadow-xl shadow-black/10 flex flex-col items-center justify-center gap-2 group transition-all"
                             >
                                 <CalendarCheck size={26} className="text-[#D4AF37] group-hover:scale-110 transition-transform duration-300" />
                                     <span className="text-sm font-normal leading-none">Bookings</span>
@@ -487,31 +487,31 @@ export function SalonManagementPage() {
 
 
                 {/* Tabs */}
-                <div className="flex flex-wrap gap-2 mb-4 bg-gray-100/50 p-1.5 rounded-2xl w-fit mx-auto md:mx-0">
+                <div className="flex flex-wrap gap-2 mb-4 bg-gray-100/50 p-1.5 rounded-xl w-fit mx-auto md:mx-0">
                     <button 
                         onClick={() => setTab("services")}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${tab === "services" ? "bg-white text-[#1a1a1a] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                        className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm transition-all ${tab === "services" ? "bg-white text-[#1a1a1a] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
                     >
                         <Scissors size={18} />
                         Services List
                     </button>
                     <button 
                         onClick={() => setTab("staff")}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${tab === "staff" ? "bg-white text-[#1a1a1a] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                        className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm transition-all ${tab === "staff" ? "bg-white text-[#1a1a1a] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
                     >
                         <Users size={18} />
                         Team Members
                     </button>
                     <button 
                         onClick={() => setTab("settings")}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${tab === "settings" ? "bg-white text-[#1a1a1a] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                        className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm transition-all ${tab === "settings" ? "bg-white text-[#1a1a1a] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
                     >
                         <Settings size={18} />
                         Salon Settings
                     </button>
                     <button 
                         onClick={() => setTab("gallery")}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${tab === "gallery" ? "bg-white text-[#1a1a1a] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                        className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm transition-all ${tab === "gallery" ? "bg-white text-[#1a1a1a] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
                     >
                         <ImageIcon size={18} />
                         Gallery
@@ -519,7 +519,7 @@ export function SalonManagementPage() {
                 </div>
                 
                 {tab === "settings" && (
-                    <div className="bg-white rounded-[40px] p-6 md:p-10 border border-gray-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="bg-white rounded-2xl p-6 md:p-10 border border-gray-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="mb-6">
                             <h2 className="text-2xl font-sans font-semibold tracking-tight text-gray-900 mb-2">Salon Settings</h2>
                             <p className="text-gray-500 text-sm">Manage your salon's basic information, location, and operational schedule.</p>
@@ -529,7 +529,7 @@ export function SalonManagementPage() {
                                 <div className="space-y-1.5 md:col-span-2">
                                     <label className="ui-label">Salon Name</label>
                                     <input 
-                                        className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all"
+                                        className="w-full bg-gray-50 border-none rounded-lg px-4 py-3 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all"
                                         value={salonSettings.name}
                                         onChange={e => setSalonSettings({...salonSettings, name: e.target.value})}
                                         placeholder="Salon Name"
@@ -539,7 +539,7 @@ export function SalonManagementPage() {
                                 <div className="space-y-1.5 md:col-span-2">
                                     <label className="ui-label">Description</label>
                                     <textarea 
-                                        className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all resize-none h-32"
+                                        className="w-full bg-gray-50 border-none rounded-lg px-4 py-3 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all resize-none h-32"
                                         value={salonSettings.description}
                                         onChange={e => setSalonSettings({...salonSettings, description: e.target.value})}
                                         placeholder="Tell customers about your salon..."
@@ -548,7 +548,7 @@ export function SalonManagementPage() {
                                 <div className="space-y-1.5 md:col-span-2">
                                     <label className="ui-label">Street Address</label>
                                     <input 
-                                        className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all"
+                                        className="w-full bg-gray-50 border-none rounded-lg px-4 py-3 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all"
                                         value={salonSettings.address}
                                         onChange={e => setSalonSettings({...salonSettings, address: e.target.value})}
                                         placeholder="123 Main St"
@@ -560,7 +560,7 @@ export function SalonManagementPage() {
                                         <label className="ui-label">State</label>
                                         <select 
                                             required
-                                            className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all appearance-none cursor-pointer"
+                                            className="w-full bg-gray-50 border-none rounded-lg px-4 py-3 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all appearance-none cursor-pointer"
                                             value={salonSettings.state}
                                             onChange={e => setSalonSettings({...salonSettings, state: e.target.value})}
                                             style={{
@@ -605,7 +605,7 @@ export function SalonManagementPage() {
                                     <div className="space-y-1.5">
                                         <label className="ui-label">City</label>
                                         <input 
-                                            className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all"
+                                            className="w-full bg-gray-50 border-none rounded-lg px-4 py-3 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all"
                                             value={salonSettings.city}
                                             onChange={e => setSalonSettings({...salonSettings, city: e.target.value})}
                                             placeholder="Mumbai"
@@ -615,7 +615,7 @@ export function SalonManagementPage() {
                                     <div className="space-y-1.5 md:col-span-2">
                                         <label className="ui-label">Pincode / Zip Code</label>
                                         <input 
-                                            className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all"
+                                            className="w-full bg-gray-50 border-none rounded-lg px-4 py-3 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all"
                                             value={salonSettings.pincode}
                                             onChange={e => setSalonSettings({...salonSettings, pincode: e.target.value})}
                                             placeholder="400053"
@@ -628,7 +628,7 @@ export function SalonManagementPage() {
                                     <div className="space-y-1.5">
                                         <label className="ui-label">Opens At</label>
                                         <input 
-                                            className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all"
+                                            className="w-full bg-gray-50 border-none rounded-lg px-4 py-3 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all"
                                             value={salonSettings.openingHours}
                                             onChange={e => setSalonSettings({...salonSettings, openingHours: e.target.value})}
                                             placeholder="9:00 AM"
@@ -637,7 +637,7 @@ export function SalonManagementPage() {
                                     <div className="space-y-1.5">
                                         <label className="ui-label">Closes At</label>
                                         <input 
-                                            className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all"
+                                            className="w-full bg-gray-50 border-none rounded-lg px-4 py-3 font-bold text-sm focus:ring-2 focus:ring-[#D4AF37]/20 outline-none transition-all"
                                             value={salonSettings.closingHours}
                                             onChange={e => setSalonSettings({...salonSettings, closingHours: e.target.value})}
                                             placeholder="8:00 PM"
@@ -649,7 +649,7 @@ export function SalonManagementPage() {
                                 <button 
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="salon-action-button salon-action-button--primary px-8 py-4 rounded-2xl shadow-xl shadow-[#D4AF37]/20"
+                                    className="salon-action-button salon-action-button--primary px-8 py-4 rounded-xl shadow-xl shadow-[#D4AF37]/20"
                                 >
                                     {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : "Save Changes"}
                                 </button>
@@ -659,7 +659,7 @@ export function SalonManagementPage() {
                 )}
 
                 {tab === "gallery" && (
-                    <div className="bg-white rounded-[40px] p-6 md:p-10 border border-gray-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="bg-white rounded-2xl p-6 md:p-10 border border-gray-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-6">
                             <div>
                                 <h2 className="text-2xl font-sans font-semibold tracking-tight text-gray-900 mb-2">Photo Gallery</h2>
@@ -667,7 +667,7 @@ export function SalonManagementPage() {
                             </div>
                         </div>
 
-                        <form onSubmit={handleGalleryUpload} className="mb-12 bg-gray-50/50 border border-dashed border-gray-200 rounded-[32px] p-8 text-center cursor-pointer hover:bg-gray-50 transition-colors">
+                        <form onSubmit={handleGalleryUpload} className="mb-12 bg-gray-50/50 border border-dashed border-gray-200 rounded-xl p-8 text-center cursor-pointer hover:bg-gray-50 transition-colors">
                             <input 
                                 type="file" 
                                 multiple
@@ -715,7 +715,7 @@ export function SalonManagementPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                     {/* Form Section */}
                     <div className="lg:col-span-4">
-                        <div className="bg-white rounded-[28px] p-6 border border-gray-100 shadow-sm sticky top-32">
+                        <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm sticky top-32">
                             <h2 className="text-xl font-sans font-semibold tracking-tight text-gray-900 mb-4 flex items-center gap-2">
                                 <Plus size={20} className="text-[#D4AF37]" />
                                 {tab === "services" ? "Add New Service" : "Add Team Member"}
@@ -758,7 +758,7 @@ export function SalonManagementPage() {
                                     </div>
                                     <button 
                                         disabled={isSubmitting}
-                                        className="salon-action-button salon-action-button--dark w-full py-4 rounded-2xl mt-4"
+                                        className="salon-action-button salon-action-button--dark w-full py-4 rounded-xl mt-4"
                                     >
                                         {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : "Save Service"}
                                     </button>
@@ -806,7 +806,7 @@ export function SalonManagementPage() {
                                     </div>
                                     <button 
                                         disabled={isSubmitting}
-                                        className="salon-action-button salon-action-button--dark w-full py-4 rounded-2xl mt-4"
+                                        className="salon-action-button salon-action-button--dark w-full py-4 rounded-xl mt-4"
                                     >
                                         {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : "Add to Team"}
                                     </button>
@@ -822,7 +822,7 @@ export function SalonManagementPage() {
                                  services.length > 0 ? (
                                      <div className="grid sm:grid-cols-2 gap-6">
                                          {services.map(s => (
-                                             <div key={s._id} className="bg-white p-4 rounded-[32px] border border-gray-100 shadow-sm group hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col items-start justify-between">
+                                             <div key={s._id} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm group hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col items-start justify-between">
                                                  {editingServiceId === s._id ? (
                                                      <div className="w-full space-y-4">
                                                          <input 
@@ -891,7 +891,7 @@ export function SalonManagementPage() {
                                          ))}
                                      </div>
                                  ) : (
-                                     <div className="bg-white rounded-3xl p-16 text-center border border-gray-100 shadow-sm border-dashed">
+                                     <div className="bg-white rounded-2xl p-16 text-center border border-gray-100 shadow-sm border-dashed">
                                          <Scissors className="mx-auto text-gray-200 mb-4" size={40} />
                                          <p className="text-gray-500 font-medium italic">No services listed yet.</p>
                                      </div>
@@ -900,7 +900,7 @@ export function SalonManagementPage() {
                                  staff.length > 0 ? (
                                      <div className="grid sm:grid-cols-2 gap-6">
                                          {staff.map(m => (
-                                             <div key={m._id} className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm group hover:shadow-xl transition-all">
+                                             <div key={m._id} className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm group hover:shadow-xl transition-all">
                                                  {editingStaffId === m._id ? (
                                                      <div className="space-y-4">
                                                          <input 
@@ -959,7 +959,7 @@ export function SalonManagementPage() {
                                          ))}
                                      </div>
                                  ) : (
-                                     <div className="bg-white rounded-3xl p-16 text-center border border-gray-100 shadow-sm border-dashed">
+                                     <div className="bg-white rounded-2xl p-16 text-center border border-gray-100 shadow-sm border-dashed">
                                          <Users className="mx-auto text-gray-200 mb-4" size={40} />
                                          <p className="text-gray-500 font-medium italic">Your team is empty.</p>
                                      </div>

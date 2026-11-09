@@ -68,7 +68,7 @@ export function ProfilePage() {
     return (
         <main className="flex-1 pb-12">
             <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-20 md:pt-24 pb-8">
-                <div className="bg-white rounded-[32px] overflow-hidden shadow-sm border border-gray-100">
+                <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
                     {/* Header/Cover */}
                     <div className="h-32 bg-[#1a1a1a] flex items-end px-6 md:px-12 relative">
                         <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#D4AF37] border-4 border-white translate-y-10 md:translate-y-12 flex items-center justify-center text-white text-2xl md:text-3xl font-bold z-0">
@@ -77,7 +77,7 @@ export function ProfilePage() {
                         {!isEditing && (
                             <button 
                                 onClick={() => setIsEditing(true)}
-                                className="absolute bottom-4 right-6 md:right-12 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border border-white/20"
+                                className="absolute bottom-4 right-6 md:right-12 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 border border-white/20"
                             >
                                 <Edit2 size={14} />
                                 Edit Profile
@@ -96,7 +96,7 @@ export function ProfilePage() {
                                                 type="text"
                                                 value={formData.fullName}
                                                 onChange={(e) => setFormData({...formData, fullName: e.target.value})}
-                                                className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-2 text-[#1a1a1a] font-bold focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 border-[#D4AF37]/20"
+                                                className="w-full bg-gray-50 border border-gray-100 rounded-lg px-4 py-2 text-[#1a1a1a] font-bold focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 border-[#D4AF37]/20"
                                             />
                                         </div>
                                     </div>
@@ -117,7 +117,7 @@ export function ProfilePage() {
                                 <h3 className="text-sm font-semibold text-gray-400 border-b border-gray-50 pb-2">Information</h3>
                                 
                                 <div className="flex items-center gap-4 group opacity-60">
-                                    <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400">
+                                    <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400">
                                         <Mail size={18} />
                                     </div>
                                     <div>
@@ -127,7 +127,7 @@ export function ProfilePage() {
                                 </div>
 
                                 <div className="flex items-center gap-4 group">
-                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${isEditing ? 'bg-[#D4AF37]/10 text-[#D4AF37]' : 'bg-gray-50 text-gray-400 group-hover:bg-[#1a1a1a] group-hover:text-white'}`}>
+                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${isEditing ? 'bg-[#D4AF37]/10 text-[#D4AF37]' : 'bg-gray-50 text-gray-400 group-hover:bg-[#1a1a1a] group-hover:text-white'}`}>
                                         <Phone size={18} />
                                     </div>
                                     <div className="flex-1">
@@ -138,7 +138,7 @@ export function ProfilePage() {
                                                 value={formData.phonenumber}
                                                 onChange={(e) => setFormData({...formData, phonenumber: e.target.value})}
                                                 placeholder="Enter your phone number"
-                                                className="w-full mt-1 bg-gray-50 border border-gray-100 rounded-xl px-4 py-2 text-[#1a1a1a] font-bold focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 border-[#D4AF37]/20"
+                                                className="w-full mt-1 bg-gray-50 border border-gray-100 rounded-lg px-4 py-2 text-[#1a1a1a] font-bold focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 border-[#D4AF37]/20"
                                             />
                                         ) : (
                                             <p className="text-[#1a1a1a] font-bold">{user.phonenumber || "Not added"}</p>
@@ -151,7 +151,7 @@ export function ProfilePage() {
                                         <button 
                                             onClick={handleUpdate}
                                             disabled={loading}
-                                            className="bg-[#1a1a1a] text-white px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-black disabled:opacity-50 transition-all shadow-lg shadow-black/10"
+                                            className="bg-[#1a1a1a] text-white px-6 py-2.5 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-black disabled:opacity-50 transition-all shadow-lg shadow-black/10"
                                         >
                                             {loading ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                                             Save Changes
@@ -161,7 +161,7 @@ export function ProfilePage() {
                                                 setIsEditing(false);
                                                 setFormData({ fullName: user.fullName || "", phonenumber: user.phonenumber || "" });
                                             }}
-                                            className="bg-gray-100 text-gray-500 px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-gray-200 transition-all font-sans"
+                                            className="bg-gray-100 text-gray-500 px-6 py-2.5 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-gray-200 transition-all font-sans"
                                         >
                                             <X size={14} />
                                             Cancel
@@ -174,7 +174,7 @@ export function ProfilePage() {
                                 <h3 className="text-sm font-semibold text-gray-400 border-b border-gray-50 pb-2">Account Security</h3>
                                 
                                 <div className="flex items-center gap-4 group">
-                                    <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-[#1a1a1a] group-hover:text-white transition-all">
+                                    <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-[#1a1a1a] group-hover:text-white transition-all">
                                         <Shield size={18} />
                                     </div>
                                     <div>
@@ -184,7 +184,7 @@ export function ProfilePage() {
                                 </div>
 
                                 <div className="flex items-center gap-4 group">
-                                    <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-[#1a1a1a] group-hover:text-white transition-all">
+                                    <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-[#1a1a1a] group-hover:text-white transition-all">
                                         <Calendar size={18} />
                                     </div>
                                     <div>
@@ -208,7 +208,7 @@ export function ProfilePage() {
                                     </p>
                                 </div>
                                 {(loyaltyData?.referralCode || user?.referralCode) && (
-                                    <div className="flex items-center gap-2 bg-amber-50/80 border border-amber-200/70 rounded-2xl px-4 py-2 self-start md:self-auto">
+                                    <div className="flex items-center gap-2 bg-amber-50/80 border border-amber-200/70 rounded-xl px-4 py-2 self-start md:self-auto">
                                         <Gift size={16} className="text-[#D4AF37]" />
                                         <div className="text-left">
                                             <p className="text-[11px] font-semibold text-amber-800">Your Referral Code</p>
@@ -220,7 +220,7 @@ export function ProfilePage() {
                                             type="button"
                                             onClick={copyReferralCode}
                                             aria-label="Copy referral code"
-                                            className="ml-2 p-1.5 hover:bg-amber-100 rounded-xl text-amber-800 transition-colors"
+                                            className="ml-2 p-1.5 hover:bg-amber-100 rounded-lg text-amber-800 transition-colors"
                                         >
                                             {copiedReferral ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
                                         </button>
@@ -230,7 +230,7 @@ export function ProfilePage() {
 
                             {/* Summary Cards */}
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                                <div className="bg-gradient-to-br from-[#1a1a1a] to-[#2d2d2d] rounded-2xl p-5 text-white shadow-sm flex flex-col justify-between">
+                                <div className="bg-gradient-to-br from-[#1a1a1a] to-[#2d2d2d] rounded-xl p-5 text-white shadow-sm flex flex-col justify-between">
                                     <div className="flex items-center justify-between">
                                         <span className="text-xs font-semibold text-gray-300">Current Balance</span>
                                         <Coins size={18} className="text-[#D4AF37]" />
@@ -246,7 +246,7 @@ export function ProfilePage() {
                                     </div>
                                 </div>
 
-                                <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+                                <div className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm flex flex-col justify-between">
                                     <div className="flex items-center justify-between">
                                         <span className="text-xs font-semibold text-gray-500">Cashback Equivalent</span>
                                         <Award size={18} className="text-emerald-600" />
@@ -262,7 +262,7 @@ export function ProfilePage() {
                                     </div>
                                 </div>
 
-                                <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+                                <div className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm flex flex-col justify-between">
                                     <div className="flex items-center justify-between">
                                         <span className="text-xs font-semibold text-gray-500">Earn Rate</span>
                                         <Sparkles size={18} className="text-orange-500" />
@@ -291,7 +291,7 @@ export function ProfilePage() {
                                         <Loader2 size={24} className="animate-spin text-[#D4AF37]" />
                                     </div>
                                 ) : (loyaltyData?.transactions && loyaltyData.transactions.length > 0) ? (
-                                    <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm divide-y divide-gray-50">
+                                    <div className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm divide-y divide-gray-50">
                                         {loyaltyData.transactions.map((tx, idx) => {
                                             const isEarn = tx.type === "earn" || tx.type === "earned" || tx.type === "referral_bonus";
                                             const isRedeem = tx.type === "redeem" || tx.type === "redeemed";
@@ -300,7 +300,7 @@ export function ProfilePage() {
                                             return (
                                                 <div key={tx._id || idx} className="p-4 flex items-center justify-between hover:bg-gray-50/50 transition-colors">
                                                     <div className="flex items-center gap-3">
-                                                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                                                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
                                                             isEarn ? "bg-emerald-50 text-emerald-600" :
                                                             isRedeem ? "bg-amber-50 text-amber-600" :
                                                             "bg-amber-50 text-[#D4AF37]"
@@ -339,7 +339,7 @@ export function ProfilePage() {
                                         })}
                                     </div>
                                 ) : (
-                                    <div className="text-center py-10 bg-gray-50/70 border border-dashed border-gray-200 rounded-2xl text-gray-400">
+                                    <div className="text-center py-10 bg-gray-50/70 border border-dashed border-gray-200 rounded-xl text-gray-400">
                                         <Coins size={32} className="mx-auto mb-2 text-gray-300" />
                                         <p className="text-sm font-medium">No loyalty transactions yet.</p>
                                         <p className="text-xs text-gray-400 mt-1">Book and complete appointments to start stacking rewards!</p>

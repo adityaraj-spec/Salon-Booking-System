@@ -210,7 +210,7 @@ export function NavBar() {
                         {(user?.role === "salonOwner" || user?.role === "super_admin") && (
                             <div className="flex items-center gap-6">
                                 {!hasSalon && (
-                                    <NavLink to="/create-salon" className="bg-[#1a1a1a] hover:bg-black text-white px-5 py-2 rounded-full font-bold text-xs transition-colors flex items-center gap-2">
+                                    <NavLink to="/create-salon" className="bg-[#1a1a1a] hover:bg-black text-white px-5 py-2 rounded-xl font-bold text-xs transition-colors flex items-center gap-2">
                                         Add your shop
                                     </NavLink>
                                 )}
@@ -240,7 +240,7 @@ export function NavBar() {
                                     </button>
 
                                     {isNotificationsOpen && (
-                                        <div className="absolute right-[-24px] md:right-0 mt-3 w-[calc(100vw-32px)] sm:w-80 md:w-96 bg-white rounded-[32px] shadow-2xl border border-gray-100 overflow-hidden z-[60] animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+                                        <div className="absolute right-[-24px] md:right-0 mt-3 w-[calc(100vw-32px)] sm:w-80 md:w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[60] animate-in fade-in zoom-in-95 duration-200 origin-top-right">
                                             <div className="p-5 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
                                                 <h3 className="font-semibold text-gray-900 tracking-tight">Notifications</h3>
                                                 {unreadCount > 0 && (
@@ -248,7 +248,7 @@ export function NavBar() {
                                                         type="button"
                                                         onClick={markAllAsRead}
                                                         disabled={notificationsBusy}
-                                                        className="text-[11px] font-semibold text-[#D4AF37] hover:text-black px-2.5 py-1 rounded-full hover:bg-amber-50 transition-all"
+                                                        className="text-[11px] font-semibold text-[#D4AF37] hover:text-black px-2.5 py-1 rounded-lg hover:bg-amber-50 transition-all"
                                                     >
                                                         Mark all as read
                                                     </button>
@@ -295,7 +295,7 @@ export function NavBar() {
                                             </div>
                                             {notifications.length > 0 && (
                                                 <div className="p-3 bg-gray-50/50 border-t border-gray-50 text-center">
-                                                    <button className="text-xs font-semibold text-stone-500 hover:text-stone-900 px-3 py-1.5 rounded-full hover:bg-stone-100 transition-all">
+                                                    <button className="text-xs font-semibold text-stone-500 hover:text-stone-900 px-3 py-1.5 rounded-lg hover:bg-stone-100 transition-all">
                                                         View all activity
                                                     </button>
                                                 </div>
@@ -326,7 +326,7 @@ export function NavBar() {
                                     </button>
 
                                     {isMenuOpen && (
-                                        <div className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+                                        <div className="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
                                             <div className="px-4 py-3 border-b border-gray-50 mb-1">
                                                 <p className="text-xs text-gray-400 font-bold">Account</p>
                                                 <p className="text-sm font-bold text-gray-800 truncate">{user.fullName}</p>
@@ -334,7 +334,7 @@ export function NavBar() {
 
                                             <NavLink
                                                 to="/profile"
-                                                className="flex items-center gap-3 mx-1.5 px-3.5 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
+                                                className="flex items-center gap-3 mx-1.5 px-3.5 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
                                                 onClick={() => setIsMenuOpen(false)}
                                             >
                                                 <User size={18} />
@@ -345,7 +345,7 @@ export function NavBar() {
                                                 <>
                                                     <NavLink
                                                         to="/bookings"
-                                                        className="flex items-center gap-3 mx-1.5 px-3.5 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
+                                                        className="flex items-center gap-3 mx-1.5 px-3.5 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
                                                         onClick={() => setIsMenuOpen(false)}
                                                     >
                                                         <Calendar size={18} />
@@ -354,7 +354,7 @@ export function NavBar() {
 
                                                     <NavLink
                                                         to="/favorites"
-                                                        className="flex items-center gap-3 mx-1.5 px-3.5 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
+                                                        className="flex items-center gap-3 mx-1.5 px-3.5 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
                                                         onClick={() => setIsMenuOpen(false)}
                                                     >
                                                         <Heart size={18} />
@@ -365,7 +365,7 @@ export function NavBar() {
 
                                             <NavLink
                                                 to="/settings"
-                                                className="flex items-center gap-3 mx-1.5 px-3.5 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
+                                                className="flex items-center gap-3 mx-1.5 px-3.5 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
                                                 onClick={() => setIsMenuOpen(false)}
                                             >
                                                 <Settings size={18} />
@@ -380,14 +380,14 @@ export function NavBar() {
                                                             const token = localStorage.getItem('authToken');
                                                             window.open(`${import.meta.env.VITE_ADMIN_URL}?token=${token}`, '_blank');
                                                         }}
-                                                        className="w-[calc(100%-12px)] flex items-center justify-start gap-3 mx-1.5 px-3.5 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
+                                                        className="w-[calc(100%-12px)] flex items-center justify-start gap-3 mx-1.5 px-3.5 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
                                                     >
                                                         <LayoutDashboard size={18} />
                                                         Owner Dashboard
                                                     </button>
                                                     <NavLink
                                                         to="/salon/manage"
-                                                        className="w-[calc(100%-12px)] flex items-center justify-start gap-3 mx-1.5 px-3.5 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
+                                                        className="w-[calc(100%-12px)] flex items-center justify-start gap-3 mx-1.5 px-3.5 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
                                                         onClick={() => setIsMenuOpen(false)}
                                                     >
                                                         <Scissors size={18} />
@@ -403,7 +403,7 @@ export function NavBar() {
                                                     setIsMenuOpen(false);
                                                     logout();
                                                 }}
-                                                className="w-[calc(100%-12px)] flex items-center gap-3 mx-1.5 px-3.5 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-all"
+                                                className="w-[calc(100%-12px)] flex items-center gap-3 mx-1.5 px-3.5 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-all"
                                             >
                                                 <LogOut size={18} />
                                                 Logout
@@ -417,7 +417,7 @@ export function NavBar() {
                                 <NavLink to="/login" className={`${isTransparent ? (isDark ? 'text-white hover:text-white/80' : 'text-gray-800 hover:text-black') : 'text-gray-800 hover:text-[#e65c00]'} font-bold text-sm transition-colors duration-1000`}>
                                     Login
                                 </NavLink>
-                                <NavLink to="/signup" className={`${isTransparent ? (isDark ? 'bg-white text-black hover:bg-gray-100' : 'bg-gray-900 text-white hover:bg-black') : 'bg-[#1a1a1a] text-white hover:bg-black'} px-6 py-2.5 rounded-full font-bold text-sm transition-colors duration-1000 shadow-md`}>
+                                <NavLink to="/signup" className={`${isTransparent ? (isDark ? 'bg-white text-black hover:bg-gray-100' : 'bg-gray-900 text-white hover:bg-black') : 'bg-[#1a1a1a] text-white hover:bg-black'} px-6 py-2.5 rounded-xl font-bold text-sm transition-colors duration-1000 shadow-md`}>
                                     Sign up
                                 </NavLink>
                             </div>
@@ -443,11 +443,11 @@ export function NavBar() {
                                 </button>
                                 
                                 {isNotificationsOpen && (
-                                    <div className="fixed inset-x-4 top-20 bg-white rounded-[32px] shadow-2xl border border-gray-100 overflow-hidden z-[130] animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <div className="fixed inset-x-4 top-20 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[130] animate-in fade-in slide-in-from-top-2 duration-200">
                                         <div className="p-4 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
                                             <h3 className="font-semibold text-gray-900 text-sm tracking-tight">Notifications</h3>
                                             {unreadCount > 0 && (
-                                                <button onClick={markAllAsRead} disabled={notificationsBusy} className="text-[11px] font-semibold text-[#D4AF37] px-2 py-0.5 rounded-full hover:bg-amber-50 disabled:opacity-50 transition-all">
+                                                <button onClick={markAllAsRead} disabled={notificationsBusy} className="text-[11px] font-semibold text-[#D4AF37] px-2 py-0.5 rounded-lg hover:bg-amber-50 disabled:opacity-50 transition-all">
                                                     Mark all as read
                                                 </button>
                                             )}
@@ -535,7 +535,7 @@ export function NavBar() {
 
                     <NavLink
                         to="/home"
-                        className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all ${isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37]"
+                        className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-xl font-bold text-sm transition-all ${isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37]"
                             }`}
                         onClick={() => setIsMobileMenuOpen(false)}
                     >
@@ -548,7 +548,7 @@ export function NavBar() {
                             {!hasSalon && (
                                     <NavLink
                                         to="/create-salon"
-                                        className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all ${isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37]"
+                                        className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-xl font-bold text-sm transition-all ${isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37]"
                                             }`}
                                         onClick={() => setIsMobileMenuOpen(false)}
                                     >
@@ -558,7 +558,7 @@ export function NavBar() {
                             )}
                             <NavLink
                                 to="/salon/dashboard"
-                                className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all ${isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37]"
+                                className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-xl font-bold text-sm transition-all ${isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37]"
                                     }`}
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
@@ -578,7 +578,7 @@ export function NavBar() {
                             </button>
                             <NavLink
                                 to="/salon/manage"
-                                className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all ${isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37]"
+                                className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-xl font-bold text-sm transition-all ${isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37]"
                                     }`}
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
@@ -592,7 +592,7 @@ export function NavBar() {
                         <>
                             <NavLink
                                 to="/bookings"
-                                className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all ${isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37]"
+                                className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-xl font-bold text-sm transition-all ${isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37]"
                                     }`}
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
@@ -602,7 +602,7 @@ export function NavBar() {
 
                             <NavLink
                                 to="/favorites"
-                                className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all ${isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37]"
+                                className={({ isActive }) => `flex items-center gap-4 px-4 py-3.5 rounded-xl font-bold text-sm transition-all ${isActive ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/10" : "text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37]"
                                     }`}
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >

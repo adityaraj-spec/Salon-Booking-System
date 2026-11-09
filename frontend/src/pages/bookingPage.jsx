@@ -405,22 +405,22 @@ export function BookingPage() {
 
         return (
             <div className="min-h-screen bg-[#fafafa] py-12 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center">
-                <div className="w-full max-w-xl bg-white border border-stone-200/50 rounded-3xl p-8 shadow-xl relative overflow-hidden">
+                <div className="w-full max-w-xl bg-white border border-stone-200/50 rounded-2xl p-8 shadow-xl relative overflow-hidden">
                     {turnSoonAlert && (
-                        <div className="mb-6 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-2xl p-4 text-xs sm:text-sm font-bold flex items-center gap-3 shadow-lg animate-pulse">
+                        <div className="mb-6 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-xl p-4 text-xs sm:text-sm font-bold flex items-center gap-3 shadow-lg animate-pulse">
                             <Sparkles className="w-6 h-6 flex-shrink-0" />
                             <span>{turnSoonAlert}</span>
                         </div>
                     )}
                     {graceExpiredAlert && (
-                        <div className="mb-6 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl p-4 text-xs font-semibold flex items-center gap-3">
+                        <div className="mb-6 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl p-4 text-xs font-semibold flex items-center gap-3">
                             <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0" />
                             <span>Your arrival grace window has ended. Please check in with the salon immediately to hold your position!</span>
                         </div>
                     )}
                     {proposedExtras && (
                         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-                            <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-[#D4AF37]/30">
+                            <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-[#D4AF37]/30">
                                 <div className="w-12 h-12 rounded-full bg-amber-100 text-[#D4AF37] flex items-center justify-center mb-4 mx-auto">
                                     <Scissors className="w-6 h-6" />
                                 </div>
@@ -428,7 +428,7 @@ export function BookingPage() {
                                 <p className="text-xs text-gray-500 text-center mb-4">
                                     Your stylist would like to add the following extra services to your visit:
                                 </p>
-                                <div className="bg-gray-50 rounded-2xl p-4 mb-4 space-y-2 border border-stone-200/50">
+                                <div className="bg-gray-50 rounded-xl p-4 mb-4 space-y-2 border border-stone-200/50">
                                     {(proposedExtras.proposedServices || []).map((s, idx) => (
                                         <div key={idx} className="flex justify-between items-center text-xs">
                                             <span className="font-semibold text-gray-800">{s.name} (~{s.durationMin}m)</span>
@@ -472,7 +472,7 @@ export function BookingPage() {
                             <p className="text-gray-500 text-sm max-w-md mx-auto mb-6">
                                 <strong>{salon?.name}</strong> has received your service request. The salon team will accept your entry into the queue shortly.
                             </p>
-                            <div className="bg-amber-50/60 border border-amber-100 rounded-2xl p-4 text-xs text-amber-800 font-medium">
+                            <div className="bg-amber-50/60 border border-amber-100 rounded-xl p-4 text-xs text-amber-800 font-medium">
                                 <p className="font-bold mb-1">⏱ Estimated Wait Once Admitted</p>
                                 <p className="text-amber-900 font-bold text-base">
                                     ~{activeBooking.estimatedWaitMin || 10} – {activeBooking.estimatedWaitMax || 25} mins
@@ -480,7 +480,7 @@ export function BookingPage() {
                             </div>
 
                             {activeBooking.verificationPin && (
-                                <div className="mt-6 max-w-sm mx-auto rounded-2xl border-2 border-dashed border-[#D4AF37] bg-gradient-to-r from-amber-50/90 to-orange-50/60 p-5 shadow-sm">
+                                <div className="mt-6 max-w-sm mx-auto rounded-xl border-2 border-dashed border-[#D4AF37] bg-gradient-to-r from-amber-50/90 to-orange-50/60 p-5 shadow-sm">
                                     <span className="text-[11px] font-semibold text-amber-800 bg-amber-200/60 px-2.5 py-0.5 rounded-md inline-block">
                                         Check-in Verification PIN
                                     </span>
@@ -494,7 +494,7 @@ export function BookingPage() {
                             <div className="mt-8">
                                 <button
                                     onClick={() => navigate("/bookings")}
-                                    className="text-xs font-semibold text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 px-4 py-2 rounded-full transition-all"
+                                    className="text-xs font-semibold text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 px-4 py-2 rounded-lg transition-all"
                                 >
                                     View In My Bookings
                                 </button>
@@ -514,7 +514,7 @@ export function BookingPage() {
                             <p className="text-gray-500 text-sm mb-6">Head towards <strong>{salon?.name}</strong>.</p>
 
                             {/* Big Queue Position Display */}
-                            <div className="bg-gradient-to-br from-[#1a1a1a] to-gray-900 rounded-3xl p-6 text-white shadow-xl mb-6 border border-[#D4AF37]/30">
+                            <div className="bg-gradient-to-br from-[#1a1a1a] to-gray-900 rounded-2xl p-6 text-white shadow-xl mb-6 border border-[#D4AF37]/30">
                                 <p className="text-xs font-semibold text-[#D4AF37]">Your Queue Position</p>
                                 <p className="text-5xl sm:text-6xl font-black font-sans my-2 tracking-tight text-white">
                                     #{activeBooking.queuePosition || 1}
@@ -526,7 +526,7 @@ export function BookingPage() {
 
                             {/* 4-Digit Check-In PIN */}
                             {activeBooking.verificationPin && (
-                                <div className="mb-6 rounded-2xl border border-dashed border-[#D4AF37] bg-amber-50/50 p-5">
+                                <div className="mb-6 rounded-xl border border-dashed border-[#D4AF37] bg-amber-50/50 p-5">
                                     <p className="text-xs font-semibold text-amber-700">Check-in Verification PIN</p>
                                     <p className="text-3xl font-black tracking-pin text-[#1a1a1a] my-1">
                                         {activeBooking.verificationPin}
@@ -539,7 +539,7 @@ export function BookingPage() {
                             <button
                                 onClick={handleCheckIn}
                                 disabled={checkingIn}
-                                className="w-full py-4 rounded-2xl font-bold text-sm bg-[#D4AF37] text-white hover:bg-[#B8962E] active:scale-[0.99] transition-all shadow-lg flex items-center justify-center gap-2 mb-4"
+                                className="w-full py-4 rounded-xl font-bold text-sm bg-[#D4AF37] text-white hover:bg-[#B8962E] active:scale-[0.99] transition-all shadow-lg flex items-center justify-center gap-2 mb-4"
                             >
                                 {checkingIn ? <Loader2 className="w-5 h-5 animate-spin" /> : <MapPin className="w-5 h-5" />}
                                 <span>I Have Arrived at the Salon</span>
@@ -547,7 +547,7 @@ export function BookingPage() {
 
                             <button
                                 onClick={() => navigate("/bookings")}
-                                className="text-xs font-semibold text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 px-4 py-2 rounded-full transition-all"
+                                className="text-xs font-semibold text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 px-4 py-2 rounded-lg transition-all"
                             >
                                 Go to My Bookings
                             </button>
@@ -565,7 +565,7 @@ export function BookingPage() {
                                 You are marked as arrived at <strong>{salon?.name}</strong>. Please relax in the waiting area.
                             </p>
 
-                            <div className="bg-gray-50 rounded-2xl p-5 border border-stone-200/50 mb-6">
+                            <div className="bg-gray-50 rounded-xl p-5 border border-stone-200/50 mb-6">
                                 <div className="flex justify-between items-center mb-2">
                                     <span className="text-xs text-gray-500">Queue Position</span>
                                     <span className="font-bold text-gray-900 text-lg">#{activeBooking.queuePosition}</span>
@@ -578,7 +578,7 @@ export function BookingPage() {
 
                             <NavLink
                                 to="/bookings"
-                                className="inline-block bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-xs hover:bg-black transition-colors"
+                                className="inline-block bg-[#1a1a1a] text-white px-8 py-3 rounded-xl font-bold text-xs hover:bg-black transition-colors"
                             >
                                 Track in My Bookings
                             </NavLink>
@@ -597,7 +597,7 @@ export function BookingPage() {
                             </p>
                             <NavLink
                                 to="/bookings"
-                                className="inline-block bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-xs hover:bg-black transition-colors"
+                                className="inline-block bg-[#1a1a1a] text-white px-8 py-3 rounded-xl font-bold text-xs hover:bg-black transition-colors"
                             >
                                 View Booking Details
                             </NavLink>
@@ -616,7 +616,7 @@ export function BookingPage() {
                             </p>
                             <NavLink
                                 to="/home"
-                                className="inline-block bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-xs hover:bg-black transition-colors"
+                                className="inline-block bg-[#1a1a1a] text-white px-8 py-3 rounded-xl font-bold text-xs hover:bg-black transition-colors"
                             >
                                 Back to Home
                             </NavLink>
@@ -636,7 +636,7 @@ export function BookingPage() {
                             <p className="text-xs text-gray-400 mb-6">No charges have been made. You can try another salon or request again later.</p>
                             <button
                                 onClick={() => setActiveBooking(null)}
-                                className="bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-xs hover:bg-black transition-colors"
+                                className="bg-[#1a1a1a] text-white px-8 py-3 rounded-xl font-bold text-xs hover:bg-black transition-colors"
                             >
                                 Modify Request
                             </button>
@@ -655,7 +655,7 @@ export function BookingPage() {
                             </p>
                             <button
                                 onClick={() => setActiveBooking(null)}
-                                className="bg-[#1a1a1a] text-white px-8 py-3 rounded-full font-bold text-xs hover:bg-black transition-colors"
+                                className="bg-[#1a1a1a] text-white px-8 py-3 rounded-xl font-bold text-xs hover:bg-black transition-colors"
                             >
                                 Try Again
                             </button>
@@ -707,7 +707,7 @@ export function BookingPage() {
                     </div>
 
                     {/* LIVE SALON QUEUE STATUS BANNER */}
-                    <div className="mb-10 bg-white border border-stone-200/50 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <div className="mb-10 bg-white border border-stone-200/50 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                         <div className="flex items-center gap-4">
                             <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-[#D4AF37] shrink-0">
                                 <Clock size={24} />
@@ -761,7 +761,7 @@ export function BookingPage() {
                                                 <button
                                                     key={service._id}
                                                     onClick={() => toggleService(service)}
-                                                    className={`group relative p-4 rounded-2xl border-2 transition-all flex flex-col justify-between text-left min-h-[145px] ${
+                                                    className={`group relative p-4 rounded-xl border-2 transition-all flex flex-col justify-between text-left min-h-[145px] ${
                                                         isSelected
                                                             ? "border-[#D4AF37] bg-gradient-to-b from-amber-50/80 to-orange-50/30 shadow-md ring-1 ring-[#D4AF37]/30 scale-[1.02]"
                                                             : "border-stone-200/50 bg-white hover:border-stone-200/70 hover:shadow-sm"
@@ -810,7 +810,7 @@ export function BookingPage() {
                                             );
                                         })
                                     ) : (
-                                        <div className="col-span-full text-center py-10 bg-white rounded-2xl border border-dashed border-stone-200/70 text-gray-400 text-sm">
+                                        <div className="col-span-full text-center py-10 bg-white rounded-xl border border-dashed border-stone-200/70 text-gray-400 text-sm">
                                             No active services catalog found for this salon.
                                         </div>
                                     )}
@@ -829,7 +829,7 @@ export function BookingPage() {
                                             <button
                                                 key={staff._id}
                                                 onClick={() => setSelectedStaff(selectedStaff?._id === staff._id ? null : staff)}
-                                                className={`cursor-pointer p-4 rounded-2xl border-2 transition-all text-center ${
+                                                className={`cursor-pointer p-4 rounded-xl border-2 transition-all text-center ${
                                                     selectedStaff?._id === staff._id
                                                         ? "border-[#D4AF37] bg-orange-50/30 shadow-sm"
                                                         : "border-stone-200/50 bg-white hover:border-stone-200/70"
@@ -851,7 +851,7 @@ export function BookingPage() {
                                             </button>
                                         ))
                                     ) : (
-                                        <div className="col-span-full text-center py-6 bg-white rounded-2xl border border-dashed border-stone-200/70 text-gray-400 text-sm">
+                                        <div className="col-span-full text-center py-6 bg-white rounded-xl border border-dashed border-stone-200/70 text-gray-400 text-sm">
                                             First available stylist will be assigned upon arrival.
                                         </div>
                                     )}
@@ -862,7 +862,7 @@ export function BookingPage() {
 
                         {/* RIGHT COLUMN: QUEUE REQUEST SUMMARY */}
                         <div className="lg:col-span-1">
-                            <div className="bg-white border border-stone-200/50 rounded-3xl p-6 md:p-8 sticky top-24 shadow-sm">
+                            <div className="bg-white border border-stone-200/50 rounded-2xl p-6 md:p-8 sticky top-24 shadow-sm">
                                 <h2 className="text-lg font-sans font-semibold tracking-tight text-[#1a1a1a] mb-6 border-b border-gray-50 pb-4">
                                     Request Summary
                                 </h2>
@@ -916,7 +916,7 @@ export function BookingPage() {
                                     <button
                                         onClick={handleRequestService}
                                         disabled={!canJoinQueue || submitting || selectedServices.length === 0}
-                                        className={`w-full py-4 rounded-2xl font-bold text-sm transition-all shadow-lg flex items-center justify-center gap-2 ${
+                                        className={`w-full py-4 rounded-xl font-bold text-sm transition-all shadow-lg flex items-center justify-center gap-2 ${
                                             canJoinQueue && selectedServices.length > 0 && !submitting
                                                 ? "bg-[#D4AF37] hover:bg-[#B8962E] text-white active:scale-[0.99]"
                                                 : "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"

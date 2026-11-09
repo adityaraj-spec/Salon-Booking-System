@@ -189,7 +189,7 @@ export function VerifyEmailPage() {
 
                     {/* Error message */}
                     {error && (
-                        <div className="bg-red-50 border border-red-200 text-red-600 p-3.5 rounded-xl text-sm mb-5 text-center">
+                        <div className="bg-red-50 border border-red-200 text-red-600 p-3 rounded-lg text-sm mb-5 text-center">
                             {error}
                         </div>
                     )}
@@ -216,7 +216,7 @@ export function VerifyEmailPage() {
                                             value={digit}
                                             onChange={(e) => handleDigitChange(index, e.target.value)}
                                             onKeyDown={(e) => handleKeyDown(index, e)}
-                                            className="w-11 h-12 sm:w-13 sm:h-14 text-center text-xl sm:text-2xl font-bold border-2 rounded-xl text-[#1a1a1a] 
+                                            className="w-11 h-12 sm:w-13 sm:h-14 text-center text-xl sm:text-2xl font-bold border-2 rounded-lg text-[#1a1a1a] 
                                                        transition-all duration-200 outline-none
                                                        border-gray-200 focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/30
                                                        bg-white shadow-sm"
@@ -238,7 +238,7 @@ export function VerifyEmailPage() {
                             <button
                                 type="submit"
                                 disabled={loading || code.join("").length !== 4}
-                                className="w-full bg-[#1a1a1a] hover:bg-black text-white font-medium py-3.5 rounded-full 
+                                className="w-full bg-[#1a1a1a] hover:bg-black text-white font-medium py-3.5 rounded-xl 
                                            transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
                                            flex items-center justify-center gap-2"
                             >
@@ -273,7 +273,7 @@ export function VerifyEmailPage() {
                                         onClick={handleResend}
                                         disabled={resendLoading}
                                         className="inline-flex items-center gap-2 text-sm font-semibold 
-                                                   text-[#D4AF37] hover:text-[#b8942e] px-3.5 py-1.5 rounded-full hover:bg-amber-50/50
+                                                   text-[#D4AF37] hover:text-[#b8942e] px-3.5 py-1.5 rounded-lg hover:bg-amber-50/50
                                                    disabled:text-gray-400 disabled:cursor-not-allowed
                                                    transition-all"
                                     >
@@ -290,7 +290,7 @@ export function VerifyEmailPage() {
                             <div className="text-center pt-2">
                                 <Link
                                     to="/signup"
-                                    className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded-full hover:bg-gray-100 font-medium transition-all"
+                                    className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-100 font-medium transition-all"
                                 >
                                     <ArrowLeft size={12} />
                                     Back to Sign Up

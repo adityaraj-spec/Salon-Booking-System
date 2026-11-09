@@ -212,8 +212,8 @@ export const BookingCartProvider = ({ children }) => {
             {/* Salon Switch Confirmation Modal */}
             {salonConflictModal && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
-                    <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-100">
-                        <div className="w-12 h-12 rounded-2xl bg-amber-50 text-[#D4AF37] flex items-center justify-center font-bold text-xl mb-4">
+                    <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100">
+                        <div className="w-12 h-12 rounded-xl bg-amber-50 text-[#D4AF37] flex items-center justify-center font-bold text-xl mb-4">
                             ⚠️
                         </div>
                         <h3 className="font-sans font-semibold text-xl text-[#1a1a1a] tracking-tight mb-2">

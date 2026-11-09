@@ -90,7 +90,7 @@ export function CreateSalonPage() {
                     </div>
                     <button 
                         onClick={() => navigate("/role-selection")}
-                        className="text-gray-600 hover:text-black text-sm font-medium px-3.5 py-1.5 rounded-full hover:bg-gray-100 transition-all"
+                        className="text-gray-600 hover:text-black text-sm font-medium px-3.5 py-1.5 rounded-lg hover:bg-gray-100 transition-all"
                     >
                         Back
                     </button>
@@ -111,7 +111,7 @@ export function CreateSalonPage() {
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Basic Info Section */}
-                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-4">
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
                         <h3 className="text-lg font-semibold text-gray-800 flex items-center">
                             <Store className="mr-2 text-[#D4AF37]" size={20} />
                             Basic Information
@@ -124,7 +124,7 @@ export function CreateSalonPage() {
                                 type="text"
                                 placeholder="Enter your salon name"
                                 required
-                                className="w-full border border-gray-200 rounded-xl p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
+                                className="w-full border border-gray-200 rounded-lg p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
                             />
                         </div>
 
@@ -134,7 +134,7 @@ export function CreateSalonPage() {
                                 name="description"
                                 rows="3"
                                 placeholder="A brief description of your salon and services..."
-                                className="w-full border border-gray-200 rounded-xl p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
+                                className="w-full border border-gray-200 rounded-lg p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
                             ></textarea>
                         </div>
 
@@ -146,7 +146,7 @@ export function CreateSalonPage() {
                                 min="1"
                                 defaultValue="6"
                                 required
-                                className="w-full border border-gray-200 rounded-xl p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
+                                className="w-full border border-gray-200 rounded-lg p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
                             />
                             <p className="text-xs text-gray-400 mt-2 italic">How many people can you serve at once?</p>
                         </div>
@@ -169,7 +169,7 @@ export function CreateSalonPage() {
                     </div>
 
                     {/* Location Section */}
-                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-4">
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
                         <h3 className="text-lg font-semibold text-gray-800 flex items-center">
                             <MapPin className="mr-2 text-[#D4AF37]" size={20} />
                             Location & Address
@@ -181,7 +181,7 @@ export function CreateSalonPage() {
                                 <select 
                                     name="state"
                                     required
-                                    className="w-full bg-white border border-gray-200 rounded-xl p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all appearance-none cursor-pointer"
+                                    className="w-full bg-white border border-gray-200 rounded-lg p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all appearance-none cursor-pointer"
                                     style={{
                                         backgroundImage: "url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231A1A1A%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')",
                                         backgroundRepeat: 'no-repeat',
@@ -228,7 +228,7 @@ export function CreateSalonPage() {
                                     type="text"
                                     placeholder="Enter your city"
                                     required
-                                    className="w-full border border-gray-200 rounded-xl p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
+                                    className="w-full border border-gray-200 rounded-lg p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
                                 />
                             </div>
                             <div>
@@ -238,7 +238,7 @@ export function CreateSalonPage() {
                                     type="text"
                                     placeholder="e.g., 400053"
                                     required
-                                    className="w-full border border-gray-200 rounded-xl p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
+                                    className="w-full border border-gray-200 rounded-lg p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
                                 />
                             </div>
                         </div>
@@ -250,13 +250,13 @@ export function CreateSalonPage() {
                                 type="text"
                                 placeholder="Enter your salon address"
                                 required
-                                className="w-full border border-gray-200 rounded-xl p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
+                                className="w-full border border-gray-200 rounded-lg p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
                             />
                         </div>
                     </div>
 
                     {/* Hours Section */}
-                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-4">
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
                         <h3 className="text-lg font-semibold text-gray-800 flex items-center">
                             <Clock className="mr-2 text-[#D4AF37]" size={20} />
                             Operating Hours
@@ -269,7 +269,7 @@ export function CreateSalonPage() {
                                     name="openingHours"
                                     type="text"
                                     placeholder="9:00 AM"
-                                    className="w-full border border-gray-200 rounded-xl p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
+                                    className="w-full border border-gray-200 rounded-lg p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
                                 />
                             </div>
                             <div>
@@ -278,14 +278,14 @@ export function CreateSalonPage() {
                                     name="closingHours"
                                     type="text"
                                     placeholder="8:00 PM"
-                                    className="w-full border border-gray-200 rounded-xl p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
+                                    className="w-full border border-gray-200 rounded-lg p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
                                 />
                             </div>
                         </div>
                     </div>
 
                     {/* Images Section */}
-                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-4">
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
                         <div className="flex justify-between items-center">
                             <h3 className="text-lg font-semibold text-gray-800 flex items-center">
                                 <Camera className="mr-2 text-[#D4AF37]" size={20} />
@@ -305,7 +305,7 @@ export function CreateSalonPage() {
                             />
                             <label
                                 htmlFor="salon-images"
-                                className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-200 rounded-3xl cursor-pointer hover:border-[#D4AF37] hover:bg-gray-50 transition-all group"
+                                className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-200 rounded-2xl cursor-pointer hover:border-[#D4AF37] hover:bg-gray-50 transition-all group"
                             >
                                 <div className="bg-gray-100 p-3 rounded-full text-gray-400 group-hover:bg-[#D4AF37]/10 group-hover:text-[#D4AF37] transition-colors mb-2">
                                     <Plus size={24} />
@@ -337,7 +337,7 @@ export function CreateSalonPage() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-[#1a1a1a] hover:bg-black text-white font-bold py-4 rounded-2xl transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 mt-4 h-16 text-lg flex items-center justify-center"
+                        className="w-full bg-[#1a1a1a] hover:bg-black text-white font-bold py-4 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 mt-4 h-16 text-lg flex items-center justify-center"
                     >
                         {loading ? (
                             <>
