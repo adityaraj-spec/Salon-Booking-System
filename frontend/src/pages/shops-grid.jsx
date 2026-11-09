@@ -258,7 +258,7 @@ export function Shops() {
 
                     {/* Search Bar & Unified Filter Trigger */}
                     <div className="flex items-center justify-center gap-3 md:gap-4 max-w-3xl mx-auto w-full px-4 md:px-0">
-                        <form onSubmit={handleSearch} className="flex items-center justify-between gap-1 flex-1 bg-white/95 backdrop-blur-md p-1 md:p-1.5 rounded-full shadow-soft-sm border border-stone-200/60 ring-2 ring-stone-900/5">
+                        <form onSubmit={handleSearch} className="flex items-center justify-between gap-1 flex-1 bg-white/95 backdrop-blur-md p-1 md:p-1.5 rounded-xl shadow-soft-sm border border-stone-200/60 ring-2 ring-stone-900/5">
                             <div className="flex items-center flex-1 px-3 md:px-5 gap-2">
                                 <MapPin className="text-[#D4AF37] w-4 h-4 shrink-0" />
                                 <input
@@ -292,7 +292,7 @@ export function Shops() {
                                 onClick={handleUseMyLocation}
                                 disabled={detectingLocation}
                                 title="Use my current location"
-                                className="p-2 md:px-3 text-xs text-gray-500 hover:text-[#D4AF37] hover:bg-gray-50 rounded-full flex items-center gap-1 transition-colors"
+                                className="p-2 md:px-3 text-xs text-gray-500 hover:text-[#D4AF37] hover:bg-gray-50 rounded-lg flex items-center gap-1 transition-colors"
                             >
                                 {detectingLocation ? (
                                     <Loader2 size={14} className="animate-spin text-[#D4AF37]" />
@@ -324,7 +324,7 @@ export function Shops() {
                             type="button"
                             title="Discovery Settings"
                             onClick={() => setIsSortModalOpen(true)}
-                            className={`w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-full transition-all border shrink-0 relative ${isSortModalOpen
+                            className={`w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-xl transition-all border shrink-0 relative ${isSortModalOpen
                                 ? "bg-[#1A1A1A] text-white border-[#1A1A1A] shadow-md ring-4 ring-[#1A1A1A]/5"
                                 : "bg-white text-gray-700 border-gray-100 shadow-sm ring-4 ring-[#1A1A1A]/5 hover:border-gray-200"
                                 }`}

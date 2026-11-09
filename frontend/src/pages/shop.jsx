@@ -1520,8 +1520,8 @@ export function Shop() {
                         </div>
 
                         {/* Cancellation Policy Trust Banner */}
-                        <div className="mb-5 p-3.5 bg-emerald-50/70 border border-emerald-100 rounded-xl flex items-start gap-2.5">
-                            <span className="text-emerald-600 mt-0.5 shrink-0 text-base leading-none">✅</span>
+                        <div className="mb-5 p-3.5 bg-emerald-50/70 border border-emerald-200/70 rounded-xl flex items-start gap-2.5">
+                            <ShieldCheck size={15} className="text-emerald-600 mt-0.5 shrink-0" />
                             <p className="text-xs text-emerald-800 font-medium leading-relaxed">
                                 {salon.cancellationPolicy || "Free cancellation up to 24 hours before your appointment. A 20% fee applies thereafter."}
                             </p>
