@@ -286,20 +286,20 @@ export function Shops() {
                                 )}
                             </div>
 
-                            {/* Location Trigger */}
+                            {/* Location Trigger (Desktop) */}
                             <button
                                 type="button"
                                 onClick={handleUseMyLocation}
                                 disabled={detectingLocation}
                                 title="Use my current location"
-                                className="p-2 md:px-3 text-xs text-gray-500 hover:text-[#D4AF37] hover:bg-gray-50 rounded-lg flex items-center gap-1 transition-colors"
+                                className="hidden md:flex p-2 md:px-3 text-xs text-gray-500 hover:text-[#D4AF37] hover:bg-gray-50 rounded-lg items-center gap-1 transition-colors"
                             >
                                 {detectingLocation ? (
                                     <Loader2 size={14} className="animate-spin text-[#D4AF37]" />
                                 ) : (
                                     <Navigation size={14} />
                                 )}
-                                <span className="hidden sm:inline">Near me</span>
+                                <span>Near me</span>
                             </button>
 
                             <button
@@ -319,17 +319,32 @@ export function Shops() {
                             </button>
                         </form>
 
-                        {/* Unified Filter/Sort Button */}
+                        {/* Mobile: Location Trigger Button Only Icon (Screen < 768px, replaces filter button) */}
+                        <button
+                            type="button"
+                            title="Detect my location"
+                            onClick={handleUseMyLocation}
+                            disabled={detectingLocation}
+                            className="md:hidden w-12 h-12 flex items-center justify-center rounded-xl transition-all border shrink-0 bg-white text-gray-700 border-stone-200/60 shadow-soft-sm ring-2 ring-stone-900/5 hover:border-gray-200 active:scale-95 disabled:opacity-60"
+                        >
+                            {detectingLocation ? (
+                                <Loader2 className="w-4 h-4 animate-spin text-[#D4AF37]" />
+                            ) : (
+                                <Navigation className="w-4 h-4 text-[#8a6500] fill-[#8a6500]/20" />
+                            )}
+                        </button>
+
+                        {/* Desktop: Unified Filter/Sort Button (Screen >= 768px) */}
                         <button
                             type="button"
                             title="Discovery Settings"
                             onClick={() => setIsSortModalOpen(true)}
-                            className={`w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-xl transition-all border shrink-0 relative ${isSortModalOpen
+                            className={`hidden md:flex w-14 h-14 items-center justify-center rounded-xl transition-all border shrink-0 relative ${isSortModalOpen
                                 ? "bg-[#1A1A1A] text-white border-[#1A1A1A] shadow-md ring-4 ring-[#1A1A1A]/5"
                                 : "bg-white text-gray-700 border-gray-100 shadow-sm ring-4 ring-[#1A1A1A]/5 hover:border-gray-200"
                                 }`}
                         >
-                            <SlidersHorizontal className={`w-4 h-4 md:w-5 md:h-5 ${stateParam ? "text-[#D4AF37]" : ""}`} />
+                            <SlidersHorizontal className={`w-5 h-5 ${stateParam ? "text-[#D4AF37]" : ""}`} />
                             {stateParam && (
                                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#D4AF37] text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-sm">
                                     !
@@ -338,27 +353,7 @@ export function Shops() {
                         </button>
                     </div>
 
-                    {/* L5: Mobile Quick Location Trigger */}
-                    <div className="md:hidden flex items-center justify-center mt-3 max-w-3xl mx-auto w-full px-4">
-                        <button
-                            type="button"
-                            onClick={handleUseMyLocation}
-                            disabled={detectingLocation}
-                            className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500/10 via-[#D4AF37]/15 to-amber-500/10 border border-[#D4AF37]/40 text-xs font-bold text-[#8a6500] hover:bg-[#D4AF37]/20 active:scale-98 transition-all shadow-xs"
-                        >
-                            {detectingLocation ? (
-                                <>
-                                    <Loader2 size={14} className="animate-spin text-[#8a6500]" />
-                                    <span>Detecting your location...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <Navigation size={14} className="text-[#8a6500] fill-[#8a6500]/20" />
-                                    <span>Detect My Location</span>
-                                </>
-                            )}
-                        </button>
-                    </div>
+
                 </div>
 
                 {/* Sprint 2.1 (M1): Airbnb-style Horizontally Scrollable Visual Category Bar */}
