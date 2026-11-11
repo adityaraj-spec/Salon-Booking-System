@@ -58,10 +58,8 @@ export function RoleSelectionPage() {
 
             <div className="max-w-4xl w-full">
                 {/* Logo */}
-                <div className="flex justify-center items-center space-x-2 mb-12">
-                    <div className="bg-[#1a1a1a] p-2 rounded-full text-white">
-                        <Scissors size={24} />
-                    </div>
+                <div className="flex justify-center items-center gap-2.5 mb-12">
+                    <img src="/logo.jpg" alt="SalonNow" className="w-10 h-10 rounded-full object-cover shadow-sm border border-[#D4AF37]/30" />
                     <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
                         Salon<span className="text-[#D4AF37]">Now</span>
                     </h1>

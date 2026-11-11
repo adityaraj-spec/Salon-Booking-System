@@ -1489,7 +1489,7 @@ export function Shop() {
                                 <div className="flex items-center gap-2.5 text-gray-600 font-medium">
                                     <Sparkles size={16} className={liveAvailability.seatsLeft > 0 ? "text-emerald-500" : "text-rose-500"} />
                                     <div className="flex flex-col gap-1">
-                                        <span>Live Availability</span>
+                                        <span>Available Seats Today</span>
                                         <label htmlFor="availability-date" className="text-[10px] text-gray-400 font-normal">
                                             For {" "}
                                             <input
@@ -1518,7 +1518,7 @@ export function Shop() {
                         <div className="mb-6 -mx-2 rounded-xl border border-gray-100 bg-gray-50/70 px-3 py-2">
                             <div className="mb-1.5 flex items-center justify-between gap-3">
                                 <span className="text-[11px] font-semibold text-gray-500">Seats</span>
-                                <span className="text-[10px] font-semibold text-gray-400">Free / occupied</span>
+                                <span className="text-[10px] font-semibold text-gray-400">Available Chairs</span>
                             </div>
                             <SeatDisplay
                                 totalSeats={liveAvailability.maxCapacity || salon.totalSeats}
@@ -1543,7 +1543,7 @@ export function Shop() {
                             }`}
                         >
                             <Scissors size={18} className="text-[#D4AF37]" />
-                            {salon.isOpen ? 'Request Place in Queue' : 'Temporarily Closed'}
+                            {salon.isOpen ? 'Book Your Spot' : 'Temporarily Closed'}
                         </button>
 
                         {/* Owner Indicator Pill: Non-obtrusive */}
@@ -1557,7 +1557,7 @@ export function Shop() {
                         <div className="flex items-center justify-center gap-2 mt-5">
                             <ShieldCheck size={16} className="text-emerald-500" />
                             <p className="text-xs text-gray-500 font-medium text-center">
-                                Price Match Guarantee & Verified Hygiene
+                                Best Price & Hygiene Guaranteed
                             </p>
                         </div>
                     </div>

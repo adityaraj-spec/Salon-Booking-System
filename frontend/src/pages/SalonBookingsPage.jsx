@@ -387,7 +387,7 @@ export function SalonBookingsPage() {
                     <div>
                         <div className="flex items-center gap-3">
                             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
-                                Live Salon Queue Dashboard
+                                Live Shop Status & Queue Manager
                             </h1>
                             <span className={`inline-flex items-center gap-2 text-xs font-semibold px-3.5 py-1.5 rounded-full border shadow-soft-xs ${
                                 queueSummary?.isPaused
@@ -399,7 +399,7 @@ export function SalonBookingsPage() {
                             </span>
                         </div>
                         <p className="text-xs text-stone-500 font-medium mt-1.5 leading-relaxed">
-                            Real-time customer admissions, stylist assignments & PIN check-ins
+                            Manage live visitor check-ins, active appointments, and status
                         </p>
                     </div>
 
@@ -453,7 +453,7 @@ export function SalonBookingsPage() {
                         }`}
                     >
                         <Clock size={16} />
-                        <span>Incoming Requests ({incomingRequests.length})</span>
+                        <span>Pending Requests ({incomingRequests.length})</span>
                         {incomingRequests.length > 0 && (
                             <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping absolute top-1 right-1"></span>
                         )}
@@ -703,7 +703,7 @@ export function SalonBookingsPage() {
                                                 ) : (
                                                     <CheckCircle size={14} />
                                                 )}
-                                                <span>Accept into Queue</span>
+                                                <span>Accept Booking</span>
                                             </button>
                                         </div>
                                     </div>

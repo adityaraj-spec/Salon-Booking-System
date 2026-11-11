@@ -685,7 +685,7 @@ export function BookingPage() {
                     {/* Header */}
                     <div className="mb-8">
                         <div className="flex items-center gap-3">
-                            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Request Salon Queue</h1>
+                            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Join Live Line & Book</h1>
                             <span className={`text-[11px] font-semibold px-3 py-1 rounded-full border ${
                                 canJoinQueue
                                     ? "bg-emerald-50 text-emerald-700 border-emerald-200"
@@ -693,11 +693,11 @@ export function BookingPage() {
                                     ? "bg-amber-50 text-amber-700 border-amber-200"
                                     : "bg-red-50 text-red-700 border-red-200"
                             }`}>
-                                {canJoinQueue ? "Accepting Requests" : isPaused ? "Queue Paused" : "Not Accepting"}
+                                {canJoinQueue ? "Open for Walk-ins" : isPaused ? "Queue Paused" : "Not Accepting"}
                             </span>
                         </div>
                         <p className="text-sm text-gray-500 mt-1">
-                            On-demand queue admission at <span className="text-[#D4AF37] font-semibold">{salon?.name}</span>
+                            Secure your spot live at <span className="text-[#D4AF37] font-semibold">{salon?.name}</span>
                         </p>
                     </div>
 
@@ -708,7 +708,7 @@ export function BookingPage() {
                                 <Clock size={24} />
                             </div>
                             <div>
-                                <p className="text-xs font-semibold text-gray-400">Current Workload & Estimated Wait</p>
+                                <p className="text-xs font-semibold text-gray-400">Estimated Wait Time</p>
                                 <p className="text-xl font-sans font-bold text-gray-900 mt-0.5">
                                     ~{queueSummary?.estimatedWaitRangeForNewCustomer?.min || 5} – {queueSummary?.estimatedWaitRangeForNewCustomer?.max || 20} mins wait
                                 </p>
@@ -929,7 +929,7 @@ export function BookingPage() {
                                                 ? "Queue Paused"
                                                 : isQueueFull
                                                 ? "Queue Full"
-                                                : "Request Place in Queue"}
+                                                : "Book Your Spot"}
                                         </span>
                                     </button>
 

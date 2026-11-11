@@ -58,12 +58,10 @@ export function SignUpPage() {
             <div className="flex flex-col justify-center items-center px-6 py-8 overflow-y-auto">
                 <div className="w-full max-w-md my-auto">
                     {/* Clickable Header Logo -> Home */}
-                    <div className="flex justify-center mb-5">
-                        <Link to="/" className="inline-flex items-center space-x-2.5 group transition-transform active:scale-95" title="Return to SalonNow Home">
-                            <div className="bg-[#1a1a1a] p-2 rounded-full text-white group-hover:scale-105 transition-transform">
-                                <Scissors size={22} />
-                            </div>
-                            <span className="text-2xl font-sans font-bold text-black tracking-wide">
+                    <div className="flex justify-center mb-6">
+                        <Link to="/" className="flex items-center justify-center gap-2.5 group transition-transform active:scale-95" title="Return to SalonNow Home">
+                            <img src="/logo.jpg" alt="SalonNow" className="w-10 h-10 rounded-full object-cover shadow-sm border border-[#D4AF37]/30 group-hover:scale-105 transition-transform" />
+                            <span className="text-2xl font-bold tracking-tight text-gray-900">
                                 Salon<span className="text-[#D4AF37]">Now</span>
                             </span>
                         </Link>

@@ -164,18 +164,24 @@ export function LandingPage() {
                     </motion.div>
 
                     {/* Dynamic H1 Headline */}
-                    <motion.h1 variants={fadeUpVariants} className="text-2xl sm:text-3xl font-bold tracking-tight mb-6 leading-tight drop-shadow-lg text-white !text-white" style={{ color: '#ffffff' }}>
-                        Book top salons in{" "}
-                        <button
-                            type="button"
-                            onClick={() => setIsCityModalOpen(true)}
-                            className="inline-flex items-center gap-1.5 text-[#ffd166] hover:text-[#ffe49e] border-b-2 border-dashed border-[#ffd166]/70 hover:border-[#ffd166] transition-all cursor-pointer px-2.5 py-0.5 rounded-xl hover:bg-white/10 active:scale-95"
-                            title="Change City"
-                        >
-                            <span>{resolvedCity}</span>
-                            <ChevronDown size={24} className="text-[#ffd166] stroke-[2.5] inline-block -mb-0.5" />
-                        </button>{" "}
-                        in 60 seconds
+                    <motion.h1 
+                        variants={fadeUpVariants} 
+                        className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white flex flex-wrap items-center justify-center gap-2 text-center leading-snug mb-6 drop-shadow-lg !text-white" 
+                        style={{ color: '#ffffff' }}
+                    >
+                        <span>Book top salons in</span>
+                        <span className="inline-flex items-center">
+                            <button
+                                type="button"
+                                onClick={() => setIsCityModalOpen(true)}
+                                className="inline-flex items-center gap-1.5 text-[#ffd166] hover:text-[#ffe49e] border-b-2 border-dashed border-[#ffd166]/70 hover:border-[#ffd166] transition-all cursor-pointer px-2.5 py-0.5 rounded-xl hover:bg-white/10 active:scale-95"
+                                title="Change City"
+                            >
+                                <span>{resolvedCity}</span>
+                                <ChevronDown size={22} className="text-[#ffd166] stroke-[2.5] inline-block -mb-0.5" />
+                            </button>
+                        </span>
+                        <span>in 60 seconds</span>
                     </motion.h1>
 
                     {/* CTAs: Primary & Secondary (Use my location) */}

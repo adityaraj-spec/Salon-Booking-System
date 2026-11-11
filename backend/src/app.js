@@ -170,12 +170,20 @@ app.use((err, req, res, next) => {
         });
     }
 
+    const isDbError = err.name === "MongoServerSelectionError" 
+        || err.name === "MongoNetworkError" 
+        || (err.message && (err.message.includes("ENOTFOUND") || err.message.includes("ECONNREFUSED") || err.message.includes("ETIMEDOUT")));
+
+    const userMessage = isDbError
+        ? "Database connection unavailable. Please check your network or database cluster status."
+        : process.env.NODE_ENV === "production"
+            ? "Internal Server Error"
+            : (err.message || "Internal Server Error");
+
     return res.status(500).json({
         success: false,
-        message: process.env.NODE_ENV === "production"
-            ? "Internal Server Error"
-            : (err.message || "Internal Server Error"),
-        code: "INTERNAL_SERVER_ERROR",
+        message: userMessage,
+        code: isDbError ? "DATABASE_UNAVAILABLE" : "INTERNAL_SERVER_ERROR",
         errors: [],
         requestId,
     });
