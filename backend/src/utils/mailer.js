@@ -236,20 +236,40 @@ const displayValue = (value, fallback = "Not provided") => {
 
 const hasValue = (value) => value !== null && value !== undefined && String(value).trim() !== "";
 
+const toTitleCase = (value) => {
+    if (!hasValue(value)) return "";
+    const str = String(value).trim();
+    const acronyms = new Set(["UPI", "OTP", "PIN", "ID", "SMS", "URL", "GST"]);
+    return str
+        .toLowerCase()
+        .split(/(\s+|-|\/)/)
+        .map((word) => {
+            const upper = word.toUpperCase();
+            if (acronyms.has(upper)) return upper;
+            if (/^\s+$/.test(word) || word === "-" || word === "/") return word;
+            return word.charAt(0).toUpperCase() + word.slice(1);
+        })
+        .join("");
+};
+
 const displayServices = (services) => {
     if (Array.isArray(services)) {
         const items = services.map((service) => {
             if (typeof service === "object" && service !== null) {
-                return displayValue(service.name || service.serviceName, "");
+                const name = service.name || service.serviceName;
+                return hasValue(name) ? toTitleCase(name) : "";
             }
-            return displayValue(service, "");
+            return hasValue(service) ? toTitleCase(service) : "";
         }).filter(Boolean);
-        return items.length ? items.join(", ") : "Salon services";
+        const nonGeneric = items.filter((item) => item.toLowerCase() !== "service");
+        if (nonGeneric.length > 0) return nonGeneric.join(", ");
+        return "Salon Services";
     }
     if (typeof services === "object" && services !== null) {
-        return displayValue(services.name || services.serviceName, "Salon services");
+        const name = services.name || services.serviceName;
+        return hasValue(name) ? toTitleCase(name) : "Salon Services";
     }
-    return displayValue(services, "Salon services");
+    return hasValue(services) ? toTitleCase(services) : "Salon Services";
 };
 
 const getInitials = (value) => displayValue(value, "SN")
@@ -312,15 +332,25 @@ const formatDateTime = (value) => {
     if (value instanceof Date && !Number.isNaN(value.getTime())) return formatDateObject(value);
 
     const source = String(value).trim();
-    if (!source || source.toLowerCase() === "at" || source === "undefined at undefined" || source === "at undefined" || source === "undefined") {
+    // Guard: reject empty, bare "at", "undefined at undefined", "at HH:MM" (no date), etc.
+    const sourceLower = source.toLowerCase();
+    if (!source
+        || /^at$/i.test(source)
+        || sourceLower === "undefined at undefined"
+        || sourceLower === "at undefined"
+        || sourceLower === "undefined"
+        || /^at\s+\d/.test(source.trim())          // "at 13:16" – no date prefix
+        || /^\s*at\s/.test(source)                   // leading "at …"
+    ) {
         return "";
     }
     const normalized = source.replace(/\s+at\s+/i, " ").replace(/\s+/g, " ").trim();
-    if (!normalized || normalized.toLowerCase() === "at") return "";
+    if (!normalized || /^at$/i.test(normalized)) return "";
 
     const parsed = new Date(normalized);
     if (Number.isNaN(parsed.getTime()) || !/\d{4}/.test(normalized)) {
-        return source.replace(/^at\s*$/i, "").trim();
+        const cleaned = source.replace(/\bat\b/gi, "").replace(/\s+/g, " ").trim();
+        return cleaned || "";
     }
     return formatDateObject(parsed);
 };
@@ -337,8 +367,8 @@ const renderDetailCard = (rows = []) => {
     const safeRows = rows
         .filter((row) => row && hasValue(row.value))
         .map((row) => ({
-            label: displayValue(row.label, "Details"),
-            value: displayValue(row.value),
+            label: toTitleCase(displayValue(row.label, "Details")),
+            value: row.label && String(row.label).toLowerCase().includes("status") && String(row.value).toLowerCase() === "paid" ? "Paid" : displayValue(row.value),
             emphasis: Boolean(row.emphasis),
             icon: getFieldIcon(row.label),
         }));
@@ -370,11 +400,11 @@ const renderBookingPanel = ({
     actionTime = new Date(),
     actionLabel = "Activity time",
 }) => {
-    const safeSalonName = displayValue(salonName, "Salon");
-    const hasAppointmentDetails = hasValue(bookingTime) || hasValue(stylist) || hasValue(services);
-    const serviceText = hasValue(services) ? displayServices(services) : "";
-    const bookingStatus = hasValue(status) ? displayValue(status) : "";
+    const safeSalonName = toTitleCase(displayValue(salonName, "Salon"));
     const appointmentValue = hasValue(bookingTime) ? formatDateTime(bookingTime) : "";
+    const serviceText = hasValue(services) ? displayServices(services) : "";
+    const hasAppointmentDetails = hasValue(appointmentValue) || hasValue(stylist) || hasValue(serviceText);
+    const bookingStatus = hasValue(status) ? toTitleCase(displayValue(status)) : "";
     const hasTotal = hasValue(price);
     const hasBookingReference = hasValue(bookingReference);
     const hasCustomer = hasValue(customerName);
@@ -671,18 +701,50 @@ export const finalReceipt = (
     amount,
     paymentMethod,
 ) => {
-    const detailRows = items.map((item) => ({
-        label: item.name || "Service",
-        value: `₹${Number(item.price || 0).toFixed(2)}`,
-    }));
+    let safeItems = Array.isArray(items) ? [...items] : [];
+    const totalAmount = Number(amount || 0);
+
+    const allZeroPrices = safeItems.length > 0 && safeItems.every((item) => !Number(item?.price));
+    if (allZeroPrices && totalAmount > 0) {
+        if (safeItems.length === 1) {
+            safeItems[0].price = totalAmount;
+        } else {
+            const perItem = Number((totalAmount / safeItems.length).toFixed(2));
+            safeItems = safeItems.map((item, idx) => ({
+                ...item,
+                price: idx === safeItems.length - 1 ? Number((totalAmount - perItem * (safeItems.length - 1)).toFixed(2)) : perItem,
+            }));
+        }
+    }
+
+    // Filter out purely generic "service" items; if all are generic, collapse to one row
+    const isGenericName = (n) => !n || String(n).trim().toLowerCase() === "service";
+    const meaningfulItems = safeItems.filter((item) => !isGenericName(item?.name || item?.serviceName));
+    const rowSource = meaningfulItems.length > 0 ? meaningfulItems : safeItems;
+    const detailRows = rowSource.length > 0
+        ? rowSource.map((item) => {
+            const rawName = item?.name || item?.serviceName || "Salon Service";
+            const cleanName = isGenericName(rawName) ? "Salon Service" : toTitleCase(rawName);
+            const priceNum = Number(item?.price || 0);
+            return {
+                label: cleanName,
+                value: `₹${priceNum.toFixed(2)}`,
+            };
+        })
+        : [{ label: "Salon Service", value: `₹${totalAmount.toFixed(2)}` }];
+
     detailRows.unshift({ label: "Payment Status", value: "Paid", emphasis: true });
-    detailRows.push({ label: "Payment Method", value: String(paymentMethod || "UPI").toUpperCase() === "UPI" ? "UPI" : (paymentMethod ? paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1).toLowerCase() : "UPI") });
-    detailRows.push({ label: "Total Paid", value: `₹${Number(amount || 0).toFixed(2)}`, emphasis: true });
+    detailRows.push({
+        label: "Payment Method",
+        value: String(paymentMethod || "UPI").toUpperCase() === "UPI" ? "UPI" : toTitleCase(paymentMethod || "UPI"),
+    });
+    detailRows.push({ label: "Total Paid", value: `₹${totalAmount.toFixed(2)}`, emphasis: true });
+
     const booking = renderBookingPanel({
         bookingReference,
         bookingTime,
         salonName,
-        customerName,
+        customerName: toTitleCase(customerName),
         status: "Paid",
         statusColor: COLORS.success,
         actionTime: new Date(),
@@ -693,7 +755,7 @@ export const finalReceipt = (
         category: "Final Receipt",
         icon: "receipt",
         heading: "Service Receipt",
-        greeting: `Hi ${customerName}`,
+        greeting: `Hi ${toTitleCase(customerName)}`,
         paragraphs: [`Thank you for choosing SalonNow and visiting ${salonName}. Here is your itemized receipt.`],
         booking,
         rows: detailRows,

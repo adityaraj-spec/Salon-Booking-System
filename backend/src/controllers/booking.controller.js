@@ -66,7 +66,13 @@ const createBooking = asyncHandler(async (req, res) => {
         req.user.email,
         req.user.fullName,
         bookingSalon?.name || "Salon",
-        booking.startTime ? booking.startTime.toISOString() : ((booking.date && booking.time) ? `${booking.date} at ${booking.time}` : (booking.requestedAt || booking.createdAt || new Date()).toISOString()),
+        booking.startTime
+        ? booking.startTime.toISOString()
+        : (booking.date && booking.time)
+            ? `${booking.date} at ${booking.time}`
+            : booking.date
+                ? booking.date
+                : (booking.requestedAt || booking.createdAt || new Date()).toISOString(),
         booking._id.toString(),
         booking.serviceNames || [],
         booking.totalAmount,
@@ -216,7 +222,13 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
     const customerEmail = booking.customer?.email?.trim().toLowerCase();
     const customerName = booking.customer?.fullName || "Customer";
     const salonDisplayName = booking.salon.name;
-    const bookingTime = booking.startTime ? booking.startTime.toISOString() : ((booking.date && booking.time) ? `${booking.date} at ${booking.time}` : (booking.requestedAt || booking.createdAt || new Date()).toISOString());
+    const bookingTime = booking.startTime
+        ? booking.startTime.toISOString()
+        : (booking.date && booking.time)
+            ? `${booking.date} at ${booking.time}`
+            : booking.date
+                ? booking.date
+                : (booking.requestedAt || booking.createdAt || new Date()).toISOString();
     const bookingRef = booking._id.toString();
 
     if (statusChanged && (status === "cancelled" || status === "rejected") && customerEmail) {
@@ -230,9 +242,9 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
             booking.serviceNames || [], booking.totalAmount, new Date(), booking.verificationPin
         ).catch(err => logger.warn({ err: err?.message }, "[Booking] Failed to send confirmation email"));
     } else if (statusChanged && status === "completed" && customerEmail) {
-        const completedServices = booking.snapshotServices?.length
+        const completedServices = (booking.snapshotServices?.length && booking.snapshotServices.some(s => s.name && s.name.toLowerCase() !== "service"))
             ? booking.snapshotServices.map((service) => service.name || service.serviceName).filter(Boolean)
-            : booking.serviceNames || [];
+            : (booking.serviceNames?.length ? booking.serviceNames : ["Salon Services"]);
         const completedAmount = booking.amounts?.total > 0 ? booking.amounts.total : booking.totalAmount;
         sendServiceCompletedEmail(
             customerEmail, customerName, salonDisplayName, bookingTime, bookingRef,
@@ -324,7 +336,13 @@ const initiateBookingHandler = asyncHandler(async (req, res) => {
         req.user.email,
         req.user.fullName,
         salon?.name || "Salon",
-        booking.startTime ? booking.startTime.toISOString() : ((booking.date && booking.time) ? `${booking.date} at ${booking.time}` : (booking.requestedAt || booking.createdAt || new Date()).toISOString()),
+        booking.startTime
+        ? booking.startTime.toISOString()
+        : (booking.date && booking.time)
+            ? `${booking.date} at ${booking.time}`
+            : booking.date
+                ? booking.date
+                : (booking.requestedAt || booking.createdAt || new Date()).toISOString(),
         booking._id.toString(),
         booking.serviceNames || [],
         booking.totalAmount,
@@ -361,9 +379,17 @@ const completeBookingHandler = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Payment method must be cash, card, or upi.");
     }
     const booking = await completeBooking({ bookingId: req.params.bookingId, ownerId: req.user._id, role: req.user.role, paymentMethod });
-    const baseItems = booking.snapshotServices?.length
-        ? booking.snapshotServices
-        : (booking.serviceNames || []).map((name) => ({ name, price: 0 }));
+    let baseItems = [];
+    if (booking.snapshotServices?.length && booking.snapshotServices.some(s => s.name && s.name.toLowerCase() !== "service" && s.price > 0)) {
+        baseItems = booking.snapshotServices;
+    } else if (booking.services?.length && booking.services[0]?.name) {
+        baseItems = booking.services.map(s => ({ name: s.name, price: s.price || 0 }));
+    } else if (booking.serviceNames?.length) {
+        const perItemPrice = Number(booking.totalAmount || 0) / booking.serviceNames.length;
+        baseItems = booking.serviceNames.map(name => ({ name, price: perItemPrice }));
+    } else {
+        baseItems = [{ name: "Salon Service", price: Number(booking.totalAmount || 0) }];
+    }
     const items = baseItems.map((service) => ({ name: service.name, price: service.price }))
         .concat((booking.extraServices || []).map((service) => ({ name: service.name, price: service.price })));
     if (booking.customer?.email) {
@@ -371,7 +397,13 @@ const completeBookingHandler = asyncHandler(async (req, res) => {
             booking.customer.email,
             booking.customer.fullName,
             booking.salon?.name || "Salon",
-            booking.startTime ? booking.startTime.toISOString() : ((booking.date && booking.time) ? `${booking.date} at ${booking.time}` : (booking.requestedAt || booking.createdAt || new Date()).toISOString()),
+            booking.startTime
+        ? booking.startTime.toISOString()
+        : (booking.date && booking.time)
+            ? `${booking.date} at ${booking.time}`
+            : booking.date
+                ? booking.date
+                : (booking.requestedAt || booking.createdAt || new Date()).toISOString(),
             booking._id.toString(),
             items,
             booking.totalAmount,
@@ -395,7 +427,9 @@ const cancelPendingBookingHandler = asyncHandler(async (req, res) => {
             salon?.name || "Salon",
             cancelledBooking.startTime
                 ? cancelledBooking.startTime.toISOString()
-                : `${cancelledBooking.date || ""} at ${cancelledBooking.time || ""}`,
+                : (cancelledBooking.date && cancelledBooking.time)
+                    ? `${cancelledBooking.date} at ${cancelledBooking.time}`
+                    : cancelledBooking.date || (cancelledBooking.requestedAt || cancelledBooking.createdAt || new Date()).toISOString(),
             cancelledBooking._id.toString(),
             "Booking cancelled before payment was completed"
         ).catch(err => logger.warn({ err: err?.message }, "[Booking] Failed to send cancellation email")))
@@ -421,7 +455,9 @@ const cancelBookingHandler = asyncHandler(async (req, res) => {
             salon?.name || "Salon",
             cancelledBooking.startTime
                 ? cancelledBooking.startTime.toISOString()
-                : `${cancelledBooking.date || ""} at ${cancelledBooking.time || ""}`,
+                : (cancelledBooking.date && cancelledBooking.time)
+                    ? `${cancelledBooking.date} at ${cancelledBooking.time}`
+                    : cancelledBooking.date || (cancelledBooking.requestedAt || cancelledBooking.createdAt || new Date()).toISOString(),
             cancelledBooking._id.toString(),
             reason || "Customer requested cancellation"
         ).catch(err => logger.warn({ err: err?.message }, "[Booking] Failed to send cancellation email")))
@@ -460,7 +496,9 @@ const rescheduleBookingHandler = asyncHandler(async (req, res) => {
         .populate("salon", "name");
     const oldBookingTime = existingBooking?.startTime
         ? existingBooking.startTime.toISOString()
-        : `${existingBooking?.date || ""} at ${existingBooking?.time || ""}`;
+        : (existingBooking?.date && existingBooking?.time)
+            ? `${existingBooking.date} at ${existingBooking.time}`
+            : existingBooking?.date || (booking?.requestedAt || booking?.createdAt || new Date()).toISOString();
     const salonName = existingBooking?.salon?.name || "Salon";
 
     const rescheduled = await rescheduleBooking({
@@ -472,7 +510,9 @@ const rescheduleBookingHandler = asyncHandler(async (req, res) => {
     // Notify customer of the rescheduled appointment — fire-and-forget
     const newBookingTime = rescheduled.startTime
         ? rescheduled.startTime.toISOString()
-        : `${rescheduled.date || ""} at ${rescheduled.time || ""}`;
+        : (rescheduled.date && rescheduled.time)
+            ? `${rescheduled.date} at ${rescheduled.time}`
+            : rescheduled.date || (rescheduled.requestedAt || rescheduled.createdAt || new Date()).toISOString();
     sendBookingUpdateEmail(
         req.user.email?.trim().toLowerCase(),
         req.user.fullName,

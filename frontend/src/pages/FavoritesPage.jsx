@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Star, MapPin, Phone, Heart, Search } from 'lucide-react';
+import { useNavigate, NavLink } from 'react-router-dom';
+import { Star, MapPin, Heart, Search, ArrowLeft } from 'lucide-react';
 import axiosInstance from '../api/axiosConfig';
 import useDocumentTitle from '../hooks/useDocumentTitle';
 import { useAuth } from '../context/AuthContext';
@@ -71,6 +71,11 @@ export function FavoritesPage() {
     return (
         <div className="w-full min-h-screen bg-[#fafafa]">
             <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-20 md:pt-24 pb-12">
+                <div className="mb-6">
+                    <NavLink to="/discover" className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 transition-colors shadow-sm">
+                        <ArrowLeft size={16} /> Back to Discover
+                    </NavLink>
+                </div>
             
                 <div className="mb-8 text-center">
                     <h1 className="text-4xl md:text-5xl font-sans font-bold tracking-tight text-gray-900 mb-3 flex items-center justify-center gap-3">
@@ -113,97 +118,65 @@ export function FavoritesPage() {
                         {salons.map((salon) => (
                             <div
                                 key={salon._id}
-                                className="w-full bg-white border border-gray-100 rounded-xl overflow-hidden flex flex-col transition-all hover:shadow-xl hover:shadow-[#D4AF37]/5 hover:-translate-y-1 group"
+                                className="w-full bg-white border border-stone-200/60 rounded-xl overflow-hidden flex flex-col shadow-soft-sm hover:shadow-soft-lg hover:-translate-y-1 transition-all duration-200 group"
                             >
-                                {/* Image Section */}
-                                <div
-                                    className="relative h-56 w-full overflow-hidden flex-shrink-0 cursor-pointer"
-                                    onClick={() => navigate(`/shop/${salon._id}`)}
-                                >
+                                <div className="relative h-48 md:h-52 w-full overflow-hidden flex-shrink-0 cursor-pointer" onClick={() => navigate(`/shop/${salon._id}`)}>
                                     <img
                                         src={salon.images && salon.images.length > 0 ? salon.images[0] : salonPlaceholder}
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                         alt={salon.name}
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                        loading="lazy"
                                     />
-                                    {/* Removing Favorite Button */}
-                                    <button 
-                                        className="absolute top-4 right-4 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-red-500 hover:bg-white shadow-lg transition-all hover:scale-110 active:scale-95" 
+                                    <button
+                                        aria-label="Remove from favorites"
+                                        className="absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-red-500 hover:bg-white shadow-sm transition-all hover:scale-110 active:scale-95"
                                         onClick={(e) => handleToggleFavorite(e, salon._id)}
                                     >
-                                        <Heart size={20} className="fill-red-500" strokeWidth={1.5} />
+                                        <Heart size={16} className="fill-red-500" strokeWidth={1.5} />
                                     </button>
-                                </div>
-
-                                {/* Content Section */}
-                                <div className="p-5 flex flex-col flex-1">
-                                    {/* Salon Type & Stars */}
-                                    <div className="flex items-center gap-1 mb-2">
-                                        <span className="text-[11px] font-semibold text-[#D4AF37] bg-[#D4AF37]/10 px-2.5 py-0.5 rounded-lg">Salon</span>
-                                        <div className="flex gap-0.5 ml-2">
-                                            {[...Array(5)].map((_, i) => (
-                                                <Star key={i} size={11} className="fill-[#D4AF37] text-[#D4AF37]" />
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Name */}
-                                    <h3
-                                        className="text-lg font-semibold text-gray-900 leading-tight mb-2 cursor-pointer hover:text-[#D4AF37] transition-colors line-clamp-1"
-                                        onClick={() => navigate(`/shop/${salon._id}`)}
-                                    >
-                                        {salon.name}
-                                    </h3>
-
-                                    {/* Location & Phone */}
-                                    <div className="mb-5 flex flex-col gap-1.5 border-b border-gray-50 pb-4">
-                                        <span className="text-sm text-gray-500 flex items-center gap-2 font-medium">
-                                            <MapPin size={14} className="text-[#D4AF37] shrink-0" />
-                                            {salon.city ? `${salon.city}, India` : "Location not set"}
+                                    {salon.rating >= 4.5 && (
+                                        <span className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm text-stone-900 border border-stone-200/80 text-[11px] font-bold px-2.5 py-0.5 rounded-full shadow-xs">
+                                            Top Rated
                                         </span>
-                                        {salon.contactNumber ? (
-                                            <a
-                                                href={`tel:${salon.contactNumber.replace(/\s+/g, "")}`}
-                                                onClick={(e) => e.stopPropagation()}
-                                                className="text-sm text-gray-500 hover:text-[#D4AF37] flex items-center gap-2 transition-colors w-fit"
-                                                title="Call salon"
-                                            >
-                                                <Phone size={14} className="text-[#D4AF37] shrink-0" />
-                                                <span>{salon.contactNumber}</span>
-                                            </a>
-                                        ) : (
-                                            <span className="text-sm text-gray-400 flex items-center gap-2">
-                                                <Phone size={14} className="text-[#D4AF37] shrink-0" />
-                                                <span>+91 Unavailable</span>
-                                            </span>
-                                        )}
+                                    )}
+                                </div>
+                                <div className="p-4 flex flex-col flex-1">
+                                    <div className="flex items-start justify-between gap-2 mb-1">
+                                        <h3
+                                            className="text-base font-semibold text-gray-900 leading-snug cursor-pointer hover:text-[#D4AF37] transition-colors line-clamp-1"
+                                            onClick={() => navigate(`/shop/${salon._id}`)}
+                                            title={salon.name}
+                                        >
+                                            {salon.name}
+                                        </h3>
+                                        <div className="flex items-center gap-1 text-xs font-bold text-gray-900 shrink-0">
+                                            <Star size={13} className="fill-amber-400 text-amber-400" />
+                                            <span>{salon.rating ? Number(salon.rating).toFixed(1) : "New"}</span>
+                                            {salon.reviews?.length > 0 && (
+                                                <span className="text-[11px] font-normal text-gray-400">({salon.reviews.length})</span>
+                                            )}
+                                        </div>
                                     </div>
-
-                                    {/* Bottom row aligning rating left and timing/seats right */}
-                                    <div className="mt-auto flex items-end justify-between">
-                                        {/* Left: Rating block */}
-                                        <div className="flex items-center gap-2.5">
-                                            <div className="bg-[#1a1a1a] text-white px-2.5 py-1.5 font-bold flex items-center justify-center rounded-xl text-sm shadow-sm ring-1 ring-gray-900/5">
-                                                {salon.rating || "New"}
-                                            </div>
-                                            <div className="flex flex-col">
-                                                <span className="text-[11px] font-bold text-gray-900 leading-none mb-1">
-                                                    {salon.rating > 4 ? "Excellent" : (salon.rating > 3 ? "Great" : "Good")}
+                                    <p className="text-xs text-stone-500 flex items-center gap-1 truncate mb-3">
+                                        <MapPin size={12} className="text-[#8a6500] shrink-0" />
+                                        <span className="truncate">{salon.city ? `${salon.city}, India` : "Location not set"}</span>
+                                    </p>
+                                    <div className="mt-auto pt-3 border-t border-gray-100 flex items-center justify-between gap-2 text-xs">
+                                        <div>
+                                            {salon.startingPrice != null ? (
+                                                <span className="text-gray-500">
+                                                    From <span className="font-bold text-gray-900 text-sm">₹{salon.startingPrice}</span>
                                                 </span>
-                                                <span className="text-[10px] text-gray-400 leading-none">
-                                                    {salon.reviews?.length || "0"} reviews
+                                            ) : (
+                                                <span className="text-gray-500 font-medium text-[11px]">
+                                                    {salon.openingHours || "09:00"} - {salon.closingHours || "21:00"}
                                                 </span>
-                                            </div>
+                                            )}
                                         </div>
-
-                                        {/* Right: Timing and Seats */}
-                                        <div className="text-right flex flex-col items-end">
-                                            <div className="text-[11px] font-semibold text-gray-400 mb-1">
-                                                Timing
-                                            </div>
-                                            <div className="text-xs font-medium text-gray-600 bg-gray-50 px-2 py-1 rounded-lg">
-                                                {salon.openingHours || "09:00"} - {salon.closingHours || "21:00"}
-                                            </div>
-                                        </div>
+                                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/80">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                            <span>{Math.max(0, Number(salon.availableSeats) || 0)}/{Math.max(1, Number(salon.maxConcurrentStaff) || Number(salon.totalSeats) || 5)} free</span>
+                                        </span>
                                     </div>
                                 </div>
                             </div>

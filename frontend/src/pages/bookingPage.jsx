@@ -685,8 +685,8 @@ export function BookingPage() {
 
                     {/* Header */}
                     <div className="flex items-center gap-4 mb-8">
-                        <NavLink to={`/shop/${id}`} className="p-2.5 bg-white border border-stone-200/50 hover:bg-gray-50 rounded-xl transition-colors shadow-sm">
-                            <ArrowLeft size={20} className="text-gray-700" />
+                        <NavLink to="/discover" className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 transition-colors shadow-sm">
+                            <ArrowLeft size={16} /> Back to Discover
                         </NavLink>
                         <div>
                             <div className="flex items-center gap-3">

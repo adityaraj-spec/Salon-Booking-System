@@ -254,7 +254,13 @@ const updateOwnerBookingStatus = asyncHandler(async (req, res) => {
 
     // Route to the correct email template based on the new booking status
     if (booking.customer?.email) {
-        const bookingTime = booking.startTime ? booking.startTime.toISOString() : ((booking.date && booking.time) ? `${booking.date} at ${booking.time}` : (booking.requestedAt || booking.createdAt || new Date()).toISOString());
+        const bookingTime = booking.startTime
+        ? booking.startTime.toISOString()
+        : (booking.date && booking.time)
+            ? `${booking.date} at ${booking.time}`
+            : booking.date
+                ? booking.date
+                : (booking.requestedAt || booking.createdAt || new Date()).toISOString();
         const bookingRef = booking._id.toString();
         const customerEmail = booking.customer.email;
         const customerName = booking.customer.fullName;
@@ -270,9 +276,9 @@ const updateOwnerBookingStatus = asyncHandler(async (req, res) => {
                 booking.serviceNames || [], booking.totalAmount, new Date(), booking.verificationPin
             ).catch(err => logger.warn({ err: err.message }, "[Owner] Failed to send confirmation email"));
         } else if (statusChanged && status === "completed") {
-            const completedServices = booking.snapshotServices?.length
+            const completedServices = (booking.snapshotServices?.length && booking.snapshotServices.some(s => s.name && s.name.toLowerCase() !== "service"))
                 ? booking.snapshotServices.map((service) => service.name || service.serviceName).filter(Boolean)
-                : booking.serviceNames || [];
+                : (booking.serviceNames?.length ? booking.serviceNames : ["Salon Services"]);
             const completedAmount = booking.amounts?.total > 0 ? booking.amounts.total : booking.totalAmount;
             sendServiceCompletedEmail(
                 customerEmail, customerName, salon.name, bookingTime, bookingRef,

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, NavLink } from "react-router-dom";
 import axiosInstance from "../api/axiosConfig";
 import { useBookingCart } from "../context/BookingCartContext";
 import { useSocket } from "../context/SocketContext";
@@ -16,7 +16,8 @@ import {
     Loader2,
     RotateCcw,
     Users,
-    KeyRound
+    KeyRound,
+    ArrowLeft
 } from "lucide-react";
 import { BookingCardSkeleton } from "../components/skeletons/index.jsx";
 import salonPlaceholder from "../assets/salon1.jpg";
@@ -219,6 +220,11 @@ export function MyBookingsPage() {
     return (
         <div className="min-h-screen bg-[#fafafa] pt-20 md:pt-24 pb-12">
             <div className="max-w-[1280px] mx-auto px-6 md:px-10">
+                <div className="mb-6">
+                    <NavLink to="/discover" className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 transition-colors shadow-sm">
+                        <ArrowLeft size={16} /> Back to Discover
+                    </NavLink>
+                </div>
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div>
                         <h1 className="text-3xl md:text-4xl font-sans font-bold tracking-tight text-[#1a1a1a]">My Appointments & Queue</h1>

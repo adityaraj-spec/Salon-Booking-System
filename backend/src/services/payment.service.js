@@ -109,7 +109,11 @@ export const confirmPaymentAndBooking = async ({
       });
 
     if (booking) {
-      const bookingTime = `${booking.date || ""} at ${booking.time || ""}`;
+      const bookingTime = booking.startTime
+        ? booking.startTime.toISOString()
+        : (booking.date && booking.time)
+          ? `${booking.date} at ${booking.time}`
+          : booking.date || (booking.requestedAt || booking.createdAt || new Date()).toISOString();
       const serviceNames = booking.snapshotServices?.length
         ? booking.snapshotServices.map((service) => service.name).filter(Boolean)
         : booking.serviceNames || [];

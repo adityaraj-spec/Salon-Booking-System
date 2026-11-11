@@ -257,11 +257,15 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
     }
 
     if (statusChanged && status === "completed" && booking.customer?.email) {
-        const completedServices = booking.snapshotServices?.length
+        const completedServices = (booking.snapshotServices?.length && booking.snapshotServices.some(s => s.name && s.name.toLowerCase() !== "service"))
             ? booking.snapshotServices.map((service) => service.name || service.serviceName).filter(Boolean)
-            : booking.serviceNames || [];
+            : (booking.serviceNames?.length ? booking.serviceNames : ["Salon Services"]);
         const completedAmount = booking.amounts?.total > 0 ? booking.amounts.total : booking.totalAmount;
-        const bookingTime = booking.startTime ? booking.startTime.toISOString() : ((booking.date && booking.time) ? `${booking.date} at ${booking.time}` : (booking.requestedAt || booking.createdAt || new Date()).toISOString());
+        const bookingTime = booking.startTime
+            ? booking.startTime.toISOString()
+            : (booking.date && booking.time)
+                ? `${booking.date} at ${booking.time}`
+                : booking.date || (booking.requestedAt || booking.createdAt || new Date()).toISOString();
         sendServiceCompletedEmail(
             booking.customer.email,
             booking.customer.fullName || "Customer",

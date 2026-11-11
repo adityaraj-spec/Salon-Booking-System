@@ -691,5 +691,6 @@ export const completeBooking = async ({ bookingId, ownerId, role, paymentMethod 
 
   return Booking.findById(booking._id)
     .populate("customer", "fullName email phonenumber")
+    .populate("services", "name price duration")
     .populate({ path: "salon", select: "name owner", populate: { path: "owner", select: "fullName email" } });
 };

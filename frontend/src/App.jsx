@@ -60,6 +60,7 @@ function App() {
                       <Route path="home" element={<Shops />} />
                       <Route path="shop/:id" element={<Shop />} />
                       <Route path="explore" element={<Navigate to="/home" replace />} />
+                      <Route path="discover" element={<Navigate to="/home" replace />} />
                       
                       <Route element={<RoleProtectedRoute />}>
                         <Route path="create-salon" element={<CreateSalonPage />} />

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, Star, MapPin, Phone, Heart, ArrowUpDown, ChevronLeft, ChevronRight, SlidersHorizontal, X, Map, Loader2, Navigation, MapPinOff, RotateCcw, Sparkles, Scissors, Palette, Flame, Sparkle, Smile, Crown } from 'lucide-react';
+import { Search, Star, MapPin, Heart, ArrowUpDown, ChevronLeft, ChevronRight, SlidersHorizontal, X, Map, Loader2, Navigation, MapPinOff, RotateCcw, Sparkles, Scissors, Palette, Flame, Sparkle, Smile, Crown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { State, City } from 'country-state-city';
 import axiosInstance from '../api/axiosConfig';
@@ -249,13 +249,12 @@ export function Shops() {
     return (
         <div className="w-full min-h-screen bg-[#FBFBFA]">
             <div className="max-w-[1280px] mx-auto px-6 md:px-10">
-                <div className="text-center pt-20 pb-8 md:pt-24 md:pb-12">
-                    <h1 className="text-4xl md:text-6xl font-sans font-bold tracking-tight text-gray-900 mb-4 leading-tight">
-                        Discover Your <br className="hidden md:block" />
-                        <span className="text-[#D4AF37]">Perfect Salon</span>
+                <div className="text-center pt-20 pb-4 md:pt-24 md:pb-6">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-sans font-bold tracking-tight text-gray-900 mb-2 leading-tight">
+                        Explore <span className="text-[#D4AF37]">Salons</span>
                     </h1>
-                    <p className="text-gray-500 text-base md:text-lg mb-6 max-w-2xl mx-auto px-4">
-                        Browse curated salons near you. View real-time availability and book instantly.
+                    <p className="text-gray-500 text-xs sm:text-sm max-w-md mx-auto mb-6">
+                        {cityParam ? `Showing curated salons in ${cityParam}` : "Discover top-rated salons, live seat availability, and book in seconds"}
                     </p>
 
                     {/* Search Bar & Unified Filter Trigger */}
@@ -413,27 +412,36 @@ export function Shops() {
                     </div>
                 </div>
 
-                {/* Grid Heading */}
-                <div className="mt-6 mb-4 flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
-                    <div>
-                        <h2 className="text-2xl md:text-3xl font-sans font-semibold text-gray-900">
-                            Discover salons in <span className="text-[#D4AF37] capitalize">{cityParam || "your city"}</span>
-                            {selectedCategory && (
-                                <span className="text-gray-500 font-sans font-normal text-base md:text-lg ml-2">
-                                    · {SERVICE_CATEGORIES.find(c => c.id === selectedCategory)?.label || selectedCategory}
-                                </span>
-                            )}
-                        </h2>
-                        <p className="text-gray-500 text-sm mt-1">Based on your preferences and location</p>
+                {/* Streamlined Results Summary Bar */}
+                <div className="my-4 flex items-center justify-between gap-3 text-xs sm:text-sm text-gray-500">
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-semibold text-gray-900">
+                            {loading ? "Searching..." : `${salons.length} ${salons.length === 1 ? "salon" : "salons"} available`}
+                        </span>
+                        {cityParam && (
+                            <span className="text-[#8a6500] font-medium">in {cityParam}</span>
+                        )}
+                        {selectedCategory && (
+                            <span className="inline-flex items-center gap-1.5 bg-amber-50 text-[#8a6500] border border-amber-200/60 px-2.5 py-0.5 rounded-lg font-semibold text-xs">
+                                <span>{SERVICE_CATEGORIES.find(c => c.id === selectedCategory)?.label || selectedCategory}</span>
+                                <button
+                                    type="button"
+                                    onClick={() => handleCategoryToggle("all")}
+                                    className="hover:text-black transition-colors"
+                                    aria-label="Remove category filter"
+                                >
+                                    <X size={11} />
+                                </button>
+                            </span>
+                        )}
                     </div>
                     {selectedCategory && (
                         <button
                             type="button"
                             onClick={() => handleCategoryToggle("all")}
-                            className="text-xs text-[#D4AF37] hover:text-[#b89528] font-semibold bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-lg self-start sm:self-auto transition-all flex items-center gap-1"
+                            className="text-xs font-semibold text-gray-500 hover:text-gray-900 transition-colors"
                         >
-                            <span>Clear category filter</span>
-                            <X size={12} />
+                            Reset filter
                         </button>
                     )}
                 </div>
@@ -748,78 +756,65 @@ export function Shops() {
                         <>
                             <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-10">
                                 {salons.map((salon) => (
-                                    <div key={salon._id} className="w-full bg-white border border-stone-200/50 rounded-xl overflow-hidden flex flex-col shadow-soft-sm hover:shadow-soft-lg hover:-translate-y-1 hover:scale-[1.008] transition-all duration-200 group">
-                                        <div className="relative h-56 w-full overflow-hidden flex-shrink-0 cursor-pointer" onClick={() => navigate(`/shop/${salon._id}`)}>
+                                    <div key={salon._id} className="w-full bg-white border border-stone-200/60 rounded-xl overflow-hidden flex flex-col shadow-soft-sm hover:shadow-soft-lg hover:-translate-y-1 transition-all duration-200 group">
+                                        <div className="relative h-48 md:h-52 w-full overflow-hidden flex-shrink-0 cursor-pointer" onClick={() => navigate(`/shop/${salon._id}`)}>
                                             <img
                                                 src={salon.images && salon.images.length > 0 ? salon.images[0] : salonPlaceholder}
                                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                                 alt={salon.name}
+                                                loading="lazy"
                                             />
                                             <button
+                                                aria-label={`${userFavorites.includes(salon._id) ? 'Remove' : 'Save'} ${salon.name} from favorites`}
                                                 className={`absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm transition-all hover:scale-110 active:scale-95 ${userFavorites.includes(salon._id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
                                                 onClick={(e) => handleToggleFavorite(e, salon._id)}
                                             >
                                                 <Heart size={16} strokeWidth={userFavorites.includes(salon._id) ? 1.5 : 2} className={userFavorites.includes(salon._id) ? "fill-red-500" : ""} />
                                             </button>
+                                            {salon.rating >= 4.5 && (
+                                                <span className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm text-stone-900 border border-stone-200/80 text-[11px] font-bold px-2.5 py-0.5 rounded-full shadow-xs">
+                                                    Top Rated
+                                                </span>
+                                            )}
                                         </div>
-                                        <div className="p-5 md:p-6 flex flex-col flex-1">
-                                            <div className="flex items-center gap-1 mb-2">
-                                                <span className="text-xs text-gray-500">Salon</span>
-                                                <div className="flex gap-0.5">
-                                                    {[...Array(5)].map((_, i) => <Star key={i} size={11} className="fill-[#febb02] text-[#febb02]" />)}
-                                                </div>
-                                                {salon.rating >= 4.5 && <span className="ml-1.5 bg-amber-50 text-amber-900 border border-amber-200/80 text-[10px] font-semibold px-2 py-0.5 rounded-full tracking-normal">Top Rated</span>}
-                                            </div>
-                                            <h3 className="text-[1.15rem] font-semibold text-gray-900 leading-snug mb-1.5 cursor-pointer hover:text-[#D4AF37] transition-colors" onClick={() => navigate(`/shop/${salon._id}`)}>
-                                                {salon.name}
-                                            </h3>
-                                            <div className="mb-4 flex flex-col gap-1 text-stone-500 text-xs leading-relaxed">
-                                                <span className="text-sm text-[#8a6500] flex items-center gap-1"><MapPin size={13} className="shrink-0" />{salon.city ? `${salon.city}, India` : "Location not set"}</span>
-                                                {salon.contactNumber || salon.owner?.phonenumber ? (
-                                                    <a
-                                                        href={`tel:${(salon.contactNumber || salon.owner?.phonenumber).replace(/\s+/g, "")}`}
-                                                        onClick={(e) => e.stopPropagation()}
-                                                        className="text-sm text-gray-500 hover:text-[#8a6500] flex items-center gap-1 transition-colors w-fit"
-                                                        title="Call salon"
-                                                    >
-                                                        <Phone size={13} className="shrink-0" />
-                                                        <span>{salon.contactNumber || salon.owner?.phonenumber}</span>
-                                                    </a>
-                                                ) : (
-                                                    <span className="text-sm text-gray-400 flex items-center gap-1">
-                                                        <Phone size={13} className="shrink-0" />
-                                                        <span>+91 Unavailable</span>
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <div className="mt-auto flex items-end justify-between gap-2">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="bg-[#1a1a1a] text-[#D4AF37] px-2.5 py-1.5 font-bold flex items-center justify-center rounded-xl min-w-[32px] text-sm">{salon.rating || "New"}</div>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-xs font-semibold text-[#1a1a1a] leading-none mb-1">{salon.rating > 4 ? "Excellent" : (salon.rating > 3 ? "Very Good" : "Good")}</span>
-                                                        <span className="text-[11px] text-gray-500 leading-none">{salon.reviews?.length || "0"} reviews</span>
-                                                    </div>
-                                                </div>
-                                                <div className="text-right flex flex-col items-end">
-                                                    {salon.startingPrice != null ? (
-                                                        <div className="text-[11px] text-gray-500 mb-1">
-                                                            Services from{" "}
-                                                            <span className="font-bold text-[#1a1a1a] text-sm">₹{salon.startingPrice}</span>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="text-[11px] text-gray-500 mb-1">
-                                                            Timing <span className="font-bold text-gray-800">{salon.openingHours || "09:00"} - {salon.closingHours || "21:00"}</span>
-                                                        </div>
+                                        <div className="p-4 flex flex-col flex-1">
+                                            <div className="flex items-start justify-between gap-2 mb-1">
+                                                <h3
+                                                    className="text-base font-semibold text-gray-900 leading-snug cursor-pointer hover:text-[#D4AF37] transition-colors line-clamp-1"
+                                                    onClick={() => navigate(`/shop/${salon._id}`)}
+                                                    title={salon.name}
+                                                >
+                                                    {salon.name}
+                                                </h3>
+                                                <div className="flex items-center gap-1 text-xs font-bold text-gray-900 shrink-0">
+                                                    <Star size={13} className="fill-amber-400 text-amber-400" />
+                                                    <span>{salon.rating ? Number(salon.rating).toFixed(1) : "New"}</span>
+                                                    {salon.reviews?.length > 0 && (
+                                                        <span className="text-[11px] font-normal text-gray-400">({salon.reviews.length})</span>
                                                     )}
-                                                    <div className="mt-1">
-                                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/80 shadow-soft-xs">
-                                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                                            <span>{Math.max(0, Number(salon.availableSeats) || 0)}/{Math.max(1, Number(salon.maxConcurrentStaff) || Number(salon.totalSeats) || 5)} seats free</span>
-                                                        </span>
-                                                    </div>
                                                 </div>
                                             </div>
-
+                                            <p className="text-xs text-stone-500 flex items-center gap-1 truncate mb-3">
+                                                <MapPin size={12} className="text-[#8a6500] shrink-0" />
+                                                <span className="truncate">{salon.city ? `${salon.city}, India` : "Location not set"}</span>
+                                            </p>
+                                            <div className="mt-auto pt-3 border-t border-gray-100 flex items-center justify-between gap-2 text-xs">
+                                                <div>
+                                                    {salon.startingPrice != null ? (
+                                                        <span className="text-gray-500">
+                                                            From <span className="font-bold text-gray-900 text-sm">₹{salon.startingPrice}</span>
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-gray-500 font-medium text-[11px]">
+                                                            {salon.openingHours || "09:00"} - {salon.closingHours || "21:00"}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/80">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                                    <span>{Math.max(0, Number(salon.availableSeats) || 0)}/{Math.max(1, Number(salon.maxConcurrentStaff) || Number(salon.totalSeats) || 5)} free</span>
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}

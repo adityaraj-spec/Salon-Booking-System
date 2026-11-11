@@ -406,19 +406,20 @@ export function LandingPage() {
                                                         <Heart size={14} strokeWidth={userFavorites.includes(salon._id) ? 1.5 : 2} className={userFavorites.includes(salon._id) ? "fill-red-500" : ""} />
                                                     </button>
                                                 </div>
-                                                <div className="p-3 flex flex-col flex-1">
-                                                    <div className="flex items-center gap-1 mb-1">
-                                                        <span className="text-[10px] text-gray-500">Salon</span>
-                                                        <div className="flex gap-0.5">{[...Array(5)].map((_, i) => <Star key={i} size={10} className="fill-[#febb02] text-[#febb02]" />)}</div>
-                                                    </div>
-                                                    <h3 className="text-sm font-semibold text-[#1a1a1a] mb-1 line-clamp-1 hover:text-[#8a6500] transition-colors">{salon.name}</h3>
-                                                    <span className="text-xs text-[#8a6500] flex items-center gap-1 mb-2"><MapPin size={11} className="shrink-0" />{salon.city ? `${salon.city}, India` : "Location not set"}</span>
-                                                    <div className="mt-auto flex items-center justify-between">
-                                                        <div className="flex items-center gap-1.5">
-                                                            <div className="bg-[#1a1a1a] text-[#D4AF37] px-2 py-1 font-bold rounded-xl min-w-[28px] text-xs text-center">{salon.rating || "New"}</div>
-                                                            <span className="text-[10px] font-semibold text-[#1a1a1a]">{salon.rating > 4 ? "Excellent" : salon.rating > 3 ? "Very Good" : "Good"}</span>
+                                                <div className="p-3.5 flex flex-col flex-1">
+                                                    <div className="flex items-start justify-between gap-1 mb-1">
+                                                        <h3 className="text-sm font-semibold text-[#1a1a1a] line-clamp-1 hover:text-[#8a6500] transition-colors" title={salon.name}>{salon.name}</h3>
+                                                        <div className="flex items-center gap-0.5 text-xs font-bold text-gray-900 shrink-0">
+                                                            <Star size={11} className="fill-amber-400 text-amber-400" />
+                                                            <span>{salon.rating ? Number(salon.rating).toFixed(1) : "New"}</span>
                                                         </div>
-                                                        <span className="text-[10px] text-gray-400">{salon.reviews?.length || 0} reviews</span>
+                                                    </div>
+                                                    <p className="text-xs text-stone-500 flex items-center gap-1 truncate mb-2">
+                                                        <MapPin size={11} className="text-[#8a6500] shrink-0" />
+                                                        <span className="truncate">{salon.city ? `${salon.city}, India` : "Location not set"}</span>
+                                                    </p>
+                                                    <div className="mt-auto pt-2 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+                                                        <span>{salon.startingPrice != null ? `From ₹${salon.startingPrice}` : (salon.openingHours ? `${salon.openingHours} - ${salon.closingHours}` : "Open today")}</span>
                                                     </div>
                                                 </div>
                                             </div>

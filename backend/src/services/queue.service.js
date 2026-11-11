@@ -884,9 +884,12 @@ export const completeQueueService = async ({ bookingId, ownerId, role, paymentMe
           ? refreshed.serviceNames.map((name) => ({ name, price: (refreshed.totalAmount || 0) / refreshed.serviceNames.length }))
           : [];
 
-      const receiptItems = allServices.length > 0
-        ? allServices.map((s) => ({
-            name: s.name || s.serviceName || "Service",
+      const isGenericSvcName = (n) => !n || String(n).trim().toLowerCase() === "service";
+      const meaningfulSvcs = allServices.filter((s) => !isGenericSvcName(s.name || s.serviceName));
+      const svcSource = meaningfulSvcs.length > 0 ? meaningfulSvcs : allServices;
+      const receiptItems = svcSource.length > 0
+        ? svcSource.map((s) => ({
+            name: isGenericSvcName(s.name || s.serviceName) ? "Salon Service" : (s.name || s.serviceName),
             price: Number(s.price || 0),
           }))
         : [{ name: "Salon Service", price: Number(refreshed.totalAmount || 0) }];
