@@ -227,7 +227,7 @@ export function MyBookingsPage() {
                 </div>
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div>
-                        <h1 className="text-3xl md:text-4xl font-sans font-bold tracking-tight text-[#1a1a1a]">My Appointments & Queue</h1>
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">My Appointments & Queue</h1>
                         <p className="text-sm text-gray-500 mt-1 leading-relaxed">Track your live salon queues and view previous visits</p>
                     </div>
                 </div>
@@ -244,7 +244,7 @@ export function MyBookingsPage() {
                         <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
                             <Calendar size={32} />
                         </div>
-                        <h3 className="text-xl font-sans font-semibold text-gray-900 mb-2">No bookings yet</h3>
+                        <h3 className="text-xl font-bold text-gray-900 tracking-tight mb-2">No bookings yet</h3>
                         <p className="text-gray-500 mb-6 max-w-sm mx-auto text-sm leading-relaxed">Ready for your next salon experience? Browse our collection of top-rated parlors.</p>
                         <a href="/home" className="inline-block bg-[#1a1a1a] text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-black transition-colors">
                             Explore Salons
@@ -280,7 +280,7 @@ export function MyBookingsPage() {
                                     {/* PART 2: SALON INFO & QUEUE/TIME STATS (Middle) */}
                                     <div className="flex-1 flex flex-col justify-center py-1">
                                         <div className="space-y-3">
-                                            <h3 className="text-xl md:text-2xl font-sans font-semibold text-[#1a1a1a]">
+                                            <h3 className="text-base sm:text-lg font-semibold text-gray-900">
                                                 {booking.salon?.name || "Style Station"}
                                             </h3>
                                             <div className="flex items-start gap-2.5 text-gray-500 bg-gray-50/70 w-fit px-3.5 py-2 rounded-xl border border-stone-200/50 max-w-sm">
@@ -436,7 +436,7 @@ export function MyBookingsPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="bg-white rounded-xl max-w-md w-full p-6 md:p-8 shadow-2xl border border-stone-200/50">
                         <div className="flex justify-between items-start mb-4">
-                            <h3 className="text-xl font-sans font-bold text-gray-900">Cancel Request</h3>
+                            <h3 className="text-xl font-bold text-gray-900 tracking-tight">Cancel Request</h3>
                             <button
                                 onClick={() => setCancelModalBooking(null)}
                                 className="p-1 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"

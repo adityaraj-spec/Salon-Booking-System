@@ -71,7 +71,7 @@ export function SignUpPage() {
 
                     {/* Titles */}
                     <div className="text-center mb-5">
-                        <h2 className="text-3xl font-sans font-semibold text-[#1a1a1a] mb-1.5">Create Account</h2>
+                        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-2">Create Account</h2>
                         <p className="text-gray-500 text-sm leading-relaxed">Join thousands of customers discovering premier salons</p>
                     </div>
 

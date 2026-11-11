@@ -386,7 +386,7 @@ export function SalonBookingsPage() {
                 <div className="bg-white rounded-xl p-6 md:p-8 border border-stone-200/50 shadow-soft-md flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
                         <div className="flex items-center gap-3">
-                            <h1 className="text-2xl md:text-3xl font-sans font-bold tracking-tight text-gray-900">
+                            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
                                 Live Salon Queue Dashboard
                             </h1>
                             <span className={`inline-flex items-center gap-2 text-xs font-semibold px-3.5 py-1.5 rounded-full border shadow-soft-xs ${

@@ -160,7 +160,7 @@ export function VerifyEmailPage() {
                         <div className="bg-[#1a1a1a] p-2 rounded-full text-white">
                             <Scissors size={24} />
                         </div>
-                        <h1 className="text-2xl font-sans font-bold text-black tracking-wide">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
                             Salon<span className="text-[#D4AF37]">Now</span>
                         </h1>
                     </div>
@@ -178,7 +178,7 @@ export function VerifyEmailPage() {
                                 </div>
                             )}
                         </div>
-                        <h2 className="text-3xl font-sans font-semibold text-[#1a1a1a] mb-2">
+                        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-2">
                             {success ? "Verified!" : "Check Your Email"}
                         </h2>
                         {!success && (
@@ -326,7 +326,7 @@ export function VerifyEmailPage() {
                         <MailCheck size={36} className="text-[#D4AF37]" />
                     </div>
 
-                    <h2 className="text-3xl font-sans font-semibold text-white mb-4">
+                    <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-4">
                         Almost <span className="text-[#D4AF37]">There!</span>
                     </h2>
                     <p className="text-gray-400 text-sm leading-relaxed max-w-xs mx-auto mb-8">

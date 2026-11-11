@@ -339,7 +339,7 @@ export function SalonManagementPage() {
         <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-20 md:pt-24 pb-8 font-sans">
             <div>
                 <header className="mb-6">
-                    <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900">Manage your salon</h1>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Manage your salon</h1>
                     <p className="text-gray-500 mt-2">Update your salon details, services, staff, and gallery.</p>
                 </header>
                 {/* Header & Multi-Salon Selector */}
@@ -371,10 +371,10 @@ export function SalonManagementPage() {
                                 <div className="relative inline-block group">
                                     <button 
                                         onClick={() => setIsSalonSelectorOpen(!isSalonSelectorOpen)}
-                                        className="flex items-center gap-3 text-3xl md:text-5xl font-sans font-bold tracking-tight text-gray-900 group"
+                                        className="flex items-center gap-3 text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 group"
                                     >
                                         {activeSalon?.name || "Salon Name"}
-                                        <ChevronDown size={32} className={`text-[#D4AF37] transition-transform duration-300 ${isSalonSelectorOpen ? 'rotate-180' : ''}`} />
+                                        <ChevronDown size={24} className={`text-[#D4AF37] transition-transform duration-300 ${isSalonSelectorOpen ? 'rotate-180' : ''}`} />
                                     </button>
                                     <span className="block h-1.5 w-16 bg-[#D4AF37] mt-3 rounded-full group-hover:w-32 transition-all duration-500"></span>
                                     
@@ -523,7 +523,7 @@ export function SalonManagementPage() {
                 {tab === "settings" && (
                     <div className="bg-white rounded-xl p-6 md:p-10 border border-gray-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="mb-6">
-                            <h2 className="text-2xl font-sans font-semibold text-gray-900 mb-2">Salon Settings</h2>
+                            <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-4">Salon Settings</h2>
                             <p className="text-gray-500 text-sm">Manage your salon's basic information, location, and operational schedule.</p>
                         </div>
                         <form onSubmit={handleUpdateSalonSettings} className="space-y-6 max-w-3xl">
@@ -664,7 +664,7 @@ export function SalonManagementPage() {
                     <div className="bg-white rounded-xl p-6 md:p-10 border border-gray-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-6">
                             <div>
-                                <h2 className="text-2xl font-sans font-semibold text-gray-900 mb-2">Photo Gallery</h2>
+                                <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-4">Photo Gallery</h2>
                                 <p className="text-gray-500 text-sm">Upload high-quality images to showcase your space to potential clients.</p>
                             </div>
                         </div>

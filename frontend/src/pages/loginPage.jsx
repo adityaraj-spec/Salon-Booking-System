@@ -114,7 +114,7 @@ export function LoginPage() {
 
                     {/* Titles */}
                     <div className="text-center mb-6">
-                        <h2 className="text-3xl font-sans font-semibold text-[#1a1a1a] mb-2">Welcome Back</h2>
+                        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-2">Welcome Back</h2>
                         <p className="text-gray-500 text-sm leading-relaxed">Login to your account to manage your appointments</p>
                     </div>
 
@@ -238,7 +238,7 @@ export function LoginPage() {
                                 <Mail size={20} />
                             </div>
                             <div>
-                                <h3 className="text-lg font-bold text-gray-900">Reset Password</h3>
+                                <h3 className="text-xl font-bold text-gray-900 tracking-tight">Reset Password</h3>
                                 <p className="text-xs text-gray-500">We will send instructions to your email</p>
                             </div>
                         </div>

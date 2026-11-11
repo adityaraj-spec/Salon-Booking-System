@@ -62,13 +62,13 @@ export function RoleSelectionPage() {
                     <div className="bg-[#1a1a1a] p-2 rounded-full text-white">
                         <Scissors size={24} />
                     </div>
-                    <h1 className="text-3xl font-sans font-bold text-black tracking-wide">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
                         Salon<span className="text-[#D4AF37]">Now</span>
                     </h1>
                 </div>
 
                 <div className="text-center mb-12">
-                    <h2 className="text-4xl font-sans font-bold text-[#1a1a1a] mb-4">How will you use SalonNow?</h2>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-4">How will you use SalonNow?</h2>
                     <p className="text-gray-600 text-lg">Choose the account type that best fits your needs.</p>
                 </div>
 
@@ -84,7 +84,7 @@ export function RoleSelectionPage() {
                         <div className="bg-amber-50 text-[#D4AF37] p-4 rounded-xl w-fit mb-6 group-hover:bg-[#D4AF37] group-hover:text-[#1a1a1a] transition-colors duration-300">
                             <User size={32} />
                         </div>
-                        <h3 className="text-2xl font-bold text-[#1a1a1a] mb-3">I'm a Customer</h3>
+                        <h3 className="text-xl font-bold text-gray-900 tracking-tight mb-2">I'm a Customer</h3>
                         <p className="text-gray-500 mb-8 flex-grow">Book appointments, discover new salons, and manage your beauty routine with ease.</p>
                         <div className="flex items-center text-[#1a1a1a] font-semibold group-hover:text-[#D4AF37] transition-colors">
                             <span>Get Started</span>
@@ -103,7 +103,7 @@ export function RoleSelectionPage() {
                         <div className="bg-orange-50 text-orange-600 p-4 rounded-xl w-fit mb-6 group-hover:bg-orange-600 group-hover:text-white transition-colors duration-300">
                             <Store size={32} />
                         </div>
-                        <h3 className="text-2xl font-bold text-[#1a1a1a] mb-3">I'm a Salon Owner</h3>
+                        <h3 className="text-xl font-bold text-gray-900 tracking-tight mb-2">I'm a Salon Owner</h3>
                         <p className="text-gray-500 mb-8 flex-grow">Register your salon, manage staff, accept bookings, and grow your beauty business.</p>
                         <div className="flex items-center text-[#1a1a1a] font-semibold group-hover:text-[#D4AF37] transition-colors">
                             <span>Register Your Salon</span>

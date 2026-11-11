@@ -62,7 +62,7 @@ function StaffSection({ staff, salonId, navigate, user, formatLabel }) {
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h3 className="text-2xl font-sans font-semibold text-[#1a1a1a]">Meet Our Team</h3>
+                    <h3 className="text-xl font-bold text-gray-900 tracking-tight mb-4">Meet Our Team</h3>
                     <p className="text-sm text-gray-500 mt-1">Book directly with your preferred stylist</p>
                 </div>
                 {/* Desktop scroll arrows */}
@@ -329,7 +329,7 @@ function TransformationGallerySection({ photos = [] }) {
                 <div>
                     <div className="flex items-center gap-2">
                         <Sparkles size={18} className="text-[#D4AF37]" />
-                        <h3 className="text-2xl font-sans font-semibold text-[#1a1a1a]">Transformation Gallery</h3>
+                        <h3 className="text-xl font-bold text-gray-900 tracking-tight mb-4">Transformation Gallery</h3>
                     </div>
                     <p className="text-sm text-gray-500 mt-1">
                         {displayPhotos.length > 0
@@ -836,7 +836,7 @@ export function Shop() {
                             <Sparkles size={12} /> {salon.rating > 4.5 ? "Top Rated Salon" : "Verified Salon"}
                         </span>
                     </div>
-                    <h1 className="text-3xl md:text-5xl font-sans font-bold tracking-tight text-[#1a1a1a] leading-tight">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight leading-tight">
                         {salon.name}
                     </h1>
                     <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-gray-500">
@@ -1108,7 +1108,7 @@ export function Shop() {
                 {/* LEFT CONTENT */}
                 <div className="lg:w-[72%] xl:w-[75%] space-y-8 order-last lg:order-first">
                     <div className="pb-4 border-b border-gray-100">
-                        <h2 className="text-2xl md:text-3xl font-sans font-semibold text-[#1a1a1a] mb-4">
+                        <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-4">
                             Premium Experience in {salon.city}
                         </h2>
                         <div className="flex flex-wrap gap-6 text-gray-500 font-medium">
@@ -1128,7 +1128,7 @@ export function Shop() {
                     </div>
 
                     <div className="pb-4 border-b border-gray-100">
-                        <h3 className="text-2xl font-sans font-semibold text-[#1a1a1a] mb-4">Location & Contact</h3>
+                        <h3 className="text-xl font-bold text-gray-900 tracking-tight mb-4">Location & Contact</h3>
                         <div className="grid md:grid-cols-1 gap-6">
                             <div className="flex flex-col md:flex-row gap-6">
                                 <div className="flex-1 flex gap-4 items-start bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
@@ -1158,7 +1158,7 @@ export function Shop() {
                     {services.length > 0 && (
                         <div className="py-6 border-b border-gray-100">
                             <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-2xl font-sans font-semibold text-[#1a1a1a]">Our Services</h3>
+                                <h3 className="text-xl font-bold text-gray-900 tracking-tight mb-4">Our Services</h3>
                                 <span className="ui-badge bg-gray-50 px-3 py-1 rounded-full">
                                     {services.length} {services.length === 1 ? 'Service' : 'Services'}
                                 </span>
@@ -1179,7 +1179,7 @@ export function Shop() {
                                             <div className="min-w-0 flex-1 pr-3">
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <Scissors size={15} className="text-[#D4AF37] shrink-0" />
-                                                    <h4 className="font-semibold text-[#1a1a1a] text-sm truncate">{formatServiceName(service.name)}</h4>
+                                                    <h4 className="text-base font-semibold text-gray-900 truncate">{formatServiceName(service.name)}</h4>
                                                 </div>
                                                 <p className="ui-subtext line-clamp-1 mb-2">{service.description || "Description unavailable"}</p>
                                                 <div className="flex items-center gap-2 text-xs text-gray-500">
@@ -1252,7 +1252,7 @@ export function Shop() {
                     </div>
 
                     <div className="pt-8 border-t border-gray-100">
-                        <h3 className="text-2xl font-sans font-semibold text-[#1a1a1a] mb-4">About the Studio</h3>
+                        <h3 className="text-xl font-bold text-gray-900 tracking-tight mb-4">About the Studio</h3>
                         <p className="text-gray-600 leading-relaxed text-base whitespace-pre-line max-w-3xl">
                             {getCleanDescription(salon.description)}
                         </p>
@@ -1262,7 +1262,7 @@ export function Shop() {
                     <div className="pt-12 border-t border-gray-100 pb-16">
                         {/* Reviews Header: Score + Breakdown Bars (Sprint 3.2) */}
                         <div className="mb-10">
-                            <h3 className="text-2xl md:text-3xl font-sans font-semibold text-[#1a1a1a] mb-6">Customer Reviews</h3>
+                            <h3 className="text-xl font-bold text-gray-900 tracking-tight mb-6">Customer Reviews</h3>
                             <div className="flex flex-col sm:flex-row gap-6 bg-white border border-gray-100 rounded-xl p-6 shadow-sm">
 
                                 {/* Left: Overall Score */}
@@ -1394,7 +1394,7 @@ export function Shop() {
                         {user ? (
                             user.role !== "salonOwner" ? (
                                 <div className="bg-white border border-gray-100 rounded-xl p-6 mb-8 shadow-sm">
-                                    <h4 className="text-lg font-semibold text-[#1a1a1a] mb-6">Write a Review</h4>
+                                    <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Write a Review</h4>
                                     <form onSubmit={handleReviewSubmit} className="space-y-6">
                                         <div>
                                             <p className="ui-label mb-3">Select Rating</p>
@@ -1562,7 +1562,7 @@ export function Shop() {
             <div id="salon-location-section" className="mt-16 pt-16 border-t border-gray-100">
                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                     <div>
-                        <h3 className="text-2xl md:text-3xl font-sans font-semibold text-[#1a1a1a] mb-2">Salon Location</h3>
+                        <h3 className="text-xl font-bold text-gray-900 tracking-tight mb-4">Salon Location</h3>
                     </div>
                     <button 
                         onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(salon.address + ' ' + salon.city)}`, '_blank')}
@@ -1596,7 +1596,7 @@ export function Shop() {
                                         <ShoppingBag size={16} />
                                     </div>
                                     <div>
-                                        <h4 className="font-sans font-semibold text-base text-[#1a1a1a] leading-tight">Selected Services</h4>
+                                        <h4 className="text-base sm:text-lg font-semibold text-gray-900 leading-tight">Selected Services</h4>
                                         <p className="text-xs text-gray-500">{totalCount} {totalCount === 1 ? 'service' : 'services'} in booking cart</p>
                                     </div>
                                 </div>

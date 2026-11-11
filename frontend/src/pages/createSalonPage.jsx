@@ -99,7 +99,7 @@ export function CreateSalonPage() {
 
             <div className="max-w-[1280px] mx-auto px-6 md:px-10 mt-8">
                 <div className="mb-6">
-                    <h2 className="text-4xl font-sans font-semibold text-[#1a1a1a] mb-3">Register Your Salon</h2>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-4">Register Your Salon</h2>
                     <p className="text-gray-500 max-w-xl leading-relaxed">Tell us about your business to get started.</p>
                 </div>
 

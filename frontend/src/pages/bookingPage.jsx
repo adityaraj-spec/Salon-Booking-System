@@ -424,7 +424,7 @@ export function BookingPage() {
                                 <div className="w-12 h-12 rounded-full bg-amber-100 text-[#D4AF37] flex items-center justify-center mb-4 mx-auto">
                                     <Scissors className="w-6 h-6" />
                                 </div>
-                                <h3 className="text-xl font-sans font-semibold text-center text-gray-900 mb-2">Additional Services Proposed</h3>
+                                <h3 className="text-xl font-bold text-gray-900 tracking-tight text-center mb-4">Additional Services Proposed</h3>
                                 <p className="text-xs text-gray-500 text-center mb-4">
                                     Your stylist would like to add the following extra services to your visit:
                                 </p>
@@ -468,7 +468,7 @@ export function BookingPage() {
                                 <span className="absolute inset-0 rounded-full border-2 border-[#D4AF37] animate-ping opacity-25"></span>
                                 <Hourglass className="w-8 h-8 text-[#D4AF37] animate-pulse" />
                             </div>
-                            <h2 className="text-2xl font-sans font-semibold text-[#1a1a1a] mb-2">Request Sent to Salon</h2>
+                            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-2">Request Sent to Salon</h2>
                             <p className="text-gray-500 text-sm max-w-md mx-auto mb-6">
                                 <strong>{salon?.name}</strong> has received your service request. The salon team will accept your entry into the queue shortly.
                             </p>
@@ -510,7 +510,7 @@ export function BookingPage() {
                                 Accepted by Salon
                             </div>
 
-                            <h2 className="text-3xl font-sans font-semibold text-[#1a1a1a] mb-1">You Are In The Queue!</h2>
+                            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-2">You Are In The Queue!</h2>
                             <p className="text-gray-500 text-sm mb-6">Head towards <strong>{salon?.name}</strong>.</p>
 
                             {/* Big Queue Position Display */}
@@ -560,7 +560,7 @@ export function BookingPage() {
                             <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-4">
                                 <CheckCircle2 className="w-8 h-8" />
                             </div>
-                            <h2 className="text-2xl font-sans font-semibold text-[#1a1a1a] mb-2">Checked In Successfully</h2>
+                            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-2">Checked In Successfully</h2>
                             <p className="text-gray-500 text-sm mb-6">
                                 You are marked as arrived at <strong>{salon?.name}</strong>. Please relax in the waiting area.
                             </p>
@@ -591,7 +591,7 @@ export function BookingPage() {
                             <div className="w-16 h-16 rounded-full bg-[#D4AF37]/20 text-[#D4AF37] flex items-center justify-center mx-auto mb-4">
                                 <Scissors className="w-8 h-8 animate-bounce" />
                             </div>
-                            <h2 className="text-2xl font-sans font-semibold text-[#1a1a1a] mb-2">Service In Progress</h2>
+                            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-2">Service In Progress</h2>
                             <p className="text-gray-500 text-sm mb-6">
                                 Your service is currently underway{activeBooking.staffName ? ` with ${activeBooking.staffName}` : ""}! Enjoy your experience.
                             </p>
@@ -610,7 +610,7 @@ export function BookingPage() {
                             <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-4">
                                 <Check className="w-8 h-8" />
                             </div>
-                            <h2 className="text-3xl font-sans font-semibold text-[#1a1a1a] mb-2">Service Completed!</h2>
+                            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-2">Service Completed!</h2>
                             <p className="text-gray-500 text-sm mb-6">
                                 Thank you for visiting <strong>{salon?.name}</strong>. We hope you loved your look!
                             </p>
@@ -629,7 +629,7 @@ export function BookingPage() {
                             <div className="w-16 h-16 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-4">
                                 <XCircle className="w-8 h-8" />
                             </div>
-                            <h2 className="text-2xl font-sans font-semibold text-[#1a1a1a] mb-2">Request Declined</h2>
+                            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-2">Request Declined</h2>
                             <p className="text-gray-600 text-sm mb-4">
                                 {activeBooking.rejectionReason || "The salon is unable to accommodate additional queue requests at this time."}
                             </p>
@@ -649,7 +649,7 @@ export function BookingPage() {
                             <div className="w-16 h-16 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center mx-auto mb-4">
                                 <Hourglass className="w-8 h-8" />
                             </div>
-                            <h2 className="text-2xl font-sans font-semibold text-[#1a1a1a] mb-2">Request Timed Out</h2>
+                            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-2">Request Timed Out</h2>
                             <p className="text-gray-600 text-sm mb-6">
                                 The salon did not respond within the acceptance timeout window. No fee has been charged.
                             </p>
@@ -685,7 +685,7 @@ export function BookingPage() {
                     {/* Header */}
                     <div className="mb-8">
                         <div className="flex items-center gap-3">
-                            <h1 className="text-2xl md:text-3xl font-sans font-bold tracking-tight text-[#1a1a1a]">Request Salon Queue</h1>
+                            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Request Salon Queue</h1>
                             <span className={`text-[11px] font-semibold px-3 py-1 rounded-full border ${
                                 canJoinQueue
                                     ? "bg-emerald-50 text-emerald-700 border-emerald-200"
@@ -746,7 +746,7 @@ export function BookingPage() {
                             <section>
                                 <div className="flex items-center gap-2 mb-4">
                                     <span className="bg-[#1a1a1a] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold font-sans">1</span>
-                                    <h2 className="text-xl font-sans font-semibold text-[#1a1a1a]">Select Desired Services</h2>
+                                    <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-4">Select Desired Services</h2>
                                 </div>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
                                     {services.length > 0 ? (
@@ -816,7 +816,7 @@ export function BookingPage() {
                             <section>
                                 <div className="flex items-center gap-2 mb-4">
                                     <span className="bg-[#1a1a1a] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold font-sans">2</span>
-                                    <h2 className="text-xl font-sans font-semibold text-[#1a1a1a]">Preferred Stylist (Optional)</h2>
+                                    <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-4">Preferred Stylist (Optional)</h2>
                                 </div>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                     {staffMembers.length > 0 ? (
@@ -858,7 +858,7 @@ export function BookingPage() {
                         {/* RIGHT COLUMN: QUEUE REQUEST SUMMARY */}
                         <div className="lg:col-span-1">
                             <div className="bg-white border border-stone-200/50 rounded-xl p-6 md:p-8 sticky top-24 shadow-sm">
-                                <h2 className="text-lg font-sans font-semibold text-[#1a1a1a] mb-6 border-b border-gray-50 pb-4">
+                                <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-4 border-b border-gray-100 pb-3">
                                     Request Summary
                                 </h2>
 

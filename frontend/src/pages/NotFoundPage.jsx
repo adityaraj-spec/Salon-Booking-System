@@ -19,7 +19,7 @@ export function NotFoundPage() {
         </div>
 
         {/* Headline & Description */}
-        <h1 className="text-3xl sm:text-4xl font-sans font-bold text-gray-900 tracking-tight mb-3">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-3">
           Page Not Found
         </h1>
         <p className="text-gray-500 text-sm leading-relaxed mb-8 max-w-sm mx-auto">

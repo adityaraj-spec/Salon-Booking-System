@@ -164,7 +164,7 @@ export function LandingPage() {
                     </motion.div>
 
                     {/* Dynamic H1 Headline */}
-                    <motion.h1 variants={fadeUpVariants} className="text-3xl sm:text-4xl md:text-5xl font-sans font-bold tracking-tight mb-8 leading-tight drop-shadow-lg text-white !text-white" style={{ color: '#ffffff' }}>
+                    <motion.h1 variants={fadeUpVariants} className="text-2xl sm:text-3xl font-bold tracking-tight mb-6 leading-tight drop-shadow-lg text-white !text-white" style={{ color: '#ffffff' }}>
                         Book top salons in{" "}
                         <button
                             type="button"
@@ -238,7 +238,7 @@ export function LandingPage() {
                         >
                             <div className="flex items-center justify-between pb-4 border-b border-gray-100">
                                 <div>
-                                    <h3 className="font-sans font-bold text-xl text-[#1a1a1a]">Select Your City</h3>
+                                    <h3 className="text-xl font-bold text-gray-900 tracking-tight">Select Your City</h3>
                                     <p className="text-xs text-gray-500 mt-0.5">Explore premier salons in your area</p>
                                 </div>
                                 <button
@@ -360,7 +360,7 @@ export function LandingPage() {
             <section className="py-10 px-6 bg-white">
                 <div className="max-w-6xl mx-auto">
                     <div className="my-12">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Popular Destinations</h2>
+                        <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-6">Popular Destinations</h2>
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
                             {dynamicCities.map((city) => (
                                 <div 
@@ -370,7 +370,7 @@ export function LandingPage() {
                                 >
                                     <img src={city.image} alt={city.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-4">
-                                        <h3 className="text-white font-bold text-lg">{city.name}</h3>
+                                        <h3 className="text-base sm:text-lg font-semibold text-white">{city.name}</h3>
                                         <p className="text-gray-300 text-xs">{city.state}</p>
                                     </div>
                                 </div>
@@ -387,7 +387,7 @@ export function LandingPage() {
                         <div className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
                             <div className="flex flex-col sm:flex-row sm:items-baseline justify-between mb-4 gap-2">
                                 <div className="flex items-baseline gap-3">
-                                    <h2 className="text-xl md:text-2xl font-semibold text-[#1a1a1a]">Cheapest Services</h2>
+                                    <h2 className="text-xl font-bold text-gray-900 tracking-tight">Cheapest Services</h2>
                                     <NavLink to="/home" className="text-xs text-[#8a6500] hover:text-[#1a1a1a] font-semibold bg-stone-100 hover:bg-stone-200 px-3 py-1 rounded-lg transition-all flex items-center gap-1">
                                         View all <ChevronRight size={14} />
                                     </NavLink>
@@ -440,7 +440,7 @@ export function LandingPage() {
             <section className="py-12 md:py-16 bg-white px-6 border-t border-gray-50">
                 <div className="max-w-6xl mx-auto">
                     <div className="text-center mb-8">
-                        <h2 className="text-3xl md:text-4xl font-sans font-semibold text-[#1a1a1a] mb-3">Why Choose SalonNow?</h2>
+                        <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-4">Why Choose SalonNow?</h2>
                         <p className="text-gray-500 text-base md:text-lg max-w-xl mx-auto leading-relaxed">We make salon booking simple, secure, and convenient.</p>
                     </div>
                     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -448,7 +448,7 @@ export function LandingPage() {
                             <div key={i} className="bg-[#fafafa] border border-gray-100 p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col gap-4">
                                 <div className={`w-10 h-10 ${card.bg} rounded-xl flex items-center justify-center shrink-0`}>{card.icon}</div>
                                 <div>
-                                    <h3 className="text-base font-semibold text-[#1a1a1a] mb-1">{card.title}</h3>
+                                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1">{card.title}</h3>
                                     <p className="text-gray-500 leading-relaxed text-sm">{card.desc}</p>
                                 </div>
                             </div>
@@ -461,13 +461,13 @@ export function LandingPage() {
             <section className="py-12 md:py-16 bg-white px-6 border-t border-gray-50">
                 <div className="max-w-6xl mx-auto">
                     <div className="text-center mb-8">
-                        <h2 className="text-3xl md:text-4xl font-sans font-semibold text-[#1a1a1a]">How It Works</h2>
+                        <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-6">How It Works</h2>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
                         {[["Browse Salons", "Explore verified salons near you"], ["Choose Service", "Select from a range of services"], ["Book & Pay", "Secure online booking & payment"], ["Enjoy Service", "Visit salon and enjoy your service"]].map(([title, desc], i) => (
                             <div key={i}>
                                 <div className="text-5xl md:text-6xl font-sans text-[#ffe0cc] font-bold mb-3">{String(i + 1).padStart(2, '0')}</div>
-                                <h3 className="text-lg font-semibold text-[#1a1a1a] mb-1.5 font-sans">{title}</h3>
+                                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1.5">{title}</h3>
                                 <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
                             </div>
                         ))}
@@ -480,7 +480,7 @@ export function LandingPage() {
                 <div className="max-w-6xl mx-auto">
                     <div className="text-center max-w-2xl mx-auto mb-8">
                         <span className="text-[#D4AF37] font-semibold text-xs bg-amber-50 px-3 py-1 rounded-full">Discover SalonNow</span>
-                        <h2 className="text-2xl md:text-3xl font-sans font-semibold text-[#1a1a1a] mt-3 mb-2">Online Salon Booking Made Effortless</h2>
+                        <h2 className="text-xl font-bold text-gray-900 tracking-tight mt-3 mb-4">Online Salon Booking Made Effortless</h2>
                         <p className="text-gray-500 text-sm md:text-base leading-relaxed">
                             Connecting customers with premier salons and wellness providers across India with live slot availability, upfront transparent pricing, and instant confirmations.
                         </p>
@@ -489,7 +489,7 @@ export function LandingPage() {
                     <div className="grid md:grid-cols-2 gap-6 md:gap-8">
                         {/* Left: Why book with us cards */}
                         <div className="space-y-4">
-                            <h3 className="text-xl font-semibold text-[#1a1a1a] mb-2 flex items-center gap-2">
+                            <h3 className="text-xl font-bold text-gray-900 tracking-tight mb-4 flex items-center gap-2">
                                 <Sparkles size={20} className="text-[#D4AF37]" /> Why Book with SalonNow?
                             </h3>
                             <div className="grid sm:grid-cols-2 gap-3.5">
@@ -500,7 +500,7 @@ export function LandingPage() {
                                     { title: "Real-Time Slots", desc: "Live seat availability ensures zero waiting and guaranteed appointments." },
                                 ].map((item, i) => (
                                     <div key={i} className="p-4 bg-[#fafafa] border border-gray-100 rounded-xl flex flex-col gap-1 hover:border-[#D4AF37]/30 transition-all">
-                                        <h4 className="font-semibold text-[#1a1a1a] text-sm">{item.title}</h4>
+                                        <h4 className="text-base font-semibold text-gray-900">{item.title}</h4>
                                         <p className="text-gray-500 text-xs leading-relaxed">{item.desc}</p>
                                     </div>
                                 ))}
@@ -515,7 +515,7 @@ export function LandingPage() {
 
                         {/* Right: How to book steps */}
                         <div className="bg-[#fafafa] p-6 md:p-8 rounded-xl border border-gray-100 h-fit">
-                            <h3 className="text-xl font-semibold text-[#1a1a1a] mb-4 font-sans flex items-center gap-2">
+                            <h3 className="text-xl font-bold text-gray-900 tracking-tight mb-4 flex items-center gap-2">
                                 <Clock size={20} className="text-[#D4AF37]" /> 4 Simple Steps to Book
                             </h3>
                             <div className="space-y-4">
@@ -530,7 +530,7 @@ export function LandingPage() {
                                             {i + 1}
                                         </span>
                                         <div>
-                                            <h4 className="text-sm font-semibold text-[#1a1a1a]">{item.step}</h4>
+                                            <h4 className="text-base font-semibold text-gray-900">{item.step}</h4>
                                             <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{item.desc}</p>
                                         </div>
                                     </div>
@@ -550,7 +550,7 @@ export function LandingPage() {
             {/* ── CTA ── */}
             <section className="py-12 md:py-16 bg-[#1f1e1d] px-6 text-center">
                 <div className="max-w-3xl mx-auto flex flex-col items-center">
-                    <h2 className="text-3xl md:text-4xl font-sans font-semibold text-white mb-4">Ready to Get Started?</h2>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-4">Ready to Get Started?</h2>
                     <p className="text-gray-300 text-base md:text-lg mb-6 font-normal max-w-xl leading-relaxed">Join thousands of satisfied customers who book their beauty appointments with us.</p>
                     <NavLink to="/home" className="w-full sm:w-auto bg-white text-black px-6 py-3 sm:py-3.5 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors">
                         Start Booking Now <ArrowRight size={18} />

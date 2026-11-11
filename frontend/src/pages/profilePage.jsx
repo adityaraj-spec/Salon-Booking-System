@@ -104,7 +104,7 @@ export function ProfilePage() {
                                     </div>
                                 ) : (
                                     <>
-                                        <h1 className="text-2xl md:text-3xl font-sans font-bold tracking-tight text-[#1a1a1a]">{user.fullName || "User"}</h1>
+                                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">{user.fullName || "User"}</h1>
                                         <p className="text-gray-400 font-medium text-sm">@{user.username}</p>
                                     </>
                                 )}
@@ -203,7 +203,7 @@ export function ProfilePage() {
                                 <div>
                                     <div className="flex items-center gap-2">
                                         <Sparkles size={20} className="text-[#D4AF37]" />
-                                        <h3 className="text-xl md:text-2xl font-sans font-semibold text-[#1a1a1a]">Loyalty Points & Rewards</h3>
+                                        <h3 className="text-xl font-bold text-gray-900 tracking-tight mb-4">Loyalty Points & Rewards</h3>
                                     </div>
                                     <p className="text-xs md:text-sm text-gray-500 mt-1 leading-relaxed">
                                         Earn 1 point per ₹10 spent on completed bookings. Redeem at checkout for instant discounts.
