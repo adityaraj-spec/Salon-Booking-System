@@ -329,7 +329,7 @@ function TransformationGallerySection({ photos = [] }) {
                 <div>
                     <div className="flex items-center gap-2">
                         <Sparkles size={18} className="text-[#D4AF37]" />
-                        <h3 className="text-xl font-bold text-gray-900 tracking-tight mb-4">Transformation Gallery</h3>
+                        <h3 className="text-xl font-bold text-gray-900 tracking-tight">Transformation Gallery</h3>
                     </div>
                     <p className="text-sm text-gray-500 mt-1">
                         {displayPhotos.length > 0
@@ -1127,32 +1127,7 @@ export function Shop() {
                         </div>
                     </div>
 
-                    <div className="pb-4 border-b border-gray-100">
-                        <h3 className="text-xl font-bold text-gray-900 tracking-tight mb-4">Location & Contact</h3>
-                        <div className="grid md:grid-cols-1 gap-6">
-                            <div className="flex flex-col md:flex-row gap-6">
-                                <div className="flex-1 flex gap-4 items-start bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                                    <div className="p-3 bg-gray-50 rounded-xl text-[#D4AF37]"><MapPin size={24} /></div>
-                                    <div className="min-w-0">
-                                    <p className="ui-subtext text-lg mb-1 truncate">{salon.city}</p>
-                                    <p className="ui-subtext break-words">{formatAddress(salon.address)}</p>
-                                    </div>
-                                </div>
-                                {salon.owner && (
-                                    <div className="flex-1 flex gap-4 items-start bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                                        <div className="p-3 bg-gray-50 rounded-xl text-[#D4AF37]"><Phone size={24} /></div>
-                                        <div className="min-w-0">
-                                            <p className="text-[#1a1a1a] font-bold text-lg mb-1">Contact Salon</p>
-                                            <p className="ui-subtext truncate">{salon.owner?.fullName || "Salon Staff"}</p>
-                                            <a href={`tel:${salon.contactNumber || salon.owner?.phonenumber}`} className="text-[#D4AF37] font-bold hover:underline">
-                                                {salon.contactNumber || salon.owner?.phonenumber}
-                                            </a>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
+                    
 
                     {/* OUR SERVICES SECTION */}
                     {services.length > 0 && (
@@ -1220,6 +1195,9 @@ export function Shop() {
                         </div>
                     )}
 
+                    {/* TRANSFORMATION GALLERY (BEFORE & AFTER) — Placed directly below services */}
+                    <TransformationGallerySection photos={salon?.beforeAfterPhotos} />
+
                     {/* MEET OUR TEAM SECTION — Sprint 2.3 */}
                     {staff.length > 0 && (
                         <StaffSection
@@ -1231,8 +1209,7 @@ export function Shop() {
                         />
                     )}
 
-                    {/* TRANSFORMATION GALLERY (BEFORE & AFTER) — Sprint 3.3 */}
-                    <TransformationGallerySection photos={salon?.beforeAfterPhotos} />
+                    
 
                     <div className="grid sm:grid-cols-2 gap-8">
                         <div className="flex gap-5">
@@ -1248,6 +1225,36 @@ export function Shop() {
                                 <h3 className="font-semibold text-[#1a1a1a] mb-1">Expert Stylists</h3>
                                 <p className="text-sm text-gray-500 leading-relaxed">Book with specialists having industry-leading expertise.</p>
                             </div>
+                        </div>
+                    </div>
+
+                    {/* LOCATION & CONTACT SECTION */}
+                    <div className="pt-6 border-t border-gray-100">
+                        <h3 className="text-xl font-bold text-gray-900 tracking-tight mb-4">Location & Contact</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl">
+                            <div className="flex items-start gap-3.5">
+                                <MapPin size={20} className="text-[#D4AF37] shrink-0 mt-0.5" />
+                                <div className="min-w-0 text-sm">
+                                    <p className="font-semibold text-gray-900">{salon.city}</p>
+                                    <p className="text-gray-600 leading-relaxed mt-0.5">{formatAddress(salon.address)}</p>
+                                </div>
+                            </div>
+                            {salon.owner && (
+                                <div className="flex items-start gap-3.5">
+                                    <Phone size={20} className="text-[#D4AF37] shrink-0 mt-0.5" />
+                                    <div className="min-w-0 text-sm">
+                                        <p className="font-semibold text-gray-900">
+                                            {salon.owner?.fullName ? `${salon.owner.fullName} (Salon Contact)` : "Contact Salon"}
+                                        </p>
+                                        <a 
+                                            href={`tel:${salon.contactNumber || salon.owner?.phonenumber}`} 
+                                            className="inline-block text-[#8a6500] hover:text-[#D4AF37] font-semibold mt-0.5 hover:underline transition-colors"
+                                        >
+                                            {salon.contactNumber || salon.owner?.phonenumber}
+                                        </a>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
 
