@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams, NavLink, useNavigate, useLocation } from "react-router-dom";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 import axiosInstance from "../api/axiosConfig";
 import { useAuth } from "../context/AuthContext";
 import { useBookingCart } from "../context/BookingCartContext";
@@ -23,6 +24,7 @@ import {
 
 export function BookingPage() {
     const { id } = useParams();
+    useDocumentTitle('Reserve Appointment', 'Select services, preferred stylist, and secure your place in queue with SalonNow.');
     const navigate = useNavigate();
     const { user, loading: authLoading } = useAuth();
     const socket = useSocket();
@@ -951,3 +953,4 @@ export function BookingPage() {
         </div>
     );
 }
+

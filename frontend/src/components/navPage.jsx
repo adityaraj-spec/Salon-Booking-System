@@ -194,7 +194,7 @@ export function NavBar() {
                 }`}>
                 <UpcomingAppointmentBanner />
                 <div className="max-w-[1280px] mx-auto px-6 md:px-10 py-4 flex items-center justify-between">
-                    <NavLink to="/home" aria-label="SalonNow home" className="flex items-center gap-2.5 group cursor-pointer">
+                    <NavLink to="/" aria-label="SalonNow home" className="flex items-center gap-2.5 group cursor-pointer">
                         <img src={salonLogo} alt="SalonNow" className="w-9 h-9 rounded-full object-cover shadow-sm border border-[#D4AF37]/30 group-hover:scale-105 transition-transform" />
                         <span className={`text-xl md:text-2xl font-sans font-bold tracking-tight transition-colors duration-300 ${isTransparent ? (isDark ? 'text-white' : 'text-gray-900') : 'text-[#1a1a1a]'}`}>
                             Salon<span className="text-[#D4AF37]">Now</span>
@@ -364,7 +364,7 @@ export function NavBar() {
                                             )}
 
                                             <NavLink
-                                                to="/settings"
+                                                to="/profile"
                                                 className="flex items-center gap-3 mx-1.5 px-3.5 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
                                                 onClick={() => setIsMenuOpen(false)}
                                             >
@@ -513,14 +513,14 @@ export function NavBar() {
                 }`}>
                 {/* Sidebar Header */}
                 <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-white">
-                    <div className="flex items-center gap-2">
-                        <div className="bg-[#1a1a1a] p-1.5 rounded-full text-white shadow-sm">
+                    <NavLink to="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2 group">
+                        <div className="bg-[#1a1a1a] p-1.5 rounded-full text-white shadow-sm group-hover:scale-105 transition-transform">
                             <Scissors size={16} />
                         </div>
                         <span className="text-lg font-sans font-bold tracking-tight text-gray-900">
                             Salon<span className="text-[#D4AF37]">Now</span>
                         </span>
-                    </div>
+                    </NavLink>
                     <button
                         aria-label="Close navigation menu"
                         onClick={() => setIsMobileMenuOpen(false)}
@@ -656,3 +656,5 @@ export function NavBar() {
         </>
     );
 }
+
+

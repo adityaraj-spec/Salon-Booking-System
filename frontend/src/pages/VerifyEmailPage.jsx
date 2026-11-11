@@ -4,8 +4,10 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import axiosInstance from "../api/axiosConfig";
 import { useAuth } from "../context/AuthContext";
 import { useNotification } from "../context/NotificationContext";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 export function VerifyEmailPage() {
+    useDocumentTitle('Verify Your Email', 'Enter your 4-digit verification code to activate your SalonNow account.');
     const { login } = useAuth();
     const { showNotification } = useNotification();
     const navigate = useNavigate();
@@ -351,3 +353,4 @@ export function VerifyEmailPage() {
         </div>
     );
 }
+

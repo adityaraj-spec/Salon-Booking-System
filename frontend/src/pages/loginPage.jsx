@@ -1,16 +1,25 @@
 import { useState } from "react";
-import { Scissors, Eye, EyeOff } from "lucide-react";
+import { Scissors, Eye, EyeOff, X, Mail, Loader2, ArrowLeft } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosConfig";
 import { useAuth } from "../context/AuthContext";
 import { useNotification } from "../context/NotificationContext";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 export function LoginPage() {
+    useDocumentTitle("Sign In", "Sign in to your SalonNow account to manage appointments, live queue positions, and member rewards.");
     const { login } = useAuth();
     const { showNotification } = useNotification();
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    
+    // Forgot Password Modal State
+    const [isForgotOpen, setIsForgotOpen] = useState(false);
+    const [forgotEmail, setForgotEmail] = useState("");
+    const [forgotLoading, setForgotLoading] = useState(false);
+    const [forgotStatus, setForgotStatus] = useState(null); // { type: 'success'|'error', text: '' }
+
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -58,7 +67,7 @@ export function LoginPage() {
                 navigate("/verify-email", { state: { email } });
                 return;
             }
-            const msg = err.response?.data?.message || "Something went wrong. Please try again.";
+            const msg = err.response?.data?.message || "Invalid credentials. Please check your email and password.";
             setError(msg);
             showNotification(msg, "error");
         } finally {
@@ -66,100 +75,219 @@ export function LoginPage() {
         }
     };
 
+    const handleForgotPasswordSubmit = async (e) => {
+        e.preventDefault();
+        if (!forgotEmail) return;
+        setForgotLoading(true);
+        setForgotStatus(null);
+
+        try {
+            const res = await axiosInstance.post("/users/forgot-password", { email: forgotEmail });
+            const message = res.data?.message || "If an account with that email exists, reset instructions have been dispatched.";
+            setForgotStatus({ type: "success", text: message });
+            showNotification(message, "success");
+        } catch (err) {
+            const errMessage = err.response?.data?.message || "Unable to send reset instructions. Please try again later.";
+            setForgotStatus({ type: "error", text: errMessage });
+            showNotification(errMessage, "error");
+        } finally {
+            setForgotLoading(false);
+        }
+    };
+
     return (
         <div className="min-h-screen grid md:grid-cols-2 bg-white font-sans">
             {/* LEFT SIDE: FORM */}
-            <div className="flex flex-col justify-center items-center px-6 py-6 overflow-y-auto">
+            <div className="flex flex-col justify-center items-center px-6 py-8 overflow-y-auto">
                 <div className="w-full max-w-sm">
-                    {/* Logo Section */}
-                    <div className="flex justify-center items-center space-x-2 mb-4">
-                        <div className="bg-[#1a1a1a] p-2 rounded-full text-white">
-                            <Scissors size={24} />
-                        </div>
-                        <h1 className="text-2xl font-sans font-bold text-black tracking-wide">Salon<span className="text-[#D4AF37]">Now</span></h1>
+                    {/* Clickable Header Logo -> Home */}
+                    <div className="flex justify-center mb-6">
+                        <Link to="/" className="inline-flex items-center space-x-2.5 group transition-transform active:scale-95" title="Return to SalonNow Home">
+                            <div className="bg-[#1a1a1a] p-2 rounded-full text-white group-hover:scale-105 transition-transform">
+                                <Scissors size={22} />
+                            </div>
+                            <span className="text-2xl font-sans font-bold text-black tracking-wide">
+                                Salon<span className="text-[#D4AF37]">Now</span>
+                            </span>
+                        </Link>
                     </div>
 
                     {/* Titles */}
-                    <div className="text-center mb-4">
+                    <div className="text-center mb-6">
                         <h2 className="text-3xl font-sans font-semibold text-[#1a1a1a] mb-2">Welcome Back</h2>
-                        <p className="text-gray-500 text-sm leading-relaxed">Login to your account to continue</p>
+                        <p className="text-gray-500 text-sm leading-relaxed">Login to your account to manage your appointments</p>
                     </div>
 
                     {error && (
-                        <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4">
-                            {error}
+                        <div className="bg-red-50 border border-red-200 text-red-600 p-3.5 rounded-xl text-sm mb-5 flex items-center gap-2">
+                            <span>{error}</span>
                         </div>
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         {/* Email */}
                         <div>
-                            <label className="block text-sm text-gray-700 mb-1">Email</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1.5">Email Address</label>
                             <input
                                 name="email"
                                 type="email"
                                 required
-                                placeholder="Enter your email"
-                                className="w-full border border-gray-200 rounded-lg p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
+                                placeholder="name@example.com"
+                                className="w-full border border-gray-200 rounded-xl p-3.5 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm"
                             />
                         </div>
 
                         {/* Password */}
                         <div>
-                            <label className="block text-sm text-gray-700 mb-1">Password</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
                             <div className="relative">
                                 <input
                                     name="password"
                                     type={showPassword ? "text" : "password"}
                                     required
                                     placeholder="Enter your password"
-                                    className="w-full border border-gray-200 rounded-lg p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors pr-10"
+                                    className="w-full border border-gray-200 rounded-xl p-3.5 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm pr-11"
                                 />
                                 <button
                                     type="button"
+                                    aria-label={showPassword ? "Hide password" : "Show password"}
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600"
+                                    className="absolute inset-y-0 right-3.5 flex items-center text-gray-400 hover:text-gray-600"
                                 >
                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
                             </div>
                         </div>
 
-                        {/* Forgot Password */}
-                        <div className="flex justify-start pt-1 pb-2">
-                            <a href="#" className="text-sm text-[#e65c00] hover:text-[#cc5200] font-medium transition-colors">
+                        {/* Forgot Password Action */}
+                        <div className="flex justify-end pt-1">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setIsForgotOpen(true);
+                                    setForgotStatus(null);
+                                }}
+                                className="text-xs text-[#8a6500] hover:text-[#b8962e] font-semibold transition-colors focus:outline-none"
+                            >
                                 Forgot password?
-                            </a>
+                            </button>
                         </div>
 
                         {/* Login Button */}
                         <button 
                             type="submit" 
                             disabled={loading}
-                            className="w-full bg-[#1a1a1a] hover:bg-black text-white font-medium py-3.5 rounded-xl transition-colors mt-2 disabled:opacity-50"
+                            className="w-full bg-[#1a1a1a] hover:bg-black text-white font-bold py-3.5 rounded-xl transition-all shadow-md active:scale-[0.99] mt-3 disabled:opacity-50 flex items-center justify-center gap-2 min-h-[44px]"
                         >
-                            {loading ? "Logging in..." : "Login"}
+                            {loading ? (
+                                <>
+                                    <Loader2 size={18} className="animate-spin text-[#D4AF37]" />
+                                    <span>Logging in...</span>
+                                </>
+                            ) : (
+                                "Login"
+                            )}
                         </button>
 
                         <div className="text-center mt-6 text-sm text-gray-500">
-                            Don't have an account? <Link to="/signup" className="text-[#e65c00] hover:text-[#cc5200] font-medium transition-colors">Sign up</Link>
+                            Don&apos;t have an account?{" "}
+                            <Link to="/signup" className="text-[#8a6500] hover:text-[#b8962e] font-bold transition-colors">
+                                Sign up
+                            </Link>
                         </div>
 
-                        <div className="text-center mt-8 text-xs text-gray-400">
-                            <Link to="/" className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-all font-medium">&larr; Back to Home</Link>
+                        <div className="text-center mt-6 text-xs text-gray-400">
+                            <Link to="/" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-all font-medium">
+                                <ArrowLeft size={14} />
+                                <span>Back to Home</span>
+                            </Link>
                         </div>
                     </form>
                 </div>
             </div>
 
-            {/* RIGHT SIDE: IMAGE */}
+            {/* RIGHT SIDE: IMAGE HERO */}
             <div className="hidden md:block relative bg-gray-100">
                 <img
                     src="https://images.unsplash.com/photo-1562322140-8baeececf3df?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
-                    alt="Hair Styling"
+                    alt="Salon Experience"
                     className="absolute inset-0 h-full w-full object-cover"
                 />
+                <div className="absolute inset-0 bg-black/30"></div>
+                <div className="absolute bottom-10 left-10 right-10 text-white z-10">
+                    <p className="text-xs uppercase tracking-widest text-[#ffd166] font-bold mb-2">Verified Salons</p>
+                    <p className="text-2xl font-sans font-bold leading-snug">Experience effortless beauty &amp; grooming scheduling</p>
+                </div>
             </div>
+
+            {/* FORGOT PASSWORD MODAL */}
+            {isForgotOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100 relative">
+                        <button
+                            type="button"
+                            onClick={() => setIsForgotOpen(false)}
+                            className="absolute top-4 right-4 p-1.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
+                            aria-label="Close modal"
+                        >
+                            <X size={18} />
+                        </button>
+
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="w-10 h-10 rounded-full bg-amber-50 text-[#8a6500] flex items-center justify-center shrink-0">
+                                <Mail size={20} />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900">Reset Password</h3>
+                                <p className="text-xs text-gray-500">We will send instructions to your email</p>
+                            </div>
+                        </div>
+
+                        {forgotStatus && (
+                            <div className={`p-3 rounded-xl text-xs font-semibold mb-4 ${
+                                forgotStatus.type === "success" 
+                                    ? "bg-emerald-50 border border-emerald-200 text-emerald-800" 
+                                    : "bg-red-50 border border-red-200 text-red-700"
+                            }`}>
+                                {forgotStatus.text}
+                            </div>
+                        )}
+
+                        <form onSubmit={handleForgotPasswordSubmit} className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1">Account Email</label>
+                                <input
+                                    type="email"
+                                    required
+                                    value={forgotEmail}
+                                    onChange={(e) => setForgotEmail(e.target.value)}
+                                    placeholder="Enter your registered email"
+                                    className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all"
+                                />
+                            </div>
+
+                            <div className="flex gap-3 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsForgotOpen(false)}
+                                    className="w-1/2 py-2.5 rounded-xl border border-gray-200 font-semibold text-xs text-gray-700 hover:bg-gray-50 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={forgotLoading || !forgotEmail}
+                                    className="w-1/2 py-2.5 rounded-xl bg-[#1a1a1a] hover:bg-black text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
+                                >
+                                    {forgotLoading ? <Loader2 size={14} className="animate-spin text-[#D4AF37]" /> : "Send Link"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
+
+export default LoginPage;

@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { BookingCardSkeleton } from "../components/skeletons/index.jsx";
 import salonPlaceholder from "../assets/salon1.jpg";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 const getStatusBadge = (status, queuePosition) => {
     switch (status) {
@@ -82,6 +83,7 @@ const getStatusBadge = (status, queuePosition) => {
 };
 
 export function MyBookingsPage() {
+    useDocumentTitle('My Bookings & Queue Status', 'Track your upcoming appointments, service PINs, and booking history on SalonNow.');
     const navigate = useNavigate();
     const { setCartServices } = useBookingCart();
     const socket = useSocket();
@@ -482,3 +484,4 @@ export function MyBookingsPage() {
         </div>
     );
 }
+

@@ -9,6 +9,7 @@ import { useNotification } from '../context/NotificationContext';
 import { useCityResolution } from '../hooks/useCityResolution';
 import { SalonCardSkeleton } from '../components/skeletons/index.jsx';
 import salonPlaceholder from '../assets/salon1.jpg';
+import useDocumentTitle from '../hooks/useDocumentTitle';
 
 const SERVICE_CATEGORIES = [
     { id: "all", label: "All Services", icon: Sparkles, iconClass: "text-amber-500" },
@@ -27,6 +28,7 @@ export function Shops() {
     const { showNotification } = useNotification();
     const [searchParams, setSearchParams] = useSearchParams();
     const cityParam = searchParams.get("city") || "";
+    useDocumentTitle(cityParam ? `Salons in ${cityParam}` : "Discover Salons", "Explore verified top-rated salons, filter by city or service, and book instant grooming appointments on SalonNow.");
     const stateParam = searchParams.get("state") || "";
     const categoryParam = searchParams.get("category") || "";
     const topRatedParam = searchParams.get("topRated") === "true";
@@ -773,7 +775,22 @@ export function Shops() {
                                             </h3>
                                             <div className="mb-4 flex flex-col gap-1 text-stone-500 text-xs leading-relaxed">
                                                 <span className="text-sm text-[#8a6500] flex items-center gap-1"><MapPin size={13} className="shrink-0" />{salon.city ? `${salon.city}, India` : "Location not set"}</span>
-                                                <span className="text-sm text-gray-500 flex items-center gap-1"><Phone size={13} className="shrink-0" />{salon.contactNumber || salon.owner?.phonenumber || "+91 Unavailable"}</span>
+                                                {salon.contactNumber || salon.owner?.phonenumber ? (
+                                                    <a
+                                                        href={`tel:${(salon.contactNumber || salon.owner?.phonenumber).replace(/\s+/g, "")}`}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="text-sm text-gray-500 hover:text-[#8a6500] flex items-center gap-1 transition-colors w-fit"
+                                                        title="Call salon"
+                                                    >
+                                                        <Phone size={13} className="shrink-0" />
+                                                        <span>{salon.contactNumber || salon.owner?.phonenumber}</span>
+                                                    </a>
+                                                ) : (
+                                                    <span className="text-sm text-gray-400 flex items-center gap-1">
+                                                        <Phone size={13} className="shrink-0" />
+                                                        <span>+91 Unavailable</span>
+                                                    </span>
+                                                )}
                                             </div>
                                             <div className="mt-auto flex items-end justify-between gap-2">
                                                 <div className="flex items-center gap-2">
@@ -863,3 +880,5 @@ export function Shops() {
         </div>
     );
 }
+
+

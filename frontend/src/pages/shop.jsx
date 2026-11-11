@@ -9,6 +9,7 @@ import { SalonMap } from "../components/SalonMap";
 import { SeatDisplay } from "../components/SeatDisplay.jsx";
 import { ShopDetailSkeleton } from "../components/skeletons/index.jsx";
 import salonPlaceholder from "../assets/salon1.jpg";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 const getTodayDate = () => {
     const today = new Date();
@@ -383,6 +384,7 @@ export function Shop() {
     const navigate = useNavigate();
 
     const [salon, setSalon] = useState(null);
+    useDocumentTitle(salon?.name ? (salon.name + " • Book Appointment") : "Salon Details", 'View services, certified staff, customer reviews, and live seat matrix on SalonNow.');
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -1715,3 +1717,5 @@ export function Shop() {
         </div>
     );
 }
+
+

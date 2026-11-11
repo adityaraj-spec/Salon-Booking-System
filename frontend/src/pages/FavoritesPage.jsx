@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Star, MapPin, Phone, Heart, Search } from 'lucide-react';
 import axiosInstance from '../api/axiosConfig';
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 import { SalonCardSkeleton } from '../components/skeletons/index.jsx';
@@ -9,6 +10,7 @@ import salonPlaceholder from '../assets/salon1.jpg';
 
 
 export function FavoritesPage() {
+    useDocumentTitle('My Favorites', 'Your saved preferred salons for quick rebooking on SalonNow.');
     const navigate = useNavigate();
     const { user } = useAuth();
     const { showNotification } = useNotification();
@@ -158,10 +160,22 @@ export function FavoritesPage() {
                                             <MapPin size={14} className="text-[#D4AF37] shrink-0" />
                                             {salon.city ? `${salon.city}, India` : "Location not set"}
                                         </span>
-                                        <span className="text-sm text-gray-500 flex items-center gap-2">
-                                            <Phone size={14} className="text-[#D4AF37] shrink-0" />
-                                            {salon.contactNumber || "+91 Unavailable"}
-                                        </span>
+                                        {salon.contactNumber ? (
+                                            <a
+                                                href={`tel:${salon.contactNumber.replace(/\s+/g, "")}`}
+                                                onClick={(e) => e.stopPropagation()}
+                                                className="text-sm text-gray-500 hover:text-[#D4AF37] flex items-center gap-2 transition-colors w-fit"
+                                                title="Call salon"
+                                            >
+                                                <Phone size={14} className="text-[#D4AF37] shrink-0" />
+                                                <span>{salon.contactNumber}</span>
+                                            </a>
+                                        ) : (
+                                            <span className="text-sm text-gray-400 flex items-center gap-2">
+                                                <Phone size={14} className="text-[#D4AF37] shrink-0" />
+                                                <span>+91 Unavailable</span>
+                                            </span>
+                                        )}
                                     </div>
 
                                     {/* Bottom row aligning rating left and timing/seats right */}
@@ -200,3 +214,4 @@ export function FavoritesPage() {
         </div>
     );
 }
+

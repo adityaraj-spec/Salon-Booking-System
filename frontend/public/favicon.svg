@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE082"/>
+      <stop offset="50%" stop-color="#D4AF37"/>
+      <stop offset="100%" stop-color="#AA820A"/>
+    </linearGradient>
+    <linearGradient id="darkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#262626"/>
+      <stop offset="100%" stop-color="#0F0F0F"/>
+    </linearGradient>
+  </defs>
+  <!-- Background Badge with rounded corners -->
+  <rect width="64" height="64" rx="16" fill="url(#darkGrad)"/>
+  <rect x="1" y="1" width="62" height="62" rx="15" fill="none" stroke="url(#goldGrad)" stroke-width="1.5" stroke-opacity="0.4"/>
+
+  <!-- Stylized Scissors Graphic -->
+  <g transform="translate(14, 14)" stroke="url(#goldGrad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <!-- Top Left Loop -->
+    <circle cx="6" cy="28" r="4.5" fill="none"/>
+    <!-- Bottom Right Loop -->
+    <circle cx="28" cy="28" r="4.5" fill="none"/>
+    <!-- Blades crossed -->
+    <path d="M9 25 L28 4"/>
+    <path d="M25 25 L6 4"/>
+    <!-- Pivot screw -->
+    <circle cx="17" cy="16.5" r="1.5" fill="#FFE082"/>
+  </g>
+</svg>
+

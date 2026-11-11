@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 const formatLabel = (value, fallback = "") => {
     if (!value) return fallback;
@@ -34,6 +35,7 @@ const formatLabel = (value, fallback = "") => {
 };
 
 export function SalonManagementPage() {
+    useDocumentTitle('Salon Management', 'Edit salon hours, staff schedules, pricing, and profile on SalonNow.');
     const { user } = useAuth();
     const socket = useSocket();
     const { showNotification } = useNotification();
@@ -974,3 +976,4 @@ export function SalonManagementPage() {
         </div>
     );
 }
+

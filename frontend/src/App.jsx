@@ -27,6 +27,7 @@ const SalonBookingsPage = lazy(() => import("./pages/SalonBookingsPage.jsx"));
 const SalonManagementPage = lazy(() => import("./pages/SalonManagementPage.jsx").then(m => ({ default: m.SalonManagementPage })));
 const FavoritesPage = lazy(() => import("./pages/FavoritesPage.jsx").then(m => ({ default: m.FavoritesPage })));
 const VerifyEmailPage = lazy(() => import('./pages/VerifyEmailPage.jsx').then(m => ({ default: m.VerifyEmailPage })));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage.jsx').then(m => ({ default: m.NotFoundPage })));
 
 /**
  * Loading Fallback - A subtle shimmer bar for route transitions
@@ -80,7 +81,11 @@ function App() {
                         <Route path="owner/manage" element={<Navigate to="/salon/manage" replace />} />
                         <Route path="account/profile" element={<Navigate to="/profile" replace />} />
                         <Route path="account/security" element={<Navigate to="/profile" replace />} />
+                        <Route path="settings" element={<Navigate to="/profile" replace />} />
                       </Route>
+
+                      {/* Catch-all 404 for standard app layout */}
+                      <Route path="*" element={<NotFoundPage />} />
                     </Route>
                     
                     {/* Auth pages (no layout) */}

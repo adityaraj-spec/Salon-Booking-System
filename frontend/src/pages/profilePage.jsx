@@ -3,8 +3,10 @@ import { useAuth } from "../context/AuthContext";
 import { User, Mail, Phone, Shield, Calendar, Edit2, Check, X, Loader2, Award, Sparkles, Coins, Gift, ArrowUpRight, ArrowDownLeft, Copy, History } from "lucide-react";
 import axiosInstance from "../api/axiosConfig";
 import { useNotification } from "../context/NotificationContext";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 export function ProfilePage() {
+    useDocumentTitle('My Profile & Rewards', 'Manage your personal account, phone number, and loyalty points on SalonNow.');
     const { user, login } = useAuth();
     const { showNotification } = useNotification();
     const [isEditing, setIsEditing] = useState(false);
@@ -353,3 +355,4 @@ export function ProfilePage() {
         </main>
     );
 }
+

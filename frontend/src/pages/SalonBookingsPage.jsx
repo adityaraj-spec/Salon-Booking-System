@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import axiosInstance from "../api/axiosConfig";
 import { useNotification } from "../context/NotificationContext";
 import { useSocket } from "../context/SocketContext";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 import {
     Clock,
     User,
@@ -48,6 +49,7 @@ const loadRazorpay = () =>
     });
 
 export function SalonBookingsPage() {
+    useDocumentTitle('Salon Owner Dashboard', 'Real-time queue requests, appointment tracking, and checkout for salon owners.');
     const { showNotification } = useNotification();
     const socket = useSocket();
 
@@ -1069,3 +1071,4 @@ export function SalonBookingsPage() {
 }
 
 export default SalonBookingsPage;
+

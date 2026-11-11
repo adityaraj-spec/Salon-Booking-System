@@ -9,6 +9,7 @@ import { useCityResolution } from '../hooks/useCityResolution';
 import axiosInstance from '../api/axiosConfig';
 import { MiniSalonCardSkeleton, DestinationCardSkeleton } from '../components/skeletons/index.jsx';
 import salonPlaceholder from '../assets/salon1.jpg';
+import useDocumentTitle from '../hooks/useDocumentTitle';
 
 const heroImages = [
     { url: "/adam-winger-KVVjmb3IIL8-unsplash.jpg", isDark: true },
@@ -55,6 +56,7 @@ const WHY_CHOOSE = [
 ];
 
 export function LandingPage() {
+    useDocumentTitle('Premium Grooming & Instant Salon Booking', 'Book top salons and wellness studios in 60 seconds. View live seat availability, verified stylists, and transparent pricing on SalonNow.');
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const { setNavbarTheme } = useUI();
     const { user } = useAuth();
@@ -647,3 +649,4 @@ export function LandingPage() {
         </div>
     );
 }
+

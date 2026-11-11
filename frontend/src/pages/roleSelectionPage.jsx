@@ -4,8 +4,10 @@ import { useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosConfig";
 import { useAuth } from "../context/AuthContext";
 import { useNotification } from "../context/NotificationContext";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 export function RoleSelectionPage() {
+    useDocumentTitle('Choose Your Account Type', 'Select whether you are joining SalonNow as a customer or salon owner.');
     const [loading, setLoading] = useState(null); // 'customer' or 'salonOwner'
     const navigate = useNavigate();
     const { user, loading: authLoading, updateUserRole } = useAuth();
@@ -119,3 +121,4 @@ export function RoleSelectionPage() {
         </div>
     );
 }
+

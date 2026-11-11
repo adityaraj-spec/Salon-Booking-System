@@ -9,7 +9,7 @@ const MainLayout = () => {
     const isLandingPage = location.pathname === '/';
 
     return (
-        <div className="min-h-screen flex flex-col bg-[#fafafa] font-sans selection:bg-[#D4AF37]/30 selection:text-black">
+        <div className="min-h-screen flex flex-col bg-[#fafafa] font-sans selection:bg-[#D4AF37]/30 selection:text-black overflow-x-hidden">
             <NavBar />
             
             <main className={`flex-1 w-full relative ${isLandingPage ? '' : 'pt-20'}`}>

@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { Scissors, Eye, EyeOff } from "lucide-react";
+import { Scissors, Eye, EyeOff, Loader2, ArrowLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosConfig";
 import { useNotification } from "../context/NotificationContext";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 export function SignUpPage() {
+    useDocumentTitle("Create Account", "Join SalonNow to book salons in 60 seconds with live queue tracking and verified stylists.");
     const { showNotification } = useNotification();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -20,6 +22,12 @@ export function SignUpPage() {
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData.entries());
         
+        if (data.password !== data.confirmPassword) {
+            setError("Passwords do not match. Please re-enter.");
+            setLoading(false);
+            return;
+        }
+
         try {
             const response = await axiosInstance.post("/users/register", data, {
                 withCredentials: true,
@@ -36,7 +44,7 @@ export function SignUpPage() {
                 showNotification(msg, "error");
             }
         } catch (err) {
-            const msg = err.response?.data?.message || "Something went wrong. Please try again.";
+            const msg = err.response?.data?.message || "Registration failed. Please check your details and try again.";
             setError(msg);
             showNotification(msg, "error");
         } finally {
@@ -47,94 +55,99 @@ export function SignUpPage() {
     return (
         <div className="min-h-screen grid md:grid-cols-2 bg-white font-sans">
             {/* LEFT SIDE: FORM */}
-            <div className="flex flex-col justify-center items-center px-6 py-6 overflow-y-auto">
-                <div className="w-full max-w-md mt-2">
-                    {/* Logo Section */}
-                    {/* ... (existing logo section) */}
-                    <div className="flex justify-center items-center space-x-2 mb-4">
-                        <div className="bg-[#1a1a1a] p-2 rounded-full text-white">
-                            <Scissors size={24} />
-                        </div>
-                        <h1 className="text-2xl font-sans font-bold text-black tracking-wide">Salon<span className="text-[#D4AF37]">Now</span></h1>
+            <div className="flex flex-col justify-center items-center px-6 py-8 overflow-y-auto">
+                <div className="w-full max-w-md my-auto">
+                    {/* Clickable Header Logo -> Home */}
+                    <div className="flex justify-center mb-5">
+                        <Link to="/" className="inline-flex items-center space-x-2.5 group transition-transform active:scale-95" title="Return to SalonNow Home">
+                            <div className="bg-[#1a1a1a] p-2 rounded-full text-white group-hover:scale-105 transition-transform">
+                                <Scissors size={22} />
+                            </div>
+                            <span className="text-2xl font-sans font-bold text-black tracking-wide">
+                                Salon<span className="text-[#D4AF37]">Now</span>
+                            </span>
+                        </Link>
                     </div>
 
                     {/* Titles */}
-                    <div className="text-center mb-4">
-                        <h2 className="text-3xl font-sans font-semibold text-[#1a1a1a] mb-2">Create Account</h2>
-                        <p className="text-gray-500 text-sm leading-relaxed">Join us to book your beauty appointments</p>
+                    <div className="text-center mb-5">
+                        <h2 className="text-3xl font-sans font-semibold text-[#1a1a1a] mb-1.5">Create Account</h2>
+                        <p className="text-gray-500 text-sm leading-relaxed">Join thousands of customers discovering premier salons</p>
                     </div>
 
                     {error && (
-                        <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4">
-                            {error}
+                        <div className="bg-red-50 border border-red-200 text-red-600 p-3.5 rounded-xl text-sm mb-4 flex items-center gap-2">
+                            <span>{error}</span>
                         </div>
                     )}
 
                     <form
                         onSubmit={handleSubmit}
-                        className="space-y-4"
-                        encType="multipart/form-data"
+                        className="space-y-3.5"
                     >
                         {/* Full Name */}
                         <div>
-                            <label className="block text-sm text-gray-700 mb-1">Full Name</label>
+                            <label className="block text-xs font-semibold text-gray-700 mb-1">Full Name</label>
                             <input
                                 name="fullName"
                                 type="text"
-                                placeholder="Enter your full name"
+                                placeholder="e.g. Aaditya Raj"
                                 required
-                                className="w-full border border-gray-200 rounded-lg p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
+                                className="w-full border border-gray-200 rounded-xl p-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all"
                             />
                         </div>
 
                         {/* Username */}
                         <div>
-                            <label className="block text-sm text-gray-700 mb-1">Username</label>
+                            <label className="block text-xs font-semibold text-gray-700 mb-1">Username</label>
                             <input
                                 name="username"
                                 type="text"
-                                placeholder="Enter your username"
+                                placeholder="choose a username"
                                 required
-                                className="w-full border border-gray-200 rounded-lg p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
+                                className="w-full border border-gray-200 rounded-xl p-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all"
                             />
                         </div>
 
                         {/* Email */}
                         <div>
-                            <label className="block text-sm text-gray-700 mb-1">Email</label>
+                            <label className="block text-xs font-semibold text-gray-700 mb-1">Email Address</label>
                             <input
                                 name="email"
                                 type="email"
-                                placeholder="Enter your email"
+                                placeholder="name@example.com"
                                 required
-                                className="w-full border border-gray-200 rounded-lg p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
+                                className="w-full border border-gray-200 rounded-xl p-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all"
                             />
                         </div>
 
                         {/* Phone */}
                         <div>
-                            <label className="block text-sm text-gray-700 mb-1">Phone</label>
+                            <label className="block text-xs font-semibold text-gray-700 mb-1">Phone Number</label>
                             <input
                                 name="phonenumber"
-                                type="text"
-                                placeholder="Enter your phone number"
-                                className="w-full border border-gray-200 rounded-lg p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
+                                type="tel"
+                                placeholder="+91 98765 43210"
+                                required
+                                className="w-full border border-gray-200 rounded-xl p-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all"
                             />
                         </div>
 
                         {/* Password */}
                         <div>
-                            <label className="block text-sm text-gray-700 mb-1">Password</label>
+                            <label className="block text-xs font-semibold text-gray-700 mb-1">Password</label>
                             <div className="relative">
                                 <input
                                     name="password"
                                     type={showPassword ? "text" : "password"}
-                                    placeholder="Create a strong password"
+                                    placeholder="At least 8 characters"
                                     required
-                                    className="w-full border border-gray-200 rounded-lg p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors pr-10"
+                                    minLength={8}
+                                    className="w-full border border-gray-200 rounded-xl p-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all pr-10"
                                 />
                                 <button
                                     type="button"
+                                    aria-label={showPassword ? "Hide password" : "Show password"}
                                     onClick={() => setShowPassword(!showPassword)}
                                     className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600"
                                 >
@@ -145,16 +158,18 @@ export function SignUpPage() {
 
                         {/* Password Confirm */}
                         <div>
-                            <label className="block text-sm text-gray-700 mb-1">Confirm Password</label>
+                            <label className="block text-xs font-semibold text-gray-700 mb-1">Confirm Password</label>
                             <div className="relative">
                                 <input
                                     name="confirmPassword"
                                     type={showConfirmPassword ? "text" : "password"}
                                     placeholder="Re-enter your password"
-                                    className="w-full border border-gray-200 rounded-lg p-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors pr-10"
+                                    required
+                                    className="w-full border border-gray-200 rounded-xl p-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all pr-10"
                                 />
                                 <button
                                     type="button"
+                                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                                     className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600"
                                 >
@@ -167,30 +182,50 @@ export function SignUpPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-[#1a1a1a] hover:bg-black text-white font-medium py-3.5 rounded-xl transition-colors mt-6 disabled:opacity-50"
+                            className="w-full bg-[#1a1a1a] hover:bg-black text-white font-bold py-3.5 rounded-xl transition-all shadow-md active:scale-[0.99] mt-4 disabled:opacity-50 flex items-center justify-center gap-2 min-h-[44px]"
                         >
-                            {loading ? "Creating Account..." : "Sign Up"}
+                            {loading ? (
+                                <>
+                                    <Loader2 size={18} className="animate-spin text-[#D4AF37]" />
+                                    <span>Creating Account...</span>
+                                </>
+                            ) : (
+                                "Sign Up"
+                            )}
                         </button>
 
-                        <div className="text-center mt-6 text-sm text-gray-500">
-                            Already have an account? <Link to="/login" className="text-[#e65c00] hover:text-[#cc5200] font-medium transition-colors">Login</Link>
+                        <div className="text-center mt-5 text-sm text-gray-500">
+                            Already have an account?{" "}
+                            <Link to="/login" className="text-[#8a6500] hover:text-[#b8962e] font-bold transition-colors">
+                                Login
+                            </Link>
                         </div>
 
-                        <div className="text-center mt-6 text-xs text-gray-400">
-                            <Link to="/" className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-all font-medium">&larr; Back to Home</Link>
+                        <div className="text-center mt-4 text-xs text-gray-400">
+                            <Link to="/" className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-all font-medium">
+                                <ArrowLeft size={14} />
+                                <span>Back to Home</span>
+                            </Link>
                         </div>
                     </form>
                 </div>
             </div>
 
-            {/* RIGHT SIDE: IMAGE */}
+            {/* RIGHT SIDE: IMAGE HERO */}
             <div className="hidden md:block relative bg-gray-100">
                 <img
                     src="https://images.unsplash.com/photo-1515377905703-c4788e51af15?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
-                    alt="Facial Treatment"
+                    alt="Salon Ambience"
                     className="absolute inset-0 h-full w-full object-cover"
                 />
+                <div className="absolute inset-0 bg-black/30"></div>
+                <div className="absolute bottom-10 left-10 right-10 text-white z-10">
+                    <p className="text-xs uppercase tracking-widest text-[#ffd166] font-bold mb-2">Priority Queue &amp; Booking</p>
+                    <p className="text-2xl font-sans font-bold leading-snug">Instant seat reservation with transparent salon pricing</p>
+                </div>
             </div>
         </div>
     );
 }
+
+export default SignUpPage;
