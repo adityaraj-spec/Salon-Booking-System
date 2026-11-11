@@ -75,7 +75,7 @@ export const rotateRefreshToken = async (incomingRefreshToken) => {
     throw new ApiError(401, "Malformed refresh token claims");
   }
 
-  const user = await User.findById(userId);
+  const user = await User.findById(userId).select("+refreshToken");
   if (!user) {
     throw new ApiError(401, "User no longer exists");
   }
@@ -209,7 +209,7 @@ export const revokeAllUserSessions = async (userId) => {
     }
   }
 
-  const user = await User.findById(userId);
+  const user = await User.findById(userId).select("+refreshToken");
   if (user) {
     await user.setRefreshToken(null);
     await user.save({ validateBeforeSave: false });

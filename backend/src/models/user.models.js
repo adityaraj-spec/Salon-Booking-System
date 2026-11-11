@@ -4,6 +4,8 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { ROLES } from "../constants.js";
 
+const BCRYPT_SALT_ROUNDS = 12; // Upgraded from 10 for stronger hashing
+
 const userSchema = new mongoose.Schema(
   {
     username: {
@@ -34,6 +36,7 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, "Password is required"],
+      select: false, // Never return password hash in queries by default
     },
     role: {
       type: String,
@@ -42,6 +45,7 @@ const userSchema = new mongoose.Schema(
     },
     refreshToken: {
       type: String,
+      select: false, // Never return refresh token hash in queries by default
     },
     isVerified: {
       type: Boolean,
@@ -54,15 +58,19 @@ const userSchema = new mongoose.Schema(
     },
     verificationCode: {
       type: String,
+      select: false,
     },
     verificationCodeExpiry: {
       type: Date,
+      select: false,
     },
     resetPasswordToken: {
       type: String,
+      select: false,
     },
     resetPasswordExpiry: {
       type: Date,
+      select: false,
     },
     favorites: [
       {
@@ -89,7 +97,7 @@ const userSchema = new mongoose.Schema(
 
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
-  this.password = await bcrypt.hash(this.password, 10);
+  this.password = await bcrypt.hash(this.password, BCRYPT_SALT_ROUNDS);
 });
 
 userSchema.methods.isPasswordcorrect = async function (password) {
@@ -138,7 +146,7 @@ userSchema.methods.setRefreshToken = async function (refreshToken) {
   if (!refreshToken) {
     this.refreshToken = undefined;
   } else {
-    this.refreshToken = await bcrypt.hash(refreshToken, 10);
+    this.refreshToken = await bcrypt.hash(refreshToken, BCRYPT_SALT_ROUNDS);
   }
 };
 

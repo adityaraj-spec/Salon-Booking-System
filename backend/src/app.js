@@ -119,6 +119,9 @@ app.use(sanitizeNoSQL);
 app.use("/api/", generalApiLimiter);
 app.use("/api/v1/users/login", authStrictLimiter);
 app.use("/api/v1/users/register", authStrictLimiter);
+app.use("/api/v1/users/forgot-password", authStrictLimiter);
+app.use("/api/v1/users/reset-password", authStrictLimiter);
+app.use("/api/v1/users/resend-verification", authStrictLimiter);
 
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/salons", salonRouter);
@@ -179,3 +182,4 @@ app.use((err, req, res, next) => {
 });
 
 export default app;
+

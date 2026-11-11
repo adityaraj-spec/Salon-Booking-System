@@ -121,7 +121,7 @@ const verifyEmail = asyncHandler(async (req, res) => {
     // Check if account is locked out due to prior failed attempts
     await checkOTPLockout(email);
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select("+verificationCode +verificationCodeExpiry");
     if (!user) {
         throw new ApiError(404, "User not found");
     }
@@ -157,7 +157,7 @@ const verifyEmail = asyncHandler(async (req, res) => {
     const verifiedUser = await User.findById(user._id).select("-password -refreshToken -verificationCode -verificationCodeExpiry");
 
     const options = getCookieOptions();
-    const accessTokenOptions = { ...options, maxAge: 7 * 24 * 60 * 60 * 1000 };
+    const accessTokenOptions = { ...options, maxAge: 15 * 60 * 1000 };
     const refreshTokenOptions = { ...options, maxAge: 15 * 24 * 60 * 60 * 1000 };
 
     // Send welcome email silently
@@ -185,7 +185,7 @@ const resendVerificationCode = asyncHandler(async (req, res) => {
     await checkOTPRequestRateLimit(email, req.ip);
     await checkOTPLockout(email);
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select("+verificationCode +verificationCodeExpiry");
     if (!user) {
         throw new ApiError(404, "User not found");
     }
@@ -219,7 +219,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
     const user = await User.findOne({
         $or: [{ username }, { email }]
-    })
+    }).select("+password +verificationCode +verificationCodeExpiry")
     if (!user) {
         throw new ApiError(404, "User does not exist")
     }
@@ -254,7 +254,7 @@ const loginUser = asyncHandler(async (req, res) => {
     const loggedInUSer = await User.findById(user._id).select("-password -refreshToken -verificationCode -verificationCodeExpiry")
 
     const options = getCookieOptions();
-    const accessTokenOptions = { ...options, maxAge: 7 * 24 * 60 * 60 * 1000 };
+    const accessTokenOptions = { ...options, maxAge: 15 * 60 * 1000 };
     const refreshTokenOptions = { ...options, maxAge: 15 * 24 * 60 * 60 * 1000 };
 
     sendLoginEmail(loggedInUSer.email, loggedInUSer.fullName).catch(err => {
@@ -462,7 +462,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         const { accessToken, refreshToken: newRefreshToken } = await rotateRefreshToken(incomingRefreshToken);
 
         const options = getCookieOptions();
-        const accessTokenOptions = { ...options, maxAge: 7 * 24 * 60 * 60 * 1000 };
+        const accessTokenOptions = { ...options, maxAge: 15 * 60 * 1000 };
         const refreshTokenOptions = { ...options, maxAge: 15 * 24 * 60 * 60 * 1000 };
 
         return res
@@ -530,7 +530,7 @@ const resetPassword = asyncHandler(async (req, res) => {
     const user = await User.findOne({
         resetPasswordToken: tokenHash,
         resetPasswordExpiry: { $gt: new Date() },
-    });
+    }).select("+resetPasswordToken +resetPasswordExpiry");
 
     if (!user) {
         throw new ApiError(400, "Invalid or expired password reset token");
@@ -564,3 +564,7 @@ export {
     forgotPassword,
     resetPassword
 }
+
+
+
+
