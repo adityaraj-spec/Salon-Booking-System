@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, Loader2 } from "lucide-react";
+import { CalendarDays } from "lucide-react";
+import { SeatMatrixSkeleton } from "./skeletons/index.jsx";
 import axiosInstance from "../api/axiosConfig";
 
 const getTodayDate = () => {
@@ -95,13 +96,11 @@ export function SeatMatrix({ salonId, date, onDateChange, durationMinutes = 30, 
                     </button>
                 ))}
             </div>
-            <div className="relative grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {loading && (
-                    <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-white/70">
-                        <Loader2 size={22} className="animate-spin text-[#D4AF37]" />
-                    </div>
-                )}
-                {slots.length > 0 ? slots.map((slot) => {
+            {loading ? (
+                <SeatMatrixSkeleton count={6} />
+            ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {slots.length > 0 ? slots.map((slot) => {
                     const seatsLeft = Math.max(0, Number(slot.seatsLeft ?? slot.availableSeats) || 0);
                     const available = slot.available !== false && seatsLeft > 0;
                     const label = getSlotLabel(slot);
@@ -119,10 +118,11 @@ export function SeatMatrix({ salonId, date, onDateChange, durationMinutes = 30, 
                             </span>
                         </button>
                     );
-                }) : (
-                    <p className="col-span-full py-6 text-center text-sm text-gray-400">{error || availability.reason || "No slots available for this date."}</p>
-                )}
-            </div>
+                    }) : (
+                        <p className="col-span-full py-6 text-center text-sm text-gray-400">{error || availability.reason || "No slots available for this date."}</p>
+                    )}
+                </div>
+            )}
         </div>
     );
 }

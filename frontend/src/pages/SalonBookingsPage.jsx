@@ -3,6 +3,7 @@ import axiosInstance from "../api/axiosConfig";
 import { useNotification } from "../context/NotificationContext";
 import { useSocket } from "../context/SocketContext";
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import { SalonDashboardSkeleton } from "../components/skeletons/index.jsx";
 import {
     Clock,
     User,
@@ -368,14 +369,7 @@ export function SalonBookingsPage() {
     );
 
     if (loading) {
-        return (
-            <div className="min-h-screen bg-[#FBFBFA] flex items-center justify-center p-6">
-                <div className="text-center">
-                    <Loader2 className="w-10 h-10 text-[#D4AF37] animate-spin mx-auto mb-3" />
-                    <p className="text-xs font-bold text-gray-500">Loading salon queue...</p>
-                </div>
-            </div>
-        );
+        return <SalonDashboardSkeleton />;
     }
 
     return (

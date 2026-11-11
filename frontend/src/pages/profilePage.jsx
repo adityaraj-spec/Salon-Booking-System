@@ -4,6 +4,7 @@ import { User, Mail, Phone, Shield, Calendar, Edit2, Check, X, Loader2, Award, S
 import axiosInstance from "../api/axiosConfig";
 import { useNotification } from "../context/NotificationContext";
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import { PointsLedgerSkeleton } from "../components/skeletons/index.jsx";
 
 export function ProfilePage() {
     useDocumentTitle('My Profile & Rewards', 'Manage your personal account, phone number, and loyalty points on SalonNow.');
@@ -289,9 +290,7 @@ export function ProfilePage() {
                                 </div>
 
                                 {loyaltyLoading ? (
-                                    <div className="flex items-center justify-center py-10 bg-gray-50 rounded-xl">
-                                        <Loader2 size={24} className="animate-spin text-[#D4AF37]" />
-                                    </div>
+                                    <PointsLedgerSkeleton count={3} />
                                 ) : (loyaltyData?.transactions && loyaltyData.transactions.length > 0) ? (
                                     <div className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm divide-y divide-gray-50">
                                         {loyaltyData.transactions.map((tx, idx) => {

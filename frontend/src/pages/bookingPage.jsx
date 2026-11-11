@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams, NavLink, useNavigate, useLocation } from "react-router-dom";
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import { BookingPageSkeleton } from "../components/skeletons/index.jsx";
 import axiosInstance from "../api/axiosConfig";
 import { useAuth } from "../context/AuthContext";
 import { useBookingCart } from "../context/BookingCartContext";
@@ -389,12 +390,7 @@ export function BookingPage() {
     };
 
     if (loading) {
-        return (
-            <div className="min-h-screen bg-white flex flex-col items-center justify-center">
-                <Loader2 className="w-12 h-12 text-[#D4AF37] animate-spin mb-4" />
-                <p className="text-gray-500 animate-pulse">Loading live salon queue status...</p>
-            </div>
-        );
+        return <BookingPageSkeleton />;
     }
 
     // ─────────────────────────────────────────────────────────────────────────────

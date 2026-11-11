@@ -310,3 +310,10 @@
   animation: shimmer 1.5s infinite linear;
   border-radius: 12px;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    background: #EFECE6;
+  }
+}

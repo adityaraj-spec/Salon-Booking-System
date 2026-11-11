@@ -28,6 +28,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import { SalonManagementSkeleton } from "../components/skeletons/index.jsx";
 
 const formatLabel = (value, fallback = "") => {
     if (!value) return fallback;
@@ -328,11 +329,7 @@ export function SalonManagementPage() {
 
 
     if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-[#fafafa]">
-                <Loader2 className="w-10 h-10 text-[#D4AF37] animate-spin" />
-            </div>
-        );
+        return <SalonManagementSkeleton />;
     }
 
     return (
