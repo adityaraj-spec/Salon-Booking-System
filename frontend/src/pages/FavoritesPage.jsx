@@ -70,7 +70,7 @@ export function FavoritesPage() {
 
     return (
         <div className="w-full min-h-screen bg-[#fafafa]">
-            <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-20 md:pt-24 pb-12">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 md:pt-24 pb-12">
                 <div className="mb-6">
                     <NavLink to="/discover" className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 transition-colors shadow-sm">
                         <ArrowLeft size={16} /> Back to Discover

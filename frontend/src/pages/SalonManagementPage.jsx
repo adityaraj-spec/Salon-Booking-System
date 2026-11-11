@@ -336,7 +336,7 @@ export function SalonManagementPage() {
     }
 
     return (
-        <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-20 md:pt-24 pb-8 font-sans">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 md:pt-24 pb-8 font-sans">
             <div>
                 <header className="mb-6">
                     <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Manage your salon</h1>
@@ -441,7 +441,7 @@ export function SalonManagementPage() {
 
                     {/* COLUMN 3: STATS & ACTIONS (Right) */}
                     <div className="lg:w-[38%] bg-gray-50/50 rounded-xl p-6 lg:p-8 border border-gray-100 flex flex-col justify-center gap-6 relative z-10">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                             {/* Service Menu Stat */}
                             <div className="bg-white p-4 lg:p-5 rounded-xl shadow-sm border border-gray-50 flex items-center gap-4 hover:shadow-md transition-shadow">
                                 <div className="w-12 h-12 bg-amber-50 rounded-lg flex items-center justify-center text-amber-500 shadow-sm border border-amber-100/50 shrink-0">
@@ -557,7 +557,7 @@ export function SalonManagementPage() {
                                         required
                                     />
                                 </div>
-                                <div className="grid grid-cols-2 gap-4 md:col-span-2">
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 md:col-span-2">
                                     <div className="space-y-1.5">
                                         <label className="ui-label">State</label>
                                         <select 
@@ -626,7 +626,7 @@ export function SalonManagementPage() {
                                     </div>
                                 </div>
                                 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                                     <div className="space-y-1.5">
                                         <label className="ui-label">Opens At</label>
                                         <input 

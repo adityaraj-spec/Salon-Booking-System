@@ -193,7 +193,7 @@ export function NavBar() {
                     : 'backdrop-blur-md bg-[#FBFBFA]/85 border-b border-[#E7E5E4]/50 shadow-soft-xs'
                 }`}>
                 <UpcomingAppointmentBanner />
-                <div className="max-w-[1280px] mx-auto px-6 md:px-10 py-4 flex items-center justify-between">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
                     <NavLink to="/" aria-label="SalonNow home" className="flex items-center gap-2.5 group cursor-pointer">
                         <img src={salonLogo} alt="SalonNow" className="w-9 h-9 rounded-full object-cover shadow-sm border border-[#D4AF37]/30 group-hover:scale-105 transition-transform" />
                         <span className={`text-xl md:text-2xl font-sans font-bold tracking-tight transition-colors duration-300 ${isTransparent ? (isDark ? 'text-white' : 'text-gray-900') : 'text-[#1a1a1a]'}`}>

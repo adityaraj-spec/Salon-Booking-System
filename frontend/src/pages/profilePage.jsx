@@ -69,10 +69,10 @@ export function ProfilePage() {
 
     return (
         <main className="flex-1 pb-12">
-            <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-20 md:pt-24 pb-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 md:pt-24 pb-8">
                 <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
                     {/* Header/Cover */}
-                    <div className="h-32 bg-[#1a1a1a] flex items-end px-6 md:px-12 relative">
+                    <div className="h-28 sm:h-32 bg-[#1a1a1a] flex items-end px-4 sm:px-6 md:px-12 relative">
                         <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#D4AF37] border-4 border-white translate-y-10 md:translate-y-12 flex items-center justify-center text-white text-2xl md:text-3xl font-bold z-0">
                             {user.fullName?.charAt(0).toUpperCase() || "U"}
                         </div>
@@ -87,7 +87,7 @@ export function ProfilePage() {
                         )}
                     </div>
 
-                    <div className="px-6 md:px-12 pt-14 md:pt-16 pb-12">
+                    <div className="px-4 sm:px-6 md:px-12 pt-14 md:pt-16 pb-12">
                         <div className="flex flex-col md:flex-row justify-between items-start mb-6 gap-4">
                             <div className="w-full">
                                 {isEditing ? (
@@ -114,7 +114,7 @@ export function ProfilePage() {
                             </span>
                         </div>
 
-                        <div className="grid md:grid-cols-2 gap-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                             <div className="space-y-4">
                                 <h3 className="text-sm font-semibold text-gray-400 border-b border-gray-50 pb-2">Information</h3>
                                 
@@ -231,7 +231,7 @@ export function ProfilePage() {
                             </div>
 
                             {/* Summary Cards */}
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
                                 <div className="bg-gradient-to-br from-[#1a1a1a] to-[#2d2d2d] rounded-xl p-5 text-white shadow-sm flex flex-col justify-between">
                                     <div className="flex items-center justify-between">
                                         <span className="text-xs font-semibold text-gray-300">Current Balance</span>

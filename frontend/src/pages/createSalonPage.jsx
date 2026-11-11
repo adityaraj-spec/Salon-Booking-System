@@ -79,7 +79,7 @@ export function CreateSalonPage() {
         <div className="font-sans pb-20 w-full">
             {/* Header */}
             <div className="bg-white border-b border-gray-100 py-6 px-6 sticky top-0 z-10 shadow-sm rounded-t-xl md:rounded-none">
-                <div className="max-w-[1280px] mx-auto px-6 md:px-10 flex justify-between items-center">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
                     <div className="flex items-center space-x-2">
                         <div className="bg-[#1a1a1a] p-1.5 rounded-full text-white">
                             <Scissors size={20} />
@@ -97,7 +97,7 @@ export function CreateSalonPage() {
                 </div>
             </div>
 
-            <div className="max-w-[1280px] mx-auto px-6 md:px-10 mt-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
                 <div className="mb-6">
                     <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-4">Register Your Salon</h2>
                     <p className="text-gray-500 max-w-xl leading-relaxed">Tell us about your business to get started.</p>

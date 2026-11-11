@@ -209,7 +209,7 @@ export function MyBookingsPage() {
 
     if (loading) {
         return (
-            <div className="max-w-[1280px] mx-auto px-6 md:px-10 py-12 space-y-6">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 space-y-5 sm:space-y-6">
                 <BookingCardSkeleton />
                 <BookingCardSkeleton />
                 <BookingCardSkeleton />
@@ -219,7 +219,7 @@ export function MyBookingsPage() {
 
     return (
         <div className="min-h-screen bg-[#fafafa] pt-20 md:pt-24 pb-12">
-            <div className="max-w-[1280px] mx-auto px-6 md:px-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="mb-6">
                     <NavLink to="/discover" className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 transition-colors shadow-sm">
                         <ArrowLeft size={16} /> Back to Discover
@@ -293,7 +293,7 @@ export function MyBookingsPage() {
                                         </div>
 
                                         {/* QUEUE VS LEGACY TIME METRICS */}
-                                        <div className="mt-5 grid grid-cols-2 gap-3 max-w-md">
+                                        <div className="mt-5 grid grid-cols-1 min-[400px]:grid-cols-2 gap-3 max-w-md">
                                             {isQueue ? (
                                                 <>
                                                     <div className="flex items-center gap-3 bg-amber-50/50 px-4 py-2.5 rounded-xl border border-amber-100/60">

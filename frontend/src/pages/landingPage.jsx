@@ -156,7 +156,7 @@ export function LandingPage() {
                     </motion.div>
                 </AnimatePresence>
 
-                <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="relative z-10 px-6 max-w-4xl mx-auto flex flex-col items-center pt-8">
+                <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="relative z-10 px-4 sm:px-6 max-w-4xl mx-auto flex flex-col items-center pt-8">
                     {/* Brand Eyebrow Badge (L3) */}
                     <motion.div variants={fadeUpVariants} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/50 backdrop-blur-md border border-[#D4AF37]/50 text-[#ffd166] text-xs sm:text-sm font-semibold mb-5 shadow-xl">
                         <Scissors size={15} className="text-[#ffd166]" />
@@ -179,10 +179,10 @@ export function LandingPage() {
                     </motion.h1>
 
                     {/* CTAs: Primary & Secondary (Use my location) */}
-                    <motion.div variants={fadeUpVariants} className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-4 w-full sm:w-auto">
+                    <motion.div variants={fadeUpVariants} className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-3 sm:gap-4 w-full max-w-sm sm:max-w-none sm:w-auto">
                         <NavLink 
                             to={`/home?city=${encodeURIComponent(resolvedCity)}`} 
-                            className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 h-12 sm:h-13 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1 duration-300 bg-[#ffd166] text-[#1a1a1a] hover:bg-[#ffc633]"
+                            className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 h-12 rounded-xl font-bold flex items-center justify-center gap-2 transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-0.5 hover:scale-[1.02] bg-[#ffd166] text-[#1a1a1a] hover:bg-[#ffc633]"
                         >
                             <span>Find Salons in {resolvedCity}</span>
                             <ArrowRight size={18} />
@@ -192,7 +192,7 @@ export function LandingPage() {
                             type="button"
                             onClick={handleUseLocation}
                             disabled={detectingLocation}
-                            className="w-full sm:w-auto px-7 py-4 rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 border border-white/80 text-white hover:bg-white/15 backdrop-blur-sm flex items-center justify-center gap-2 disabled:opacity-75"
+                            className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 h-12 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 hover:scale-[1.02] border border-white/80 text-white hover:bg-white/15 backdrop-blur-sm flex items-center justify-center gap-2 disabled:opacity-75"
                         >
                             {detectingLocation ? (
                                 <>
@@ -210,7 +210,7 @@ export function LandingPage() {
                         {!user && (
                             <NavLink 
                                 to="/signup" 
-                                className="w-full sm:w-auto px-6 sm:px-7 py-3 sm:py-3.5 h-12 sm:h-13 rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 border border-white/50 hover:border-white bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm flex items-center justify-center text-sm"
+                                className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 h-12 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 hover:scale-[1.02] border border-white/50 hover:border-white bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm flex items-center justify-center text-sm"
                             >
                                 Sign up
                             </NavLink>
@@ -357,8 +357,8 @@ export function LandingPage() {
 
 
             {/* ── POPULAR DESTINATIONS ── */}
-            <section className="py-10 px-6 bg-white">
-                <div className="max-w-6xl mx-auto">
+            <section className="py-10 px-4 sm:px-6 lg:px-8 bg-white">
+                <div className="max-w-7xl mx-auto">
                     <div className="my-12">
                         <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-6">Popular Destinations</h2>
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -382,8 +382,8 @@ export function LandingPage() {
 
             {/* ── CHEAPEST SERVICES SLIDER ── */}
             {(loading || cheapestServices.length > 0) && (
-                <section className="py-10 px-6">
-                    <div className="max-w-6xl mx-auto">
+                <section className="py-10 px-4 sm:px-6 lg:px-8">
+                    <div className="max-w-7xl mx-auto">
                         <div className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
                             <div className="flex flex-col sm:flex-row sm:items-baseline justify-between mb-4 gap-2">
                                 <div className="flex items-baseline gap-3">
@@ -437,13 +437,13 @@ export function LandingPage() {
             )}
 
             {/* ── WHY CHOOSE US ── */}
-            <section className="py-12 md:py-16 bg-white px-6 border-t border-gray-50">
-                <div className="max-w-6xl mx-auto">
+            <section className="py-12 md:py-16 bg-white px-4 sm:px-6 lg:px-8 border-t border-gray-50">
+                <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-8">
                         <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-4">Why Choose SalonNow?</h2>
                         <p className="text-gray-500 text-base md:text-lg max-w-xl mx-auto leading-relaxed">We make salon booking simple, secure, and convenient.</p>
                     </div>
-                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                         {WHY_CHOOSE.map((card, i) => (
                             <div key={i} className="bg-[#fafafa] border border-gray-100 p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col gap-4">
                                 <div className={`w-10 h-10 ${card.bg} rounded-xl flex items-center justify-center shrink-0`}>{card.icon}</div>
@@ -458,12 +458,12 @@ export function LandingPage() {
             </section>
 
             {/* ── HOW IT WORKS ── */}
-            <section className="py-12 md:py-16 bg-white px-6 border-t border-gray-50">
-                <div className="max-w-6xl mx-auto">
+            <section className="py-12 md:py-16 bg-white px-4 sm:px-6 lg:px-8 border-t border-gray-50">
+                <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-8">
                         <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-6">How It Works</h2>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 text-center">
                         {[["Browse Salons", "Explore verified salons near you"], ["Choose Service", "Select from a range of services"], ["Book & Pay", "Secure online booking & payment"], ["Enjoy Service", "Visit salon and enjoy your service"]].map(([title, desc], i) => (
                             <div key={i}>
                                 <div className="text-5xl md:text-6xl font-sans text-[#ffe0cc] font-bold mb-3">{String(i + 1).padStart(2, '0')}</div>
@@ -476,8 +476,8 @@ export function LandingPage() {
             </section>
 
             {/* ── INFORMATIONAL FEATURE SECTION ── */}
-            <section className="py-12 md:py-16 bg-white px-6 border-t border-gray-100">
-                <div className="max-w-6xl mx-auto">
+            <section className="py-12 md:py-16 bg-white px-4 sm:px-6 lg:px-8 border-t border-gray-100">
+                <div className="max-w-7xl mx-auto">
                     <div className="text-center max-w-2xl mx-auto mb-8">
                         <span className="text-[#D4AF37] font-semibold text-xs bg-amber-50 px-3 py-1 rounded-full">Discover SalonNow</span>
                         <h2 className="text-xl font-bold text-gray-900 tracking-tight mt-3 mb-4">Online Salon Booking Made Effortless</h2>
@@ -492,7 +492,7 @@ export function LandingPage() {
                             <h3 className="text-xl font-bold text-gray-900 tracking-tight mb-4 flex items-center gap-2">
                                 <Sparkles size={20} className="text-[#D4AF37]" /> Why Book with SalonNow?
                             </h3>
-                            <div className="grid sm:grid-cols-2 gap-3.5">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-3.5">
                                 {[
                                     { title: "Curated Salons", desc: "Handpicked verified salons and spas across popular cities in India." },
                                     { title: "Upfront Best Prices", desc: "No hidden charges. Transparent service menu prices and exclusive deals." },
@@ -548,11 +548,11 @@ export function LandingPage() {
             </section>
 
             {/* ── CTA ── */}
-            <section className="py-12 md:py-16 bg-[#1f1e1d] px-6 text-center">
+            <section className="py-12 md:py-16 bg-[#1f1e1d] px-4 sm:px-6 lg:px-8 text-center">
                 <div className="max-w-3xl mx-auto flex flex-col items-center">
                     <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-4">Ready to Get Started?</h2>
                     <p className="text-gray-300 text-base md:text-lg mb-6 font-normal max-w-xl leading-relaxed">Join thousands of satisfied customers who book their beauty appointments with us.</p>
-                    <NavLink to="/home" className="w-full sm:w-auto bg-white text-black px-6 py-3 sm:py-3.5 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors">
+                    <NavLink to="/home" className="w-full sm:w-auto bg-white text-black px-6 py-3 sm:py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-gray-100 hover:scale-[1.02] transition-all duration-300">
                         Start Booking Now <ArrowRight size={18} />
                     </NavLink>
                 </div>

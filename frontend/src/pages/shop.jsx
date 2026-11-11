@@ -791,7 +791,7 @@ export function Shop() {
     }
 
     return (
-        <div className="max-w-[1280px] mx-auto px-6 md:px-10 pt-20 pb-6 md:pt-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-6 md:pt-24">
             <div className="flex items-center justify-between mb-6">
                 <NavLink to="/discover" className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 transition-colors shadow-sm">
                     <ArrowLeft size={16} /> Back to Discover
@@ -1068,7 +1068,7 @@ export function Shop() {
             </div>
 
             {/* Image Gallery - Mobile Carousel */}
-            <div className="md:hidden relative w-full h-[400px] mb-8 rounded-xl overflow-hidden shadow-sm">
+            <div className="md:hidden relative w-full h-[300px] sm:h-[400px] mb-8 rounded-xl overflow-hidden shadow-sm">
                 <img 
                     src={galleryImages[currentImageIndex]} 
                     className="w-full h-full object-cover transition-opacity duration-300" 

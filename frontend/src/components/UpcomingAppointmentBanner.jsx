@@ -84,7 +84,7 @@ export function UpcomingAppointmentBanner() {
             aria-label="Upcoming appointment reminder"
             className="w-full bg-gradient-to-r from-[#1a1a1a] via-[#2a2415] to-[#1a1a1a] text-white border-b border-[#D4AF37]/30 shadow-md relative z-30 transition-all duration-300"
         >
-            <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm">
                 <div className="flex items-center gap-3 min-w-0">
                     <span className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full bg-[#D4AF37]/20 text-[#D4AF37] ring-1 ring-[#D4AF37]/40 animate-pulse">
                         <Clock size={16} />

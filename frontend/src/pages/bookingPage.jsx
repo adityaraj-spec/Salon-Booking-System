@@ -679,8 +679,8 @@ export function BookingPage() {
 
     return (
         <div className="flex flex-col bg-[#fafafa] font-sans min-h-screen">
-            <main className="flex-1 pt-12 md:pt-16 pb-16">
-                <div className="max-w-[1280px] mx-auto px-6 md:px-10">
+            <main className="flex-1 pt-16 md:pt-20 pb-20 lg:pb-16">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
                     {/* Header */}
                     <div className="mb-8">
@@ -702,7 +702,7 @@ export function BookingPage() {
                     </div>
 
                     {/* LIVE SALON QUEUE STATUS BANNER */}
-                    <div className="mb-10 bg-white border border-stone-200/50 rounded-xl p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <div className="mb-8 bg-white border border-stone-200/50 rounded-xl p-4 sm:p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-6">
                         <div className="flex items-center gap-4">
                             <div className="w-12 h-12 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-[#D4AF37] shrink-0">
                                 <Clock size={24} />
@@ -748,7 +748,7 @@ export function BookingPage() {
                                     <span className="bg-[#1a1a1a] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold font-sans">1</span>
                                     <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-4">Select Desired Services</h2>
                                 </div>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
+                                <div className="grid grid-cols-1 min-[480px]:grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-3.5">
                                     {services.length > 0 ? (
                                         services.map((service) => {
                                             const isSelected = selectedServices.some((s) => (s._id || s.serviceId) === service._id);
@@ -818,7 +818,7 @@ export function BookingPage() {
                                     <span className="bg-[#1a1a1a] text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold font-sans">2</span>
                                     <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-4">Preferred Stylist (Optional)</h2>
                                 </div>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                                     {staffMembers.length > 0 ? (
                                         staffMembers.map((staff) => (
                                             <button
@@ -857,7 +857,7 @@ export function BookingPage() {
 
                         {/* RIGHT COLUMN: QUEUE REQUEST SUMMARY */}
                         <div className="lg:col-span-1">
-                            <div className="bg-white border border-stone-200/50 rounded-xl p-6 md:p-8 sticky top-24 shadow-sm">
+                            <div className="bg-white border border-stone-200/50 rounded-xl p-6 md:p-8 sticky top-20 shadow-sm">
                                 <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-4 border-b border-gray-100 pb-3">
                                     Request Summary
                                 </h2>

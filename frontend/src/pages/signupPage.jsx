@@ -182,7 +182,7 @@ export function SignUpPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-[#1a1a1a] hover:bg-black text-white font-bold py-3 sm:py-3.5 h-11 sm:h-12 rounded-xl transition-all shadow-md active:scale-[0.99] mt-4 disabled:opacity-50 flex items-center justify-center gap-2 text-sm sm:text-base"
+                            className="w-full bg-[#1a1a1a] hover:bg-black text-white font-semibold py-3 sm:py-3.5 h-11 sm:h-12 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] mt-4 disabled:opacity-50 flex items-center justify-center gap-2 text-sm sm:text-base"
                         >
                             {loading ? (
                                 <>

@@ -249,7 +249,7 @@ export function Shops() {
 
     return (
         <div className="w-full min-h-screen bg-[#FBFBFA]">
-            <div className="max-w-[1280px] mx-auto px-6 md:px-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center pt-20 pb-4 md:pt-24 md:pb-6">
                     <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-2 leading-tight">
                         Explore <span className="text-[#D4AF37]">Salons</span>
@@ -259,7 +259,7 @@ export function Shops() {
                     </p>
 
                     {/* Search Bar & Unified Filter Trigger */}
-                    <div className="flex items-center justify-center gap-3 md:gap-4 max-w-3xl mx-auto w-full px-4 md:px-0">
+                    <div className="flex items-center justify-center gap-3 md:gap-4 max-w-3xl mx-auto w-full px-0">
                         <form onSubmit={handleSearch} className="flex items-center justify-between gap-1 flex-1 bg-white/95 backdrop-blur-md p-1 md:p-1.5 rounded-xl shadow-soft-sm border border-stone-200/60 ring-2 ring-stone-900/5">
                             <div className="flex items-center flex-1 px-3 md:px-5 gap-2">
                                 <MapPin className="text-[#D4AF37] w-4 h-4 shrink-0" />
