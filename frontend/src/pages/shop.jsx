@@ -1529,7 +1529,7 @@ export function Shop() {
                                 if (salon.isOpen) goToBooking(`/booking/${salon._id}`);
                             }}
                             disabled={!salon.isOpen}
-                            className={`w-full font-bold py-4 rounded-xl transition-all active:scale-[0.98] shadow-md text-base flex items-center justify-center gap-2 ${
+                            className={`w-full font-bold py-3 sm:py-3.5 rounded-xl transition-all active:scale-[0.98] shadow-md text-sm sm:text-base flex items-center justify-center gap-2 ${
                                 salon.isOpen 
                                     ? 'bg-[#1a1a1a] text-white hover:bg-black shadow-black/10' 
                                     : 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'

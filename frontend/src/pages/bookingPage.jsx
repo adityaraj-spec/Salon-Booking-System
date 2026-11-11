@@ -10,7 +10,6 @@ import {
     User,
     Check,
     Scissors,
-    ArrowLeft,
     Loader2,
     Users,
     AlertCircle,
@@ -684,27 +683,22 @@ export function BookingPage() {
                 <div className="max-w-[1280px] mx-auto px-6 md:px-10">
 
                     {/* Header */}
-                    <div className="flex items-center gap-4 mb-8">
-                        <NavLink to="/discover" className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 transition-colors shadow-sm">
-                            <ArrowLeft size={16} /> Back to Discover
-                        </NavLink>
-                        <div>
-                            <div className="flex items-center gap-3">
-                                <h1 className="text-2xl md:text-3xl font-sans font-bold tracking-tight text-[#1a1a1a]">Request Salon Queue</h1>
-                                <span className={`text-[11px] font-semibold px-3 py-1 rounded-full border ${
-                                    canJoinQueue
-                                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                        : isPaused
-                                        ? "bg-amber-50 text-amber-700 border-amber-200"
-                                        : "bg-red-50 text-red-700 border-red-200"
-                                }`}>
-                                    {canJoinQueue ? "Accepting Requests" : isPaused ? "Queue Paused" : "Not Accepting"}
-                                </span>
-                            </div>
-                            <p className="text-sm text-gray-500 mt-1">
-                                On-demand queue admission at <span className="text-[#D4AF37] font-semibold">{salon?.name}</span>
-                            </p>
+                    <div className="mb-8">
+                        <div className="flex items-center gap-3">
+                            <h1 className="text-2xl md:text-3xl font-sans font-bold tracking-tight text-[#1a1a1a]">Request Salon Queue</h1>
+                            <span className={`text-[11px] font-semibold px-3 py-1 rounded-full border ${
+                                canJoinQueue
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                    : isPaused
+                                    ? "bg-amber-50 text-amber-700 border-amber-200"
+                                    : "bg-red-50 text-red-700 border-red-200"
+                            }`}>
+                                {canJoinQueue ? "Accepting Requests" : isPaused ? "Queue Paused" : "Not Accepting"}
+                            </span>
                         </div>
+                        <p className="text-sm text-gray-500 mt-1">
+                            On-demand queue admission at <span className="text-[#D4AF37] font-semibold">{salon?.name}</span>
+                        </p>
                     </div>
 
                     {/* LIVE SALON QUEUE STATUS BANNER */}
@@ -785,7 +779,7 @@ export function BookingPage() {
                                                     </div>
 
                                                     {/* Middle: Service Title & Description */}
-                                                    <div className="my-1.5 flex-1">
+                                                    <div className="my-1.5 flex-1 min-w-0 pr-2">
                                                         <h3 className={`font-bold text-sm leading-snug transition-colors line-clamp-2 ${
                                                             isSelected ? "text-gray-900" : "text-gray-800"
                                                         }`}>
@@ -917,7 +911,7 @@ export function BookingPage() {
                                     <button
                                         onClick={handleRequestService}
                                         disabled={!canJoinQueue || submitting || selectedServices.length === 0}
-                                        className={`w-full py-4 rounded-xl font-bold text-sm transition-all shadow-lg flex items-center justify-center gap-2 ${
+                                        className={`w-full py-3 sm:py-3.5 rounded-xl font-bold text-sm sm:text-base transition-all shadow-lg flex items-center justify-center gap-2 ${
                                             canJoinQueue && selectedServices.length > 0 && !submitting
                                                 ? "bg-[#D4AF37] hover:bg-[#B8962E] text-white active:scale-[0.99]"
                                                 : "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"

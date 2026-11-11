@@ -149,7 +149,7 @@ export function SignUpPage() {
                                     type="button"
                                     aria-label={showPassword ? "Hide password" : "Show password"}
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600"
+                                    className="absolute inset-y-0 right-1 flex items-center justify-center p-2.5 min-w-[44px] min-h-[44px] text-gray-400 hover:text-gray-600"
                                 >
                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
@@ -171,7 +171,7 @@ export function SignUpPage() {
                                     type="button"
                                     aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                    className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600"
+                                    className="absolute inset-y-0 right-1 flex items-center justify-center p-2.5 min-w-[44px] min-h-[44px] text-gray-400 hover:text-gray-600"
                                 >
                                     {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
@@ -182,7 +182,7 @@ export function SignUpPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-[#1a1a1a] hover:bg-black text-white font-bold py-3.5 rounded-xl transition-all shadow-md active:scale-[0.99] mt-4 disabled:opacity-50 flex items-center justify-center gap-2 min-h-[44px]"
+                            className="w-full bg-[#1a1a1a] hover:bg-black text-white font-bold py-3 sm:py-3.5 h-11 sm:h-12 rounded-xl transition-all shadow-md active:scale-[0.99] mt-4 disabled:opacity-50 flex items-center justify-center gap-2 text-sm sm:text-base"
                         >
                             {loading ? (
                                 <>

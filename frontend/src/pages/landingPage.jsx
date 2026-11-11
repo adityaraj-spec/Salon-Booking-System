@@ -8,6 +8,7 @@ import { useNotification } from '../context/NotificationContext';
 import { useCityResolution } from '../hooks/useCityResolution';
 import axiosInstance from '../api/axiosConfig';
 import { MiniSalonCardSkeleton, DestinationCardSkeleton } from '../components/skeletons/index.jsx';
+import { FEATURED_CITIES } from '../data/featuredCities.js';
 import salonPlaceholder from '../assets/salon1.jpg';
 import useDocumentTitle from '../hooks/useDocumentTitle';
 
@@ -202,7 +203,7 @@ export function LandingPage() {
                     <motion.div variants={fadeUpVariants} className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-4 w-full sm:w-auto">
                         <NavLink 
                             to={`/home?city=${encodeURIComponent(resolvedCity)}`} 
-                            className="w-full sm:w-auto px-8 py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1 duration-300 bg-[#ffd166] text-[#1a1a1a] hover:bg-[#ffc633]"
+                            className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 h-12 sm:h-13 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1 duration-300 bg-[#ffd166] text-[#1a1a1a] hover:bg-[#ffc633]"
                         >
                             <span>Find Salons in {resolvedCity}</span>
                             <ArrowRight size={18} />
@@ -230,7 +231,7 @@ export function LandingPage() {
                         {!user && (
                             <NavLink 
                                 to="/signup" 
-                                className="w-full sm:w-auto px-7 py-4 rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 border border-white/50 hover:border-white bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm flex items-center justify-center text-sm"
+                                className="w-full sm:w-auto px-6 sm:px-7 py-3 sm:py-3.5 h-12 sm:h-13 rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300 border border-white/50 hover:border-white bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm flex items-center justify-center text-sm"
                             >
                                 Sign up
                             </NavLink>
@@ -438,34 +439,23 @@ export function LandingPage() {
             {/* ── POPULAR DESTINATIONS ── */}
             <section className="py-10 px-6 bg-white">
                 <div className="max-w-6xl mx-auto">
-                    <h2 className="text-2xl font-semibold text-[#1a1a1a] mb-5">Find Top Salons in Your Favorite Cities</h2>
-                    <div className="relative">
-                        <button aria-label="Show previous destinations" onClick={() => scroll(destSliderRef, -1)} className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-gray-200 rounded-xl shadow-md flex items-center justify-center hover:bg-gray-50 transition">
-                            <ChevronLeft size={18} className="text-gray-600" />
-                        </button>
-                        <div ref={destSliderRef} className="flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2 px-1" style={{ scrollbarWidth: 'none' }}>
-                            {POPULAR_DESTINATIONS.map((dest) => (
-                                <NavLink
-                                    key={dest.city}
-                                    to={`/home?city=${dest.city}`}
-                                    className="min-w-[180px] w-[180px] flex-shrink-0 rounded-xl overflow-hidden relative group snap-start cursor-pointer"
+                    <div className="my-12">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Popular Destinations</h2>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                            {FEATURED_CITIES.map((city) => (
+                                <div 
+                                    key={city.name}
+                                    onClick={() => navigate(`/discover?city=${encodeURIComponent(city.name)}`)}
+                                    className="group relative h-48 rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-md transition-all duration-300"
                                 >
-                                    <div className="h-52 w-full overflow-hidden">
-                                        <img src={dest.img} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt={dest.city} />
+                                    <img src={city.image} alt={city.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-4">
+                                        <h3 className="text-white font-bold text-lg">{city.name}</h3>
+                                        <p className="text-gray-300 text-xs">{city.state}</p>
                                     </div>
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex flex-col justify-end p-3">
-                                        <p className="text-white font-bold text-base leading-tight">{dest.city}</p>
-                                        <p className="text-white/70 text-[10px] font-bold">{dest.state}</p>
-                                        <p className="text-white/80 text-xs mt-1 flex items-center gap-1">
-                                            Explore salons <ArrowRight size={11} />
-                                        </p>
-                                    </div>
-                                </NavLink>
+                                </div>
                             ))}
                         </div>
-                        <button aria-label="Show next destinations" onClick={() => scroll(destSliderRef, 1)} className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-gray-200 rounded-xl shadow-md flex items-center justify-center hover:bg-gray-50 transition">
-                            <ChevronRight size={18} className="text-gray-600" />
-                        </button>
                     </div>
                 </div>
             </section>
@@ -642,7 +632,7 @@ export function LandingPage() {
                 <div className="max-w-3xl mx-auto flex flex-col items-center">
                     <h2 className="text-3xl md:text-4xl font-sans font-semibold text-white mb-4">Ready to Get Started?</h2>
                     <p className="text-gray-300 text-base md:text-lg mb-6 font-normal max-w-xl leading-relaxed">Join thousands of satisfied customers who book their beauty appointments with us.</p>
-                    <NavLink to="/home" className="bg-white text-black px-6 py-3 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors">
+                    <NavLink to="/home" className="w-full sm:w-auto bg-white text-black px-6 py-3 sm:py-3.5 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors">
                         Start Booking Now <ArrowRight size={18} />
                     </NavLink>
                 </div>

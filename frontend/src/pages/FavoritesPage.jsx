@@ -115,72 +115,79 @@ export function FavoritesPage() {
                     </div>
                 ) : (
                     <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {salons.map((salon) => (
-                            <div
-                                key={salon._id}
-                                className="w-full bg-white border border-stone-200/60 rounded-xl overflow-hidden flex flex-col shadow-soft-sm hover:shadow-soft-lg hover:-translate-y-1 transition-all duration-200 group"
-                            >
-                                <div className="relative h-48 md:h-52 w-full overflow-hidden flex-shrink-0 cursor-pointer" onClick={() => navigate(`/shop/${salon._id}`)}>
-                                    <img
-                                        src={salon.images && salon.images.length > 0 ? salon.images[0] : salonPlaceholder}
-                                        alt={salon.name}
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                        loading="lazy"
-                                    />
-                                    <button
-                                        aria-label="Remove from favorites"
-                                        className="absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-red-500 hover:bg-white shadow-sm transition-all hover:scale-110 active:scale-95"
-                                        onClick={(e) => handleToggleFavorite(e, salon._id)}
-                                    >
-                                        <Heart size={16} className="fill-red-500" strokeWidth={1.5} />
-                                    </button>
-                                    {salon.rating >= 4.5 && (
-                                        <span className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm text-stone-900 border border-stone-200/80 text-[11px] font-bold px-2.5 py-0.5 rounded-full shadow-xs">
-                                            Top Rated
-                                        </span>
-                                    )}
-                                </div>
-                                <div className="p-4 flex flex-col flex-1">
-                                    <div className="flex items-start justify-between gap-2 mb-1">
-                                        <h3
-                                            className="text-base font-semibold text-gray-900 leading-snug cursor-pointer hover:text-[#D4AF37] transition-colors line-clamp-1"
-                                            onClick={() => navigate(`/shop/${salon._id}`)}
-                                            title={salon.name}
+                        {salons.map((salon) => {
+                            const startingPrice = salon.startingPrice ?? (salon.services?.length ? Math.min(...salon.services.map(s => Number(s.price) || Infinity)) : null);
+                            const validPrice = startingPrice != null && startingPrice !== Infinity ? startingPrice : null;
+                            const operatingHours = (salon.openingHours && salon.closingHours) ? `${salon.openingHours} - ${salon.closingHours}` : "9:00 AM - 8:00 PM";
+
+                            return (
+                                <div
+                                    key={salon._id}
+                                    className="w-full bg-white border border-stone-200/60 rounded-xl overflow-hidden flex flex-col shadow-soft-sm hover:shadow-soft-lg hover:-translate-y-1 transition-all duration-200 group"
+                                >
+                                    <div className="relative h-48 md:h-52 w-full overflow-hidden flex-shrink-0 cursor-pointer" onClick={() => navigate(`/shop/${salon._id}`)}>
+                                        <img
+                                            src={salon.images && salon.images.length > 0 ? salon.images[0] : salonPlaceholder}
+                                            alt={salon.name}
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                            loading="lazy"
+                                        />
+                                        <button
+                                            aria-label="Remove from favorites"
+                                            className="absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-red-500 hover:bg-white shadow-sm transition-all hover:scale-110 active:scale-95"
+                                            onClick={(e) => handleToggleFavorite(e, salon._id)}
                                         >
-                                            {salon.name}
-                                        </h3>
-                                        <div className="flex items-center gap-1 text-xs font-bold text-gray-900 shrink-0">
-                                            <Star size={13} className="fill-amber-400 text-amber-400" />
-                                            <span>{salon.rating ? Number(salon.rating).toFixed(1) : "New"}</span>
-                                            {salon.reviews?.length > 0 && (
-                                                <span className="text-[11px] font-normal text-gray-400">({salon.reviews.length})</span>
-                                            )}
-                                        </div>
+                                            <Heart size={16} className="fill-red-500" strokeWidth={1.5} />
+                                        </button>
+                                        {salon.rating >= 4.5 && (
+                                            <span className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm text-stone-900 border border-stone-200/80 text-[11px] font-bold px-2.5 py-0.5 rounded-full shadow-xs">
+                                                Top Rated
+                                            </span>
+                                        )}
                                     </div>
-                                    <p className="text-xs text-stone-500 flex items-center gap-1 truncate mb-3">
-                                        <MapPin size={12} className="text-[#8a6500] shrink-0" />
-                                        <span className="truncate">{salon.city ? `${salon.city}, India` : "Location not set"}</span>
-                                    </p>
-                                    <div className="mt-auto pt-3 border-t border-gray-100 flex items-center justify-between gap-2 text-xs">
-                                        <div>
-                                            {salon.startingPrice != null ? (
-                                                <span className="text-gray-500">
-                                                    From <span className="font-bold text-gray-900 text-sm">₹{salon.startingPrice}</span>
-                                                </span>
-                                            ) : (
-                                                <span className="text-gray-500 font-medium text-[11px]">
-                                                    {salon.openingHours || "09:00"} - {salon.closingHours || "21:00"}
+                                    <div className="p-4 flex flex-col flex-1">
+                                        {/* Row 1: Title & Rating */}
+                                        <div className="flex items-start justify-between gap-2 mb-1">
+                                            <h3
+                                                className="text-base font-semibold text-gray-900 leading-snug cursor-pointer hover:text-[#D4AF37] transition-colors line-clamp-1"
+                                                onClick={() => navigate(`/shop/${salon._id}`)}
+                                                title={salon.name}
+                                            >
+                                                {salon.name}
+                                            </h3>
+                                            <div className="flex items-center gap-1 text-xs font-bold text-gray-900 shrink-0">
+                                                <Star size={13} className="fill-amber-400 text-amber-400" />
+                                                <span>{salon.rating ? Number(salon.rating).toFixed(1) : "New"}</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Row 2: Location & Price (Right beneath rating, in address row) */}
+                                        <div className="flex items-center justify-between gap-2 text-xs mb-3">
+                                            <p className="text-stone-500 flex items-center gap-1 truncate">
+                                                <MapPin size={12} className="text-[#8a6500] shrink-0" />
+                                                <span className="truncate">{salon.city ? `${salon.city}, India` : (salon.address || "Location not set")}</span>
+                                            </p>
+                                            {validPrice != null && (
+                                                <span className="text-gray-900 font-semibold shrink-0">
+                                                    From ₹{validPrice}
                                                 </span>
                                             )}
                                         </div>
-                                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/80">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                            <span>{Math.max(0, Number(salon.availableSeats) || 0)}/{Math.max(1, Number(salon.maxConcurrentStaff) || Number(salon.totalSeats) || 5)} free</span>
-                                        </span>
+
+                                        {/* Row 3: Footer (Operating timing on left, Seat status on right) */}
+                                        <div className="mt-auto pt-3 border-t border-gray-100 flex items-center justify-between gap-2 text-xs">
+                                            <span className="text-gray-500 font-medium text-xs truncate">
+                                                {operatingHours}
+                                            </span>
+                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/80 shrink-0">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                                <span>{Math.max(0, Number(salon.availableSeats) || 0)}/{Math.max(1, Number(salon.maxConcurrentStaff) || Number(salon.totalSeats) || 5)} seats free</span>
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>
