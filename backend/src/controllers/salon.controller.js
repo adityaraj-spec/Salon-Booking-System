@@ -274,6 +274,7 @@ const getSalonCities = asyncHandler(async (req, res) => {
             $group: { 
                 _id: { $toLower: "$city" }, 
                 name: { $first: "$city" }, 
+                state: { $first: "$state" },
                 salonCount: { $sum: 1 },
                 coordinates: { $first: "$location.coordinates" },
             } 
@@ -282,6 +283,7 @@ const getSalonCities = asyncHandler(async (req, res) => {
             $project: {
                 _id: 1,
                 name: 1,
+                state: 1,
                 salonCount: 1,
                 coordinates: 1,
                 lng: { $cond: [{ $isArray: "$coordinates" }, { $arrayElemAt: ["$coordinates", 0] }, null] },

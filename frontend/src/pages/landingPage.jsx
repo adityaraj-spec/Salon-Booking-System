@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { ArrowRight, ShieldCheck, Tag, Clock, MapPin, Star, ChevronLeft, ChevronRight, Heart, Sparkles, ChevronDown, Navigation, Loader2, Search, X, Scissors } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,7 +8,7 @@ import { useNotification } from '../context/NotificationContext';
 import { useCityResolution } from '../hooks/useCityResolution';
 import axiosInstance from '../api/axiosConfig';
 import { MiniSalonCardSkeleton, DestinationCardSkeleton } from '../components/skeletons/index.jsx';
-import { FEATURED_CITIES } from '../data/featuredCities.js';
+import { getDynamicCities } from '../data/featuredCities.js';
 import salonPlaceholder from '../assets/salon1.jpg';
 import useDocumentTitle from '../hooks/useDocumentTitle';
 
@@ -19,34 +19,6 @@ const heroImages = [
     { url: "/guilherme-petri-PtOfbGkU3uI-unsplash.jpg", isDark: false }
 ];
 
-const POPULAR_DESTINATIONS = [
-    { city: "New Delhi", state: "Delhi", img: "https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=600&q=80" },
-    { city: "Mumbai", state: "Maharashtra", img: "https://images.unsplash.com/photo-1567157577867-05ccb1388e66?auto=format&fit=crop&w=600&q=80" },
-    { city: "Goa", state: "Goa", img: "https://images.unsplash.com/photo-1614082242765-7c98ca0f3df3?auto=format&fit=crop&w=600&q=80" },
-    { city: "Bangalore", state: "Karnataka", img: "https://images.unsplash.com/photo-1596464716127-f2a82984de30?auto=format&fit=crop&w=600&q=80" },
-    { city: "Chennai", state: "Tamil Nadu", img: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=600&q=80" },
-    { city: "Kolkata", state: "West Bengal", img: "https://images.unsplash.com/photo-1558431382-27e303142255?auto=format&fit=crop&w=600&q=80" },
-    { city: "Hyderabad", state: "Telangana", img: "https://images.unsplash.com/photo-1600100397561-433ff982df91?auto=format&fit=crop&w=600&q=80" },
-    { city: "Jaipur", state: "Rajasthan", img: "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=600&q=80" },
-    { city: "Kochi", state: "Kerala", img: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=600&q=80" },
-    { city: "Ahmedabad", state: "Gujarat", img: "https://images.unsplash.com/photo-1621259640428-21d7b054238e?auto=format&fit=crop&w=600&q=80" },
-    { city: "Pune", state: "Maharashtra", img: "https://images.unsplash.com/photo-1562979314-bee7453e911c?auto=format&fit=crop&w=600&q=80" },
-    { city: "Chandigarh", state: "Punjab", img: "https://images.unsplash.com/photo-1595603659228-56df02919420?auto=format&fit=crop&w=600&q=80" },
-    { city: "Shimla", state: "Himachal Pradesh", img: "https://images.unsplash.com/photo-1605649440416-43f942f6f1f9?auto=format&fit=crop&w=600&q=80" },
-    { city: "Rishikesh", state: "Uttarakhand", img: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=600&q=80" },
-    { city: "Lucknow", state: "Uttar Pradesh", img: "https://images.unsplash.com/photo-1571216559385-056dbbf9e9c8?auto=format&fit=crop&w=600&q=80" },
-    { city: "Indore", state: "Madhya Pradesh", img: "https://images.unsplash.com/photo-1590050752117-2346761665a5?auto=format&fit=crop&w=600&q=80" },
-    { city: "Guwahati", state: "Assam", img: "https://images.unsplash.com/photo-1571556094706-e069176395ec?auto=format&fit=crop&w=600&q=80" },
-    { city: "Bhubaneswar", state: "Odisha", img: "https://images.unsplash.com/photo-1588667681979-99d543503b44?auto=format&fit=crop&w=600&q=80" },
-    { city: "Srinagar", state: "Jammu & Kashmir", img: "https://images.unsplash.com/photo-1566114061559-994f7943586b?auto=format&fit=crop&w=600&q=80" },
-    { city: "Patna", state: "Bihar", img: "https://images.unsplash.com/photo-1622312686842-1e7a5067201c?auto=format&fit=crop&w=600&q=80" },
-    { city: "Ranchi", state: "Jharkhand", img: "https://images.unsplash.com/photo-1595818944447-49520892095b?auto=format&fit=crop&w=600&q=80" },
-    { city: "Raipur", state: "Chhattisgarh", img: "https://images.unsplash.com/photo-1596402184320-417d7178b2cd?auto=format&fit=crop&w=600&q=80" },
-    { city: "Amritsar", state: "Punjab", img: "https://images.unsplash.com/photo-1588127333419-b9d7de223dcf?auto=format&fit=crop&w=600&q=80" },
-    { city: "Visakhapatnam", state: "Andhra Pradesh", img: "https://images.unsplash.com/photo-1589133405670-578d930ec7ee?auto=format&fit=crop&w=600&q=80" },
-    { city: "Shillong", state: "Meghalaya", img: "https://images.unsplash.com/photo-1581452932599-2329e4dfd0f1?auto=format&fit=crop&w=600&q=80" },
-    { city: "Gangtok", state: "Sikkim", img: "https://images.unsplash.com/photo-1589133644787-8890259f8073?auto=format&fit=crop&w=600&q=80" }
-];
 
 const WHY_CHOOSE = [
     { icon: <Tag size={22} className="text-[#ff9f43]" />, title: "Best deals & prices", desc: "Discover the most competitive pricing across top-rated salons in your city.", bg: "bg-orange-50" },
@@ -66,6 +38,7 @@ export function LandingPage() {
 
     const [featuredSalons, setFeaturedSalons] = useState([]);
     const [cheapestServices, setCheapestServices] = useState([]);
+    const [dbCities, setDbCities] = useState([]);
     const [userFavorites, setUserFavorites] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -89,9 +62,13 @@ export function LandingPage() {
         }
     };
 
-    const featuredSliderRef = useRef(null);
     const cheapSliderRef = useRef(null);
     const destSliderRef = useRef(null);
+
+        // Dynamically derive active destination cities from active salons & database cities
+    const dynamicCities = useMemo(() => {
+        return getDynamicCities(featuredSalons, dbCities);
+    }, [featuredSalons, dbCities]);
 
     const currentHero = heroImages[currentImageIndex];
 
@@ -110,12 +87,14 @@ export function LandingPage() {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const [salonsRes, cheapRes] = await Promise.all([
+                const [salonsRes, cheapRes, citiesRes] = await Promise.all([
                     axiosInstance.get("/salons?limit=12"),
-                    axiosInstance.get("/salons/cheapest?limit=15")
+                    axiosInstance.get("/salons/cheapest?limit=15"),
+                    axiosInstance.get("/salons/cities")
                 ]);
-                if (salonsRes.data.success) setFeaturedSalons(salonsRes.data.data.salons);
-                if (cheapRes.data.success) setCheapestServices(cheapRes.data.data.services || []);
+                if (salonsRes.data?.success) setFeaturedSalons(salonsRes.data.data.salons);
+                if (cheapRes.data?.success) setCheapestServices(cheapRes.data.data.services || []);
+                if (citiesRes.data?.success) setDbCities(citiesRes.data.data || []);
             } catch (e) { /* silent */ }
             finally { setLoading(false); }
         };
@@ -339,31 +318,31 @@ export function LandingPage() {
                                     </div>
                                 )}
 
-                                {/* Major Destinations */}
+                                {/* Dynamic Major Destinations */}
                                 <div>
                                     <p className="text-xs font-semibold text-gray-500 mb-2">
-                                        Popular Metro Cities
+                                        Active City Hubs
                                     </p>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                                        {POPULAR_DESTINATIONS
+                                        {dynamicCities
                                             .filter((d) =>
-                                                d.city.toLowerCase().includes(cityFilterText.toLowerCase())
+                                                d.name.toLowerCase().includes(cityFilterText.toLowerCase())
                                             )
                                             .map((dest) => (
                                                 <button
-                                                    key={dest.city}
+                                                    key={dest.name}
                                                     type="button"
                                                     onClick={() => {
-                                                        selectCity(dest.city);
+                                                        selectCity(dest.name);
                                                         setIsCityModalOpen(false);
                                                     }}
                                                     className={`p-2.5 rounded-xl border text-left transition-all ${
-                                                        resolvedCity.toLowerCase() === dest.city.toLowerCase()
+                                                        resolvedCity.toLowerCase() === dest.name.toLowerCase()
                                                             ? "bg-[#1a1a1a] text-white border-[#1a1a1a]"
                                                             : "bg-white hover:bg-gray-50 border-gray-100 text-gray-800"
                                                     }`}
                                                 >
-                                                    <p className="font-semibold text-xs truncate">{dest.city}</p>
+                                                    <p className="font-semibold text-xs truncate">{dest.name}</p>
                                                     <p className="text-[10px] text-gray-400 truncate">{dest.state}</p>
                                                 </button>
                                             ))}
@@ -377,72 +356,13 @@ export function LandingPage() {
 
 
 
-            {/* ── BEST DEALS SLIDER ── */}
-            {(loading || featuredSalons.length > 0) && (
-                <section className="py-10 px-6">
-                    <div className="max-w-6xl mx-auto">
-                        <div className="bg-[#fef9ec] border border-[#f0e5c0] rounded-xl p-5 md:p-6 shadow-sm">
-                            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between mb-4 gap-2">
-                                <div className="flex items-baseline gap-3">
-                                    <h2 className="text-xl md:text-2xl font-semibold text-[#1a1a1a]">Best Deals for Salons</h2>
-                                    <NavLink to="/home" className="text-xs text-[#8a6500] hover:text-[#1a1a1a] font-semibold bg-white/80 hover:bg-white px-3 py-1 rounded-lg transition-all flex items-center gap-1 shadow-2xs">
-                                        View all <ChevronRight size={14} />
-                                    </NavLink>
-                                </div>
-                                <span className="text-xs text-gray-500 font-medium hidden sm:inline">Handpicked premium discounts</span>
-                            </div>
-                            <div className="relative">
-                                <button aria-label="Show previous featured salons" onClick={() => scroll(featuredSliderRef, -1)} className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-gray-200 rounded-xl shadow-md flex items-center justify-center hover:bg-gray-50 transition">
-                                    <ChevronLeft size={18} className="text-gray-600" />
-                                </button>
-                                <div ref={featuredSliderRef} className="flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2 px-1" style={{ scrollbarWidth: 'none' }}>
-                                    {loading ? (
-                                        [...Array(6)].map((_, i) => <MiniSalonCardSkeleton key={i} />)
-                                    ) : (
-                                        featuredSalons.map((salon) => (
-                                            <div key={salon._id} className="min-w-[250px] w-[250px] flex-shrink-0 bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition group snap-start cursor-pointer" onClick={() => navigate(`/shop/${salon._id}`)}>
-                                                <div className="relative h-40 w-full overflow-hidden flex-shrink-0">
-                                                    <img src={salon.images?.[0] || salonPlaceholder} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={salon.name} />
-                                                    <button aria-label={`${userFavorites.includes(salon._id) ? 'Remove' : 'Save'} ${salon.name} from favorites`} aria-pressed={userFavorites.includes(salon._id)} className={`absolute top-2.5 right-2.5 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm transition-all hover:scale-110 ${userFavorites.includes(salon._id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`} onClick={(e) => handleToggleFavorite(e, salon._id)}>
-                                                        <Heart size={14} strokeWidth={userFavorites.includes(salon._id) ? 1.5 : 2} className={userFavorites.includes(salon._id) ? "fill-red-500" : ""} />
-                                                    </button>
-                                                </div>
-                                                <div className="p-3.5 flex flex-col flex-1">
-                                                    <div className="flex items-start justify-between gap-1 mb-1">
-                                                        <h3 className="text-sm font-semibold text-[#1a1a1a] line-clamp-1 hover:text-[#8a6500] transition-colors" title={salon.name}>{salon.name}</h3>
-                                                        <div className="flex items-center gap-0.5 text-xs font-bold text-gray-900 shrink-0">
-                                                            <Star size={11} className="fill-amber-400 text-amber-400" />
-                                                            <span>{salon.rating ? Number(salon.rating).toFixed(1) : "New"}</span>
-                                                        </div>
-                                                    </div>
-                                                    <p className="text-xs text-stone-500 flex items-center gap-1 truncate mb-2">
-                                                        <MapPin size={11} className="text-[#8a6500] shrink-0" />
-                                                        <span className="truncate">{salon.city ? `${salon.city}, India` : "Location not set"}</span>
-                                                    </p>
-                                                    <div className="mt-auto pt-2 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-                                                        <span>{salon.startingPrice != null ? `From ₹${salon.startingPrice}` : (salon.openingHours ? `${salon.openingHours} - ${salon.closingHours}` : "Open today")}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))
-                                    )}
-                                </div>
-                                <button aria-label="Show next featured salons" onClick={() => scroll(featuredSliderRef, 1)} className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border border-gray-200 rounded-xl shadow-md flex items-center justify-center hover:bg-gray-50 transition">
-                                    <ChevronRight size={18} className="text-gray-600" />
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            )}
-
             {/* ── POPULAR DESTINATIONS ── */}
             <section className="py-10 px-6 bg-white">
                 <div className="max-w-6xl mx-auto">
                     <div className="my-12">
                         <h2 className="text-2xl font-bold text-gray-900 mb-6">Popular Destinations</h2>
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                            {FEATURED_CITIES.map((city) => (
+                            {dynamicCities.map((city) => (
                                 <div 
                                     key={city.name}
                                     onClick={() => navigate(`/discover?city=${encodeURIComponent(city.name)}`)}

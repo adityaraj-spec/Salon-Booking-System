@@ -7,6 +7,7 @@ import axiosInstance from '../api/axiosConfig';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 import { useCityResolution } from '../hooks/useCityResolution';
+import { getDynamicCities } from '../data/featuredCities.js';
 import { SalonCardSkeleton } from '../components/skeletons/index.jsx';
 import salonPlaceholder from '../assets/salon1.jpg';
 import useDocumentTitle from '../hooks/useDocumentTitle';
@@ -730,23 +731,23 @@ export function Shops() {
                                     Or explore popular salon hubs:
                                 </p>
                                 <div className="flex flex-wrap justify-center gap-2">
-                                    {["Bangalore", "Mumbai", "New Delhi", "Pune", "Patna"].map((city) => (
+                                    {getDynamicCities(salons).slice(0, 6).map((c) => (
                                         <button
-                                            key={city}
+                                            key={c.name}
                                             type="button"
                                             onClick={() => {
-                                                setCityQuery(city);
-                                                selectCity(city);
+                                                setCityQuery(c.name);
+                                                selectCity(c.name);
                                                 setSearchParams((prev) => {
                                                     const next = new URLSearchParams(prev);
-                                                    next.set("city", city);
+                                                    next.set("city", c.name);
                                                     next.set("page", "1");
                                                     return next;
                                                 });
                                             }}
-                                            className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white border border-gray-200 text-gray-700 hover:border-[#D4AF37] hover:text-[#8a6500] hover:bg-amber-50/50 transition-all shadow-xs"
+                                            className="px-3 py-1.5 rounded-full text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-700 transition-colors"
                                         >
-                                            {city}
+                                            {c.name}
                                         </button>
                                     ))}
                                 </div>
