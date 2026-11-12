@@ -61,6 +61,15 @@ export function Shops() {
 
     const [isSortModalOpen, setIsSortModalOpen] = useState(false);
 
+    const hasActiveFilters = Boolean(
+        (selectedCategory && selectedCategory !== "all") ||
+        (categoryParam && categoryParam !== "all") ||
+        cityParam ||
+        stateParam ||
+        preferTopRated ||
+        (sortBy && sortBy !== "rating")
+    );
+
     // Restore selectedState from URL on mount (so reload keeps filter working)
     const getInitialState = () => {
         if (!stateParam) return null;
@@ -414,38 +423,47 @@ export function Shops() {
                 </div>
 
                 {/* Streamlined Results Summary Bar */}
-                <div className="my-4 flex items-center justify-between gap-3 text-xs sm:text-sm text-gray-500">
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold text-gray-900">
-                            {loading ? "Searching..." : `${salons.length} ${salons.length === 1 ? "salon" : "salons"} available`}
-                        </span>
-                        {cityParam && (
-                            <span className="text-[#8a6500] font-medium">in {cityParam}</span>
-                        )}
-                        {selectedCategory && (
-                            <span className="inline-flex items-center gap-1.5 bg-amber-50 text-[#8a6500] border border-amber-200/60 px-2.5 py-0.5 rounded-lg font-semibold text-xs">
-                                <span>{SERVICE_CATEGORIES.find(c => c.id === selectedCategory)?.label || selectedCategory}</span>
-                                <button
-                                    type="button"
-                                    onClick={() => handleCategoryToggle("all")}
-                                    className="hover:text-black transition-colors"
-                                    aria-label="Remove category filter"
-                                >
-                                    <X size={11} />
-                                </button>
+                {hasActiveFilters && (
+                    <div className="my-4 flex items-center justify-between gap-3 text-xs sm:text-sm text-gray-500">
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-semibold text-gray-900">
+                                {loading ? "Searching..." : `${salons.length} ${salons.length === 1 ? "salon" : "salons"} available`}
                             </span>
-                        )}
-                    </div>
-                    {selectedCategory && (
+                            {cityParam && (
+                                <span className="text-[#8a6500] font-medium">in {cityParam}</span>
+                            )}
+                            {selectedCategory && (
+                                <span className="inline-flex items-center gap-1.5 bg-amber-50 text-[#8a6500] border border-amber-200/60 px-2.5 py-0.5 rounded-lg font-semibold text-xs">
+                                    <span>{SERVICE_CATEGORIES.find(c => c.id === selectedCategory)?.label || selectedCategory}</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleCategoryToggle("all")}
+                                        className="hover:text-black transition-colors"
+                                        aria-label="Remove category filter"
+                                    >
+                                        <X size={11} />
+                                    </button>
+                                </span>
+                            )}
+                        </div>
                         <button
                             type="button"
-                            onClick={() => handleCategoryToggle("all")}
+                            onClick={() => {
+                                handleCategoryToggle("all");
+                                setPreferTopRated(false);
+                                setSortBy("rating");
+                                setCityQuery("");
+                                setStateSearch("");
+                                setCitySearch("");
+                                setSelectedState(null);
+                                setSearchParams(new URLSearchParams());
+                            }}
                             className="text-xs font-semibold text-gray-500 hover:text-gray-900 transition-colors"
                         >
-                            Reset filter
+                            Reset filters
                         </button>
-                    )}
-                </div>
+                    </div>
+                )}
 
                 {/* Discovery Settings Modal */}
                 <AnimatePresence>
@@ -805,9 +823,13 @@ export function Shops() {
                                                         <MapPin size={12} className="text-[#8a6500] shrink-0" />
                                                         <span className="truncate">{salon.city ? `${salon.city}, India` : (salon.address || "Location not set")}</span>
                                                     </p>
-                                                    {validPrice != null && (
+                                                    {validPrice != null ? (
                                                         <span className="text-gray-900 font-semibold shrink-0">
                                                             From ₹{validPrice}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-xs text-gray-400 font-medium shrink-0">
+                                                            View menu
                                                         </span>
                                                     )}
                                                 </div>

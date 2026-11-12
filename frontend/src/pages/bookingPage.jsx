@@ -24,7 +24,7 @@ import {
 
 export function BookingPage() {
     const { id } = useParams();
-    useDocumentTitle('Reserve Appointment', 'Select services, preferred stylist, and secure your place in queue with SalonNow.');
+    useDocumentTitle('Reserve Appointment', 'Select services, preferred stylist, and save your spot in line with SalonNow.');
     const navigate = useNavigate();
     const { user, loading: authLoading } = useAuth();
     const socket = useSocket();
@@ -478,12 +478,12 @@ export function BookingPage() {
                             {activeBooking.verificationPin && (
                                 <div className="mt-6 max-w-sm mx-auto rounded-xl border-2 border-dashed border-[#D4AF37] bg-gradient-to-r from-amber-50/90 to-orange-50/60 p-5 shadow-sm">
                                     <span className="text-[11px] font-semibold text-amber-800 bg-amber-200/60 px-2.5 py-0.5 rounded-md inline-block">
-                                        Check-in Verification PIN
+                                        Booking Code
                                     </span>
                                     <p className="text-3xl font-black font-mono tracking-pin text-[#1a1a1a] my-2">
                                         {activeBooking.verificationPin}
                                     </p>
-                                    <p className="text-xs text-amber-900 font-medium">Show this 4-digit code to your stylist upon arrival.</p>
+                                    <p className="text-xs text-amber-900 font-medium">Show this 4-digit code when you reach the salon.</p>
                                 </div>
                             )}
 
@@ -506,12 +506,12 @@ export function BookingPage() {
                                 Accepted by Salon
                             </div>
 
-                            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-2">You Are In The Queue!</h2>
+                            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-2">You Are In Line!</h2>
                             <p className="text-gray-500 text-sm mb-6">Head towards <strong>{salon?.name}</strong>.</p>
 
                             {/* Big Queue Position Display */}
                             <div className="bg-gradient-to-br from-[#1a1a1a] to-gray-900 rounded-xl p-6 text-white shadow-xl mb-6 border border-[#D4AF37]/30">
-                                <p className="text-xs font-semibold text-[#D4AF37]">Your Queue Position</p>
+                                <p className="text-xs font-semibold text-[#D4AF37]">Your Spot in Line</p>
                                 <p className="text-5xl sm:text-6xl font-black font-sans my-2 tracking-tight text-white">
                                     #{activeBooking.queuePosition || 1}
                                 </p>
@@ -523,11 +523,11 @@ export function BookingPage() {
                             {/* 4-Digit Check-In PIN */}
                             {activeBooking.verificationPin && (
                                 <div className="mb-6 rounded-xl border border-dashed border-[#D4AF37] bg-amber-50/50 p-5">
-                                    <p className="text-xs font-semibold text-amber-700">Check-in Verification PIN</p>
+                                    <p className="text-xs font-semibold text-amber-700">Booking Code</p>
                                     <p className="text-3xl font-black tracking-pin text-[#1a1a1a] my-1">
                                         {activeBooking.verificationPin}
                                     </p>
-                                    <p className="text-[11px] text-gray-500">Show this 4-digit code to your stylist upon arrival.</p>
+                                    <p className="text-[11px] text-gray-500">Show this 4-digit code when you reach the salon.</p>
                                 </div>
                             )}
 
@@ -563,11 +563,11 @@ export function BookingPage() {
 
                             <div className="bg-gray-50 rounded-xl p-5 border border-stone-200/50 mb-6">
                                 <div className="flex justify-between items-center mb-2">
-                                    <span className="text-xs text-gray-500">Queue Position</span>
+                                    <span className="text-xs text-gray-500">Spot in Line</span>
                                     <span className="font-bold text-gray-900 text-lg">#{activeBooking.queuePosition}</span>
                                 </div>
                                 <div className="flex justify-between items-center">
-                                    <span className="text-xs text-gray-500">Verification PIN</span>
+                                    <span className="text-xs text-gray-500">Booking Code</span>
                                     <span className="font-bold text-amber-600 font-mono text-xl tracking-widest">{activeBooking.verificationPin}</span>
                                 </div>
                             </div>
@@ -689,11 +689,11 @@ export function BookingPage() {
                                     ? "bg-amber-50 text-amber-700 border-amber-200"
                                     : "bg-red-50 text-red-700 border-red-200"
                             }`}>
-                                {canJoinQueue ? "Open for Walk-ins" : isPaused ? "Queue Paused" : "Not Accepting"}
+                                {canJoinQueue ? "Open for Walk-ins" : isPaused ? "Line Paused" : "Not Accepting"}
                             </span>
                         </div>
                         <p className="text-sm text-gray-500 mt-1">
-                            Secure your spot live at <span className="text-[#D4AF37] font-semibold">{salon?.name}</span>
+                            Save your spot in line at <span className="text-[#D4AF37] font-semibold">{salon?.name}</span>
                         </p>
                     </div>
 
@@ -713,13 +713,13 @@ export function BookingPage() {
 
                         <div className="flex items-center gap-6 border-t md:border-t-0 md:border-l border-stone-200/50 pt-4 md:pt-0 md:pl-6 w-full md:w-auto">
                             <div>
-                                <p className="text-xs font-semibold text-gray-400">In Line Ahead</p>
+                                <p className="text-xs font-semibold text-gray-400">People Ahead of You</p>
                                 <p className="text-lg font-bold text-gray-900">
                                     {queueSummary?.waitingCount || 0} customer{(queueSummary?.waitingCount || 0) === 1 ? "" : "s"}
                                 </p>
                             </div>
                             <div>
-                                <p className="text-xs font-semibold text-gray-400">Queue Capacity</p>
+                                <p className="text-xs font-semibold text-gray-400">Max Spots</p>
                                 <p className="text-lg font-bold text-gray-900">
                                     {queueSummary?.waitingCount || 0} / {queueSummary?.maxCapacity || 10}
                                 </p>
@@ -922,9 +922,9 @@ export function BookingPage() {
                                             {!isSalonOpen
                                                 ? "Salon Closed"
                                                 : isPaused
-                                                ? "Queue Paused"
+                                                ? "Line Paused"
                                                 : isQueueFull
-                                                ? "Queue Full"
+                                                ? "Line Full"
                                                 : "Book Your Spot"}
                                         </span>
                                     </button>

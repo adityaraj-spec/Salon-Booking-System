@@ -167,9 +167,13 @@ export function FavoritesPage() {
                                                 <MapPin size={12} className="text-[#8a6500] shrink-0" />
                                                 <span className="truncate">{salon.city ? `${salon.city}, India` : (salon.address || "Location not set")}</span>
                                             </p>
-                                            {validPrice != null && (
+                                            {validPrice != null ? (
                                                 <span className="text-gray-900 font-semibold shrink-0">
                                                     From ₹{validPrice}
+                                                </span>
+                                            ) : (
+                                                <span className="text-xs text-gray-400 font-medium shrink-0">
+                                                    View menu
                                                 </span>
                                             )}
                                         </div>

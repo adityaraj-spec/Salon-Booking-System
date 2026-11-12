@@ -163,7 +163,7 @@ export function SalonBookingsPage() {
             await axiosInstance.patch(`/queue/salon/${salonId}/settings`, {
                 isPaused: willPause,
             });
-            showNotification(willPause ? "Queue paused for walk-ins" : "Queue resumed and accepting customers", "info");
+            showNotification(willPause ? "Line paused for walk-ins" : "Line resumed and accepting customers", "info");
             await fetchSalonAndQueue();
         } catch (err) {
             showNotification(err.response?.data?.message || "Failed to toggle queue pause", "error");
@@ -209,7 +209,7 @@ export function SalonBookingsPage() {
         e.preventDefault();
         const pin = (cardCheckInPins[booking._id] || "").trim();
         if (!pin || pin.length !== 4) {
-            showNotification("Enter customer's 4-digit check-in PIN", "error");
+            showNotification("Enter customer's 4-digit booking code", "error");
             return;
         }
 
@@ -381,7 +381,7 @@ export function SalonBookingsPage() {
                     <div>
                         <div className="flex items-center gap-3">
                             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
-                                Live Shop Status & Queue Manager
+                                Live Shop Status & Line Manager
                             </h1>
                             <span className={`inline-flex items-center gap-2 text-xs font-semibold px-3.5 py-1.5 rounded-full border shadow-soft-xs ${
                                 queueSummary?.isPaused
@@ -389,7 +389,7 @@ export function SalonBookingsPage() {
                                     : "bg-emerald-50 text-emerald-800 border-emerald-200/80"
                             }`}>
                                 <span className={`w-2 h-2 rounded-full ${queueSummary?.isPaused ? "bg-amber-500" : "bg-emerald-500 animate-pulse"}`} />
-                                <span>{queueSummary?.isPaused ? "Queue Intake Paused" : "Active & Accepting"}</span>
+                                <span>{queueSummary?.isPaused ? "Line Paused" : "Active & Accepting"}</span>
                             </span>
                         </div>
                         <p className="text-xs text-stone-500 font-medium mt-1.5 leading-relaxed">
@@ -402,7 +402,7 @@ export function SalonBookingsPage() {
                         <div className="flex items-center gap-3 bg-stone-50/80 border border-stone-200/50 px-4 py-2.5 rounded-xl shadow-soft-xs">
                             <Users size={18} className="text-[#D4AF37]" />
                             <div className="text-left">
-                                <p className="text-[11px] font-semibold text-gray-500 leading-none">In Queue / Capacity</p>
+                                <p className="text-[11px] font-semibold text-gray-500 leading-none">People in Line / Max Spots</p>
                                 <p className="text-sm font-bold text-gray-900 mt-0.5">
                                     {queueSummary?.waitingCount || activeQueueList.length} / {queueSummary?.maxCapacity || 10}
                                 </p>
@@ -419,7 +419,7 @@ export function SalonBookingsPage() {
                             }`}
                         >
                             {queueSummary?.isPaused ? <PlayCircle size={16} /> : <PauseCircle size={16} />}
-                            <span>{queueSummary?.isPaused ? "Resume Queue" : "Pause Queue"}</span>
+                            <span>{queueSummary?.isPaused ? "Resume Line" : "Pause Line"}</span>
                         </button>
                     </div>
                 </div>
@@ -435,7 +435,7 @@ export function SalonBookingsPage() {
                         }`}
                     >
                         <Users size={16} />
-                        <span>Active Queue ({activeQueueList.length})</span>
+                        <span>Current Line ({activeQueueList.length})</span>
                     </button>
 
                     <button
@@ -474,7 +474,7 @@ export function SalonBookingsPage() {
                         {activeQueueList.length === 0 ? (
                             <div className="bg-white rounded-xl py-10 md:py-12 px-6 text-center border border-gray-100 shadow-sm">
                                 <Users size={32} className="text-gray-300 mx-auto mb-3" />
-                                <h3 className="text-lg font-sans font-semibold text-gray-900">Queue is Currently Empty</h3>
+                                <h3 className="text-lg font-sans font-semibold text-gray-900">The Line is Currently Empty</h3>
                                 <p className="text-xs text-gray-400 mt-1 leading-relaxed">New customers requesting service will appear here once accepted.</p>
                             </div>
                         ) : (
@@ -503,7 +503,7 @@ export function SalonBookingsPage() {
                                                         ? "bg-emerald-600 text-white border-emerald-600"
                                                         : "bg-amber-50 text-[#D4AF37] border-amber-200"
                                                 }`}>
-                                                    <span className="text-[11px] font-bold leading-none">Queue</span>
+                                                    <span className="text-[11px] font-bold leading-none">Line</span>
                                                     <span className="text-xl font-black font-sans leading-tight">
                                                         #{booking.queuePosition || 1}
                                                     </span>
@@ -584,7 +584,7 @@ export function SalonBookingsPage() {
                                                         <input
                                                             type="text"
                                                             maxLength={4}
-                                                            placeholder="4-digit PIN"
+                                                            placeholder="Booking Code"
                                                             value={cardCheckInPins[booking._id] || ""}
                                                             onChange={(e) =>
                                                                 setCardCheckInPins((prev) => ({

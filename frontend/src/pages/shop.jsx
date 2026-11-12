@@ -329,12 +329,12 @@ function TransformationGallerySection({ photos = [] }) {
                 <div>
                     <div className="flex items-center gap-2">
                         <Sparkles size={18} className="text-[#D4AF37]" />
-                        <h3 className="text-xl font-bold text-gray-900 tracking-tight">Transformation Gallery</h3>
+                        <h3 className="text-xl font-bold text-gray-900 tracking-tight">Before & After Photos</h3>
                     </div>
                     <p className="text-sm text-gray-500 mt-1">
                         {displayPhotos.length > 0
                             ? "Real before & after results crafted by our artists"
-                            : "Transformation photos will appear here when this salon adds them."}
+                            : "Photos will appear here when this salon adds them."}
                     </p>
                 </div>
                 {/* Scroll arrows */}
@@ -370,7 +370,7 @@ function TransformationGallerySection({ photos = [] }) {
                 </div>
             ) : (
                 <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-6 py-10 text-center text-sm text-gray-500">
-                    No transformation photos have been published yet.
+                    No photos added yet.
                 </div>
             )}
         </div>

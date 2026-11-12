@@ -34,7 +34,7 @@ const getStatusBadge = (status, queuePosition) => {
         case "waiting":
         case "accepted":
             return {
-                label: queuePosition ? `Queue #${queuePosition}` : "In Queue",
+                label: queuePosition ? `Line #${queuePosition}` : "In Line",
                 className: "bg-[#fdfcf5] text-[#D4AF37] border-[#D4AF37]/30",
                 dot: "bg-[#D4AF37] animate-pulse",
             };
@@ -84,7 +84,7 @@ const getStatusBadge = (status, queuePosition) => {
 };
 
 export function MyBookingsPage() {
-    useDocumentTitle('My Bookings & Queue Status', 'Track your upcoming appointments, service PINs, and booking history on SalonNow.');
+    useDocumentTitle('My Bookings & Line Status', 'Track your upcoming appointments, booking codes, and booking history on SalonNow.');
     const navigate = useNavigate();
     const { setCartServices } = useBookingCart();
     const socket = useSocket();
@@ -227,8 +227,8 @@ export function MyBookingsPage() {
                 </div>
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">My Appointments & Queue</h1>
-                        <p className="text-sm text-gray-500 mt-1 leading-relaxed">Track your live salon queues and view previous visits</p>
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">My Appointments & Line</h1>
+                        <p className="text-sm text-gray-500 mt-1 leading-relaxed">Track your live spot in line and view previous visits</p>
                     </div>
                 </div>
 
@@ -346,12 +346,12 @@ export function MyBookingsPage() {
                                             <div className="rounded-xl border-2 border-[#D4AF37]/40 bg-gradient-to-r from-amber-50 via-orange-50/40 to-amber-50/60 p-4 flex items-center justify-between shadow-sm">
                                                 <div>
                                                     <span className="text-[11px] font-semibold text-amber-800 bg-amber-200/60 px-2.5 py-0.5 rounded-md inline-block mb-1">
-                                                        Check-in Verification PIN
+                                                        Booking Code
                                                     </span>
                                                     <p className="text-3xl font-black font-mono tracking-pin text-[#1a1a1a] my-0.5">
                                                         {booking.verificationPin}
                                                     </p>
-                                                    <p className="text-[11px] text-amber-900 font-medium">Show this 4-digit code to your stylist</p>
+                                                    <p className="text-[11px] text-amber-900 font-medium">Show this 4-digit code when you reach the salon</p>
                                                 </div>
                                                 <div className="w-12 h-12 rounded-xl bg-amber-100/80 border border-amber-200 flex items-center justify-center text-[#D4AF37] shrink-0">
                                                     <KeyRound size={22} />
@@ -418,7 +418,7 @@ export function MyBookingsPage() {
                                                     className="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#1a1a1a] text-white text-xs font-bold hover:bg-black transition-all shadow-sm"
                                                 >
                                                     {bookAgainLoading === booking._id ? <Loader2 size={14} className="animate-spin" /> : <RotateCcw size={13} className="text-[#D4AF37]" />}
-                                                    <span>Join Queue Again</span>
+                                                    <span>Join Line Again</span>
                                                 </button>
                                             )}
                                         </div>
@@ -446,7 +446,7 @@ export function MyBookingsPage() {
                         </div>
 
                         <p className="text-sm text-gray-600 mb-4">
-                            Are you sure you want to cancel your place in queue at <strong>{cancelModalBooking.salon?.name}</strong>?
+                            Are you sure you want to leave the line at <strong>{cancelModalBooking.salon?.name}</strong>?
                         </p>
 
                         <div className="mb-6">
