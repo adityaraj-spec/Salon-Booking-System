@@ -55,6 +55,7 @@ export function SalonManagementPage() {
     const [salonSettings, setSalonSettings] = useState({ name: "", description: "", openingHours: "", closingHours: "", address: "", city: "", state: "", pincode: "" });
     const [newGalleryImages, setNewGalleryImages] = useState([]);
     const [newWorkImages, setNewWorkImages] = useState([]);
+    const [deletingWorkImage, setDeletingWorkImage] = useState(null);
 
     // Editing States
 
@@ -272,6 +273,27 @@ export function SalonManagementPage() {
         }
     };
 
+    const handleRemoveWorkImage = async (imageUrl) => {
+        setDeletingWorkImage(imageUrl);
+        try {
+            const remainingImages = (activeSalon?.transformationGallery || []).filter((url) => url !== imageUrl);
+            const formData = new FormData();
+            formData.append("transformationGallery", JSON.stringify(remainingImages));
+            const response = await axiosInstance.patch(`/salons/${activeSalon._id}`, formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+            if (response.data.success) {
+                setActiveSalon(response.data.data);
+                setSalons((current) => current.map((salon) => salon._id === activeSalon._id ? response.data.data : salon));
+                showNotification("Work photo removed", "success");
+            }
+        } catch (error) {
+            showNotification(error.response?.data?.message || "Failed to remove work photo", "error");
+        } finally {
+            setDeletingWorkImage(null);
+        }
+    };
+
     const handleUpdateService = async (id) => {
 
         setIsSubmitting(true);
@@ -459,7 +481,7 @@ export function SalonManagementPage() {
                             <div className="flex flex-wrap items-center gap-3">
                                 <div className="bg-white px-3.5 py-2 rounded-xl flex items-center gap-2.5 border border-gray-200">
                                     <span className={`text-sm font-medium ${activeSalon?.isOpen ? 'text-emerald-700' : 'text-gray-500'}`}>
-                                        {activeSalon?.isOpen ? 'Live Now' : 'Offline'}
+                                        {activeSalon?.isOpen ? 'Open' : 'Close'}
                                     </span>
                                     <button 
                                         onClick={handleUpdateSalonStatus}
@@ -766,7 +788,7 @@ export function SalonManagementPage() {
                                 <span className="ml-3 text-xs text-gray-500">{newWorkImages.length} selected</span>
                                 {newWorkImages.length > 0 && <button type="submit" disabled={isSubmitting} className="ml-3 inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#1a1a1a] px-4 py-2 text-sm font-medium text-white hover:bg-black disabled:opacity-60">{isSubmitting ? <Loader2 size={15} className="animate-spin" /> : null} Upload Photos</button>}
                             </form>
-                            {activeSalon?.transformationGallery?.length > 0 ? <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">{activeSalon.transformationGallery.map((image, index) => <div key={`${image}-${index}`} className="aspect-square overflow-hidden rounded-lg border border-gray-100"><img src={image} alt={`Our work ${index + 1}`} className="h-full w-full object-cover" /></div>)}</div> : <p className="mt-4 text-sm text-gray-500">Your work photos will appear here after upload.</p>}
+                            {activeSalon?.transformationGallery?.length > 0 ? <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">{activeSalon.transformationGallery.map((image, index) => <div key={`${image}-${index}`} className="group relative aspect-square overflow-hidden rounded-lg border border-gray-100 shadow-sm"><img src={image} alt={`Our work ${index + 1}`} className="h-full w-full object-cover" /><button type="button" onClick={() => handleRemoveWorkImage(image)} disabled={deletingWorkImage === image} aria-label={`Delete work photo ${index + 1}`} className="absolute right-2 top-2 inline-flex size-9 items-center justify-center rounded-full bg-white/95 text-gray-600 shadow-md transition-colors hover:bg-red-50 hover:text-red-600 disabled:cursor-wait disabled:opacity-60"><Trash2 size={16} />{deletingWorkImage === image && <span className="sr-only">Deleting image</span>}</button></div>)}</div> : <p className="mt-4 text-sm text-gray-500">Your work photos will appear here after upload.</p>}
                         </section>
                     </div>
                 )}
