@@ -18,6 +18,7 @@ import {
     ChevronDown,
     PlusCircle,
     Star,
+    Award,
     CalendarCheck,
     TrendingUp,
     Upload,
@@ -53,13 +54,14 @@ export function SalonManagementPage() {
     const [isSalonSelectorOpen, setIsSalonSelectorOpen] = useState(false);
     const [salonSettings, setSalonSettings] = useState({ name: "", description: "", openingHours: "", closingHours: "", address: "", city: "", state: "", pincode: "" });
     const [newGalleryImages, setNewGalleryImages] = useState([]);
+    const [newWorkImages, setNewWorkImages] = useState([]);
 
     // Editing States
 
     const [editingServiceId, setEditingServiceId] = useState(null);
     const [editServiceForm, setEditServiceForm] = useState({ name: "", price: "", description: "" });
     const [editingStaffId, setEditingStaffId] = useState(null);
-    const [editStaffForm, setEditStaffForm] = useState({ name: "", role: "", skills: "", profilePic: null });
+    const [editStaffForm, setEditStaffForm] = useState({ name: "", role: "", experience: "", skills: "", profilePic: null });
 
     // Form States
     const [serviceForm, setServiceForm] = useState({ name: "", category: "Haircut", price: "", description: "" });
@@ -230,7 +232,9 @@ export function SalonManagementPage() {
                 formData.append("images", file);
             });
             
-            const response = await axiosInstance.patch(`/salons/${activeSalon._id}`, formData);
+            const response = await axiosInstance.patch(`/salons/${activeSalon._id}`, formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
             if (response.data.success) {
                 setActiveSalon(response.data.data);
                 setSalons(salons.map(s => s._id === activeSalon._id ? response.data.data : s));
@@ -239,6 +243,30 @@ export function SalonManagementPage() {
             }
         } catch (error) {
             showNotification("Failed to upload images", "error");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleWorkUpload = async (e) => {
+        e.preventDefault();
+        if (newWorkImages.length === 0) return;
+        setIsSubmitting(true);
+        try {
+            const formData = new FormData();
+            formData.append("transformationGallery", JSON.stringify(activeSalon?.transformationGallery || []));
+            newWorkImages.forEach((file) => formData.append("transformationPhotos", file));
+            const response = await axiosInstance.patch(`/salons/${activeSalon._id}`, formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+            if (response.data.success) {
+                setActiveSalon(response.data.data);
+                setSalons((current) => current.map((salon) => salon._id === activeSalon._id ? response.data.data : salon));
+                setNewWorkImages([]);
+                showNotification("Our Work gallery updated", "success");
+            }
+        } catch (error) {
+            showNotification(error.response?.data?.message || "Failed to upload work photos", "error");
         } finally {
             setIsSubmitting(false);
         }
@@ -275,7 +303,9 @@ export function SalonManagementPage() {
                 formData.append("profilePic", staffForm.profilePic);
             }
 
-            const response = await axiosInstance.post("/staff/add", formData);
+            const response = await axiosInstance.post("/staff/add", formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
             if (response.data.success) {
                 setStaff([...staff, response.data.data]);
                 setStaffForm({ name: "", role: "", experience: "", skills: "", profilePic: null });
@@ -300,7 +330,9 @@ export function SalonManagementPage() {
                 formData.append("profilePic", editStaffForm.profilePic);
             }
 
-            const response = await axiosInstance.patch(`/staff/${id}`, formData);
+            const response = await axiosInstance.patch(`/staff/${id}`, formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
             if (response.data.success) {
                 setStaff(staff.map(s => s._id === id ? response.data.data : s));
                 setEditingStaffId(null);
@@ -416,31 +448,33 @@ export function SalonManagementPage() {
                                 </div>
                             </div>
 
-                            <div className="flex items-start gap-4 text-gray-500 bg-gray-50/80 w-fit px-5 py-3.5 rounded-xl border border-gray-100 shadow-sm max-w-sm lg:max-w-md">
+                            <div className="flex items-start gap-3 text-gray-500 bg-gray-50/80 w-fit px-4 py-3 rounded-xl border border-gray-100 max-w-sm lg:max-w-md">
                                 <MapPin size={22} className="text-[#D4AF37] shrink-0 mt-0.5" />
                                 <div className="flex flex-col">
-                                    <span className="ui-subtext text-sm md:text-base">{activeSalon?.address || "No address provided"}</span>
-                                    <span className="ui-meta mt-1.5">{formatLabel(activeSalon?.city, "Location details")}</span>
+                                    <span className="text-sm font-normal leading-relaxed text-gray-600">{activeSalon?.address || "No address provided"}</span>
+                                    <span className="mt-1 text-xs font-normal text-gray-500">{formatLabel(activeSalon?.city, "Location details")}</span>
                                 </div>
                             </div>
 
-                            <div className="flex flex-wrap items-center gap-6">
-                                <div className="bg-gray-50 p-2.5 rounded-xl flex items-center gap-3 border border-gray-100 shadow-sm">
-                                    <span className={`text-sm font-normal pl-2 ${activeSalon?.isOpen ? 'text-emerald-500' : 'text-red-400'}`}>
+                            <div className="flex flex-wrap items-center gap-3">
+                                <div className="bg-white px-3.5 py-2 rounded-xl flex items-center gap-2.5 border border-gray-200">
+                                    <span className={`text-sm font-medium ${activeSalon?.isOpen ? 'text-emerald-700' : 'text-gray-500'}`}>
                                         {activeSalon?.isOpen ? 'Live Now' : 'Offline'}
                                     </span>
                                     <button 
                                         onClick={handleUpdateSalonStatus}
-                                        className={`w-12 h-6 rounded-full relative transition-all duration-300 ${activeSalon?.isOpen ? 'bg-emerald-500' : 'bg-gray-300'}`}
+                                        aria-label={activeSalon?.isOpen ? 'Pause salon' : 'Set salon live'}
+                                        aria-pressed={Boolean(activeSalon?.isOpen)}
+                                        className={`w-10 h-[22px] rounded-full relative transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 ${activeSalon?.isOpen ? 'bg-emerald-500' : 'bg-gray-300'}`}
                                     >
-                                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all duration-300 ${activeSalon?.isOpen ? 'left-7' : 'left-1'}`}></div>
+                                        <div className={`absolute top-[3px] size-4 bg-white rounded-full shadow-sm transition-all duration-200 ${activeSalon?.isOpen ? 'left-[21px]' : 'left-[3px]'}`}></div>
                                     </button>
                                 </div>
                                 <button 
                                     onClick={() => setTab("settings")}
-                                    className="salon-action-button salon-action-button--secondary shadow-sm group"
+                                    className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37]/40"
                                 >
-                                    <Settings size={14} className="group-hover:rotate-90 transition-transform duration-500" />
+                                    <Settings size={15} strokeWidth={1.8} className="text-gray-500" />
                                     Edit Details
                                 </button>
                             </div>
@@ -449,47 +483,47 @@ export function SalonManagementPage() {
 
                     {/* COLUMN 3: STATS & ACTIONS (Right) */}
                     <div className="lg:w-[38%] bg-gray-50/50 rounded-xl p-6 lg:p-8 border border-gray-100 flex flex-col justify-center gap-6 relative z-10">
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                            <div className="grid grid-cols-2 gap-3">
                             {/* Service Menu Stat */}
-                            <div className="bg-white p-4 lg:p-5 rounded-xl shadow-sm border border-gray-50 flex items-center gap-4 hover:shadow-md transition-shadow">
-                                <div className="w-12 h-12 bg-amber-50 rounded-lg flex items-center justify-center text-amber-500 shadow-sm border border-amber-100/50 shrink-0">
-                                    <Scissors size={24} />
+                            <div className="bg-white p-3.5 rounded-xl border border-gray-100 flex items-center gap-3 min-w-0">
+                                <div className="size-9 bg-amber-50 rounded-full flex items-center justify-center text-[#B88A16] shrink-0">
+                                    <Scissors size={18} strokeWidth={1.8} />
                                 </div>
-                                <div>
-                                    <p className="ui-label mb-1 leading-none">Services</p>
-                                    <h4 className="text-xl lg:text-2xl font-sans font-bold text-gray-900">{services.length}</h4>
+                                <div className="min-w-0">
+                                    <p className="text-xs font-medium text-gray-500 leading-none mb-1">Services</p>
+                                    <h4 className="text-lg font-semibold text-gray-900">{services.length}</h4>
                                 </div>
                             </div>
 
                             {/* Staff Stat */}
-                            <div className="bg-white p-4 lg:p-5 rounded-xl shadow-sm border border-gray-50 flex items-center gap-4 hover:shadow-md transition-shadow">
-                                <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center text-emerald-500 shadow-sm border border-emerald-100/50 shrink-0">
-                                    <Users size={24} />
+                            <div className="bg-white p-3.5 rounded-xl border border-gray-100 flex items-center gap-3 min-w-0">
+                                <div className="size-9 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-700 shrink-0">
+                                    <Users size={18} strokeWidth={1.8} />
                                 </div>
-                                <div>
-                                    <p className="ui-label mb-1 leading-none">Stylists</p>
-                                    <h4 className="text-xl lg:text-2xl font-sans font-bold text-gray-900">{staff.length}</h4>
+                                <div className="min-w-0">
+                                    <p className="text-xs font-medium text-gray-500 leading-none mb-1">Stylists</p>
+                                    <h4 className="text-lg font-semibold text-gray-900">{staff.length}</h4>
                                 </div>
                             </div>
 
                             {/* Performance Stat */}
-                            <div className="bg-white p-4 lg:p-5 rounded-xl shadow-sm border border-gray-50 flex items-center gap-4 hover:shadow-md transition-shadow">
-                                <div className="w-12 h-12 bg-amber-50 rounded-lg flex items-center justify-center text-[#D4AF37] shadow-sm border border-amber-100/50 shrink-0">
-                                    <TrendingUp size={24} />
+                            <div className="bg-white p-3.5 rounded-xl border border-gray-100 flex items-center gap-3 min-w-0">
+                                <div className="size-9 bg-amber-50 rounded-full flex items-center justify-center text-[#B88A16] shrink-0">
+                                    <TrendingUp size={18} strokeWidth={1.8} />
                                 </div>
-                                <div>
-                                    <p className="ui-label mb-1 leading-none">Status</p>
-                                    <h4 className="text-xl lg:text-2xl font-sans font-semibold text-gray-900">Good</h4>
+                                <div className="min-w-0">
+                                    <p className="text-xs font-medium text-gray-500 leading-none mb-1">Status</p>
+                                    <h4 className="text-base font-semibold text-gray-900">{activeSalon?.isOpen ? "Open" : "Offline"}</h4>
                                 </div>
                             </div>
 
                             {/* View Bookings Button (Integrated into grid) */}
                             <NavLink 
                                 to="/salon/dashboard"
-                                className="bg-[#1A1A1A] hover:bg-black text-white p-4 lg:p-5 rounded-xl shadow-xl shadow-black/10 flex flex-col items-center justify-center gap-2 group transition-all"
+                                className="bg-white hover:bg-gray-50 text-gray-800 p-3.5 rounded-xl border border-gray-100 flex items-center gap-3 transition-colors"
                             >
-                                <CalendarCheck size={26} className="text-[#D4AF37] group-hover:scale-110 transition-transform duration-300" />
-                                    <span className="text-sm font-normal leading-none">Bookings</span>
+                                <span className="size-9 bg-gray-100 rounded-full flex items-center justify-center text-[#B88A16]"><CalendarCheck size={18} strokeWidth={1.8} /></span>
+                                <span className="text-xs sm:text-sm font-medium">Bookings</span>
                             </NavLink>
                         </div>
                     </div>
@@ -529,7 +563,7 @@ export function SalonManagementPage() {
                 </div>
                 
                 {tab === "settings" && (
-                    <div className="bg-white rounded-xl p-6 md:p-10 border border-gray-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="bg-white rounded-xl p-4 sm:p-6 md:p-8 border border-gray-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="mb-6">
                             <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-4">Salon Settings</h2>
                             <p className="text-gray-500 text-sm">Manage your salon's basic information, location, and operational schedule.</p>
@@ -718,6 +752,22 @@ export function SalonManagementPage() {
                                 </div>
                             )}
                         </div>
+
+                        <section className="mt-8 border-t border-gray-100 pt-6">
+                            <div className="mb-4">
+                                <h2 className="text-lg font-semibold text-gray-900">Our Work</h2>
+                                <p className="mt-1 text-sm text-gray-500">Add transformation photos and style showcases. They appear in the Our Work section on your salon page.</p>
+                            </div>
+                            <form onSubmit={handleWorkUpload} className="rounded-xl border border-dashed border-gray-200 bg-gray-50/60 p-4 sm:p-5">
+                                <label htmlFor="work-upload" className="inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                    <Upload size={16} className="text-[#B88A16]" /> Add Work Photos
+                                    <input id="work-upload" type="file" multiple accept="image/*" className="sr-only" onChange={(event) => setNewWorkImages(Array.from(event.target.files || []))} />
+                                </label>
+                                <span className="ml-3 text-xs text-gray-500">{newWorkImages.length} selected</span>
+                                {newWorkImages.length > 0 && <button type="submit" disabled={isSubmitting} className="ml-3 inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#1a1a1a] px-4 py-2 text-sm font-medium text-white hover:bg-black disabled:opacity-60">{isSubmitting ? <Loader2 size={15} className="animate-spin" /> : null} Upload Photos</button>}
+                            </form>
+                            {activeSalon?.transformationGallery?.length > 0 ? <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">{activeSalon.transformationGallery.map((image, index) => <div key={`${image}-${index}`} className="aspect-square overflow-hidden rounded-lg border border-gray-100"><img src={image} alt={`Our work ${index + 1}`} className="h-full w-full object-cover" /></div>)}</div> : <p className="mt-4 text-sm text-gray-500">Your work photos will appear here after upload.</p>}
+                        </section>
                     </div>
                 )}
 
@@ -830,9 +880,9 @@ export function SalonManagementPage() {
                         <div className="space-y-2">
                              {tab === "services" ? (
                                  services.length > 0 ? (
-                                     <div className="grid sm:grid-cols-2 gap-6">
+                                     <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
                                          {services.map(s => (
-                                             <div key={s._id} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm group hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col items-start justify-between">
+                                             <div key={s._id} className="bg-white p-3 sm:p-3.5 rounded-xl border border-gray-100 shadow-sm group hover:shadow-md transition-shadow flex flex-col items-start justify-between">
                                                  {editingServiceId === s._id ? (
                                                      <div className="w-full space-y-4">
                                                          <input 
@@ -861,8 +911,8 @@ export function SalonManagementPage() {
                                                  ) : (
                                                      <>
                                                          <div className="w-full">
-                                                             <div className="flex items-center justify-between mb-4">
-                                                                 <span className="ui-badge bg-[#D4AF37]/5 px-3 py-1 rounded-full border border-[#D4AF37]/10">
+                                                             <div className="flex items-center justify-between mb-2">
+                                                                 <span className="ui-badge bg-[#D4AF37]/5 px-2.5 py-1 rounded-full border border-[#D4AF37]/10">
                                                                      {formatLabel(s.category, "Premium")}
                                                                  </span>
                                                                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -871,26 +921,28 @@ export function SalonManagementPage() {
                                                                              setEditingServiceId(s._id);
                                                                              setEditServiceForm({ name: s.name, price: s.price, description: s.description || "" });
                                                                          }}
-                                                                         className="p-2 text-gray-400 hover:text-[#D4AF37] hover:bg-[#D4AF37]/5 rounded-xl transition-all"
+                                                                         aria-label={`Edit ${s.name}`}
+                                                                         className="p-1.5 text-gray-400 hover:text-[#D4AF37] hover:bg-[#D4AF37]/5 rounded-lg transition-colors"
                                                                      >
-                                                                         <Edit2 size={16} />
+                                                                         <Edit2 size={15} strokeWidth={1.8} />
                                                                      </button>
                                                                      <button 
                                                                          onClick={() => handleDeleteService(s._id)}
-                                                                         className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                                                         aria-label={`Delete ${s.name}`}
+                                                                         className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                                                                      >
-                                                                         <Trash2 size={16} />
+                                                                         <Trash2 size={15} strokeWidth={1.8} />
                                                                      </button>
                                                                  </div>
                                                              </div>
-                                                             <h3 className="text-lg font-semibold text-gray-900 mb-2">{formatLabel(s.name, "Service")}</h3>
-                                                             <p className="ui-subtext line-clamp-3 mb-4">{s.description || "Indulge in our premium signature treatment designed for excellence."}</p>
-                                                             <div className="flex items-center justify-between pt-4 border-t border-gray-50">
-                                                                 <div className="flex items-center gap-1.5 text-lg font-black text-gray-900">
-                                                                     <IndianRupee size={16} className="text-[#D4AF37]" />
+                                                             <h3 className="text-base font-semibold text-gray-900 mb-1">{formatLabel(s.name, "Service")}</h3>
+                                                             <p className="text-sm font-normal leading-snug text-gray-600 line-clamp-2 mb-2">{s.description || "No service description provided."}</p>
+                                                             <div className="flex items-center justify-between pt-2 border-t border-gray-50">
+                                                                 <div className="flex items-center gap-1.5 text-base font-semibold text-gray-900">
+                                                                     <IndianRupee size={15} className="text-[#D4AF37]" />
                                                                      {s.price}
                                                                  </div>
-                                                                 <div className="p-2 rounded-full bg-gray-50 text-gray-300">
+                                                                 <div className="p-1.5 rounded-full bg-gray-50 text-gray-300">
                                                                      <Scissors size={14} />
                                                                  </div>
                                                              </div>
@@ -908,20 +960,31 @@ export function SalonManagementPage() {
                                  )
                              ) : (
                                  staff.length > 0 ? (
-                                     <div className="grid sm:grid-cols-2 gap-6">
+                                     <div className="flex flex-wrap justify-start gap-4">
                                          {staff.map(m => (
-                                             <div key={m._id} className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm group hover:shadow-xl transition-all">
+                                             <div key={m._id} className="relative w-[200px] h-[256px] max-w-full min-w-0 bg-white p-5 rounded-xl border border-gray-100 shadow-sm group hover:border-[#D4AF37]/30 hover:shadow-md transition-all flex flex-col items-center text-center">
                                                  {editingStaffId === m._id ? (
-                                                     <div className="space-y-4">
+                                                     <div className="w-full h-full flex flex-col justify-center gap-2">
                                                          <input 
-                                                             className="w-full bg-gray-50 border-none rounded-xl px-4 py-2 font-bold text-sm"
+                                                             aria-label="Staff member name"
+                                                             className="w-full bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 font-medium text-sm"
                                                              value={editStaffForm.name}
                                                              onChange={e => setEditStaffForm({...editStaffForm, name: e.target.value})}
                                                          />
                                                          <input 
-                                                             className="w-full bg-gray-50 border-none rounded-xl px-4 py-2 text-sm"
+                                                             aria-label="Staff member role"
+                                                             className="w-full bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 text-sm"
                                                              value={editStaffForm.role}
                                                              onChange={e => setEditStaffForm({...editStaffForm, role: e.target.value})}
+                                                         />
+                                                         <input
+                                                             aria-label="Experience in years"
+                                                             type="number"
+                                                             min="0"
+                                                             className="w-full bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 text-sm"
+                                                             value={editStaffForm.experience}
+                                                             onChange={e => setEditStaffForm({...editStaffForm, experience: e.target.value})}
+                                                             placeholder="Experience (years)"
                                                          />
                                                          <div className="flex gap-2">
                                                              <button onClick={() => handleUpdateStaff(m._id)} className="flex-1 bg-[#1a1a1a] text-white py-2 rounded-xl text-xs font-bold hover:bg-black transition-all flex items-center justify-center gap-2">
@@ -931,39 +994,19 @@ export function SalonManagementPage() {
                                                          </div>
                                                      </div>
                                                  ) : (
-                                                     <div className="flex items-start justify-between">
-                                                         <div className="flex gap-4">
-                                                             <div className="w-14 h-14 rounded-xl bg-gray-900 flex items-center justify-center text-[#D4AF37] border-2 border-[#D4AF37]/20">
-                                                                 <Users size={24} />
-                                                             </div>
-                                                             <div>
-                                                                 <h3 className="font-semibold text-gray-900 text-lg">{m.name}</h3>
-                                                                 <p className="ui-meta mt-1">{formatLabel(m.role, "Stylist")}</p>
-                                                                 <div className="flex flex-wrap gap-1 mt-3">
-                                                                     {m.skills?.map((skill, index) => (
-                                                                         <span key={index} className="ui-badge bg-gray-50 px-3 py-1 rounded-full border border-gray-100">{formatLabel(skill)}</span>
-                                                                     ))}
-                                                                 </div>
-                                                             </div>
+                                                     <>
+                                                         <div className="absolute right-3 top-3 flex gap-1">
+                                                             <button type="button" aria-label={`Delete ${m.name}`} onClick={() => handleDeleteStaff(m._id)} className="rounded-md p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"><Trash2 size={14} /></button>
                                                          </div>
-                                                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                             <button 
-                                                                 onClick={() => {
-                                                                     setEditingStaffId(m._id);
-                                                                     setEditStaffForm({ name: m.name, role: m.role, skills: m.skills?.join(", ") });
-                                                                 }}
-                                                                 className="p-2 text-gray-400 hover:text-[#D4AF37] hover:bg-[#D4AF37]/5 rounded-xl transition-all"
-                                                             >
-                                                                 <Edit2 size={16} />
-                                                             </button>
-                                                             <button 
-                                                                 onClick={() => handleDeleteStaff(m._id)}
-                                                                 className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
-                                                             >
-                                                                 <Trash2 size={16} />
-                                                             </button>
+                                                         <div className="relative mb-4 mt-1">
+                                                             {m.profilePic ? <img src={m.profilePic} alt={m.name} className="size-20 rounded-full border-2 border-amber-100 object-cover" /> : <div className="size-20 rounded-full bg-gradient-to-br from-[#1a1a1a] to-gray-700 flex items-center justify-center text-white text-2xl font-semibold border-2 border-[#D4AF37]/40">{(m.name || "?").split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase()}</div>}
                                                          </div>
-                                                     </div>
+                                                         <h3 className="w-full truncate text-sm font-semibold leading-5 text-gray-900">{m.name}</h3>
+                                                         <p className="mt-0.5 w-full truncate text-xs font-medium text-[#B88A16]">{formatLabel(m.role, "Stylist")}</p>
+                                                         {Number(m.experience) > 0 ? <span className="mt-2 inline-flex items-center gap-1 rounded-full border border-gray-100 bg-gray-50 px-2.5 py-1 text-[11px] font-medium text-gray-600"><Award size={11} className="text-orange-500" />{Number(m.experience)} yrs exp</span> : <span className="mt-2 text-[11px] text-gray-400">Experience not provided</span>}
+                                                         {!(Number(m.experience) > 0) && m.skills?.length > 0 && <div className="mt-2 flex max-h-8 flex-wrap justify-center gap-1 overflow-hidden">{m.skills.slice(0, 2).map((skill, index) => <span key={`${skill}-${index}`} className="max-w-full truncate rounded-full border border-amber-100 bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-800">{formatLabel(skill)}</span>)}</div>}
+                                                         <button type="button" onClick={() => { setEditingStaffId(m._id); setEditStaffForm({ name: m.name, role: m.role, experience: String(m.experience ?? ""), skills: m.skills?.join(", ") || "" }); }} className="mt-auto inline-flex min-h-8 w-full items-center justify-center gap-1.5 rounded-lg bg-[#1a1a1a] px-3 py-2 text-xs font-semibold text-white hover:bg-black"><Edit2 size={12} className="text-[#D4AF37]" />Edit Profile</button>
+                                                     </>
                                                  )}
                                              </div>
                                          ))}

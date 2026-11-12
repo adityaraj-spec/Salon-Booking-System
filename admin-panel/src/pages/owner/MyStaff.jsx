@@ -90,7 +90,7 @@ export default function MyStaff() {
   const columns = [
     { key: 'name', label: 'Name', render: (v) => <span className="font-bold text-[#1a1a1a]">{v}</span> },
     { key: 'role', label: 'Role', render: (v) => <span className="text-xs font-medium text-gray-500">{v || '—'}</span> },
-    { key: 'experience', label: 'Experience', render: (v) => v ? <span className="font-serif font-black text-[#1a1a1a]">{v} years</span> : '—' },
+    { key: 'experience', label: 'Experience', render: (v) => v ? <span className="font-serif font-black text-[#1a1a1a]">{Number(v)} yrs</span> : '—' },
     { key: 'skills', label: 'Skills', render: (v) => (
       <div className="flex flex-wrap gap-1.5">
         {(v || []).map((s, i) => <span key={i} className="bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-bold px-3 py-1 rounded-full">{s}</span>)}

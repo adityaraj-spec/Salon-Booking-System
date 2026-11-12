@@ -22,7 +22,10 @@ const uploadPhotos = async (files) => {
     const urls = [];
     for (const file of files) {
         const uploaded = await uploadOnCloudinary(file.path);
-        if (uploaded?.secure_url) urls.push(uploaded.secure_url);
+        if (!uploaded?.secure_url) {
+            throw new ApiError(502, "An image could not be stored. Please retry the upload.");
+        }
+        urls.push(uploaded.secure_url);
     }
     return urls;
 };

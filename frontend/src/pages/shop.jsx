@@ -135,7 +135,7 @@ function StaffSection({ staff, salonId, navigate, user, formatLabel }) {
                             {member.experience > 0 ? (
                                 <div className="inline-flex items-center gap-1 text-[11px] text-gray-500 bg-gray-50 border border-gray-100 px-2.5 py-1 rounded-full mb-4">
                                     <Award size={11} className="text-orange-400 shrink-0" />
-                                    <span>{member.experience}+ yrs exp</span>
+                                    <span>{Number(member.experience)} yrs exp</span>
                                 </div>
                             ) : member.skills && member.skills.length > 0 ? (
                                 <div className="flex flex-wrap gap-1 justify-center mb-4">
@@ -331,12 +331,12 @@ function TransformationGallerySection({ photos = [], transformationGallery = [] 
                 <div>
                     <div className="flex items-center gap-2">
                         <Sparkles size={18} className="text-[#D4AF37]" />
-                        <h3 className="text-xl font-bold text-gray-900 tracking-tight">Transformation Gallery</h3>
+                        <h3 className="text-xl font-bold text-gray-900 tracking-tight">Our Work</h3>
                     </div>
                     <p className="text-sm text-gray-500 mt-1">
                         {hasPhotos
-                            ? "Work transformations and style showcases from this salon"
-                            : "Photos will appear here when this salon adds them."}
+                            ? "Recent transformations and style showcases from this salon"
+                            : "Work photos will appear here when this salon adds them."}
                     </p>
                 </div>
                 {/* Scroll arrows */}
@@ -1178,7 +1178,7 @@ export function Shop() {
                                                     <Scissors size={15} className="text-[#D4AF37] shrink-0" />
                                                     <h4 className="text-base font-semibold text-gray-900 truncate">{formatServiceName(service.name)}</h4>
                                                 </div>
-                                                <p className="ui-subtext line-clamp-1 mb-2">{service.description || "Description unavailable"}</p>
+                                                <p className="text-sm font-normal leading-relaxed text-gray-600 line-clamp-2 mb-2">{service.description || "No service description provided."}</p>
                                                 <div className="flex items-center gap-2 text-xs text-gray-500">
                                                     <span className="inline-flex items-center gap-1 font-medium bg-gray-50 border border-gray-100 px-2 py-0.5 rounded-md text-gray-600">
                                                         <Clock size={11} className="text-[#D4AF37]" />
@@ -1237,15 +1237,15 @@ export function Shop() {
                         <div className="flex gap-5">
                             <div className="p-3 bg-orange-50 rounded-xl text-[#e65c00] h-fit"><ShieldCheck size={28} /></div>
                             <div>
-                                <h3 className="font-semibold text-[#1a1a1a] mb-1">Verified Professional Salon</h3>
-                                <p className="text-sm text-gray-500 leading-relaxed">This salon has passed our strict quality and hygiene checks.</p>
+                                <h3 className="text-base font-medium text-[#1a1a1a] mb-1">Verified Professional Salon</h3>
+                                <p className="text-sm font-normal text-gray-600 leading-relaxed">Explore salon details, services, and customer reviews before booking.</p>
                             </div>
                         </div>
                         <div className="flex gap-5">
                             <div className="p-3 bg-amber-50 rounded-xl text-[#D4AF37] h-fit"><Users size={28} /></div>
                             <div>
-                                <h3 className="font-semibold text-[#1a1a1a] mb-1">Expert Stylists</h3>
-                                <p className="text-sm text-gray-500 leading-relaxed">Book with specialists having industry-leading expertise.</p>
+                                <h3 className="text-base font-medium text-[#1a1a1a] mb-1">Expert Stylists</h3>
+                                <p className="text-sm font-normal text-gray-600 leading-relaxed">Browse available stylists and choose one for your service.</p>
                             </div>
                         </div>
                     </div>
