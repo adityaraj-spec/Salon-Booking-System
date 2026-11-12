@@ -672,8 +672,19 @@ export function Shop() {
             return;
         }
         try {
+            const bookingsResponse = await axiosInstance.get("/bookings/my-bookings");
+            const bookings = bookingsResponse.data?.data?.bookings || [];
+            const completedBooking = bookings.find((booking) =>
+                booking.status === "completed" &&
+                String(booking.salon?._id || booking.salon) === String(id)
+            );
+            if (!completedBooking) {
+                setReviewError("A completed booking at this salon is required to leave a review.");
+                return;
+            }
             const response = await axiosInstance.post(`/reviews`, {
                 salonId: id,
+                booking: completedBooking._id,
                 rating,
                 reviewText
             });

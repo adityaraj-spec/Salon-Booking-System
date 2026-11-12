@@ -7,6 +7,13 @@
 !**/.env.example
 !**/.env.sample
 
+# Local uploads and user supplied files
+uploads/
+**/uploads/
+backend/public/uploads/
+backend/public/temp/*
+!backend/public/temp/.gitkeep
+
 # Dependencies
 node_modules/
 **/node_modules/

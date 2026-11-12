@@ -3,17 +3,40 @@ import ApiError from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { Review } from "../models/review.models.js";
 import { Salon } from "../models/salon.models.js";
+import { Booking } from "../models/booking.models.js";
+import mongoose from "mongoose";
 
 const createReview = asyncHandler(async (req, res) => {
-    const { salonId, rating, reviewText } = req.body;
+    const { salonId, booking: bookingId, rating, reviewText } = req.body;
 
-    if (!salonId || !rating) {
-        throw new ApiError(400, "Salon ID and rating are required");
+    if (!salonId || !bookingId || rating === undefined) {
+        throw new ApiError(400, "Salon ID, completed booking, and rating are required");
+    }
+
+    if (![salonId, bookingId].every((id) => mongoose.isValidObjectId(id))) {
+        throw new ApiError(400, "Invalid salon or booking ID");
+    }
+    const numericRating = Number(rating);
+    if (!Number.isInteger(numericRating) || numericRating < 1 || numericRating > 5) {
+        throw new ApiError(400, "Rating must be an integer between 1 and 5");
+    }
+    if (typeof reviewText !== "undefined" && (typeof reviewText !== "string" || reviewText.length > 2000)) {
+        throw new ApiError(400, "Review text must be at most 2000 characters");
     }
 
     const salon = await Salon.findById(salonId);
     if (!salon) {
         throw new ApiError(404, "Salon not found");
+    }
+
+    const booking = await Booking.findOne({
+        _id: bookingId,
+        salon: salonId,
+        customer: req.user._id,
+        status: "completed",
+    }).select("_id");
+    if (!booking) {
+        throw new ApiError(400, "A completed booking at this salon is required to leave a review");
     }
 
     // Check if user already reviewed this salon
@@ -29,7 +52,8 @@ const createReview = asyncHandler(async (req, res) => {
     const review = await Review.create({
         salon: salonId,
         user: req.user?._id,
-        rating: Number(rating),
+        booking: booking._id,
+        rating: numericRating,
         reviewText: reviewText || ""
     });
 
