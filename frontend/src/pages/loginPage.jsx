@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Scissors, Eye, EyeOff, X, Mail, Loader2, ArrowLeft } from "lucide-react";
+import { Scissors, Eye, EyeOff, X, Mail, Loader2, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosConfig";
 import { useAuth } from "../context/AuthContext";
@@ -85,7 +85,6 @@ export function LoginPage() {
             const res = await axiosInstance.post("/users/forgot-password", { email: forgotEmail });
             const message = res.data?.message || "If an account with that email exists, reset instructions have been dispatched.";
             setForgotStatus({ type: "success", text: message });
-            showNotification(message, "success");
         } catch (err) {
             const errMessage = err.response?.data?.message || "Unable to send reset instructions. Please try again later.";
             setForgotStatus({ type: "error", text: errMessage });
@@ -224,63 +223,90 @@ export function LoginPage() {
                     <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100 relative">
                         <button
                             type="button"
-                            onClick={() => setIsForgotOpen(false)}
+                            onClick={() => {
+                                setIsForgotOpen(false);
+                                setForgotStatus(null);
+                            }}
                             className="absolute top-4 right-4 p-1.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
                             aria-label="Close modal"
                         >
                             <X size={18} />
                         </button>
 
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 rounded-full bg-amber-50 text-[#8a6500] flex items-center justify-center shrink-0">
-                                <Mail size={20} />
-                            </div>
-                            <div>
-                                <h3 className="text-xl font-bold text-gray-900 tracking-tight">Reset Password</h3>
-                                <p className="text-xs text-gray-500">We will send instructions to your email</p>
-                            </div>
-                        </div>
-
-                        {forgotStatus && (
-                            <div className={`p-3 rounded-xl text-xs font-semibold mb-4 ${
-                                forgotStatus.type === "success" 
-                                    ? "bg-emerald-50 border border-emerald-200 text-emerald-800" 
-                                    : "bg-red-50 border border-red-200 text-red-700"
-                            }`}>
-                                {forgotStatus.text}
-                            </div>
-                        )}
-
-                        <form onSubmit={handleForgotPasswordSubmit} className="space-y-4">
-                            <div>
-                                <label className="block text-xs font-semibold text-gray-700 mb-1">Account Email</label>
-                                <input
-                                    type="email"
-                                    required
-                                    value={forgotEmail}
-                                    onChange={(e) => setForgotEmail(e.target.value)}
-                                    placeholder="Enter your registered email"
-                                    className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all"
-                                />
-                            </div>
-
-                            <div className="flex gap-3 pt-2">
+                        {forgotStatus?.type === "success" ? (
+                            <div className="text-center py-4">
+                                <div className="w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-4 border border-emerald-100 shadow-sm">
+                                    <CheckCircle2 size={28} />
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 tracking-tight mb-2">Check Your Inbox</h3>
+                                <p className="text-xs sm:text-sm text-gray-500 max-w-xs mx-auto mb-6 leading-relaxed">
+                                    Check your inbox for reset instructions. If an account is registered with <strong className="text-gray-800 font-semibold">{forgotEmail}</strong>, you'll receive a link shortly.
+                                </p>
                                 <button
                                     type="button"
-                                    onClick={() => setIsForgotOpen(false)}
-                                    className="w-1/2 py-2.5 rounded-xl border border-gray-200 font-semibold text-xs text-gray-700 hover:bg-gray-50 transition-colors"
+                                    onClick={() => {
+                                        setIsForgotOpen(false);
+                                        setForgotStatus(null);
+                                        setForgotEmail("");
+                                    }}
+                                    className="w-full py-3 rounded-xl bg-[#1a1a1a] hover:bg-black text-white font-bold text-xs transition-colors"
                                 >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={forgotLoading || !forgotEmail}
-                                    className="w-1/2 py-2.5 rounded-xl bg-[#1a1a1a] hover:bg-black text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
-                                >
-                                    {forgotLoading ? <Loader2 size={14} className="animate-spin text-[#D4AF37]" /> : "Send Link"}
+                                    Done
                                 </button>
                             </div>
-                        </form>
+                        ) : (
+                            <>
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-10 h-10 rounded-full bg-amber-50 text-[#8a6500] flex items-center justify-center shrink-0">
+                                        <Mail size={20} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-bold text-gray-900 tracking-tight">Reset Password</h3>
+                                        <p className="text-xs text-gray-500">We will send instructions to your email</p>
+                                    </div>
+                                </div>
+
+                                {forgotStatus && (
+                                    <div className="p-3 rounded-xl text-xs font-semibold mb-4 bg-red-50 border border-red-200 text-red-700">
+                                        {forgotStatus.text}
+                                    </div>
+                                )}
+
+                                <form onSubmit={handleForgotPasswordSubmit} className="space-y-4">
+                                    <div>
+                                        <label className="block text-xs font-semibold text-gray-700 mb-1">Account Email</label>
+                                        <input
+                                            type="email"
+                                            required
+                                            value={forgotEmail}
+                                            onChange={(e) => setForgotEmail(e.target.value)}
+                                            placeholder="Enter your registered email"
+                                            className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all"
+                                        />
+                                    </div>
+
+                                    <div className="flex gap-3 pt-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setIsForgotOpen(false);
+                                                setForgotStatus(null);
+                                            }}
+                                            className="w-1/2 py-2.5 rounded-xl border border-gray-200 font-semibold text-xs text-gray-700 hover:bg-gray-50 transition-colors"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            disabled={forgotLoading || !forgotEmail}
+                                            className="w-1/2 py-2.5 rounded-xl bg-[#1a1a1a] hover:bg-black text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
+                                        >
+                                            {forgotLoading ? <Loader2 size={14} className="animate-spin text-[#D4AF37]" /> : "Send Link"}
+                                        </button>
+                                    </div>
+                                </form>
+                            </>
+                        )}
                     </div>
                 </div>
             )}

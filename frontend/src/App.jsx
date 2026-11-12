@@ -27,6 +27,7 @@ const SalonBookingsPage = lazy(() => import("./pages/SalonBookingsPage.jsx"));
 const SalonManagementPage = lazy(() => import("./pages/SalonManagementPage.jsx").then(m => ({ default: m.SalonManagementPage })));
 const FavoritesPage = lazy(() => import("./pages/FavoritesPage.jsx").then(m => ({ default: m.FavoritesPage })));
 const VerifyEmailPage = lazy(() => import('./pages/VerifyEmailPage.jsx').then(m => ({ default: m.VerifyEmailPage })));
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage.jsx').then(m => ({ default: m.ResetPasswordPage })));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage.jsx').then(m => ({ default: m.NotFoundPage })));
 
 /**
@@ -93,6 +94,8 @@ function App() {
                     <Route path="login" element={<LoginPage />} />
                     <Route path="signup" element={<SignUpPage />} />
                     <Route path="verify-email" element={<VerifyEmailPage />} />
+                    <Route path="reset-password/:token" element={<ResetPasswordPage />} />
+                    <Route path="reset-password" element={<ResetPasswordPage />} />
                     <Route path="verify" element={<Navigate to="/verify-email" replace />} />
                     <Route path="privacy" element={<Navigate to="/" replace />} />
                     <Route path="terms" element={<Navigate to="/" replace />} />
