@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { ArrowRight, ShieldCheck, Tag, Clock, MapPin, Star, ChevronLeft, ChevronRight, Heart, Sparkles, ChevronDown, Navigation, Loader2, Search, X, Scissors } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Tag, Clock, MapPin, Star, ChevronLeft, ChevronRight, Heart, Sparkles, ChevronDown, Navigation, Loader2, Search, X, Scissors, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUI } from "../context/UIContext";
 import { useAuth } from '../context/AuthContext';
@@ -21,11 +21,12 @@ const heroImages = [
 
 
 const WHY_CHOOSE = [
-    { icon: <Tag size={22} className="text-[#ff9f43]" />, title: "Best deals & prices", desc: "Discover the most competitive pricing across top-rated salons in your city.", bg: "bg-orange-50" },
-    { icon: <Clock size={22} className="text-purple-500" />, title: "24x7 customer support", desc: "Our support team is available round the clock to assist you anytime.", bg: "bg-purple-50" },
-    { icon: <MapPin size={22} className="text-green-500" />, title: "Largest selection of salons", desc: "Browse the widest range of salons — from local gems to premium chains.", bg: "bg-green-50" },
-    { icon: <ShieldCheck size={22} className="text-[#D4AF37]" />, title: "Verified salons", desc: "All salons are verified and approved to ensure guaranteed quality service.", bg: "bg-amber-50" },
-    { icon: <Heart size={22} className="text-red-500" />, title: "Save favourites", desc: "Save your favourite salons and plan your next visit with ease.", bg: "bg-red-50" },
+    { icon: <Clock size={22} className="text-[#D4AF37]" />, title: "Live Line & Zero Waiting", desc: "Save your spot in line before stepping out and track your wait time in real time.", bg: "bg-amber-50" },
+    { icon: <Scissors size={22} className="text-purple-500" />, title: "Available Chairs & Stylists", desc: "See open chairs and pick your preferred stylist with guaranteed timings.", bg: "bg-purple-50" },
+    { icon: <Tag size={22} className="text-[#ff9f43]" />, title: "Upfront Best Prices", desc: "Clear, transparent service menus with verified pricing and no surprise checkout fees.", bg: "bg-orange-50" },
+    { icon: <ShieldCheck size={22} className="text-emerald-500" />, title: "Verified Partner Salons", desc: "Every salon is handpicked and hygiene-certified to ensure guaranteed quality care.", bg: "bg-emerald-50" },
+    { icon: <CheckCircle2 size={22} className="text-blue-500" />, title: "Quick Booking Codes", desc: "Just show your 4-digit code at the salon when you arrive.", bg: "bg-blue-50" },
+    { icon: <Heart size={22} className="text-red-500" />, title: "Save Favorites & Points", desc: "Bookmark your go-to salons and earn loyalty reward points on every completed visit.", bg: "bg-red-50" },
 ];
 
 export function LandingPage() {
@@ -362,11 +363,11 @@ export function LandingPage() {
 
 
 
-            {/* ── POPULAR DESTINATIONS ── */}
+            {/* ── POPULAR CITIES ── */}
             <section className="py-10 px-4 sm:px-6 lg:px-8 bg-white">
                 <div className="max-w-7xl mx-auto">
                     <div className="my-12">
-                        <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-6">Popular Destinations</h2>
+                        <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-4">Popular Cities</h2>
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
                             {dynamicCities.map((city) => (
                                 <div 
@@ -470,7 +471,12 @@ export function LandingPage() {
                         <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-6">How It Works</h2>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 text-center">
-                        {[["Browse Salons", "Explore verified salons near you"], ["Choose Service", "Select from a range of services"], ["Book & Pay", "Secure online booking & payment"], ["Enjoy Service", "Visit salon and enjoy your service"]].map(([title, desc], i) => (
+                        {[
+                            ["Find Your Salon", "Explore top-rated verified salons and open chairs near you"],
+                            ["Choose Services", "Pick haircuts, styling, or treatments with upfront pricing"],
+                            ["Book a Time or Join Line", "Reserve an available chair slot or save your spot in line"],
+                            ["Show Code & Enjoy", "Arrive, share your 4-digit booking code, and relax"]
+                        ].map(([title, desc], i) => (
                             <div key={i}>
                                 <div className="text-5xl md:text-6xl font-sans text-[#ffe0cc] font-bold mb-3">{String(i + 1).padStart(2, '0')}</div>
                                 <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1.5">{title}</h3>
@@ -488,7 +494,7 @@ export function LandingPage() {
                         <span className="text-[#D4AF37] font-semibold text-xs bg-amber-50 px-3 py-1 rounded-full">Discover SalonNow</span>
                         <h2 className="text-xl font-bold text-gray-900 tracking-tight mt-3 mb-4">Online Salon Booking Made Effortless</h2>
                         <p className="text-gray-500 text-sm md:text-base leading-relaxed">
-                            Connecting customers with premier salons and wellness providers across India with live slot availability, upfront transparent pricing, and instant confirmations.
+                            Book top-rated salons across India with clear prices, live wait times, and instant booking codes.
                         </p>
                     </div>
 
@@ -501,9 +507,9 @@ export function LandingPage() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-3.5">
                                 {[
                                     { title: "Curated Salons", desc: "Handpicked verified salons and spas across popular cities in India." },
-                                    { title: "Upfront Best Prices", desc: "No hidden charges. Transparent service menu prices and exclusive deals." },
-                                    { title: "Flexible Payment", desc: "Pay securely online via UPI/cards or directly at the salon." },
-                                    { title: "Real-Time Slots", desc: "Live seat availability ensures zero waiting and guaranteed appointments." },
+                                    { title: "Upfront Best Prices", desc: "No hidden charges. Transparent menu prices and optional extra services." },
+                                    { title: "Flexible Payment", desc: "Pay securely online via UPI/cards or directly at the salon counter." },
+                                    { title: "Live Chair Availability", desc: "See open chairs and live wait times so you never have to wait." },
                                 ].map((item, i) => (
                                     <div key={i} className="p-4 bg-[#fafafa] border border-gray-100 rounded-xl flex flex-col gap-1 hover:border-[#D4AF37]/30 transition-all">
                                         <h4 className="text-base font-semibold text-gray-900">{item.title}</h4>
@@ -514,7 +520,7 @@ export function LandingPage() {
                             <div className="p-4 bg-amber-50/60 border border-amber-200/50 rounded-xl flex items-center gap-3 mt-4">
                                 <ShieldCheck size={22} className="text-[#D4AF37] shrink-0" />
                                 <p className="text-xs text-amber-950 font-medium leading-relaxed">
-                                    <strong className="font-semibold">100% Quality Assured:</strong> All partnered salons adhere to strict hygiene and professional standards.
+                                    <strong className="font-semibold">100% Quality Assured:</strong> Verified salons, professional hygiene standards, and instant 4-digit booking code check-ins.
                                 </p>
                             </div>
                         </div>
@@ -526,10 +532,10 @@ export function LandingPage() {
                             </h3>
                             <div className="space-y-4">
                                 {[
-                                    { step: "Select Location", desc: "Choose your city or find top-rated salons nearby." },
-                                    { step: "Pick Your Service", desc: "Browse haircut, styling, spa, and beauty treatments." },
-                                    { step: "Reserve Your Slot", desc: "Choose your preferred time and available stylist." },
-                                    { step: "Instant Confirmation", desc: "Receive immediate booking confirmation and reminder." },
+                                    { step: "Find Your Salon", desc: "Choose your city or find top-rated salons nearby with open chairs." },
+                                    { step: "Pick Your Service", desc: "Browse haircut, styling, spa, and beauty treatments from transparent menus." },
+                                    { step: "Reserve Time or Join Line", desc: "Choose your preferred time slot and available stylist, or save your spot in line." },
+                                    { step: "Instant Confirmation", desc: "Receive your 4-digit booking code and live line updates instantly." },
                                 ].map((item, i) => (
                                     <div key={i} className="flex gap-3.5 items-start">
                                         <span className="w-7 h-7 rounded-full bg-[#1a1a1a] text-white text-xs font-bold flex items-center justify-center shrink-0">

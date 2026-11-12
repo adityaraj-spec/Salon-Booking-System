@@ -46,7 +46,7 @@ export function NotFoundPage() {
 
         {/* Quick Links Help */}
         <div className="mt-12 pt-8 border-t border-gray-100 text-xs text-gray-400">
-          Need help? <Link to="/home" className="text-[#8a6500] hover:underline font-medium">Explore popular destinations</Link> or check your <Link to="/bookings" className="text-[#8a6500] hover:underline font-medium">bookings</Link>.
+          Need help? <Link to="/home" className="text-[#8a6500] hover:underline font-medium">Explore popular cities</Link> or check your <Link to="/bookings" className="text-[#8a6500] hover:underline font-medium">bookings</Link>.
         </div>
       </div>
     </div>
