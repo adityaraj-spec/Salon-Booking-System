@@ -7,7 +7,7 @@ import { useNotification } from "../context/NotificationContext";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 
 export function LoginPage() {
-    useDocumentTitle("Sign In", "Sign in to your SalonNow account to manage appointments, live queue positions, and member rewards.");
+    useDocumentTitle("Login", "Sign in to your SalonNow account to manage appointments, live queue positions, and member rewards.");
     const { login } = useAuth();
     const { showNotification } = useNotification();
     const [showPassword, setShowPassword] = useState(false);
@@ -19,18 +19,37 @@ export function LoginPage() {
     const [forgotEmail, setForgotEmail] = useState("");
     const [forgotLoading, setForgotLoading] = useState(false);
     const [forgotStatus, setForgotStatus] = useState(null); // { type: 'success'|'error', text: '' }
+    const [fieldErrors, setFieldErrors] = useState({ email: "", password: "" });
+    const [forgotError, setForgotError] = useState("");
 
     const navigate = useNavigate();
     const location = useLocation();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
         setError("");
 
         const formData = new FormData(e.target);
-        const email = formData.get("email");
-        const password = formData.get("password");
+        const email = (formData.get("email") || "").trim();
+        const password = formData.get("password") || "";
+
+        const errors = {};
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email) {
+            errors.email = "Please enter your email address.";
+        } else if (!emailRegex.test(email)) {
+            errors.email = "Please enter a valid email address.";
+        }
+        if (!password) {
+            errors.password = "Please enter your password.";
+        }
+
+        if (Object.keys(errors).length > 0) {
+            setFieldErrors(errors);
+            return;
+        }
+
+        setLoading(true);
 
         try {
             const response = await axiosInstance.post("/users/login", { email, password }, {
@@ -77,9 +96,21 @@ export function LoginPage() {
 
     const handleForgotPasswordSubmit = async (e) => {
         e.preventDefault();
-        if (!forgotEmail) return;
-        setForgotLoading(true);
         setForgotStatus(null);
+        setForgotError("");
+
+        const email = (forgotEmail || "").trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email) {
+            setForgotError("Please enter your email address.");
+            return;
+        }
+        if (!emailRegex.test(email)) {
+            setForgotError("Please enter a valid email address.");
+            return;
+        }
+
+        setForgotLoading(true);
 
         try {
             const res = await axiosInstance.post("/users/forgot-password", { email: forgotEmail });
@@ -112,7 +143,7 @@ export function LoginPage() {
                     {/* Titles */}
                     <div className="text-center mb-6">
                         <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-2">Welcome Back</h2>
-                        <p className="text-gray-500 text-sm leading-relaxed">Login to your account to manage your appointments</p>
+                        <p className="text-gray-500 text-sm leading-relaxed">Sign in to manage your bookings</p>
                     </div>
 
                     {error && (
@@ -121,17 +152,24 @@ export function LoginPage() {
                         </div>
                     )}
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSubmit} noValidate className="space-y-4">
                         {/* Email */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1.5">Email Address</label>
                             <input
                                 name="email"
                                 type="email"
-                                required
+                                onChange={() => setFieldErrors(prev => ({ ...prev, email: "" }))}
                                 placeholder="name@example.com"
-                                className="w-full border border-gray-200 rounded-xl p-3.5 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm"
+                                className={`w-full border rounded-xl p-3.5 text-gray-800 placeholder-gray-400 focus:outline-none transition-all text-sm ${
+                                    fieldErrors.email
+                                        ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+                                        : "border-gray-200 focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20"
+                                }`}
                             />
+                            {fieldErrors.email && (
+                                <p className="text-xs text-red-600 mt-1.5 font-medium">{fieldErrors.email}</p>
+                            )}
                         </div>
 
                         {/* Password */}
@@ -141,9 +179,13 @@ export function LoginPage() {
                                 <input
                                     name="password"
                                     type={showPassword ? "text" : "password"}
-                                    required
+                                    onChange={() => setFieldErrors(prev => ({ ...prev, password: "" }))}
                                     placeholder="Enter your password"
-                                    className="w-full border border-gray-200 rounded-xl p-3.5 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all text-sm pr-11"
+                                    className={`w-full border rounded-xl p-3.5 text-gray-800 placeholder-gray-400 focus:outline-none transition-all text-sm pr-11 ${
+                                        fieldErrors.password
+                                            ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+                                            : "border-gray-200 focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20"
+                                    }`}
                                 />
                                 <button
                                     type="button"
@@ -154,6 +196,9 @@ export function LoginPage() {
                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
                             </div>
+                            {fieldErrors.password && (
+                                <p className="text-xs text-red-600 mt-1.5 font-medium">{fieldErrors.password}</p>
+                            )}
                         </div>
 
                         {/* Forgot Password Action */}
@@ -272,17 +317,26 @@ export function LoginPage() {
                                     </div>
                                 )}
 
-                                <form onSubmit={handleForgotPasswordSubmit} className="space-y-4">
+                                <form onSubmit={handleForgotPasswordSubmit} noValidate className="space-y-4">
                                     <div>
                                         <label className="block text-xs font-semibold text-gray-700 mb-1">Account Email</label>
                                         <input
                                             type="email"
-                                            required
                                             value={forgotEmail}
-                                            onChange={(e) => setForgotEmail(e.target.value)}
+                                            onChange={(e) => {
+                                                setForgotEmail(e.target.value);
+                                                setForgotError("");
+                                            }}
                                             placeholder="Enter your registered email"
-                                            className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all"
+                                            className={`w-full border rounded-xl p-3 text-sm focus:outline-none transition-all ${
+                                                forgotError
+                                                    ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+                                                    : "border-gray-200 focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20"
+                                            }`}
                                         />
+                                        {forgotError && (
+                                            <p className="text-xs text-red-600 mt-1.5 font-medium">{forgotError}</p>
+                                        )}
                                     </div>
 
                                     <div className="flex gap-3 pt-2">

@@ -19,6 +19,7 @@ export function ResetPasswordPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
+    const [fieldErrors, setFieldErrors] = useState({ newPassword: "", confirmPassword: "" });
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -29,13 +30,21 @@ export function ResetPasswordPage() {
             return;
         }
 
-        if (newPassword.length < 8) {
-            setError("Password must be at least 8 characters long.");
-            return;
+        const errors = {};
+        if (!newPassword) {
+            errors.newPassword = "Please enter a new password.";
+        } else if (newPassword.length < 8) {
+            errors.newPassword = "Password must be at least 8 characters long.";
         }
 
-        if (newPassword !== confirmPassword) {
-            setError("Passwords do not match. Please ensure both fields are identical.");
+        if (!confirmPassword) {
+            errors.confirmPassword = "Please confirm your new password.";
+        } else if (newPassword && confirmPassword && newPassword !== confirmPassword) {
+            errors.confirmPassword = "Passwords do not match. Please ensure both fields are identical.";
+        }
+
+        if (Object.keys(errors).length > 0) {
+            setFieldErrors(errors);
             return;
         }
 
@@ -142,7 +151,7 @@ export function ResetPasswordPage() {
                                 </div>
                             )}
 
-                            <form onSubmit={handleSubmit} className="space-y-4">
+                            <form onSubmit={handleSubmit} noValidate className="space-y-4">
                                 <div>
                                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">
                                         New Password
@@ -150,12 +159,17 @@ export function ResetPasswordPage() {
                                     <div className="relative">
                                         <input
                                             type={showPassword ? "text" : "password"}
-                                            required
-                                            minLength={8}
                                             value={newPassword}
-                                            onChange={(e) => setNewPassword(e.target.value)}
+                                            onChange={(e) => {
+                                                setNewPassword(e.target.value);
+                                                setFieldErrors(prev => ({ ...prev, newPassword: "" }));
+                                            }}
                                             placeholder="At least 8 characters"
-                                            className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-3 text-sm pr-10 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all"
+                                            className={`w-full bg-white border rounded-xl px-3.5 py-3 text-sm pr-10 focus:outline-none transition-all ${
+                                                fieldErrors.newPassword
+                                                    ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+                                                    : "border-gray-200 focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20"
+                                            }`}
                                         />
                                         <button
                                             type="button"
@@ -166,6 +180,9 @@ export function ResetPasswordPage() {
                                             {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                                         </button>
                                     </div>
+                                    {fieldErrors.newPassword && (
+                                        <p className="text-xs text-red-600 mt-1.5 font-medium">{fieldErrors.newPassword}</p>
+                                    )}
                                 </div>
 
                                 <div>
@@ -175,12 +192,17 @@ export function ResetPasswordPage() {
                                     <div className="relative">
                                         <input
                                             type={showConfirmPassword ? "text" : "password"}
-                                            required
-                                            minLength={8}
                                             value={confirmPassword}
-                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            onChange={(e) => {
+                                                setConfirmPassword(e.target.value);
+                                                setFieldErrors(prev => ({ ...prev, confirmPassword: "" }));
+                                            }}
                                             placeholder="Re-enter your new password"
-                                            className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-3 text-sm pr-10 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all"
+                                            className={`w-full bg-white border rounded-xl px-3.5 py-3 text-sm pr-10 focus:outline-none transition-all ${
+                                                fieldErrors.confirmPassword
+                                                    ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+                                                    : "border-gray-200 focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20"
+                                            }`}
                                         />
                                         <button
                                             type="button"
@@ -191,6 +213,9 @@ export function ResetPasswordPage() {
                                             {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                                         </button>
                                     </div>
+                                    {fieldErrors.confirmPassword && (
+                                        <p className="text-xs text-red-600 mt-1.5 font-medium">{fieldErrors.confirmPassword}</p>
+                                    )}
                                 </div>
 
                                 <button

@@ -6,27 +6,59 @@ import { useNotification } from "../context/NotificationContext";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 
 export function SignUpPage() {
-    useDocumentTitle("Create Account", "Join SalonNow to book salons in 60 seconds with live queue tracking and verified stylists.");
+    useDocumentTitle("Sign Up", "Create an account to book top-rated salons instantly.");
     const { showNotification } = useNotification();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [fieldErrors, setFieldErrors] = useState({});
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
         setError("");
 
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData.entries());
-        
-        if (data.password !== data.confirmPassword) {
-            setError("Passwords do not match. Please re-enter.");
-            setLoading(false);
+
+        const errors = {};
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const phoneRegex = /^[+]?[\d\s-]{10,15}$/;
+
+        if (!data.fullName?.trim()) {
+    errors.fullName = "Please enter your full name.";
+}
+if (!data.username?.trim()) {
+    errors.username = "Please choose a username.";
+}
+if (!data.email?.trim()) {
+    errors.email = "Please enter your email address.";
+} else if (!emailRegex.test(data.email.trim())) {
+    errors.email = "Enter a valid email address.";
+}
+if (!data.phonenumber?.trim()) {
+    errors.phonenumber = "Please enter your phone number.";
+} else if (!phoneRegex.test(data.phonenumber.trim())) {
+    errors.phonenumber = "Enter a valid phone number.";
+}
+if (!data.password) {
+    errors.password = "Please enter a password.";
+} else if (data.password.length < 8) {
+    errors.password = "Password must be at least 8 characters.";
+}
+if (!data.confirmPassword) {
+    errors.confirmPassword = "Please confirm your password.";
+} else if (data.password !== data.confirmPassword) {
+    errors.confirmPassword = "Passwords don't match. Please try again.";
+}
+
+        if (Object.keys(errors).length > 0) {
+            setFieldErrors(errors);
             return;
         }
+
+        setLoading(true);
 
         try {
             const response = await axiosInstance.post("/users/register", data, {
@@ -70,7 +102,7 @@ export function SignUpPage() {
                     {/* Titles */}
                     <div className="text-center mb-5">
                         <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-2">Create Account</h2>
-                        <p className="text-gray-500 text-sm leading-relaxed">Join thousands of customers discovering premier salons</p>
+                        <p className="text-gray-500 text-sm leading-relaxed">Join thousands of happy clients booking top-rated salons.</p>
                     </div>
 
                     {error && (
@@ -81,6 +113,7 @@ export function SignUpPage() {
 
                     <form
                         onSubmit={handleSubmit}
+                        noValidate
                         className="space-y-3.5"
                     >
                         {/* Full Name */}
@@ -90,9 +123,16 @@ export function SignUpPage() {
                                 name="fullName"
                                 type="text"
                                 placeholder="e.g. Aaditya Raj"
-                                required
-                                className="w-full border border-gray-200 rounded-xl p-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all"
+                                onChange={() => setFieldErrors(prev => ({ ...prev, fullName: "" }))}
+                                className={`w-full border rounded-xl p-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none transition-all ${
+                                    fieldErrors.fullName
+                                        ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+                                        : "border-gray-200 focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20"
+                                }`}
                             />
+                            {fieldErrors.fullName && (
+                                <p className="text-xs text-red-600 mt-1.5 font-medium">{fieldErrors.fullName}</p>
+                            )}
                         </div>
 
                         {/* Username */}
@@ -102,9 +142,16 @@ export function SignUpPage() {
                                 name="username"
                                 type="text"
                                 placeholder="choose a username"
-                                required
-                                className="w-full border border-gray-200 rounded-xl p-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all"
+                                onChange={() => setFieldErrors(prev => ({ ...prev, username: "" }))}
+                                className={`w-full border rounded-xl p-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none transition-all ${
+                                    fieldErrors.username
+                                        ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+                                        : "border-gray-200 focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20"
+                                }`}
                             />
+                            {fieldErrors.username && (
+                                <p className="text-xs text-red-600 mt-1.5 font-medium">{fieldErrors.username}</p>
+                            )}
                         </div>
 
                         {/* Email */}
@@ -114,9 +161,16 @@ export function SignUpPage() {
                                 name="email"
                                 type="email"
                                 placeholder="name@example.com"
-                                required
-                                className="w-full border border-gray-200 rounded-xl p-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all"
+                                onChange={() => setFieldErrors(prev => ({ ...prev, email: "" }))}
+                                className={`w-full border rounded-xl p-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none transition-all ${
+                                    fieldErrors.email
+                                        ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+                                        : "border-gray-200 focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20"
+                                }`}
                             />
+                            {fieldErrors.email && (
+                                <p className="text-xs text-red-600 mt-1.5 font-medium">{fieldErrors.email}</p>
+                            )}
                         </div>
 
                         {/* Phone */}
@@ -126,22 +180,35 @@ export function SignUpPage() {
                                 name="phonenumber"
                                 type="tel"
                                 placeholder="+91 98765 43210"
-                                required
-                                className="w-full border border-gray-200 rounded-xl p-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all"
+                                onChange={() => setFieldErrors(prev => ({ ...prev, phonenumber: "" }))}
+                                className={`w-full border rounded-xl p-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none transition-all ${
+                                    fieldErrors.phonenumber
+                                        ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+                                        : "border-gray-200 focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20"
+                                }`}
                             />
+                            {fieldErrors.phonenumber && (
+                                <p className="text-xs text-red-600 mt-1.5 font-medium">{fieldErrors.phonenumber}</p>
+                            )}
                         </div>
 
                         {/* Password */}
                         <div>
-                            <label className="block text-xs font-semibold text-gray-700 mb-1">Password</label>
+                            <div className="flex items-center justify-between mb-1">
+                                <label className="block text-xs font-semibold text-gray-700">Password</label>
+                                <span className="text-[11px] text-gray-400 font-medium">Must be at least 8 characters</span>
+                            </div>
                             <div className="relative">
                                 <input
                                     name="password"
                                     type={showPassword ? "text" : "password"}
                                     placeholder="At least 8 characters"
-                                    required
-                                    minLength={8}
-                                    className="w-full border border-gray-200 rounded-xl p-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all pr-10"
+                                    onChange={() => setFieldErrors(prev => ({ ...prev, password: "" }))}
+                                    className={`w-full border rounded-xl p-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none transition-all pr-10 ${
+                                        fieldErrors.password
+                                            ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+                                            : "border-gray-200 focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20"
+                                    }`}
                                 />
                                 <button
                                     type="button"
@@ -152,6 +219,9 @@ export function SignUpPage() {
                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
                             </div>
+                            {fieldErrors.password && (
+                                <p className="text-xs text-red-600 mt-1.5 font-medium">{fieldErrors.password}</p>
+                            )}
                         </div>
 
                         {/* Password Confirm */}
@@ -162,8 +232,12 @@ export function SignUpPage() {
                                     name="confirmPassword"
                                     type={showConfirmPassword ? "text" : "password"}
                                     placeholder="Re-enter your password"
-                                    required
-                                    className="w-full border border-gray-200 rounded-xl p-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all pr-10"
+                                    onChange={() => setFieldErrors(prev => ({ ...prev, confirmPassword: "" }))}
+                                    className={`w-full border rounded-xl p-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none transition-all pr-10 ${
+                                        fieldErrors.confirmPassword
+                                            ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+                                            : "border-gray-200 focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20"
+                                    }`}
                                 />
                                 <button
                                     type="button"
@@ -174,6 +248,9 @@ export function SignUpPage() {
                                     {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
                             </div>
+                            {fieldErrors.confirmPassword && (
+                                <p className="text-xs text-red-600 mt-1.5 font-medium">{fieldErrors.confirmPassword}</p>
+                            )}
                         </div>
 
                         {/* Sign Up Button */}

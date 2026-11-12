@@ -523,7 +523,7 @@ export function SalonManagementPage() {
                             <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-4">Salon Settings</h2>
                             <p className="text-gray-500 text-sm">Manage your salon's basic information, location, and operational schedule.</p>
                         </div>
-                        <form onSubmit={handleUpdateSalonSettings} className="space-y-6 max-w-3xl">
+                        <form onSubmit={handleUpdateSalonSettings} noValidate className="space-y-6 max-w-3xl">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-1.5 md:col-span-2">
                                     <label className="ui-label">Salon Name</label>
@@ -666,7 +666,7 @@ export function SalonManagementPage() {
                             </div>
                         </div>
 
-                        <form onSubmit={handleGalleryUpload} className="mb-12 bg-gray-50/50 border border-dashed border-gray-200 rounded-xl p-8 text-center cursor-pointer hover:bg-gray-50 transition-colors">
+                        <form onSubmit={handleGalleryUpload} noValidate className="mb-12 bg-gray-50/50 border border-dashed border-gray-200 rounded-xl p-8 text-center cursor-pointer hover:bg-gray-50 transition-colors">
                             <input 
                                 type="file" 
                                 multiple
@@ -721,7 +721,7 @@ export function SalonManagementPage() {
                             </h2>
 
                             {tab === "services" ? (
-                                <form onSubmit={handleAddService} className="space-y-4">
+                                <form onSubmit={handleAddService} noValidate className="space-y-4">
                                     <div>
                                         <label className="ui-label block mb-1.5">Service Name</label>
                                         <input 
@@ -763,7 +763,7 @@ export function SalonManagementPage() {
                                     </button>
                                 </form>
                             ) : (
-                                <form onSubmit={handleAddStaff} className="space-y-4">
+                                <form onSubmit={handleAddStaff} noValidate className="space-y-4">
                                     <div>
                                         <label className="ui-label block mb-1.5">Staff Name</label>
                                         <input 

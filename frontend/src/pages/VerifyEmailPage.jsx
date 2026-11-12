@@ -195,7 +195,7 @@ export function VerifyEmailPage() {
                     )}
 
                     {!success && (
-                        <form onSubmit={handleVerify} className="space-y-6">
+                        <form onSubmit={handleVerify} noValidate className="space-y-6">
                             {/* 4-digit code inputs */}
                             <div>
                                 <label className="block text-sm text-gray-700 mb-3 text-center font-medium">

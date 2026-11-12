@@ -1402,7 +1402,7 @@ export function Shop() {
                             user.role !== "salonOwner" ? (
                                 <div className="bg-white border border-gray-100 rounded-xl p-6 mb-8 shadow-sm">
                                     <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Write a Review</h4>
-                                    <form onSubmit={handleReviewSubmit} className="space-y-6">
+                                    <form onSubmit={handleReviewSubmit} noValidate className="space-y-6">
                                         <div>
                                             <p className="ui-label mb-3">Select Rating</p>
                                             <div className="flex gap-2">

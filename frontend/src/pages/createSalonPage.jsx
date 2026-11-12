@@ -6,9 +6,16 @@ import axiosInstance from "../api/axiosConfig";
 export function CreateSalonPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [fieldErrors, setFieldErrors] = useState({});
     const [imageFiles, setImageFiles] = useState([]);
     const [previews, setPreviews] = useState([]);
     const navigate = useNavigate();
+
+    const clearFieldError = (fieldName) => {
+        if (fieldErrors[fieldName]) {
+            setFieldErrors(prev => ({ ...prev, [fieldName]: "" }));
+        }
+    };
 
     const handleImageChange = (e) => {
         const files = Array.from(e.target.files);
@@ -20,6 +27,7 @@ export function CreateSalonPage() {
         const newPreviews = files.map(file => URL.createObjectURL(file));
         setImageFiles(prev => [...prev, ...files]);
         setPreviews(prev => [...prev, ...newPreviews]);
+        clearFieldError("images");
         
         // Reset the input so the same file can be selected again if needed
         e.target.value = null;
@@ -34,22 +42,74 @@ export function CreateSalonPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
         setError("");
 
         const formElements = e.target.elements;
+        const name = formElements.name.value.trim();
+        const totalSeats = formElements.totalSeats.value.trim();
+        const contactNumber = formElements.contactNumber.value.trim();
+        const state = formElements.state.value.trim();
+        const city = formElements.city.value.trim();
+        const pincode = formElements.pincode.value.trim();
+        const address = formElements.address.value.trim();
+        const openingHours = formElements.openingHours.value.trim();
+        const closingHours = formElements.closingHours.value.trim();
+
+        const errors = {};
+        if (!name) {
+            errors.name = "Salon name is required.";
+        }
+        if (!totalSeats || Number(totalSeats) < 1) {
+            errors.totalSeats = "Total chairs must be at least 1.";
+        }
+        if (!contactNumber) {
+            errors.contactNumber = "Contact phone number is required.";
+        } else if (!/^\+?[\d\s-]{8,15}$/.test(contactNumber)) {
+            errors.contactNumber = "Please enter a valid phone number.";
+        }
+        if (!state) {
+            errors.state = "Please select a state.";
+        }
+        if (!city) {
+            errors.city = "Please enter your city.";
+        }
+        if (!pincode) {
+            errors.pincode = "Please enter a pincode.";
+        } else if (!/^\d{6}$/.test(pincode)) {
+            errors.pincode = "Please enter a valid 6-digit pincode.";
+        }
+        if (!address) {
+            errors.address = "Street address is required.";
+        }
+        if (!openingHours) {
+            errors.openingHours = "Opening time is required.";
+        }
+        if (!closingHours) {
+            errors.closingHours = "Closing time is required.";
+        }
+        if (imageFiles.length === 0) {
+            errors.images = "Please upload at least one salon photo.";
+        }
+
+        if (Object.keys(errors).length > 0) {
+            setFieldErrors(errors);
+            return;
+        }
+
+        setFieldErrors({});
+        setLoading(true);
+
         const formData = new FormData();
-        
-        formData.append("name", formElements.name.value);
-        formData.append("city", formElements.city.value);
-        formData.append("state", formElements.state.value);
-        formData.append("pincode", formElements.pincode.value);
-        formData.append("description", formElements.description.value);
-        formData.append("address", formElements.address.value);
-        formData.append("openingHours", formElements.openingHours.value);
-        formData.append("closingHours", formElements.closingHours.value);
-        formData.append("totalSeats", formElements.totalSeats.value);
-        formData.append("contactNumber", formElements.contactNumber.value);
+        formData.append("name", name);
+        formData.append("city", city);
+        formData.append("state", state);
+        formData.append("pincode", pincode);
+        formData.append("description", formElements.description.value.trim());
+        formData.append("address", address);
+        formData.append("openingHours", openingHours);
+        formData.append("closingHours", closingHours);
+        formData.append("totalSeats", totalSeats);
+        formData.append("contactNumber", contactNumber);
 
         imageFiles.forEach(file => {
             formData.append("images", file);
@@ -109,7 +169,7 @@ export function CreateSalonPage() {
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} noValidate className="space-y-6">
                     {/* Basic Info Section */}
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
                         <h3 className="text-lg font-semibold text-gray-800 flex items-center">
@@ -123,9 +183,16 @@ export function CreateSalonPage() {
                                 name="name"
                                 type="text"
                                 placeholder="Enter your salon name"
-                                required
-                                className="w-full border border-gray-200 rounded-lg p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
+                                onChange={() => clearFieldError("name")}
+                                className={`w-full border rounded-lg p-3.5 text-gray-800 focus:outline-none focus:ring-2 transition-all ${
+                                    fieldErrors.name
+                                        ? "border-red-500 focus:border-red-500 focus:ring-red-500/20"
+                                        : "border-gray-200 focus:border-[#D4AF37] focus:ring-[#D4AF37]/20"
+                                }`}
                             />
+                            {fieldErrors.name && (
+                                <p className="text-xs text-red-600 mt-1.5 font-medium">{fieldErrors.name}</p>
+                            )}
                         </div>
 
                         <div>
@@ -145,9 +212,16 @@ export function CreateSalonPage() {
                                 type="number"
                                 min="1"
                                 defaultValue="6"
-                                required
-                                className="w-full border border-gray-200 rounded-lg p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
+                                onChange={() => clearFieldError("totalSeats")}
+                                className={`w-full border rounded-lg p-3.5 text-gray-800 focus:outline-none focus:ring-2 transition-all ${
+                                    fieldErrors.totalSeats
+                                        ? "border-red-500 focus:border-red-500 focus:ring-red-500/20"
+                                        : "border-gray-200 focus:border-[#D4AF37] focus:ring-[#D4AF37]/20"
+                                }`}
                             />
+                            {fieldErrors.totalSeats && (
+                                <p className="text-xs text-red-600 mt-1.5 font-medium">{fieldErrors.totalSeats}</p>
+                            )}
                             <p className="text-xs text-gray-400 mt-2 italic">How many people can you serve at once?</p>
                         </div>
 
@@ -161,10 +235,17 @@ export function CreateSalonPage() {
                                     name="contactNumber"
                                     type="text"
                                     placeholder="Enter salon contact number"
-                                    required
-                                    className="w-full border border-gray-200 rounded-xl p-3.5 pl-11 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
+                                    onChange={() => clearFieldError("contactNumber")}
+                                    className={`w-full border rounded-xl p-3.5 pl-11 text-gray-800 focus:outline-none focus:ring-2 transition-all ${
+                                        fieldErrors.contactNumber
+                                            ? "border-red-500 focus:border-red-500 focus:ring-red-500/20"
+                                            : "border-gray-200 focus:border-[#D4AF37] focus:ring-[#D4AF37]/20"
+                                    }`}
                                 />
                             </div>
+                            {fieldErrors.contactNumber && (
+                                <p className="text-xs text-red-600 mt-1.5 font-medium">{fieldErrors.contactNumber}</p>
+                            )}
                         </div>
                     </div>
 
@@ -180,8 +261,12 @@ export function CreateSalonPage() {
                                 <label className="block text-sm font-medium text-gray-700 mb-2">State</label>
                                 <select 
                                     name="state"
-                                    required
-                                    className="w-full bg-white border border-gray-200 rounded-lg p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all appearance-none cursor-pointer"
+                                    onChange={() => clearFieldError("state")}
+                                    className={`w-full bg-white border rounded-lg p-3.5 text-gray-800 focus:outline-none focus:ring-2 transition-all appearance-none cursor-pointer ${
+                                        fieldErrors.state
+                                            ? "border-red-500 focus:border-red-500 focus:ring-red-500/20"
+                                            : "border-gray-200 focus:border-[#D4AF37] focus:ring-[#D4AF37]/20"
+                                    }`}
                                     style={{
                                         backgroundImage: "url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231A1A1A%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')",
                                         backgroundRepeat: 'no-repeat',
@@ -220,6 +305,9 @@ export function CreateSalonPage() {
                                     <option value="Uttarakhand">Uttarakhand</option>
                                     <option value="West Bengal">West Bengal</option>
                                 </select>
+                                {fieldErrors.state && (
+                                    <p className="text-xs text-red-600 mt-1.5 font-medium">{fieldErrors.state}</p>
+                                )}
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
@@ -227,9 +315,16 @@ export function CreateSalonPage() {
                                     name="city"
                                     type="text"
                                     placeholder="Enter your city"
-                                    required
-                                    className="w-full border border-gray-200 rounded-lg p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
+                                    onChange={() => clearFieldError("city")}
+                                    className={`w-full border rounded-lg p-3.5 text-gray-800 focus:outline-none focus:ring-2 transition-all ${
+                                        fieldErrors.city
+                                            ? "border-red-500 focus:border-red-500 focus:ring-red-500/20"
+                                            : "border-gray-200 focus:border-[#D4AF37] focus:ring-[#D4AF37]/20"
+                                    }`}
                                 />
+                                {fieldErrors.city && (
+                                    <p className="text-xs text-red-600 mt-1.5 font-medium">{fieldErrors.city}</p>
+                                )}
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Pincode / Zip Code</label>
@@ -237,9 +332,16 @@ export function CreateSalonPage() {
                                     name="pincode"
                                     type="text"
                                     placeholder="e.g., 400053"
-                                    required
-                                    className="w-full border border-gray-200 rounded-lg p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
+                                    onChange={() => clearFieldError("pincode")}
+                                    className={`w-full border rounded-lg p-3.5 text-gray-800 focus:outline-none focus:ring-2 transition-all ${
+                                        fieldErrors.pincode
+                                            ? "border-red-500 focus:border-red-500 focus:ring-red-500/20"
+                                            : "border-gray-200 focus:border-[#D4AF37] focus:ring-[#D4AF37]/20"
+                                    }`}
                                 />
+                                {fieldErrors.pincode && (
+                                    <p className="text-xs text-red-600 mt-1.5 font-medium">{fieldErrors.pincode}</p>
+                                )}
                             </div>
                         </div>
 
@@ -249,9 +351,16 @@ export function CreateSalonPage() {
                                 name="address"
                                 type="text"
                                 placeholder="Enter your salon address"
-                                required
-                                className="w-full border border-gray-200 rounded-lg p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
+                                onChange={() => clearFieldError("address")}
+                                className={`w-full border rounded-lg p-3.5 text-gray-800 focus:outline-none focus:ring-2 transition-all ${
+                                    fieldErrors.address
+                                        ? "border-red-500 focus:border-red-500 focus:ring-red-500/20"
+                                        : "border-gray-200 focus:border-[#D4AF37] focus:ring-[#D4AF37]/20"
+                                }`}
                             />
+                            {fieldErrors.address && (
+                                <p className="text-xs text-red-600 mt-1.5 font-medium">{fieldErrors.address}</p>
+                            )}
                         </div>
                     </div>
 
@@ -269,8 +378,16 @@ export function CreateSalonPage() {
                                     name="openingHours"
                                     type="text"
                                     placeholder="9:00 AM"
-                                    className="w-full border border-gray-200 rounded-lg p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
+                                    onChange={() => clearFieldError("openingHours")}
+                                    className={`w-full border rounded-lg p-3.5 text-gray-800 focus:outline-none focus:ring-2 transition-all ${
+                                        fieldErrors.openingHours
+                                            ? "border-red-500 focus:border-red-500 focus:ring-red-500/20"
+                                            : "border-gray-200 focus:border-[#D4AF37] focus:ring-[#D4AF37]/20"
+                                    }`}
                                 />
+                                {fieldErrors.openingHours && (
+                                    <p className="text-xs text-red-600 mt-1.5 font-medium">{fieldErrors.openingHours}</p>
+                                )}
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Closing Time</label>
@@ -278,8 +395,16 @@ export function CreateSalonPage() {
                                     name="closingHours"
                                     type="text"
                                     placeholder="8:00 PM"
-                                    className="w-full border border-gray-200 rounded-lg p-3.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] transition-all"
+                                    onChange={() => clearFieldError("closingHours")}
+                                    className={`w-full border rounded-lg p-3.5 text-gray-800 focus:outline-none focus:ring-2 transition-all ${
+                                        fieldErrors.closingHours
+                                            ? "border-red-500 focus:border-red-500 focus:ring-red-500/20"
+                                            : "border-gray-200 focus:border-[#D4AF37] focus:ring-[#D4AF37]/20"
+                                    }`}
                                 />
+                                {fieldErrors.closingHours && (
+                                    <p className="text-xs text-red-600 mt-1.5 font-medium">{fieldErrors.closingHours}</p>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -305,7 +430,9 @@ export function CreateSalonPage() {
                             />
                             <label
                                 htmlFor="salon-images"
-                                className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-[#D4AF37] hover:bg-gray-50 transition-all group"
+                                className={`flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-xl cursor-pointer hover:border-[#D4AF37] hover:bg-gray-50 transition-all group ${
+                                    fieldErrors.images ? "border-red-500 bg-red-50/20" : "border-gray-200"
+                                }`}
                             >
                                 <div className="bg-gray-100 p-3 rounded-full text-gray-400 group-hover:bg-[#D4AF37]/10 group-hover:text-[#D4AF37] transition-colors mb-2">
                                     <Plus size={24} />
@@ -314,6 +441,9 @@ export function CreateSalonPage() {
                                 <span className="text-xs text-gray-400 mt-1">PNG, JPG or WebP (Max 5MB each)</span>
                             </label>
                         </div>
+                        {fieldErrors.images && (
+                            <p className="text-xs text-red-600 mt-2 font-medium">{fieldErrors.images}</p>
+                        )}
 
                         {previews.length > 0 && (
                             <div className="grid grid-cols-3 gap-4 mt-6">
@@ -351,4 +481,3 @@ export function CreateSalonPage() {
         </div>
     );
 }
-

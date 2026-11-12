@@ -579,6 +579,7 @@ export function SalonBookingsPage() {
                                                 {!isInProgress ? (
                                                     <form
                                                         onSubmit={(e) => handleStartService(e, booking)}
+                                                        noValidate
                                                         className="flex items-center gap-2"
                                                     >
                                                         <input
