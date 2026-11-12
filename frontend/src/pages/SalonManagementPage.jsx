@@ -486,31 +486,31 @@ export function SalonManagementPage() {
 
 
                 {/* Tabs */}
-                <div className="flex flex-wrap gap-2 mb-4 bg-gray-100/50 p-1.5 rounded-xl w-fit mx-auto md:mx-0">
+                <div className="flex w-full sm:w-fit flex-nowrap sm:flex-wrap gap-2 mb-4 bg-gray-100/50 p-1.5 rounded-xl mx-auto md:mx-0 overflow-x-auto sm:overflow-visible whitespace-nowrap scroll-smooth">
                     <button 
                         onClick={() => setTab("services")}
-                        className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm transition-all ${tab === "services" ? "bg-white text-[#1a1a1a] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                        className={`shrink-0 flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-lg font-medium sm:font-semibold md:font-bold text-xs sm:text-sm transition-all ${tab === "services" ? "bg-white text-[#1a1a1a] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
                     >
                         <Scissors size={18} />
                         Services List
                     </button>
                     <button 
                         onClick={() => setTab("staff")}
-                        className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm transition-all ${tab === "staff" ? "bg-white text-[#1a1a1a] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                        className={`shrink-0 flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-lg font-medium sm:font-semibold md:font-bold text-xs sm:text-sm transition-all ${tab === "staff" ? "bg-white text-[#1a1a1a] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
                     >
                         <Users size={18} />
                         Team Members
                     </button>
                     <button 
                         onClick={() => setTab("settings")}
-                        className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm transition-all ${tab === "settings" ? "bg-white text-[#1a1a1a] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                        className={`shrink-0 flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-lg font-medium sm:font-semibold md:font-bold text-xs sm:text-sm transition-all ${tab === "settings" ? "bg-white text-[#1a1a1a] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
                     >
                         <Settings size={18} />
                         Salon Settings
                     </button>
                     <button 
                         onClick={() => setTab("gallery")}
-                        className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm transition-all ${tab === "gallery" ? "bg-white text-[#1a1a1a] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                        className={`shrink-0 flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-lg font-medium sm:font-semibold md:font-bold text-xs sm:text-sm transition-all ${tab === "gallery" ? "bg-white text-[#1a1a1a] shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
                     >
                         <ImageIcon size={18} />
                         Gallery

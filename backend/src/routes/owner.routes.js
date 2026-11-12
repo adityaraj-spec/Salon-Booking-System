@@ -21,7 +21,11 @@ router.get("/dashboard", getOwnerDashboard);
 
 // Salon management (MOVED FROM MAIN WEBSITE)
 router.get("/salon", getOwnerSalon);
-router.put("/salon", upload.array("images", 10), updateOwnerSalon);
+router.put("/salon", upload.fields([
+  { name: "images", maxCount: 10 },
+  { name: "beforePhotos", maxCount: 10 },
+  { name: "afterPhotos", maxCount: 10 },
+]), updateOwnerSalon);
 
 // Services (inline price editing supported)
 router.get("/services", getOwnerServices);

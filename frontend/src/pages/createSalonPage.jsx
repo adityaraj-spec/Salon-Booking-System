@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Scissors, MapPin, Clock, Camera, Plus, Trash2, Store, X, Phone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosConfig";
@@ -9,7 +9,20 @@ export function CreateSalonPage() {
     const [fieldErrors, setFieldErrors] = useState({});
     const [imageFiles, setImageFiles] = useState([]);
     const [previews, setPreviews] = useState([]);
+    const [beforeFiles, setBeforeFiles] = useState([]);
+    const [afterFiles, setAfterFiles] = useState([]);
+    const [beforePreviews, setBeforePreviews] = useState([]);
+    const [afterPreviews, setAfterPreviews] = useState([]);
+    const previewUrls = useRef(new Set());
     const navigate = useNavigate();
+
+    useEffect(() => () => previewUrls.current.forEach(URL.revokeObjectURL), []);
+
+    const makePreview = (file) => {
+        const url = URL.createObjectURL(file);
+        previewUrls.current.add(url);
+        return url;
+    };
 
     const clearFieldError = (fieldName) => {
         if (fieldErrors[fieldName]) {
@@ -24,7 +37,7 @@ export function CreateSalonPage() {
             return;
         }
 
-        const newPreviews = files.map(file => URL.createObjectURL(file));
+        const newPreviews = files.map(makePreview);
         setImageFiles(prev => [...prev, ...files]);
         setPreviews(prev => [...prev, ...newPreviews]);
         clearFieldError("images");
@@ -37,7 +50,27 @@ export function CreateSalonPage() {
         setImageFiles(imageFiles.filter((_, i) => i !== index));
         // Revoke the URL to avoid memory leaks
         URL.revokeObjectURL(previews[index]);
+        previewUrls.current.delete(previews[index]);
         setPreviews(previews.filter((_, i) => i !== index));
+    };
+
+    const handlePortfolioFiles = (event, setFiles, setFilePreviews) => {
+        const selected = Array.from(event.target.files || []);
+        if (selected.length + (setFiles === setBeforeFiles ? beforeFiles.length : afterFiles.length) > 10) {
+            setError("Maximum 10 before and 10 after photos allowed");
+            event.target.value = "";
+            return;
+        }
+        setFiles((current) => [...current, ...selected]);
+        setFilePreviews((current) => [...current, ...selected.map(makePreview)]);
+        event.target.value = "";
+    };
+
+    const removePortfolioPhoto = (index, files, setFiles, filePreviews, setFilePreviews) => {
+        URL.revokeObjectURL(filePreviews[index]);
+        previewUrls.current.delete(filePreviews[index]);
+        setFiles(files.filter((_, fileIndex) => fileIndex !== index));
+        setFilePreviews(filePreviews.filter((_, fileIndex) => fileIndex !== index));
     };
 
     const handleSubmit = async (e) => {
@@ -64,8 +97,8 @@ export function CreateSalonPage() {
         }
         if (!contactNumber) {
             errors.contactNumber = "Contact phone number is required.";
-        } else if (!/^\+?[\d\s-]{8,15}$/.test(contactNumber)) {
-            errors.contactNumber = "Please enter a valid phone number.";
+        } else if (!/^\d{10}$/.test(contactNumber)) {
+            errors.contactNumber = "Enter exactly 10 digits.";
         }
         if (!state) {
             errors.state = "Please select a state.";
@@ -90,6 +123,9 @@ export function CreateSalonPage() {
         if (imageFiles.length === 0) {
             errors.images = "Please upload at least one salon photo.";
         }
+        if (beforeFiles.length !== afterFiles.length) {
+            errors.portfolio = "Add the same number of before and after photos to create matching transformations.";
+        }
 
         if (Object.keys(errors).length > 0) {
             setFieldErrors(errors);
@@ -109,11 +145,13 @@ export function CreateSalonPage() {
         formData.append("openingHours", openingHours);
         formData.append("closingHours", closingHours);
         formData.append("totalSeats", totalSeats);
-        formData.append("contactNumber", contactNumber);
+        formData.append("contactNumber", `+91${contactNumber}`);
 
         imageFiles.forEach(file => {
             formData.append("images", file);
         });
+        beforeFiles.forEach((file) => formData.append("beforePhotos", file));
+        afterFiles.forEach((file) => formData.append("afterPhotos", file));
 
         try {
             const response = await axiosInstance.post("/salons/register", formData, {
@@ -182,7 +220,7 @@ export function CreateSalonPage() {
                             <input
                                 name="name"
                                 type="text"
-                                placeholder="Enter your salon name"
+                                placeholder="Enter salon name"
                                 onChange={() => clearFieldError("name")}
                                 className={`w-full border rounded-lg p-3.5 text-gray-800 focus:outline-none focus:ring-2 transition-all ${
                                     fieldErrors.name
@@ -227,16 +265,19 @@ export function CreateSalonPage() {
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">Business Phone Number</label>
-                            <div className="relative">
-                                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400">
-                                    <Phone size={18} />
+                            <div className="flex overflow-hidden rounded-xl border border-gray-200 focus-within:border-[#D4AF37] focus-within:ring-2 focus-within:ring-[#D4AF37]/20">
+                                <span className="flex items-center gap-2 bg-gray-50 px-3.5 text-sm font-medium text-gray-600 border-r border-gray-200">
+                                    <Phone size={16} /> +91
                                 </span>
                                 <input
                                     name="contactNumber"
-                                    type="text"
-                                    placeholder="Enter salon contact number"
+                                    type="tel"
+                                    inputMode="numeric"
+                                    maxLength={10}
+                                    placeholder="Enter 10-digit mobile number"
+                                    onInput={(event) => { event.currentTarget.value = event.currentTarget.value.replace(/\D/g, "").slice(0, 10); }}
                                     onChange={() => clearFieldError("contactNumber")}
-                                    className={`w-full border rounded-xl p-3.5 pl-11 text-gray-800 focus:outline-none focus:ring-2 transition-all ${
+                                    className={`min-w-0 flex-1 p-3.5 text-gray-800 focus:outline-none ${
                                         fieldErrors.contactNumber
                                             ? "border-red-500 focus:border-red-500 focus:ring-red-500/20"
                                             : "border-gray-200 focus:border-[#D4AF37] focus:ring-[#D4AF37]/20"
@@ -348,9 +389,9 @@ export function CreateSalonPage() {
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">Full Address</label>
                             <input
-                                name="address"
+                                    name="address"
                                 type="text"
-                                placeholder="Enter your salon address"
+                                placeholder="Enter complete salon address"
                                 onChange={() => clearFieldError("address")}
                                 className={`w-full border rounded-lg p-3.5 text-gray-800 focus:outline-none focus:ring-2 transition-all ${
                                     fieldErrors.address
@@ -463,11 +504,38 @@ export function CreateSalonPage() {
                         )}
                     </div>
 
+                    {/* Paired transformation portfolio */}
+                    <div className="bg-white p-3.5 sm:p-5 md:p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
+                        <div>
+                            <h3 className="text-base sm:text-lg font-medium sm:font-semibold text-gray-800">Portfolio &amp; Transformation Gallery (Before &amp; After)</h3>
+                            <p className="mt-1 text-xs sm:text-sm text-gray-600">Upload matching before and after photos. Each pair appears together on your salon profile.</p>
+                        </div>
+                        {[["Before", beforeFiles, setBeforeFiles, beforePreviews, setBeforePreviews], ["After", afterFiles, setAfterFiles, afterPreviews, setAfterPreviews]].map(([label, files, setFiles, fileUrls, setFileUrls]) => (
+                            <div key={label}>
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-xs font-medium text-gray-700">{label} photos</span>
+                                    <span className="text-xs text-gray-500">{files.length}/10</span>
+                                </div>
+                                <label className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-dashed border-gray-300 px-4 py-2 text-xs sm:text-sm font-medium text-gray-600 cursor-pointer hover:border-[#D4AF37]">
+                                    <Plus size={16} /> Add {label.toLowerCase()} photos
+                                    <input type="file" accept="image/*" multiple className="sr-only" onChange={(event) => handlePortfolioFiles(event, setFiles, setFileUrls)} />
+                                </label>
+                                {fileUrls.length > 0 && <div className="mt-3 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                                    {fileUrls.map((url, index) => <div key={url} className="relative aspect-square overflow-hidden rounded-lg border border-gray-100">
+                                        <img src={url} alt={`${label} transformation preview ${index + 1}`} className="h-full w-full object-cover" />
+                                        <button type="button" onClick={() => removePortfolioPhoto(index, files, setFiles, fileUrls, setFileUrls)} aria-label={`Remove ${label.toLowerCase()} photo ${index + 1}`} className="absolute right-1.5 top-1.5 inline-flex items-center justify-center rounded-full bg-black/65 p-1.5 text-white hover:bg-red-600"><X size={14} /></button>
+                                    </div>)}
+                                </div>}
+                            </div>
+                        ))}
+                        {fieldErrors.portfolio && <p className="text-xs text-red-600">{fieldErrors.portfolio}</p>}
+                    </div>
+
                     {/* Submit Button */}
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-[#1a1a1a] hover:bg-black text-white font-bold py-4 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 mt-4 h-16 text-lg flex items-center justify-center"
+                        className="w-full bg-[#1a1a1a] hover:bg-black text-white font-semibold px-5 py-2.5 sm:px-7 sm:py-3.5 text-sm sm:text-base rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 mt-4 min-h-12 flex items-center justify-center"
                     >
                         {loading ? (
                             <>

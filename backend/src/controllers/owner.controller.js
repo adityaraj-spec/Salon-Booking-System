@@ -90,16 +90,33 @@ const getOwnerSalon = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, populated, "Salon fetched"));
 });
 
+const getUploadedFiles = (req, field) => Array.isArray(req.files)
+    ? (field === "images" ? req.files : [])
+    : (req.files?.[field] || []);
+
+const uploadFiles = async (files) => {
+    const urls = [];
+    for (const file of files) {
+        const uploaded = await uploadOnCloudinary(file.path);
+        if (uploaded?.secure_url) urls.push(uploaded.secure_url);
+    }
+    return urls;
+};
+
 const updateOwnerSalon = asyncHandler(async (req, res) => {
     const salon = await getOwnerSalonOrThrow(req.user._id);
     const { name, city, state, pincode, description, address, contactNumber, openingHours, closingHours, totalSeats } = req.body;
 
-    const imagesLocalPaths = req.files?.map(f => f.path) || [];
-    const newImageUrls = [];
-    for (const path of imagesLocalPaths) {
-        const uploaded = await uploadOnCloudinary(path);
-        if (uploaded) newImageUrls.push(uploaded.secure_url);
+    const beforeFiles = getUploadedFiles(req, "beforePhotos");
+    const afterFiles = getUploadedFiles(req, "afterPhotos");
+    if (beforeFiles.length !== afterFiles.length) {
+        throw new ApiError(400, "Upload the same number of before and after photos");
     }
+    const [newImageUrls, beforeUrls, afterUrls] = await Promise.all([
+        uploadFiles(getUploadedFiles(req, "images")),
+        uploadFiles(beforeFiles),
+        uploadFiles(afterFiles),
+    ]);
 
     const updates = {};
     if (name) updates.name = name;
@@ -113,6 +130,23 @@ const updateOwnerSalon = asyncHandler(async (req, res) => {
     if (closingHours) updates.closingHours = closingHours;
     if (totalSeats) updates.totalSeats = totalSeats;
     if (newImageUrls.length > 0) updates.images = [...(salon.images || []), ...newImageUrls];
+
+    if (req.body.beforeAfterPhotos !== undefined) {
+        let requested;
+        try { requested = JSON.parse(req.body.beforeAfterPhotos); } catch {
+            throw new ApiError(400, "Invalid transformation gallery data");
+        }
+        if (!Array.isArray(requested)) throw new ApiError(400, "Invalid transformation gallery data");
+        const requestedIds = new Set(requested.map((photo) => String(photo?._id || "")));
+        const retained = (salon.beforeAfterPhotos || []).filter((photo) => requestedIds.has(String(photo._id)));
+        const added = beforeUrls.map((beforeUrl, index) => ({ beforeUrl, afterUrl: afterUrls[index] }));
+        updates.beforeAfterPhotos = [...retained, ...added];
+    } else if (beforeUrls.length) {
+        updates.beforeAfterPhotos = [
+            ...(salon.beforeAfterPhotos || []),
+            ...beforeUrls.map((beforeUrl, index) => ({ beforeUrl, afterUrl: afterUrls[index] })),
+        ];
+    }
 
     const updated = await Salon.findByIdAndUpdate(salon._id, { $set: updates }, { new: true });
 

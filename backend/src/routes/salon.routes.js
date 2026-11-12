@@ -32,12 +32,25 @@ router
     verifyJWT,
     authorize("owner", "admin"),
     requireOwnership(Salon, "id", "owner"),
-    upload.array("images", 10),
+    upload.fields([
+      { name: "images", maxCount: 10 },
+      { name: "beforePhotos", maxCount: 10 },
+      { name: "afterPhotos", maxCount: 10 },
+    ]),
     updateSalonDetails
   );
 
 router
   .route("/register")
-  .post(verifyJWT, authorize("owner", "admin"), upload.array("images", 10), registerSalon);
+  .post(
+    verifyJWT,
+    authorize("owner", "admin"),
+    upload.fields([
+      { name: "images", maxCount: 10 },
+      { name: "beforePhotos", maxCount: 10 },
+      { name: "afterPhotos", maxCount: 10 },
+    ]),
+    registerSalon
+  );
 
 export default router;

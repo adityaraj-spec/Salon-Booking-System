@@ -14,6 +14,19 @@ import { geocodeAddress } from "../utils/geocoding.js";
 // Helper: escape special regex characters in user input to prevent ReDoS
 const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+const filesFor = (req, field) => Array.isArray(req.files)
+    ? (field === "images" ? req.files : [])
+    : (req.files?.[field] || []);
+
+const uploadPhotos = async (files) => {
+    const urls = [];
+    for (const file of files) {
+        const uploaded = await uploadOnCloudinary(file.path);
+        if (uploaded?.secure_url) urls.push(uploaded.secure_url);
+    }
+    return urls;
+};
+
 
 const registerSalon = asyncHandler(async (req, res) => {
     const { name, city, state, pincode, description, address, contactNumber, openingHours, closingHours, totalSeats } = req.body
@@ -22,17 +35,20 @@ const registerSalon = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Name, address, and city are required")
     }
 
-    const imagesLocalPaths = req.files?.map(file => file.path) || [];
-    const imageUrls = [];
-
-    if (imagesLocalPaths.length > 0) {
-        for (const path of imagesLocalPaths) {
-            const uploaded = await uploadOnCloudinary(path);
-            if (uploaded) {
-                imageUrls.push(uploaded.secure_url);
-            }
-        }
+    const beforeFiles = filesFor(req, "beforePhotos");
+    const afterFiles = filesFor(req, "afterPhotos");
+    if (beforeFiles.length !== afterFiles.length) {
+        throw new ApiError(400, "Upload the same number of before and after photos");
     }
+    const [imageUrls, beforeUrls, afterUrls] = await Promise.all([
+        uploadPhotos(filesFor(req, "images")),
+        uploadPhotos(beforeFiles),
+        uploadPhotos(afterFiles),
+    ]);
+    const beforeAfterPhotos = beforeUrls.map((beforeUrl, index) => ({
+        beforeUrl,
+        afterUrl: afterUrls[index],
+    }));
 
     const salon = await Salon.create({
         name,
@@ -46,6 +62,7 @@ const registerSalon = asyncHandler(async (req, res) => {
         closingHours,
         totalSeats: totalSeats || 6,
         images: imageUrls,
+        beforeAfterPhotos,
         owner: req.user?._id,
         location: {
             type: "Point",
@@ -199,17 +216,27 @@ const updateSalonDetails = asyncHandler(async (req, res) => {
     }
 
     // Process new uploaded images
-    const imagesLocalPaths = req.files?.map(file => file.path) || [];
-    const imageUrls = [...(salon.images || [])];
-
-    if (imagesLocalPaths.length > 0) {
-        for (const path of imagesLocalPaths) {
-            const uploaded = await uploadOnCloudinary(path);
-            if (uploaded) {
-                imageUrls.push(uploaded.secure_url);
-            }
-        }
+    const beforeFiles = filesFor(req, "beforePhotos");
+    const afterFiles = filesFor(req, "afterPhotos");
+    if (beforeFiles.length !== afterFiles.length) {
+        throw new ApiError(400, "Upload the same number of before and after photos");
     }
+    const [newImages, beforeUrls, afterUrls] = await Promise.all([
+        uploadPhotos(filesFor(req, "images")),
+        uploadPhotos(beforeFiles),
+        uploadPhotos(afterFiles),
+    ]);
+    let retainedTransformations = salon.beforeAfterPhotos || [];
+    if (req.body.beforeAfterPhotos !== undefined) {
+        let requested;
+        try { requested = JSON.parse(req.body.beforeAfterPhotos); } catch {
+            throw new ApiError(400, "Invalid transformation gallery data");
+        }
+        if (!Array.isArray(requested)) throw new ApiError(400, "Invalid transformation gallery data");
+        const requestedIds = new Set(requested.map((photo) => String(photo?._id || "")));
+        retainedTransformations = retainedTransformations.filter((photo) => requestedIds.has(String(photo._id)));
+    }
+    const appendedTransformations = beforeUrls.map((beforeUrl, index) => ({ beforeUrl, afterUrl: afterUrls[index] }));
 
     const updatedSalon = await Salon.findByIdAndUpdate(
         id,
@@ -224,7 +251,8 @@ const updateSalonDetails = asyncHandler(async (req, res) => {
                 openingHours,
                 closingHours,
                 isOpen,
-                images: imageUrls,
+                images: [...(salon.images || []), ...newImages],
+                beforeAfterPhotos: [...retainedTransformations, ...appendedTransformations],
                 location: address || city || state || pincode ? {
                     type: "Point",
                     coordinates: await geocodeAddress(`${address || salon.address}, ${city || salon.city}, ${state || salon.state}, ${pincode || salon.pincode}`) || salon.location?.coordinates || [0, 0]

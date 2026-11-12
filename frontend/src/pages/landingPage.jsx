@@ -189,7 +189,7 @@ export function LandingPage() {
                     <motion.div variants={fadeUpVariants} className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-3 sm:gap-4 w-full">
                         <NavLink 
                             to={`/home?city=${encodeURIComponent(resolvedCity)}`} 
-                            className="w-full sm:w-auto px-5 py-3 sm:px-6 sm:py-3.5 text-sm sm:text-base font-semibold rounded-xl flex items-center justify-center gap-2 transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-0.5 hover:scale-[1.02] bg-[#ffd166] text-[#1a1a1a] hover:bg-[#ffc633]"
+                            className="w-full max-w-[260px] sm:w-auto px-5 py-2.5 sm:px-6 sm:py-3.5 text-sm sm:text-base font-semibold rounded-xl flex items-center justify-center gap-2 transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-0.5 hover:scale-[1.02] bg-[#ffd166] text-[#1a1a1a] hover:bg-[#ffc633]"
                         >
                             <span>Find Salons in {resolvedCity}</span>
                             <ArrowRight size={18} />
@@ -199,7 +199,7 @@ export function LandingPage() {
                             type="button"
                             onClick={handleUseLocation}
                             disabled={detectingLocation}
-                            className="w-full sm:w-auto px-5 py-3 sm:px-6 sm:py-3.5 text-sm sm:text-base font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 hover:scale-[1.02] border border-white/80 text-white hover:bg-white/15 backdrop-blur-sm flex items-center justify-center gap-2 disabled:opacity-75"
+                            className="w-full max-w-[260px] sm:w-auto px-5 py-2.5 sm:px-6 sm:py-3.5 text-sm sm:text-base font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 hover:scale-[1.02] border border-white/80 text-white hover:bg-white/15 backdrop-blur-sm flex items-center justify-center gap-2 disabled:opacity-75"
                         >
                             {detectingLocation ? (
                                 <>
@@ -217,7 +217,7 @@ export function LandingPage() {
                         {!user && (
                             <NavLink 
                                 to="/signup" 
-                                className="w-full sm:w-auto px-5 py-3 sm:px-6 sm:py-3.5 text-sm sm:text-base font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 hover:scale-[1.02] border border-white/50 hover:border-white bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm flex items-center justify-center"
+                                className="w-full max-w-[260px] sm:w-auto px-5 py-2.5 sm:px-6 sm:py-3.5 text-sm sm:text-base font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 hover:scale-[1.02] border border-white/50 hover:border-white bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm flex items-center justify-center"
                             >
                                 Sign up
                             </NavLink>
