@@ -80,7 +80,7 @@ describe("Phase 1: Existing System Stabilization Test Suite", () => {
       expect(forgotRes.status).toBe(200);
       expect(forgotRes.body.success).toBe(true);
 
-      const updatedUser = await User.findById(user._id);
+      const updatedUser = await User.findById(user._id).select("+resetPasswordToken +resetPasswordExpiry");
       expect(updatedUser.resetPasswordToken).toBeDefined();
       expect(updatedUser.resetPasswordExpiry).toBeDefined();
       expect(new Date(updatedUser.resetPasswordExpiry).getTime()).toBeGreaterThan(Date.now());
@@ -108,7 +108,7 @@ describe("Phase 1: Existing System Stabilization Test Suite", () => {
       expect(resetRes.body.success).toBe(true);
 
       // 5. Verify user can now log in with the new password
-      const reloadedUser = await User.findById(user._id);
+      const reloadedUser = await User.findById(user._id).select("+resetPasswordToken");
       expect(reloadedUser.resetPasswordToken).toBeUndefined();
       expect(await reloadedUser.isPasswordcorrect("NewSecurePassword123!")).toBe(true);
     });
