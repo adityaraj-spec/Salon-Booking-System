@@ -143,7 +143,7 @@ export function LoginPage() {
                     {/* Titles */}
                     <div className="text-center mb-6">
                         <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-2">Welcome Back</h2>
-                        <p className="text-gray-500 text-sm leading-relaxed">Sign in to manage your bookings</p>
+                        <p className="text-gray-500 text-sm leading-relaxed">Login  to manage your bookings</p>
                     </div>
 
                     {error && (

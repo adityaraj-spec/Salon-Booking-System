@@ -10,10 +10,25 @@ export function SignUpPage() {
     const { showNotification } = useNotification();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [rawPhone, setRawPhone] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [fieldErrors, setFieldErrors] = useState({});
     const navigate = useNavigate();
+
+    const handlePhoneChange = (e) => {
+        let val = e.target.value.replace(/\D/g, "");
+        if (val.length === 12 && val.startsWith("91")) {
+            val = val.slice(2);
+        } else if (val.length === 11 && val.startsWith("0")) {
+            val = val.slice(1);
+        }
+        val = val.slice(0, 10);
+        setRawPhone(val);
+        if (fieldErrors.phonenumber) {
+            setFieldErrors(prev => ({ ...prev, phonenumber: "" }));
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -24,39 +39,43 @@ export function SignUpPage() {
 
         const errors = {};
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const phoneRegex = /^[+]?[\d\s-]{10,15}$/;
 
         if (!data.fullName?.trim()) {
-    errors.fullName = "Please enter your full name.";
-}
-if (!data.username?.trim()) {
-    errors.username = "Please choose a username.";
-}
-if (!data.email?.trim()) {
-    errors.email = "Please enter your email address.";
-} else if (!emailRegex.test(data.email.trim())) {
-    errors.email = "Enter a valid email address.";
-}
-if (!data.phonenumber?.trim()) {
-    errors.phonenumber = "Please enter your phone number.";
-} else if (!phoneRegex.test(data.phonenumber.trim())) {
-    errors.phonenumber = "Enter a valid phone number.";
-}
-if (!data.password) {
-    errors.password = "Please enter a password.";
-} else if (data.password.length < 8) {
-    errors.password = "Password must be at least 8 characters.";
-}
-if (!data.confirmPassword) {
-    errors.confirmPassword = "Please confirm your password.";
-} else if (data.password !== data.confirmPassword) {
-    errors.confirmPassword = "Passwords don't match. Please try again.";
-}
+            errors.fullName = "Please enter your full name.";
+        }
+        if (!data.username?.trim()) {
+            errors.username = "Please choose a username.";
+        }
+        if (!data.email?.trim()) {
+            errors.email = "Please enter your email address.";
+        } else if (!emailRegex.test(data.email.trim())) {
+            errors.email = "Enter a valid email address.";
+        }
+        
+        const cleanPhone = rawPhone.trim();
+        if (!cleanPhone) {
+            errors.phonenumber = "Please enter your phone number.";
+        } else if (cleanPhone.length !== 10) {
+            errors.phonenumber = "Please enter a valid 10-digit mobile number.";
+        }
+
+        if (!data.password) {
+            errors.password = "Please enter a password.";
+        } else if (data.password.length < 8) {
+            errors.password = "Password must be at least 8 characters.";
+        }
+        if (!data.confirmPassword) {
+            errors.confirmPassword = "Please confirm your password.";
+        } else if (data.password !== data.confirmPassword) {
+            errors.confirmPassword = "Passwords don't match. Please try again.";
+        }
 
         if (Object.keys(errors).length > 0) {
             setFieldErrors(errors);
             return;
         }
+
+        data.phonenumber = `+91${cleanPhone}`;
 
         setLoading(true);
 
@@ -122,7 +141,7 @@ if (!data.confirmPassword) {
                             <input
                                 name="fullName"
                                 type="text"
-                                placeholder="e.g. Aaditya Raj"
+                                placeholder="Enter your full name"
                                 onChange={() => setFieldErrors(prev => ({ ...prev, fullName: "" }))}
                                 className={`w-full border rounded-xl p-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none transition-all ${
                                     fieldErrors.fullName
@@ -141,7 +160,7 @@ if (!data.confirmPassword) {
                             <input
                                 name="username"
                                 type="text"
-                                placeholder="choose a username"
+                                placeholder="Choose a unique username"
                                 onChange={() => setFieldErrors(prev => ({ ...prev, username: "" }))}
                                 className={`w-full border rounded-xl p-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none transition-all ${
                                     fieldErrors.username
@@ -176,17 +195,28 @@ if (!data.confirmPassword) {
                         {/* Phone */}
                         <div>
                             <label className="block text-xs font-semibold text-gray-700 mb-1">Phone Number</label>
-                            <input
-                                name="phonenumber"
-                                type="tel"
-                                placeholder="+91 98765 43210"
-                                onChange={() => setFieldErrors(prev => ({ ...prev, phonenumber: "" }))}
-                                className={`w-full border rounded-xl p-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none transition-all ${
+                            <div
+                                className={`flex items-center border rounded-xl overflow-hidden transition-all bg-white ${
                                     fieldErrors.phonenumber
-                                        ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
-                                        : "border-gray-200 focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20"
+                                        ? "border-red-500 focus-within:border-red-500 focus-within:ring-2 focus-within:ring-red-500/20"
+                                        : "border-gray-200 focus-within:border-[#D4AF37] focus-within:ring-2 focus-within:ring-[#D4AF37]/20"
                                 }`}
-                            />
+                            >
+                                <span className="bg-gray-50 border-r border-gray-200 px-3.5 py-3 text-sm font-semibold text-gray-700 select-none flex items-center justify-center shrink-0">
+                                    +91
+                                </span>
+                                <input
+                                    name="rawPhone"
+                                    type="tel"
+                                    inputMode="numeric"
+                                    maxLength={10}
+                                    placeholder="Enter 10-digit mobile number"
+                                    value={rawPhone}
+                                    onChange={handlePhoneChange}
+                                    className="w-full p-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none bg-transparent"
+                                />
+                                <input type="hidden" name="phonenumber" value={rawPhone ? `+91${rawPhone}` : ""} />
+                            </div>
                             {fieldErrors.phonenumber && (
                                 <p className="text-xs text-red-600 mt-1.5 font-medium">{fieldErrors.phonenumber}</p>
                             )}
@@ -202,7 +232,7 @@ if (!data.confirmPassword) {
                                 <input
                                     name="password"
                                     type={showPassword ? "text" : "password"}
-                                    placeholder="At least 8 characters"
+                                    placeholder="••••••••"
                                     onChange={() => setFieldErrors(prev => ({ ...prev, password: "" }))}
                                     className={`w-full border rounded-xl p-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none transition-all pr-10 ${
                                         fieldErrors.password
@@ -231,7 +261,7 @@ if (!data.confirmPassword) {
                                 <input
                                     name="confirmPassword"
                                     type={showConfirmPassword ? "text" : "password"}
-                                    placeholder="Re-enter your password"
+                                    placeholder="••••••••"
                                     onChange={() => setFieldErrors(prev => ({ ...prev, confirmPassword: "" }))}
                                     className={`w-full border rounded-xl p-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none transition-all pr-10 ${
                                         fieldErrors.confirmPassword
