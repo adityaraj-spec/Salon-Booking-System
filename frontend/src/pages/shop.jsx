@@ -842,7 +842,7 @@ export function Shop() {
                     <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-gray-500">
                         <div className="flex items-center gap-1">
                             <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                            <span className="font-bold text-gray-900">{salon.rating || "NEW"}</span>
+                            <span className="font-bold text-gray-900">{salon.rating || "New"}</span>
                             <span>(Verified Reviews)</span>
                         </div>
                         <span className="hidden md:inline text-gray-300">•</span>

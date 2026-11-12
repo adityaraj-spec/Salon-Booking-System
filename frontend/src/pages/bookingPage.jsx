@@ -401,7 +401,7 @@ export function BookingPage() {
 
         return (
             <div className="min-h-screen bg-[#fafafa] py-12 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center">
-                <div className="w-full max-w-xl bg-white border border-stone-200/50 rounded-xl p-8 shadow-xl relative overflow-hidden">
+                <div className="w-full max-w-xl bg-white border border-stone-200/50 rounded-xl p-5 sm:p-8 shadow-xl relative overflow-hidden">
                     {turnSoonAlert && (
                         <div className="mb-6 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-xl p-4 text-xs sm:text-sm font-bold flex items-center gap-3 shadow-lg animate-pulse">
                             <Sparkles className="w-6 h-6 flex-shrink-0" />

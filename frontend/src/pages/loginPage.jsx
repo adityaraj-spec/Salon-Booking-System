@@ -160,7 +160,7 @@ export function LoginPage() {
                                 name="email"
                                 type="email"
                                 onChange={() => setFieldErrors(prev => ({ ...prev, email: "" }))}
-                                placeholder="name@example.com"
+                                placeholder="Enter your registered email"
                                 className={`w-full border rounded-xl p-3.5 text-gray-800 placeholder-gray-400 focus:outline-none transition-all text-sm ${
                                     fieldErrors.email
                                         ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
