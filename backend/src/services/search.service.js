@@ -1,7 +1,8 @@
 import { Salon } from "../models/salon.models.js";
+import { Booking } from "../models/booking.models.js";
 import { Service } from "../models/service.models.js";
 import { formatPaginatedResponse } from "../utils/pagination.js";
-import { cacheGet, cacheSet, registerSearchCacheKey, cacheSetSalonDetail } from "../lib/cacheManager.js";
+import { cacheSet, registerSearchCacheKey, cacheSetSalonDetail } from "../lib/cacheManager.js";
 import { transformImageUrl } from "../utils/imageTransform.js";
 import { searchQueryDurationSeconds } from "../lib/metrics.js";
 import crypto from "crypto";
@@ -26,15 +27,10 @@ export const searchSalonsNearby = async ({
   const parsedLimit = Math.min(Math.max(1, parseInt(limit, 10) || 10), 50); // Hard cap at 50 per page
   const skip = (parsedPage - 1) * parsedLimit;
 
-  // 1. Redis cache lookup
+  // Profile responses are re-aggregated so live seat availability is always current.
   const cacheKeyParams = `${longitude}_${latitude}_${maxDistanceMeters}_${city}_${category}_${rating}_${searchQuery}_${parsedPage}_${parsedLimit}`;
   const cacheHash = crypto.createHash("md5").update(cacheKeyParams).digest("hex");
   const cacheKey = `salons:search:${cacheHash}`;
-
-  const cachedResult = await cacheGet(cacheKey);
-  if (cachedResult) {
-    return cachedResult;
-  }
 
   // 2. Build MongoDB aggregation pipeline
   const pipeline = [];
@@ -128,6 +124,8 @@ export const searchSalonsNearby = async ({
   pipeline.push({
     $project: {
       name: 1,
+      totalSeats: 1,
+      maxConcurrentStaff: 1,
       city: 1,
       state: 1,
       rating: 1,
@@ -158,6 +156,12 @@ export const searchSalonsNearby = async ({
 
   let salonsData = aggregateResult?.data || [];
   const totalItems = aggregateResult?.totalCount[0]?.count || 0;
+  const salonIds = salonsData.map(({ _id }) => _id);
+  const occupiedBySalon = salonIds.length ? await Booking.aggregate([
+    { $match: { salon: { $in: salonIds }, status: { $in: ["confirmed", "in_progress", "waiting", "arrived"] } } },
+    { $group: { _id: "$salon", count: { $sum: 1 } } },
+  ]) : [];
+  const occupancy = new Map(occupiedBySalon.map(({ _id, count }) => [String(_id), count]));
 
   // Transform Cloudinary image URLs for performance optimization
   salonsData = salonsData.map((salon) => {
@@ -167,6 +171,7 @@ export const searchSalonsNearby = async ({
     
     const salonObj = {
       ...salon,
+      availableSeats: Math.max(0, (Number(salon.totalSeats || salon.maxConcurrentStaff) || 0) - (occupancy.get(String(salon._id)) || 0)),
       images: optimizedImages,
       imageUrl: optimizedImages[0] || null, // Pre-computed primary image for fast UI rendering
     };

@@ -282,6 +282,15 @@ export const recalculateQueuePositionsAndETAs = async (salonId) => {
     inProgressCount: inProgressBookings.length,
     updatedAt: now.toISOString(),
   });
+  const seatSalon = await Salon.findById(salonId).select("totalSeats maxConcurrentStaff").lean();
+  if (seatSalon) {
+    const totalSeats = Math.max(0, Number(seatSalon.totalSeats || seatSalon.maxConcurrentStaff) || 0);
+    const activeBookingsCount = await Booking.countDocuments({ salon: salonId, status: { $in: ["confirmed", "in_progress", "waiting", "arrived"] } });
+    emitToRoom(`salon:${salonId}`, "seatStatusUpdated", {
+      salonId: salonId.toString(), totalSeats, activeBookingsCount,
+      availableSeats: Math.max(0, totalSeats - activeBookingsCount),
+    });
+  }
 
   return updatedQueue;
 };

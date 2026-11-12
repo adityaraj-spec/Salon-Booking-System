@@ -58,6 +58,7 @@ export function SalonBookingsPage() {
     const [incomingRequests, setIncomingRequests] = useState([]);
     const [queueSummary, setQueueSummary] = useState(null);
     const [salonId, setSalonId] = useState(null);
+    const [seatAvailability, setSeatAvailability] = useState(null);
     const [loading, setLoading] = useState(true);
 
     const [activeTab, setActiveTab] = useState("queue"); // "queue" | "requests" | "history"
@@ -131,6 +132,11 @@ export function SalonBookingsPage() {
         const handleRealtimeUpdate = () => {
             fetchSalonAndQueue();
         };
+        const handleSeatStatus = (status) => {
+            if (!salonId || String(status?.salonId) === String(salonId)) setSeatAvailability(status);
+        };
+        if (salonId) socket.emit("joinSalon", salonId);
+        socket.on("seatStatusUpdated", handleSeatStatus);
 
         socket.on("queue:request_created", (data) => {
             showNotification(`New queue request from ${data.customerName || "a customer"}!`, "info");
@@ -152,8 +158,10 @@ export function SalonBookingsPage() {
             socket.off("queue:service_completed");
             socket.off("queue:customer_cancelled");
             socket.off("queue:grace_expired");
+            socket.off("seatStatusUpdated", handleSeatStatus);
+            if (salonId) socket.emit("leaveSalon", salonId);
         };
-    }, [socket, fetchSalonAndQueue, showNotification]);
+    }, [socket, fetchSalonAndQueue, showNotification, salonId]);
 
     // Pause / Resume Queue
     const handleTogglePause = async () => {
@@ -406,6 +414,7 @@ export function SalonBookingsPage() {
                                 <p className="text-sm font-bold text-gray-900 mt-0.5">
                                     {queueSummary?.waitingCount || activeQueueList.length} / {queueSummary?.maxCapacity || 10}
                                 </p>
+                                {seatAvailability && <p className="mt-1 text-xs font-semibold text-emerald-700">{seatAvailability.availableSeats}/{seatAvailability.totalSeats} seats free</p>}
                             </div>
                         </div>
 

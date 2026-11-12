@@ -76,7 +76,7 @@ export const getSalonCapacity = (salon, staffId = null) => {
     .filter(Array.isArray)
     .map((staff) => staff.length);
   const staffCount = staffCounts.length > 0 ? Math.max(...staffCounts) : 0;
-  const configuredCapacity = [salon?.maxConcurrentStaff, salon?.totalSeats, staffCount]
+  const configuredCapacity = [salon?.totalSeats, salon?.maxConcurrentStaff, staffCount]
     .map(Number)
     .find((capacity) => Number.isFinite(capacity) && capacity > 0);
 

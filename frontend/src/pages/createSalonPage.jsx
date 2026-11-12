@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Scissors, MapPin, Clock, Camera, Plus, Trash2, Store, X, Phone } from "lucide-react";
+import { MapPin, Clock, Camera, Plus, Trash2, Store, X, Phone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosConfig";
 
@@ -9,10 +9,8 @@ export function CreateSalonPage() {
     const [fieldErrors, setFieldErrors] = useState({});
     const [imageFiles, setImageFiles] = useState([]);
     const [previews, setPreviews] = useState([]);
-    const [beforeFiles, setBeforeFiles] = useState([]);
-    const [afterFiles, setAfterFiles] = useState([]);
-    const [beforePreviews, setBeforePreviews] = useState([]);
-    const [afterPreviews, setAfterPreviews] = useState([]);
+    const [transformationFiles, setTransformationFiles] = useState([]);
+    const [transformationPreviews, setTransformationPreviews] = useState([]);
     const previewUrls = useRef(new Set());
     const navigate = useNavigate();
 
@@ -54,23 +52,23 @@ export function CreateSalonPage() {
         setPreviews(previews.filter((_, i) => i !== index));
     };
 
-    const handlePortfolioFiles = (event, setFiles, setFilePreviews) => {
+    const handlePortfolioFiles = (event) => {
         const selected = Array.from(event.target.files || []);
-        if (selected.length + (setFiles === setBeforeFiles ? beforeFiles.length : afterFiles.length) > 10) {
-            setError("Maximum 10 before and 10 after photos allowed");
+        if (selected.length + transformationFiles.length > 10) {
+            setError("You can add up to 10 transformation photos.");
             event.target.value = "";
             return;
         }
-        setFiles((current) => [...current, ...selected]);
-        setFilePreviews((current) => [...current, ...selected.map(makePreview)]);
+        setTransformationFiles((current) => [...current, ...selected]);
+        setTransformationPreviews((current) => [...current, ...selected.map(makePreview)]);
         event.target.value = "";
     };
 
-    const removePortfolioPhoto = (index, files, setFiles, filePreviews, setFilePreviews) => {
-        URL.revokeObjectURL(filePreviews[index]);
-        previewUrls.current.delete(filePreviews[index]);
-        setFiles(files.filter((_, fileIndex) => fileIndex !== index));
-        setFilePreviews(filePreviews.filter((_, fileIndex) => fileIndex !== index));
+    const removePortfolioPhoto = (index) => {
+        URL.revokeObjectURL(transformationPreviews[index]);
+        previewUrls.current.delete(transformationPreviews[index]);
+        setTransformationFiles((current) => current.filter((_, fileIndex) => fileIndex !== index));
+        setTransformationPreviews((current) => current.filter((_, fileIndex) => fileIndex !== index));
     };
 
     const handleSubmit = async (e) => {
@@ -123,9 +121,6 @@ export function CreateSalonPage() {
         if (imageFiles.length === 0) {
             errors.images = "Please upload at least one salon photo.";
         }
-        if (beforeFiles.length !== afterFiles.length) {
-            errors.portfolio = "Add the same number of before and after photos to create matching transformations.";
-        }
 
         if (Object.keys(errors).length > 0) {
             setFieldErrors(errors);
@@ -150,8 +145,7 @@ export function CreateSalonPage() {
         imageFiles.forEach(file => {
             formData.append("images", file);
         });
-        beforeFiles.forEach((file) => formData.append("beforePhotos", file));
-        afterFiles.forEach((file) => formData.append("afterPhotos", file));
+        transformationFiles.forEach((file) => formData.append("transformationPhotos", file));
 
         try {
             const response = await axiosInstance.post("/salons/register", formData, {
@@ -175,26 +169,6 @@ export function CreateSalonPage() {
 
     return (
         <div className="font-sans pb-20 w-full">
-            {/* Header */}
-            <div className="bg-white border-b border-gray-100 py-6 px-6 sticky top-0 z-10 shadow-sm rounded-t-xl md:rounded-none">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-                    <div className="flex items-center space-x-2">
-                        <div className="bg-[#1a1a1a] p-1.5 rounded-full text-white">
-                            <Scissors size={20} />
-                        </div>
-                        <h1 className="text-xl font-sans font-bold text-black tracking-wide">
-                            Salon<span className="text-[#D4AF37]">Now</span>
-                        </h1>
-                    </div>
-                    <button 
-                        onClick={() => navigate("/role-selection")}
-                        className="text-gray-600 hover:text-black text-sm font-medium px-3.5 py-1.5 rounded-lg hover:bg-gray-100 transition-all"
-                    >
-                        Back
-                    </button>
-                </div>
-            </div>
-
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
                 <div className="mb-6">
                     <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-4">Register Your Salon</h2>
@@ -504,46 +478,32 @@ export function CreateSalonPage() {
                         )}
                     </div>
 
-                    {/* Paired transformation portfolio */}
+                    {/* Transformation gallery */}
                     <div className="bg-white p-3.5 sm:p-5 md:p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
                         <div>
-                            <h3 className="text-base sm:text-lg font-medium sm:font-semibold text-gray-800">Portfolio &amp; Transformation Gallery (Before &amp; After)</h3>
-                            <p className="mt-1 text-xs sm:text-sm text-gray-600">Upload matching before and after photos. Each pair appears together on your salon profile.</p>
+                            <h3 className="text-base sm:text-lg font-medium sm:font-semibold text-gray-800">Transformation Gallery</h3>
+                            <p className="mt-1 text-xs sm:text-sm text-gray-600">Upload work transformations and style showcases. Photos appear in your public salon gallery.</p>
                         </div>
-                        {[["Before", beforeFiles, setBeforeFiles, beforePreviews, setBeforePreviews], ["After", afterFiles, setAfterFiles, afterPreviews, setAfterPreviews]].map(([label, files, setFiles, fileUrls, setFileUrls]) => (
-                            <div key={label}>
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="text-xs font-medium text-gray-700">{label} photos</span>
-                                    <span className="text-xs text-gray-500">{files.length}/10</span>
-                                </div>
-                                <label className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-dashed border-gray-300 px-4 py-2 text-xs sm:text-sm font-medium text-gray-600 cursor-pointer hover:border-[#D4AF37]">
-                                    <Plus size={16} /> Add {label.toLowerCase()} photos
-                                    <input type="file" accept="image/*" multiple className="sr-only" onChange={(event) => handlePortfolioFiles(event, setFiles, setFileUrls)} />
-                                </label>
-                                {fileUrls.length > 0 && <div className="mt-3 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                                    {fileUrls.map((url, index) => <div key={url} className="relative aspect-square overflow-hidden rounded-lg border border-gray-100">
-                                        <img src={url} alt={`${label} transformation preview ${index + 1}`} className="h-full w-full object-cover" />
-                                        <button type="button" onClick={() => removePortfolioPhoto(index, files, setFiles, fileUrls, setFileUrls)} aria-label={`Remove ${label.toLowerCase()} photo ${index + 1}`} className="absolute right-1.5 top-1.5 inline-flex items-center justify-center rounded-full bg-black/65 p-1.5 text-white hover:bg-red-600"><X size={14} /></button>
-                                    </div>)}
-                                </div>}
-                            </div>
-                        ))}
-                        {fieldErrors.portfolio && <p className="text-xs text-red-600">{fieldErrors.portfolio}</p>}
+                        <div className="flex items-center justify-between gap-3">
+                            <span className="text-xs font-medium text-gray-700">{transformationFiles.length}/10 photos</span>
+                            <label className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-dashed border-gray-300 px-4 py-2 text-xs sm:text-sm font-medium text-gray-600 cursor-pointer hover:border-[#D4AF37]">
+                                <Plus size={16} /> Add Transformation Photos
+                                <input type="file" accept="image/*" multiple className="sr-only" onChange={handlePortfolioFiles} />
+                            </label>
+                        </div>
+                        {transformationPreviews.length > 0 && <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                            {transformationPreviews.map((url, index) => <div key={url} className="relative aspect-square overflow-hidden rounded-lg border border-gray-100 shadow-sm">
+                                <img src={url} alt={`Transformation preview ${index + 1}`} className="h-full w-full object-cover" />
+                                <button type="button" onClick={() => removePortfolioPhoto(index)} aria-label={`Remove transformation photo ${index + 1}`} className="absolute right-1.5 top-1.5 inline-flex items-center justify-center rounded-full bg-black/65 p-1.5 text-white hover:bg-red-600"><X size={14} /></button>
+                            </div>)}
+                        </div>}
                     </div>
 
-                    {/* Submit Button */}
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-[#1a1a1a] hover:bg-black text-white font-semibold px-5 py-2.5 sm:px-7 sm:py-3.5 text-sm sm:text-base rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 mt-4 min-h-12 flex items-center justify-center"
-                    >
-                        {loading ? (
-                            <>
-                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-3"></div>
-                                Registering your business...
-                            </>
-                        ) : "Complete Registration"}
-                    </button>
+                    <div className="flex justify-center mt-8 mb-12">
+                        <button type="submit" disabled={loading} className="w-full max-w-md py-3.5 px-6 bg-[#1a1a1a] text-white font-semibold rounded-xl shadow-lg hover:bg-black transition-all disabled:opacity-50">
+                            {loading ? "Registering your business..." : "Complete Registration"}
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>

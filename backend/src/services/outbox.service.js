@@ -1,6 +1,9 @@
 import { OutboxEvent } from "../models/outboxEvent.model.js";
 import { invalidateAvailability } from "./availability.service.js";
 import { emitToUser, emitToAll } from "../socket.js";
+import { emitToRoom } from "../socket.js";
+import { Salon } from "../models/salon.models.js";
+import { Booking } from "../models/booking.models.js";
 import logger from "../lib/logger.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -86,6 +89,21 @@ const handleBookingNotification = async (event) => {
     event.type === "booking.rejected"
   ) {
     emitToAll("salonBookingUpdate", { salonId, bookingId, eventType: event.type });
+    if (salonId) {
+      try {
+        const salon = await Salon.findById(salonId).select("totalSeats maxConcurrentStaff").lean();
+        if (salon) {
+          const totalSeats = Math.max(0, Number(salon.totalSeats || salon.maxConcurrentStaff) || 0);
+          const activeBookingsCount = await Booking.countDocuments({ salon: salonId, status: { $in: ["confirmed", "in_progress", "waiting", "arrived"] } });
+          emitToRoom(`salon:${salonId}`, "seatStatusUpdated", {
+            salonId: String(salonId), totalSeats, activeBookingsCount,
+            availableSeats: Math.max(0, totalSeats - activeBookingsCount),
+          });
+        }
+      } catch (error) {
+        logger.warn({ salonId, err: error }, "[OutboxRelay] Seat status broadcast skipped");
+      }
+    }
   }
 };
 

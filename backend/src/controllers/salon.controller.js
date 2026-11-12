@@ -40,10 +40,11 @@ const registerSalon = asyncHandler(async (req, res) => {
     if (beforeFiles.length !== afterFiles.length) {
         throw new ApiError(400, "Upload the same number of before and after photos");
     }
-    const [imageUrls, beforeUrls, afterUrls] = await Promise.all([
+    const [imageUrls, beforeUrls, afterUrls, transformationGallery] = await Promise.all([
         uploadPhotos(filesFor(req, "images")),
         uploadPhotos(beforeFiles),
         uploadPhotos(afterFiles),
+        uploadPhotos(filesFor(req, "transformationPhotos")),
     ]);
     const beforeAfterPhotos = beforeUrls.map((beforeUrl, index) => ({
         beforeUrl,
@@ -63,6 +64,7 @@ const registerSalon = asyncHandler(async (req, res) => {
         totalSeats: totalSeats || 6,
         images: imageUrls,
         beforeAfterPhotos,
+        transformationGallery,
         owner: req.user?._id,
         location: {
             type: "Point",
@@ -137,27 +139,13 @@ const getSalonById = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Salon not found");
     }
 
-    // --- CALCULATE LIVE AVAILABILITY ---
-    // 1. Get current date (matching backend Booking format: YYYY-MM-DD or similar)
-    const now = new Date();
-    const today = now.toISOString().split('T')[0]; // "2024-04-06"
-
-    // 2. Identify current hour for matching "time" string
-    const hour = now.getHours(); // 0-23
-    const displayHour = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
-    const ampm = hour >= 12 ? "PM" : "AM";
-
-    // Flexible regex for "2:XX PM" or "14:XX"
-    const timeMatcher = new RegExp(`^(?:${hour}:|0${hour}:|${displayHour}:|0${displayHour}:).*${ampm}|^(?:${hour}:|0${hour}:)`, "i");
-
+    // Keep the public seat count aligned with the configured chair capacity and active queue states.
     const activeBookingsCount = await Booking.countDocuments({
         salon: id,
-        date: today,
-        status: { $in: ["pending", "confirmed"] },
-        time: { $regex: timeMatcher }
+        status: { $in: ["confirmed", "in_progress", "waiting", "arrived"] },
     });
 
-    const totalSeats = salon.totalSeats || 6;
+    const totalSeats = Math.max(0, Number(salon.totalSeats || salon.maxConcurrentStaff) || 0);
     const availableSeats = Math.max(0, totalSeats - activeBookingsCount);
 
     let resolvedCoordinates = salon.location?.coordinates;
@@ -221,10 +209,23 @@ const updateSalonDetails = asyncHandler(async (req, res) => {
     if (beforeFiles.length !== afterFiles.length) {
         throw new ApiError(400, "Upload the same number of before and after photos");
     }
-    const [newImages, beforeUrls, afterUrls] = await Promise.all([
+    let retainedGallery = salon.transformationGallery || [];
+    if (req.body.transformationGallery !== undefined) {
+        let requestedGallery;
+        try { requestedGallery = JSON.parse(req.body.transformationGallery); } catch {
+            throw new ApiError(400, "Invalid transformation gallery data");
+        }
+        if (!Array.isArray(requestedGallery) || requestedGallery.some((url) => typeof url !== "string")) {
+            throw new ApiError(400, "Invalid transformation gallery data");
+        }
+        const requestedUrls = new Set(requestedGallery);
+        retainedGallery = retainedGallery.filter((url) => requestedUrls.has(url));
+    }
+    const [newImages, beforeUrls, afterUrls, newTransformations] = await Promise.all([
         uploadPhotos(filesFor(req, "images")),
         uploadPhotos(beforeFiles),
         uploadPhotos(afterFiles),
+        uploadPhotos(filesFor(req, "transformationPhotos")),
     ]);
     let retainedTransformations = salon.beforeAfterPhotos || [];
     if (req.body.beforeAfterPhotos !== undefined) {
@@ -253,6 +254,7 @@ const updateSalonDetails = asyncHandler(async (req, res) => {
                 isOpen,
                 images: [...(salon.images || []), ...newImages],
                 beforeAfterPhotos: [...retainedTransformations, ...appendedTransformations],
+                transformationGallery: [...retainedGallery, ...newTransformations],
                 location: address || city || state || pincode ? {
                     type: "Point",
                     coordinates: await geocodeAddress(`${address || salon.address}, ${city || salon.city}, ${state || salon.state}, ${pincode || salon.pincode}`) || salon.location?.coordinates || [0, 0]

@@ -36,6 +36,7 @@ router
       { name: "images", maxCount: 10 },
       { name: "beforePhotos", maxCount: 10 },
       { name: "afterPhotos", maxCount: 10 },
+      { name: "transformationPhotos", maxCount: 10 },
     ]),
     updateSalonDetails
   );
@@ -49,6 +50,7 @@ router
       { name: "images", maxCount: 10 },
       { name: "beforePhotos", maxCount: 10 },
       { name: "afterPhotos", maxCount: 10 },
+      { name: "transformationPhotos", maxCount: 10 },
     ]),
     registerSalon
   );

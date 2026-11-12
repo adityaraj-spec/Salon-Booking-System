@@ -25,6 +25,7 @@ router.put("/salon", upload.fields([
   { name: "images", maxCount: 10 },
   { name: "beforePhotos", maxCount: 10 },
   { name: "afterPhotos", maxCount: 10 },
+  { name: "transformationPhotos", maxCount: 10 },
 ]), updateOwnerSalon);
 
 // Services (inline price editing supported)

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { State, City } from 'country-state-city';
 import axiosInstance from '../api/axiosConfig';
 import { useAuth } from '../context/AuthContext';
+import { useSocket } from '../context/SocketContext';
 import { useNotification } from '../context/NotificationContext';
 import { useCityResolution } from '../hooks/useCityResolution';
 import { getDynamicCities } from '../data/featuredCities.js';
@@ -26,6 +27,7 @@ const SERVICE_CATEGORIES = [
 export function Shops() {
     const navigate = useNavigate();
     const { user } = useAuth();
+    const socket = useSocket();
     const { showNotification } = useNotification();
     const [searchParams, setSearchParams] = useSearchParams();
     const cityParam = searchParams.get("city") || "";
@@ -43,6 +45,19 @@ export function Shops() {
     } = useCityResolution();
 
     const [salons, setSalons] = useState([]);
+    useEffect(() => {
+        if (!socket || salons.length === 0) return undefined;
+        const ids = salons.map((salon) => salon._id).filter(Boolean);
+        ids.forEach((salonId) => socket.emit('joinSalon', salonId));
+        const updateSeats = (status) => setSalons((current) => current.map((salon) => String(salon._id) === String(status?.salonId)
+            ? { ...salon, totalSeats: status.totalSeats, availableSeats: status.availableSeats }
+            : salon));
+        socket.on('seatStatusUpdated', updateSeats);
+        return () => {
+            socket.off('seatStatusUpdated', updateSeats);
+            ids.forEach((salonId) => socket.emit('leaveSalon', salonId));
+        };
+    }, [socket, salons]);
     const [userFavorites, setUserFavorites] = useState([]);
     const [cityQuery, setCityQuery] = useState(cityParam || resolvedCity || "");
     const [selectedCategory, setSelectedCategory] = useState(categoryParam);
@@ -841,7 +856,7 @@ export function Shops() {
                                                     </span>
                                                     <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/80 shrink-0">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                                        <span>{Math.max(0, Number(salon.availableSeats) || 0)}/{Math.max(1, Number(salon.maxConcurrentStaff) || Number(salon.totalSeats) || 5)} seats free</span>
+                                                        <span>{Math.max(0, Number(salon.availableSeats) || 0)}/{Math.max(0, Number(salon.totalSeats) || Number(salon.maxConcurrentStaff) || 0)} seats free</span>
                                                     </span>
                                                 </div>
                                             </div>

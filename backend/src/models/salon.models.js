@@ -37,6 +37,10 @@ const salonSchema = new mongoose.Schema({
       title: { type: String, default: "" },
     },
   ],
+  transformationGallery: {
+    type: [String],
+    default: [],
+  },
   contactNumber: {
     type: String,
     required: false

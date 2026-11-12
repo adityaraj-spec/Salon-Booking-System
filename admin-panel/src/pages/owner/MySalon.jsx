@@ -13,10 +13,9 @@ export default function MySalon() {
   const [newImages, setNewImages] = useState([]);
   const [previews, setPreviews] = useState([]);
   const [transformations, setTransformations] = useState([]);
-  const [beforeFiles, setBeforeFiles] = useState([]);
-  const [afterFiles, setAfterFiles] = useState([]);
-  const [beforePreviews, setBeforePreviews] = useState([]);
-  const [afterPreviews, setAfterPreviews] = useState([]);
+  const [transformationGallery, setTransformationGallery] = useState([]);
+  const [transformationFiles, setTransformationFiles] = useState([]);
+  const [transformationPreviews, setTransformationPreviews] = useState([]);
 
   useEffect(() => {
     api.get('/owner/salon')
@@ -24,6 +23,7 @@ export default function MySalon() {
         const s = r.data.data;
         setSalon(s);
         setTransformations(s.beforeAfterPhotos || []);
+        setTransformationGallery(s.transformationGallery || []);
         setForm({
           name: s.name || '', city: s.city || '', state: s.state || '',
           pincode: s.pincode || '', address: s.address || '',
@@ -44,19 +44,19 @@ export default function MySalon() {
     setPreviews(files.map(f => URL.createObjectURL(f)));
   };
 
-  const handlePortfolioFiles = (event, setFiles, setFilePreviews) => {
+  const handlePortfolioFiles = (event) => {
     const files = Array.from(event.target.files || []);
-    const remaining = Math.max(0, 10 - (setFiles === setBeforeFiles ? beforeFiles.length : afterFiles.length));
+    const remaining = Math.max(0, 10 - transformationGallery.length - transformationFiles.length);
     const accepted = files.slice(0, remaining);
-    setFiles((current) => [...current, ...accepted]);
-    setFilePreviews((current) => [...current, ...accepted.map((file) => URL.createObjectURL(file))]);
+    setTransformationFiles((current) => [...current, ...accepted]);
+    setTransformationPreviews((current) => [...current, ...accepted.map((file) => URL.createObjectURL(file))]);
     event.target.value = '';
   };
 
-  const removePortfolioFile = (index, files, setFiles, filePreviews, setFilePreviews) => {
-    URL.revokeObjectURL(filePreviews[index]);
-    setFiles(files.filter((_, i) => i !== index));
-    setFilePreviews(filePreviews.filter((_, i) => i !== index));
+  const removePortfolioFile = (index) => {
+    URL.revokeObjectURL(transformationPreviews[index]);
+    setTransformationFiles((files) => files.filter((_, i) => i !== index));
+    setTransformationPreviews((urls) => urls.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e) => {
@@ -67,25 +67,18 @@ export default function MySalon() {
       Object.entries(form).forEach(([k, v]) => fd.append(k, v));
       newImages.forEach(f => fd.append('images', f));
       fd.append('beforeAfterPhotos', JSON.stringify(transformations.map(({ _id }) => ({ _id }))));
-      beforeFiles.forEach((file) => fd.append('beforePhotos', file));
-      afterFiles.forEach((file) => fd.append('afterPhotos', file));
-      if (beforeFiles.length !== afterFiles.length) {
-        toast.error('Add the same number of before and after photos.');
-        setSaving(false);
-        return;
-      }
+      fd.append('transformationGallery', JSON.stringify(transformationGallery));
+      transformationFiles.forEach((file) => fd.append('transformationPhotos', file));
       const response = await api.put('/owner/salon', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       setSalon(response.data.data);
       setTransformations(response.data.data.beforeAfterPhotos || []);
+      setTransformationGallery(response.data.data.transformationGallery || []);
       toast.success('Salon updated successfully!');
       setNewImages([]);
       setPreviews([]);
-      beforePreviews.forEach(URL.revokeObjectURL);
-      afterPreviews.forEach(URL.revokeObjectURL);
-      setBeforeFiles([]);
-      setAfterFiles([]);
-      setBeforePreviews([]);
-      setAfterPreviews([]);
+      transformationPreviews.forEach(URL.revokeObjectURL);
+      setTransformationFiles([]);
+      setTransformationPreviews([]);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to update salon');
     } finally { setSaving(false); }
@@ -185,37 +178,16 @@ export default function MySalon() {
           </label>
         </div>
 
-        {/* Before and after portfolio */}
+        {/* Transformation gallery */}
         <section className="bg-white rounded-[24px] sm:rounded-[32px] border border-gray-100 p-3.5 sm:p-5 md:p-8 shadow-sm space-y-5">
-          <div>
-            <h3 className="text-base sm:text-lg font-semibold text-[#1a1a1a]">Before &amp; After Transformations</h3>
-            <p className="text-xs sm:text-sm text-gray-600 mt-1">Manage paired transformations shown on your public salon profile.</p>
-          </div>
-          {transformations.length > 0 ? <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
-            {transformations.map((photo, index) => <article key={photo._id || `${photo.beforeUrl}-${index}`} className="relative grid grid-cols-2 gap-1 overflow-hidden rounded-xl border border-gray-100">
-              <figure className="relative aspect-[4/3]"><img src={photo.beforeUrl} alt={`Before transformation ${index + 1}`} className="h-full w-full object-cover" /><figcaption className="absolute bottom-1.5 left-1.5 rounded-full bg-black/65 px-2 py-1 text-[10px] font-medium text-white">Before</figcaption></figure>
-              <figure className="relative aspect-[4/3]"><img src={photo.afterUrl} alt={`After transformation ${index + 1}`} className="h-full w-full object-cover" /><figcaption className="absolute bottom-1.5 left-1.5 rounded-full bg-black/65 px-2 py-1 text-[10px] font-medium text-white">After</figcaption></figure>
-              <button type="button" onClick={() => setTransformations((current) => current.filter((_, i) => i !== index))} aria-label={`Remove transformation ${index + 1}`} className="absolute right-2 top-2 inline-flex items-center justify-center rounded-full bg-white/95 p-2 text-gray-700 shadow hover:text-red-600"><Trash2 size={15} /></button>
-            </article>)}
-          </div> : <p className="text-sm text-gray-500">No transformation photos yet.</p>}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {[["Before", beforeFiles, setBeforeFiles, beforePreviews, setBeforePreviews], ["After", afterFiles, setAfterFiles, afterPreviews, setAfterPreviews]].map(([label, files, setFiles, fileUrls, setFileUrls]) => <div key={label}>
-              <p className="text-xs font-medium text-gray-700 mb-2">New {label.toLowerCase()} photos ({files.length}/10)</p>
-              <label className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-dashed border-gray-300 px-4 py-2 text-xs sm:text-sm font-medium text-gray-600 cursor-pointer hover:border-[#D4AF37]">
-                <ImagePlus size={17} /> Add {label.toLowerCase()} photos
-                <input type="file" accept="image/*" multiple className="sr-only" onChange={(event) => handlePortfolioFiles(event, setFiles, setFileUrls)} />
-              </label>
-              {fileUrls.length > 0 && <div className="mt-3 grid grid-cols-3 gap-2">
-                {fileUrls.map((url, index) => <div key={url} className="relative aspect-square overflow-hidden rounded-lg">
-                  <img src={url} alt={`New ${label.toLowerCase()} preview ${index + 1}`} className="h-full w-full object-cover" />
-                  <button type="button" onClick={() => removePortfolioFile(index, files, setFiles, fileUrls, setFileUrls)} aria-label={`Remove ${label.toLowerCase()} preview ${index + 1}`} className="absolute top-1 right-1 rounded-full bg-black/65 p-1.5 text-white"><X size={13} /></button>
-                </div>)}
-              </div>}
-            </div>)}
-          </div>
+          <div><h3 className="text-base sm:text-lg font-semibold text-[#1a1a1a]">Transformation Gallery</h3><p className="text-xs sm:text-sm text-gray-600 mt-1">Upload work transformations and style showcases. Photos appear in your public salon gallery.</p></div>
+          {transformationGallery.length > 0 && <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">{transformationGallery.map((url, index) => <article key={`${url}-${index}`} className="relative aspect-square overflow-hidden rounded-xl shadow-sm"><img src={url} alt={`Transformation ${index + 1}`} className="h-full w-full object-cover" /><button type="button" onClick={() => setTransformationGallery((current) => current.filter((_, i) => i !== index))} aria-label={`Remove transformation photo ${index + 1}`} className="absolute right-2 top-2 rounded-full bg-white/95 p-2 text-gray-700 shadow hover:text-red-600"><Trash2 size={15} /></button></article>)}</div>}
+          {transformations.length > 0 && <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6">{transformations.map((photo, index) => <article key={photo._id || index} className="relative grid grid-cols-2 gap-1 overflow-hidden rounded-xl border border-gray-100"><figure className="relative aspect-[4/3]"><img src={photo.beforeUrl} alt={`Before transformation ${index + 1}`} className="h-full w-full object-cover" /><figcaption className="absolute bottom-1.5 left-1.5 rounded-full bg-black/65 px-2 py-1 text-[10px] font-medium text-white">Before</figcaption></figure><figure className="relative aspect-[4/3]"><img src={photo.afterUrl} alt={`After transformation ${index + 1}`} className="h-full w-full object-cover" /><figcaption className="absolute bottom-1.5 left-1.5 rounded-full bg-black/65 px-2 py-1 text-[10px] font-medium text-white">After</figcaption></figure><button type="button" onClick={() => setTransformations((current) => current.filter((_, i) => i !== index))} aria-label={`Remove existing transformation ${index + 1}`} className="absolute right-2 top-2 rounded-full bg-white/95 p-2 text-gray-700 shadow hover:text-red-600"><Trash2 size={15} /></button></article>)}</div>}
+          {transformationGallery.length + transformations.length === 0 && <p className="text-sm text-gray-500">No transformation photos yet.</p>}
+          <p className="text-xs font-medium text-gray-700">Photos ({transformationGallery.length + transformationFiles.length}/10)</p>
+          <label className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-dashed border-gray-300 px-4 py-2 text-xs sm:text-sm font-medium text-gray-600 cursor-pointer hover:border-[#D4AF37]"><ImagePlus size={17} /> Add Transformation Photos<input type="file" accept="image/*" multiple className="sr-only" onChange={handlePortfolioFiles} /></label>
+          {transformationPreviews.length > 0 && <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">{transformationPreviews.map((url, index) => <div key={url} className="relative aspect-square overflow-hidden rounded-lg shadow-sm"><img src={url} alt={`New transformation preview ${index + 1}`} className="h-full w-full object-cover" /><button type="button" onClick={() => removePortfolioFile(index)} aria-label={`Remove new transformation ${index + 1}`} className="absolute top-1 right-1 rounded-full bg-black/65 p-1.5 text-white"><X size={13} /></button></div>)}</div>}
         </section>
-
         {/* Submit */}
         <button type="submit" disabled={saving}
           className="inline-flex items-center justify-center gap-3 bg-[#1a1a1a] hover:bg-black text-white px-5 py-2.5 sm:px-7 sm:py-3.5 rounded-xl text-xs sm:text-sm font-semibold shadow-2xl shadow-black/10 transition-all disabled:opacity-60 hover:scale-[1.02]">

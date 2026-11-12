@@ -314,10 +314,12 @@ function BeforeAfterCard({ item }) {
     );
 }
 
-function TransformationGallerySection({ photos = [] }) {
+function TransformationGallerySection({ photos = [], transformationGallery = [] }) {
     const scrollRef = useRef(null);
     const displayPhotos = (Array.isArray(photos) ? photos : [])
         .filter((photo) => photo?.beforeUrl && photo?.afterUrl);
+    const singlePhotos = (Array.isArray(transformationGallery) ? transformationGallery : []).filter((photo) => typeof photo === 'string' && photo);
+    const hasPhotos = displayPhotos.length + singlePhotos.length > 0;
 
     const scrollLeft = () => scrollRef.current?.scrollBy({ left: -320, behavior: 'smooth' });
     const scrollRight = () => scrollRef.current?.scrollBy({ left: 320, behavior: 'smooth' });
@@ -329,16 +331,16 @@ function TransformationGallerySection({ photos = [] }) {
                 <div>
                     <div className="flex items-center gap-2">
                         <Sparkles size={18} className="text-[#D4AF37]" />
-                        <h3 className="text-xl font-bold text-gray-900 tracking-tight">Before & After Photos</h3>
+                        <h3 className="text-xl font-bold text-gray-900 tracking-tight">Transformation Gallery</h3>
                     </div>
                     <p className="text-sm text-gray-500 mt-1">
-                        {displayPhotos.length > 0
-                            ? "Real before & after results crafted by our artists"
+                        {hasPhotos
+                            ? "Work transformations and style showcases from this salon"
                             : "Photos will appear here when this salon adds them."}
                     </p>
                 </div>
                 {/* Scroll arrows */}
-                {displayPhotos.length > 1 && <div className="hidden md:flex items-center gap-2">
+                {displayPhotos.length + singlePhotos.length > 1 && <div className="hidden md:flex items-center gap-2">
                     <button
                         type="button"
                         aria-label="Scroll transformations left"
@@ -358,7 +360,7 @@ function TransformationGallerySection({ photos = [] }) {
                 </div>}
             </div>
 
-            {displayPhotos.length > 0 ? (
+            {hasPhotos ? (
                 <div
                     ref={scrollRef}
                     className="flex gap-5 overflow-x-auto pb-4 scroll-smooth no-scrollbar"
@@ -367,6 +369,7 @@ function TransformationGallerySection({ photos = [] }) {
                     {displayPhotos.map((item, idx) => (
                         <BeforeAfterCard key={item._id || idx} item={item} />
                     ))}
+                    {singlePhotos.map((url, idx) => <img key={`${url}-${idx}`} src={url} alt={`Salon transformation ${idx + 1}`} loading="lazy" className="h-52 w-72 shrink-0 rounded-xl object-cover shadow-md" />)}
                 </div>
             ) : (
                 <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-6 py-10 text-center text-sm text-gray-500">
@@ -629,6 +632,7 @@ export function Shop() {
 
     useEffect(() => {
         if (!socket || !id) return undefined;
+        socket.emit("joinSalon", id);
 
         const handleAvailabilityUpdate = (data) => {
             const eventSalonId = data?.salonId || data?.booking?.salon?._id || data?.booking?.salon;
@@ -639,9 +643,16 @@ export function Shop() {
 
         socket.on("salonBookingUpdate", handleAvailabilityUpdate);
         socket.on("bookingUpdate", handleAvailabilityUpdate);
+        const handleSeatStatus = (status) => {
+            if (String(status?.salonId) !== String(id)) return;
+            setLiveAvailability((current) => ({ ...current, loading: false, error: false, seatsLeft: Number(status.availableSeats) || 0, maxCapacity: Number(status.totalSeats) || 0 }));
+        };
+        socket.on("seatStatusUpdated", handleSeatStatus);
         return () => {
             socket.off("salonBookingUpdate", handleAvailabilityUpdate);
             socket.off("bookingUpdate", handleAvailabilityUpdate);
+            socket.off("seatStatusUpdated", handleSeatStatus);
+            socket.emit("leaveSalon", id);
         };
     }, [fetchLiveAvailability, id, socket]);
 
@@ -1207,7 +1218,7 @@ export function Shop() {
                     )}
 
                     {/* TRANSFORMATION GALLERY (BEFORE & AFTER) — Placed directly below services */}
-                    <TransformationGallerySection photos={salon?.beforeAfterPhotos} />
+                    <TransformationGallerySection photos={salon?.beforeAfterPhotos} transformationGallery={salon?.transformationGallery} />
 
                     {/* MEET OUR TEAM SECTION — Sprint 2.3 */}
                     {staff.length > 0 && (

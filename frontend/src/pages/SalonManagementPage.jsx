@@ -44,6 +44,7 @@ export function SalonManagementPage() {
     const navigate = useNavigate();
     const [salons, setSalons] = useState([]);
     const [activeSalon, setActiveSalon] = useState(null);
+    const [seatAvailability, setSeatAvailability] = useState(null);
     const [services, setServices] = useState([]);
     const [staff, setStaff] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -134,12 +135,19 @@ export function SalonManagementPage() {
 
     useEffect(() => {
         if (socket && activeSalon) {
-            socket.on("bookingUpdate", (data) => {
+            socket.emit("joinSalon", activeSalon._id);
+            const handleBookingUpdate = (data) => {
                 // If the booking belongs to the current salon, refresh the data
-                if (data.booking.salon === activeSalon._id || data.booking.salon?._id === activeSalon._id) {
+                const eventSalon = data?.booking?.salon?._id || data?.booking?.salon || data?.salonId;
+                if (String(eventSalon) === String(activeSalon._id)) {
                     fetchSalonDetails(activeSalon._id);
                 }
-            });
+            };
+            const handleSeatStatus = (data) => {
+                if (String(data?.salonId) === String(activeSalon._id)) setSeatAvailability(data);
+            };
+            socket.on("bookingUpdate", handleBookingUpdate);
+            socket.on("seatStatusUpdated", handleSeatStatus);
 
             socket.on("salonStatusUpdate", (data) => {
                 if (data.salonId === activeSalon._id) {
@@ -149,7 +157,9 @@ export function SalonManagementPage() {
 
             return () => {
                 socket.off("bookingUpdate");
+                socket.off("seatStatusUpdated", handleSeatStatus);
                 socket.off("salonStatusUpdate");
+                socket.emit("leaveSalon", activeSalon._id);
             };
         }
     }, [socket, activeSalon]);
@@ -338,6 +348,7 @@ export function SalonManagementPage() {
                 <header className="mb-6">
                     <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Manage your salon</h1>
                     <p className="text-gray-500 mt-2">Update your salon details, services, staff, and gallery.</p>
+                    <p className="mt-2 text-sm font-medium text-emerald-700">{seatAvailability ? `${seatAvailability.availableSeats}/${seatAvailability.totalSeats} seats free` : `${activeSalon?.totalSeats || 0} total seats`}</p>
                 </header>
                 {/* Header & Multi-Salon Selector */}
                 {/* Header & Multi-Salon Selector - Redesigned 3-Column Layout */}

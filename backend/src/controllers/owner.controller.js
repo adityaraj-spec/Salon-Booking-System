@@ -112,10 +112,24 @@ const updateOwnerSalon = asyncHandler(async (req, res) => {
     if (beforeFiles.length !== afterFiles.length) {
         throw new ApiError(400, "Upload the same number of before and after photos");
     }
-    const [newImageUrls, beforeUrls, afterUrls] = await Promise.all([
+    let retainedGallery = salon.transformationGallery || [];
+    if (req.body.transformationGallery !== undefined) {
+        let requestedGallery;
+        try { requestedGallery = JSON.parse(req.body.transformationGallery); } catch {
+            throw new ApiError(400, "Invalid transformation gallery data");
+        }
+        if (!Array.isArray(requestedGallery) || requestedGallery.some((url) => typeof url !== "string")) {
+            throw new ApiError(400, "Invalid transformation gallery data");
+        }
+        const requestedUrls = new Set(requestedGallery);
+        retainedGallery = retainedGallery.filter((url) => requestedUrls.has(url));
+    }
+
+    const [newImageUrls, beforeUrls, afterUrls, newTransformations] = await Promise.all([
         uploadFiles(getUploadedFiles(req, "images")),
         uploadFiles(beforeFiles),
         uploadFiles(afterFiles),
+        uploadFiles(getUploadedFiles(req, "transformationPhotos")),
     ]);
 
     const updates = {};
@@ -147,6 +161,7 @@ const updateOwnerSalon = asyncHandler(async (req, res) => {
             ...beforeUrls.map((beforeUrl, index) => ({ beforeUrl, afterUrl: afterUrls[index] })),
         ];
     }
+    updates.transformationGallery = [...retainedGallery, ...newTransformations];
 
     const updated = await Salon.findByIdAndUpdate(salon._id, { $set: updates }, { new: true });
 
