@@ -481,7 +481,7 @@ export function SalonManagementPage() {
                             <div className="flex flex-wrap items-center gap-3">
                                 <div className="bg-white px-3.5 py-2 rounded-xl flex items-center gap-2.5 border border-gray-200">
                                     <span className={`text-sm font-medium ${activeSalon?.isOpen ? 'text-emerald-700' : 'text-gray-500'}`}>
-                                        {activeSalon?.isOpen ? 'Open' : 'Close'}
+                                        {activeSalon?.isOpen ? 'Open' : 'Closed'}
                                     </span>
                                     <button 
                                         onClick={handleUpdateSalonStatus}
@@ -535,7 +535,7 @@ export function SalonManagementPage() {
                                 </div>
                                 <div className="min-w-0">
                                     <p className="text-xs font-medium text-gray-500 leading-none mb-1">Status</p>
-                                    <h4 className="text-base font-semibold text-gray-900">{activeSalon?.isOpen ? "Open" : "Offline"}</h4>
+                                    <h4 className="text-base font-semibold text-gray-900">{activeSalon?.isOpen ? "Open" : "Closed"}</h4>
                                 </div>
                             </div>
 
