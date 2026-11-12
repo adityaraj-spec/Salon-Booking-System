@@ -10,7 +10,7 @@ import { useEffect } from "react";
 export function useDocumentTitle(title, description) {
   useEffect(() => {
     const prevTitle = document.title;
-    const baseTitle = "SalonNow • Modern Salon Booking & Live Queue";
+    const baseTitle = "SalonNow • Modern Salon Booking & Live Line";
     
     document.title = title ? `${title} | SalonNow` : baseTitle;
 

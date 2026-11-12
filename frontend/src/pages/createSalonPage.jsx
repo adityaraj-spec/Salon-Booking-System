@@ -139,7 +139,7 @@ export function CreateSalonPage() {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Total Seats (Capacity)</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Total Chairs / Styling Stations</label>
                             <input
                                 name="totalSeats"
                                 type="number"

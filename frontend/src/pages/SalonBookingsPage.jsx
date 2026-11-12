@@ -50,7 +50,7 @@ const loadRazorpay = () =>
     });
 
 export function SalonBookingsPage() {
-    useDocumentTitle('Salon Owner Dashboard', 'Real-time queue requests, appointment tracking, and checkout for salon owners.');
+    useDocumentTitle('Salon Manager', 'Real-time queue requests, appointment tracking, and checkout for salon owners.');
     const { showNotification } = useNotification();
     const socket = useSocket();
 
@@ -191,7 +191,7 @@ export function SalonBookingsPage() {
         setActionLoadingId(bookingId);
         try {
             const res = await axiosInstance.post(`/queue/${bookingId}/reject`, {
-                reason: "Salon is at capacity at this time.",
+                reason: "The salon is currently full.",
             });
             if (res.data?.success) {
                 showNotification("Request declined.", "info");
@@ -323,7 +323,7 @@ export function SalonBookingsPage() {
         try {
             const res = await axiosInstance.post(`/queue/${paymentBooking._id}/complete`, { paymentMethod });
             if (res.data?.success) {
-                showNotification(`Payment recorded via ${paymentMethod.toUpperCase()} and ticket closed!`, "success");
+                showNotification(`Payment recorded via ${paymentMethod.toUpperCase()}! Visit completed.`, "success");
                 setPaymentBooking(null);
                 await fetchSalonAndQueue();
             }
@@ -855,8 +855,8 @@ export function SalonBookingsPage() {
                     <div className="bg-white rounded-xl max-w-md w-full p-6 md:p-8 shadow-soft-xl border border-stone-200/50 animate-in fade-in zoom-in-95">
                         <div className="flex justify-between items-start mb-6">
                             <div>
-                                <h3 className="text-xl font-sans font-bold text-gray-900">Complete & Settle Service</h3>
-                                <p className="text-xs text-gray-500 mt-1">Select payment method and close out ticket</p>
+                                <h3 className="text-xl font-sans font-bold text-gray-900">Complete Visit & Collect Payment</h3>
+                                <p className="text-xs text-gray-500 mt-1">Choose payment method to complete the visit</p>
                             </div>
                             <button onClick={() => setPaymentBooking(null)} className="p-1 rounded-full text-gray-400 hover:text-black">
                                 <X size={20} />
@@ -945,7 +945,7 @@ export function SalonBookingsPage() {
                     <div className="bg-white rounded-xl max-lg w-full p-6 md:p-8 shadow-soft-xl border border-stone-200/50 animate-in fade-in zoom-in-95">
                         <div className="flex justify-between items-start mb-4">
                             <div>
-                                <h3 className="text-xl font-sans font-bold text-gray-900">Add Service to Ticket</h3>
+                                <h3 className="text-xl font-sans font-bold text-gray-900">Add Extra Service to Appointment</h3>
                                 <p className="text-xs text-gray-500 mt-1">
                                     Customer: <strong>{extraServiceModalBooking.customer?.fullName || extraServiceModalBooking.guestName || "Customer"}</strong>
                                 </p>
@@ -960,7 +960,7 @@ export function SalonBookingsPage() {
 
                         {/* Current services on ticket */}
                         <div className="mb-4 p-3.5 bg-gray-50 rounded-xl border border-gray-100 text-xs">
-                            <span className="font-semibold text-gray-500 block mb-1">Current Ticket Services:</span>
+                            <span className="font-semibold text-gray-500 block mb-1">Current Services Selected:</span>
                             <div className="flex flex-wrap gap-1">
                                 {extraServiceModalBooking.serviceNames?.map((s, idx) => (
                                     <span key={idx} className="bg-white border border-gray-200 px-2.5 py-0.5 rounded-md font-medium text-gray-700">
@@ -1054,7 +1054,7 @@ export function SalonBookingsPage() {
                                 }`}
                             >
                                 {extraServiceLoading ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
-                                <span>Add to Ticket</span>
+                                <span>Add Service</span>
                             </button>
                         </div>
                     </div>

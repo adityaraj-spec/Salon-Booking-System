@@ -218,7 +218,7 @@ export function SignUpPage() {
                 />
                 <div className="absolute inset-0 bg-black/30"></div>
                 <div className="absolute bottom-10 left-10 right-10 text-white z-10">
-                    <p className="text-xs uppercase tracking-widest text-[#ffd166] font-bold mb-2">Priority Queue &amp; Booking</p>
+                    <p className="text-xs uppercase tracking-widest text-[#ffd166] font-bold mb-2">Priority Booking &amp; Fast Line</p>
                     <p className="text-2xl font-sans font-bold leading-snug">Instant seat reservation with transparent salon pricing</p>
                 </div>
             </div>

@@ -46,7 +46,7 @@ export function SeatMatrix({ salonId, date, onDateChange, durationMinutes = 30, 
             } catch (requestError) {
                 if (!cancelled) {
                     setAvailability({ slots: [], maxCapacity: 0, reason: "" });
-                    setError(requestError.response?.data?.message || "Unable to load live availability.");
+                    setError(requestError.response?.data?.message || "Unable to load available time slots.");
                 }
             } finally {
                 if (!cancelled) setLoading(false);
@@ -71,7 +71,7 @@ export function SeatMatrix({ salonId, date, onDateChange, durationMinutes = 30, 
                 <div>
                     <div className="flex items-center gap-2">
                         <CalendarDays size={18} className="text-[#D4AF37]" />
-                        <h3 className="text-lg font-sans font-semibold text-[#1a1a1a]">Live seat matrix</h3>
+                        <h3 className="text-lg font-sans font-semibold text-[#1a1a1a]">Available Chairs &amp; Times</h3>
                     </div>
                     <p className="text-xs text-gray-500 mt-1">Select an available slot to continue booking.</p>
                 </div>

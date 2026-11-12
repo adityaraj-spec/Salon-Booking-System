@@ -331,7 +331,7 @@ export function BookingPage() {
                 setRequestError(response.data?.message || "Unable to request queue position.");
             }
         } catch (err) {
-            const msg = err.response?.data?.message || err.message || "Failed to join queue. Please retry.";
+            const msg = err.response?.data?.message || err.message || "Failed to save your spot in line. Please try again.";
             setRequestError(msg);
         } finally {
             setSubmitting(false);
@@ -411,7 +411,7 @@ export function BookingPage() {
                     {graceExpiredAlert && (
                         <div className="mb-6 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl p-4 text-xs font-semibold flex items-center gap-3">
                             <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0" />
-                            <span>Your arrival grace window has ended. Please check in with the salon immediately to hold your position!</span>
+                            <span>Your extra arrival time has ended. Please check in with the front desk now to keep your spot!</span>
                         </div>
                     )}
                     {proposedExtras && (
@@ -420,9 +420,9 @@ export function BookingPage() {
                                 <div className="w-12 h-12 rounded-full bg-amber-100 text-[#D4AF37] flex items-center justify-center mb-4 mx-auto">
                                     <Scissors className="w-6 h-6" />
                                 </div>
-                                <h3 className="text-xl font-bold text-gray-900 tracking-tight text-center mb-4">Additional Services Proposed</h3>
+                                <h3 className="text-xl font-bold text-gray-900 tracking-tight text-center mb-4">Extra Services Suggested</h3>
                                 <p className="text-xs text-gray-500 text-center mb-4">
-                                    Your stylist would like to add the following extra services to your visit:
+                                    Your stylist suggested these extra services for your visit:
                                 </p>
                                 <div className="bg-gray-50 rounded-xl p-4 mb-4 space-y-2 border border-stone-200/50">
                                     {(proposedExtras.proposedServices || []).map((s, idx) => (
@@ -627,7 +627,7 @@ export function BookingPage() {
                             </div>
                             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-2">Request Declined</h2>
                             <p className="text-gray-600 text-sm mb-4">
-                                {activeBooking.rejectionReason || "The salon is unable to accommodate additional queue requests at this time."}
+                                {activeBooking.rejectionReason || "The salon is unable to take more customers right now."}
                             </p>
                             <p className="text-xs text-gray-400 mb-6">No charges have been made. You can try another salon or request again later.</p>
                             <button
@@ -647,7 +647,7 @@ export function BookingPage() {
                             </div>
                             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-2">Request Timed Out</h2>
                             <p className="text-gray-600 text-sm mb-6">
-                                The salon did not respond within the acceptance timeout window. No fee has been charged.
+                                The salon didn't respond in time. You haven't been charged anything.
                             </p>
                             <button
                                 onClick={() => setActiveBooking(null)}
@@ -843,7 +843,7 @@ export function BookingPage() {
                                         ))
                                     ) : (
                                         <div className="col-span-full text-center py-6 bg-white rounded-xl border border-dashed border-stone-200/70 text-gray-400 text-sm">
-                                            First available stylist will be assigned upon arrival.
+                                            You'll get the first free stylist when you arrive.
                                         </div>
                                     )}
                                 </div>
@@ -855,7 +855,7 @@ export function BookingPage() {
                         <div className="lg:col-span-1">
                             <div className="bg-white border border-stone-200/50 rounded-xl p-6 md:p-8 sticky top-20 shadow-sm">
                                 <h2 className="text-xl font-bold text-gray-900 tracking-tight mb-4 border-b border-gray-100 pb-3">
-                                    Request Summary
+                                    Booking Summary
                                 </h2>
 
                                 <div className="space-y-4 mb-6">
@@ -874,7 +874,7 @@ export function BookingPage() {
                                                 </div>
                                             ))}
                                             <div className="flex justify-between items-center text-xs text-gray-500 pt-3 border-t border-stone-200/50">
-                                                <span>Combined Est. Service Time</span>
+                                                <span>Estimated Total Time</span>
                                                 <span className="font-semibold text-gray-800">{combinedDurationMin} mins</span>
                                             </div>
                                         </>
@@ -931,7 +931,7 @@ export function BookingPage() {
 
                                     <div className="flex items-center justify-center gap-1.5 text-[11px] text-gray-400 text-center pt-2">
                                         <ShieldCheck size={14} className="text-[#D4AF37]" />
-                                        <span>Instant live queue tracking upon acceptance</span>
+                                        <span>Live line tracking once confirmed</span>
                                     </div>
                                 </div>
                             </div>

@@ -383,7 +383,7 @@ export function NavBar() {
                                                         className="w-[calc(100%-12px)] flex items-center justify-start gap-3 mx-1.5 px-3.5 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
                                                     >
                                                         <LayoutDashboard size={18} />
-                                                        Owner Dashboard
+                                                        Salon Manager
                                                     </button>
                                                     <NavLink
                                                         to="/salon/manage"
@@ -574,7 +574,7 @@ export function NavBar() {
                                 className="w-full flex items-center justify-start gap-4 px-4 py-3.5 rounded-xl font-bold text-sm text-gray-600 hover:bg-gray-50 hover:text-[#D4AF37] transition-all"
                             >
                                 <LayoutDashboard size={18} className="shrink-0" />
-                                Admin dashboard
+                                Salon Manager
                             </button>
                             <NavLink
                                 to="/salon/manage"

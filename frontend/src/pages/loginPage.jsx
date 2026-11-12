@@ -67,7 +67,7 @@ export function LoginPage() {
                 navigate("/verify-email", { state: { email } });
                 return;
             }
-            const msg = err.response?.data?.message || "Invalid credentials. Please check your email and password.";
+            const msg = err.response?.data?.message || "Incorrect email or password. Please try again.";
             setError(msg);
             showNotification(msg, "error");
         } finally {

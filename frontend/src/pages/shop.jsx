@@ -285,7 +285,7 @@ function BeforeAfterCard({ item }) {
                 <div>
                     <div className="flex items-center justify-between gap-2">
                         <span className="text-[11px] font-semibold text-[#D4AF37] bg-amber-50 px-2 py-0.5 rounded-md inline-block truncate max-w-[190px]">
-                            {item.serviceName || "Transformation"}
+                            {item.serviceName || "Makeover"}
                         </span>
                         {item.stylistName && (
                             <span className="text-[11px] font-medium text-gray-500 truncate max-w-[120px]">
